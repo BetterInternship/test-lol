@@ -131,7 +131,7 @@ export default function OTPPage() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-800">Intern's Launchpad</h1>
+        <h1 className="text-xl font-bold text-gray-800">Better Internships</h1>
       </div>
 
       {/* Main Content */}

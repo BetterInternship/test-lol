@@ -1,4 +1,4 @@
-# Intern's Launchpad
+# Better Internships
 
 A comprehensive internship platform connecting students with employers.
 

@@ -55,7 +55,7 @@ export default function HomePage() {
         <div className="w-80 border-r bg-gray-50 flex flex-col">
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
             <Link href="/" className="block">
-              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Intern&apos;s Launchpad</h1>
+              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internships</h1>
             </Link>
 
             <Link
