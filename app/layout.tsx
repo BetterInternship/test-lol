@@ -3,9 +3,8 @@ import './globals.css'
 import { AuthContextProvider } from './authctx'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'Better Internships',
+  description: 'The Best College Careers Website for Students.',
 }
 
 export default function RootLayout({
