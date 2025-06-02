@@ -1,0 +1,21 @@
+# Next.js
+**/.next/
+**/out/
+**/build/
+
+# VSCODE
+.vscode/
+
+# Dependencies
+**/node_modules/
+
+# Environment variables
+**/.env*.local
+**/.env
+
+# TypeScript
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# OS files
+**/.DS_Store
