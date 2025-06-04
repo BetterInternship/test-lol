@@ -211,7 +211,7 @@ export default function Dashboard() {
                         Calendar <ChevronDown className="h-4 w-4" />
                       </div>
                     </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[120px]">
+                    <th className="text-left p-4 font-semibold text-gray-800 w-[140px]">
                       <div className="flex items-center gap-2">
                         Status <ChevronDown className="h-4 w-4" />
                       </div>
@@ -252,12 +252,12 @@ export default function Dashboard() {
                           <Calendar className="h-4 w-4" />
                         </Button>
                       </td>
-                      <td className="p-4 w-[120px]">
+                      <td className="p-4 w-[140px]">
                         <Select 
                           value={applicant.status} 
                           onValueChange={(value) => updateStatus(applicant.id, value)}
                         >
-                          <SelectTrigger className={`w-32 ${getStatusColor(applicant.status)} border-0`}>
+                          <SelectTrigger className={`w-full ${getStatusColor(applicant.status)} border-0`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
