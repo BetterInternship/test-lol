@@ -17,7 +17,6 @@ import {
   UserPlus,
   LogOut,
   FileEdit,
-  Settings,
   Check,
   ArrowLeft
 } from "lucide-react"
@@ -34,6 +33,7 @@ function FormGenerator() {
   const searchParams = useSearchParams()
   const formType = searchParams.get('form')
   
+  const [isGenerating, setIsGenerating] = useState(false)
   const [selectedStudents, setSelectedStudents] = useState({
     "All Students": false,
     "Bowei Gai": true,
@@ -53,7 +53,7 @@ function FormGenerator() {
   })
 
   const handleLogout = () => {
-    router.push('/login')
+    router.push('/hire/login')
   }
 
   const handleStudentToggle = (student: string) => {
@@ -77,9 +77,13 @@ function FormGenerator() {
   }
 
   const handleGenerate = () => {
+    console.log('Generate button clicked!')
+    
     const selectedStudentsList = Object.entries(selectedStudents)
       .filter(([student, isSelected]) => isSelected && student !== "All Students")
       .map(([student]) => student)
+    
+    console.log('Selected students:', selectedStudentsList)
     
     // Check if any students are selected
     if (selectedStudentsList.length === 0) {
@@ -87,8 +91,15 @@ function FormGenerator() {
       return
     }
 
-    // Navigate to template info page with form type
-    router.push(`/template-info?form=${encodeURIComponent(formType || 'Form')}`)
+    console.log('Starting generation process...')
+    // Start generating process
+    setIsGenerating(true)
+    
+    // Wait 2 seconds then navigate to download page
+    setTimeout(() => {
+      console.log('Navigating to download page...')
+      window.location.href = '/download'
+    }, 2000)
   }
 
   return (
@@ -102,13 +113,17 @@ function FormGenerator() {
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
-            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link href="/hire/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
               <BarChart3 className="h-5 w-5" />
               Dashboard
             </Link>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link href="/hire/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
               <FileText className="h-5 w-5" />
               My Listings
+            </Link>
+            <Link href="/hire/forms-automation" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+              <FileEdit className="h-5 w-5" />
+              Forms Automation
             </Link>
           </div>
         </div>
@@ -129,27 +144,15 @@ function FormGenerator() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/company-profile">
+                <Link href="/hire/company-profile">
                   <Building2 className="mr-2 h-4 w-4" />
                   <span>Edit Company Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/forms-automation">
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  <span>Forms automation</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/add-users">
+                <Link href="/hire/add-users">
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem 
@@ -219,9 +222,21 @@ function FormGenerator() {
             <div className="flex justify-center">
               <Button 
                 onClick={handleGenerate}
-                className="px-24 py-4 text-xl bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium shadow-sm"
+                disabled={isGenerating}
+                className={`px-24 py-4 text-xl rounded-xl font-medium shadow-sm transition-all duration-300 ${
+                  isGenerating 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-green-500 hover:bg-green-600'
+                } text-white`}
               >
-                Generate
+                {isGenerating ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Generating...
+                  </div>
+                ) : (
+                  'Generate'
+                )}
               </Button>
             </div>
           </div>

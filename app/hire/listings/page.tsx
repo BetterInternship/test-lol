@@ -22,8 +22,7 @@ import {
   Building2,
   UserPlus,
   LogOut,
-  FileEdit,
-  Settings
+  FileEdit
 } from "lucide-react"
 import Link from "next/link"
 
@@ -218,6 +217,10 @@ export default function MyListings() {
               <FileText className="h-5 w-5" />
               My Listings
             </div>
+            <Link href="/forms-automation" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+              <FileEdit className="h-5 w-5" />
+              Forms Automation
+            </Link>
           </div>
         </div>
       </div>
@@ -241,21 +244,9 @@ export default function MyListings() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/forms-automation">
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  <span>Forms automation</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href="/add-users">
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem 

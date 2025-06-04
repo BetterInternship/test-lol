@@ -36,29 +36,21 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[85vh] p-0 bg-white">
-          <div className="flex h-[80vh]">
-            {/* Close button */}
-            <button 
-              onClick={onClose}
-              className="absolute right-6 top-6 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center"
-            >
-              <X className="h-4 w-4 text-gray-600" />
-            </button>
-
-            {/* Main Content */}
-            <div className="flex-1 p-8">
+        <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] p-0 bg-white overflow-hidden">
+          <div className="flex flex-col h-full">
+            {/* Main Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8">
               {/* Header */}
-              <div className="mb-8">
+              <div className="mb-6 md:mb-8">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span className="text-sm text-gray-600">Applied 16H 58M ago</span>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{applicant.name}</h1>
-                <p className="text-gray-600 mb-6">Applying for {applicant.job} • {applicant.mode}</p>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{applicant.name}</h1>
+                <p className="text-gray-600 mb-4 md:mb-6">Applying for {applicant.job} • {applicant.mode}</p>
                 
                 {/* Quick Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button 
                     onClick={() => setIsResumeOpen(true)}
                     className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -74,14 +66,14 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
               </div>
 
               {/* Academic Background Card */}
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <div className="bg-gray-50 rounded-lg p-4 md:p-6 mb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                     <GraduationCap className="h-4 w-4 text-blue-600" />
                   </div>
                   <h3 className="font-semibold text-gray-900">Academic Background</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Program</p>
                     <p className="font-medium">Computer Science</p>
@@ -102,8 +94,8 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
               </div>
 
               {/* Application Details */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-gray-50 rounded-lg p-4 md:p-6">
                   <h3 className="font-semibold text-gray-900 mb-3">Cover Letter</h3>
                   <p className="text-gray-700 text-sm leading-relaxed">
                     I wish to work with you guys more effectively. I have an efficiency with 
@@ -111,7 +103,7 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 rounded-lg p-4 md:p-6">
                   <h3 className="font-semibold text-gray-900 mb-3">About the Candidate</h3>
                   <p className="text-gray-700 text-sm leading-relaxed">
                     Your Momma lmaoooo did you actually think that I would 
@@ -126,21 +118,21 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
 
       {/* Resume Viewer Modal */}
       <Dialog open={isResumeOpen} onOpenChange={setIsResumeOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-6">
-          <DialogHeader>
+        <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] p-4 md:p-6 overflow-hidden">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
               {applicant.name}'s Resume
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 bg-white border rounded-lg p-8 max-h-[70vh] overflow-auto">
+          <div className="flex-1 bg-white border rounded-lg p-4 md:p-8 overflow-auto min-h-0">
             {/* Sample Resume Content */}
             <div className="max-w-2xl mx-auto">
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold">{applicant.name}</h1>
+                <h1 className="text-xl md:text-2xl font-bold">{applicant.name}</h1>
                 <p className="text-gray-600">Computer Science Student</p>
-                <p className="text-sm text-gray-500">john.doe@dlsu.edu.ph | +63 912 345 6789</p>
+                <p className="text-sm text-gray-500 break-all">john.doe@dlsu.edu.ph | +63 912 345 6789</p>
               </div>
 
               <section className="mb-6">

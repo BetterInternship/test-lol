@@ -16,33 +16,42 @@ import {
   Building2,
   UserPlus,
   LogOut,
-  FileEdit,
-  Settings
+  FileEdit
 } from "lucide-react"
 import Link from "next/link"
 
 export default function FormsAutomation() {
   const router = useRouter()
 
+  const handleTemplateDownload = (templateName: string) => {
+    // Create a link element and trigger download
+    const link = document.createElement('a')
+    link.href = '/Company_Information_Project_Details_Form.pdf'
+    link.download = 'Company_Information_Project_Details_Form.pdf'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   const handleLogout = () => {
     router.push('/login')
   }
 
   const dlsuForms = [
-    "Company Project Details form",
-    "Student Agreement Form", 
-    "External Relations Form",
-    "Student Evaluation form",
+    "Company Project Details template",
+    "Student Agreement Template", 
+    "External Relations Template",
+    "Student Evaluation template",
     "Training plan for Students",
-    "Initial and Final review form"
+    "Initial and Final review template"
   ]
 
   const dlsuCcsForms = [
-    "CCS Form 1"
+    "CCS Template 1"
   ]
 
   const ateneoForms = [
-    "Ateneo Form 1"
+    "Ateneo Template 1"
   ]
 
   return (
@@ -64,6 +73,10 @@ export default function FormsAutomation() {
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
+            <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium cursor-default">
+              <FileEdit className="h-5 w-5" />
+              Forms Automation
+            </div>
           </div>
         </div>
       </div>
@@ -87,21 +100,9 @@ export default function FormsAutomation() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/forms-automation">
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  <span>Forms automation</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href="/add-users">
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem 
@@ -126,11 +127,13 @@ export default function FormsAutomation() {
                   <h2 className="text-lg font-semibold text-green-500 mb-4">DLSU School Forms</h2>
                   <div className="space-y-2">
                     {dlsuForms.map((form, index) => (
-                      <Link key={index} href={`/form-generator?form=${encodeURIComponent(form)}`}>
-                        <div className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors">
-                          {form}
-                        </div>
-                      </Link>
+                      <div 
+                        key={index} 
+                        onClick={() => handleTemplateDownload(form)}
+                        className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors"
+                      >
+                        {form}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -140,11 +143,13 @@ export default function FormsAutomation() {
                   <h2 className="text-lg font-semibold text-green-500 mb-4">DLSU CCS School Forms</h2>
                   <div className="space-y-2">
                     {dlsuCcsForms.map((form, index) => (
-                      <Link key={index} href={`/form-generator?form=${encodeURIComponent(form)}`}>
-                        <div className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors">
-                          {form}
-                        </div>
-                      </Link>
+                      <div 
+                        key={index} 
+                        onClick={() => handleTemplateDownload(form)}
+                        className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors"
+                      >
+                        {form}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -154,11 +159,13 @@ export default function FormsAutomation() {
                   <h2 className="text-lg font-semibold text-green-500 mb-4">Ateneo School Forms</h2>
                   <div className="space-y-2">
                     {ateneoForms.map((form, index) => (
-                      <Link key={index} href={`/form-generator?form=${encodeURIComponent(form)}`}>
-                        <div className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors">
-                          {form}
-                        </div>
-                      </Link>
+                      <div 
+                        key={index} 
+                        onClick={() => handleTemplateDownload(form)}
+                        className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors"
+                      >
+                        {form}
+                      </div>
                     ))}
                   </div>
                 </div>

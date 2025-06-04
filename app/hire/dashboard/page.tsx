@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { 
   Select, 
   SelectContent, 
@@ -16,6 +18,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { 
   Calendar, 
   FileText, 
@@ -26,7 +33,7 @@ import {
   UserPlus,
   LogOut,
   FileEdit,
-  Settings
+  Search
 } from "lucide-react"
 import Link from "next/link"
 import ApplicantModal from "@/components/hire/applicant-modal"
@@ -80,16 +87,230 @@ export default function Dashboard() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const router = useRouter()
 
+  // Sorting and filtering states
+  const [sortField, setSortField] = useState<string>("")
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
+  const [selectedJobs, setSelectedJobs] = useState<string[]>([])
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
+  const [programSearch, setProgramSearch] = useState("")
+  const [jobSearch, setJobSearch] = useState("")
+  const [statusSearch, setStatusSearch] = useState("")
+
+  // Get unique values for filters
+  const uniquePrograms = useMemo(() => [...new Set(applicantsData.map(a => a.program))].sort(), [])
+  const uniqueJobs = useMemo(() => [...new Set(applicantsData.map(a => a.job))].sort(), [])
+  const uniqueStatuses = useMemo(() => [...new Set(applicantsData.map(a => a.status))].sort(), [])
+
+  // Filter and sort applicants
+  const filteredAndSortedApplicants = useMemo(() => {
+    let filtered = applicantsData.filter(applicant => {
+      const programMatch = selectedPrograms.length === 0 || selectedPrograms.includes(applicant.program)
+      const jobMatch = selectedJobs.length === 0 || selectedJobs.includes(applicant.job)
+      const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(applicant.status)
+      return programMatch && jobMatch && statusMatch
+    })
+
+    if (sortField) {
+      filtered.sort((a, b) => {
+        let aValue = a[sortField as keyof typeof a]
+        let bValue = b[sortField as keyof typeof b]
+        
+        if (typeof aValue === 'string') aValue = aValue.toLowerCase()
+        if (typeof bValue === 'string') bValue = bValue.toLowerCase()
+        
+        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
+        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1
+        return 0
+      })
+    }
+
+    return filtered
+  }, [selectedPrograms, selectedJobs, selectedStatuses, sortField, sortDirection])
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("asc")
+    }
+  }
+
+  const handleProgramToggle = (program: string) => {
+    setSelectedPrograms(prev => 
+      prev.includes(program) 
+        ? prev.filter(p => p !== program)
+        : [...prev, program]
+    )
+  }
+
+  const handleJobToggle = (job: string) => {
+    setSelectedJobs(prev => 
+      prev.includes(job) 
+        ? prev.filter(j => j !== job)
+        : [...prev, job]
+    )
+  }
+
+  const handleStatusToggle = (status: string) => {
+    setSelectedStatuses(prev => 
+      prev.includes(status) 
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    )
+  }
+
   const updateStatus = (id: number, newStatus: string) => {
     setApplicants(prev => prev.map(applicant => 
       applicant.id === id ? { ...applicant, status: newStatus } : applicant
     ))
+    // Also update the main data source if needed
+    const applicantIndex = applicantsData.findIndex(a => a.id === id)
+    if (applicantIndex !== -1) {
+      applicantsData[applicantIndex].status = newStatus
+    }
   }
 
   const openApplicantModal = (applicant: typeof applicantsData[0]) => {
     setSelectedApplicant(applicant)
     setIsModalOpen(true)
   }
+
+  // Filter components
+  const MultiSelectFilter = ({ 
+    title, 
+    options, 
+    selected, 
+    onToggle, 
+    searchValue, 
+    onSearchChange,
+    fieldName 
+  }: {
+    title: string
+    options: string[]
+    selected: string[]
+    onToggle: (value: string) => void
+    searchValue: string
+    onSearchChange: (value: string) => void
+    fieldName: string
+  }) => {
+    const filteredOptions = options.filter(option => 
+      option.toLowerCase().includes(searchValue.toLowerCase())
+    )
+
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" className="h-auto p-0 font-semibold">
+            <div className="flex items-center gap-2">
+              {title} <ChevronDown className="h-4 w-4" />
+            </div>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-64" align="start">
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder={`Search ${title.toLowerCase()}...`}
+                value={searchValue}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSort(fieldName)}
+                className="text-xs"
+              >
+                A-Z {sortField === fieldName && sortDirection === "asc" && "↑"}
+                {sortField === fieldName && sortDirection === "desc" && "↓"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // Select all filtered options
+                  filteredOptions.forEach(option => {
+                    if (!selected.includes(option)) {
+                      onToggle(option)
+                    }
+                  })
+                }}
+                className="text-xs"
+              >
+                Select All
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  // Clear all selections
+                  selected.forEach(option => onToggle(option))
+                }}
+                className="text-xs"
+              >
+                Clear All
+              </Button>
+            </div>
+
+            <div className="max-h-48 overflow-y-auto space-y-2">
+              {filteredOptions.map((option) => (
+                <div key={option} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`${title}-${option}`}
+                    checked={selected.includes(option)}
+                    onCheckedChange={() => onToggle(option)}
+                  />
+                  <label
+                    htmlFor={`${title}-${option}`}
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                  >
+                    {option}
+                  </label>
+                </div>
+              ))}
+            </div>
+            
+            {selected.length > 0 && (
+              <div className="text-xs text-gray-500 pt-2 border-t">
+                {selected.length} selected
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
+    )
+  }
+
+  const SortableFilter = ({ field, title }: { field: string; title: string }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" className="h-auto p-0 font-semibold">
+          <div className="flex items-center gap-2">
+            {title} <ChevronDown className="h-4 w-4" />
+          </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48" align="start">
+        <div className="space-y-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSort(field)}
+            className="w-full justify-start"
+          >
+            Sort A-Z {sortField === field && sortDirection === "asc" && "↑"}
+            {sortField === field && sortDirection === "desc" && "↓"}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
 
   const handleLogout = () => {
     // Clear any stored authentication data (if you add localStorage/sessionStorage later)
@@ -118,6 +339,10 @@ export default function Dashboard() {
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
+            <Link href="/forms-automation" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+              <FileEdit className="h-5 w-5" />
+              Forms Automation
+            </Link>
           </div>
         </div>
       </div>
@@ -141,21 +366,9 @@ export default function Dashboard() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/forms-automation">
-                  <FileEdit className="mr-2 h-4 w-4" />
-                  <span>Forms automation</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href="/add-users">
                   <UserPlus className="mr-2 h-4 w-4" />
                   <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem 
@@ -177,49 +390,57 @@ export default function Dashboard() {
                 <thead className="sticky top-0 bg-white border-b">
                   <tr>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[180px]">
-                      <div className="flex items-center gap-2">
-                        Name <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <SortableFilter field="name" title="Name" />
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <div className="flex items-center gap-2">
-                        School <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <SortableFilter field="school" title="School" />
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <div className="flex items-center gap-2">
-                        Program <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <MultiSelectFilter
+                        title="Program"
+                        options={uniquePrograms}
+                        selected={selectedPrograms}
+                        onToggle={handleProgramToggle}
+                        searchValue={programSearch}
+                        onSearchChange={setProgramSearch}
+                        fieldName="program"
+                      />
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[120px]">
-                      <div className="flex items-center gap-2">
-                        Job <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <MultiSelectFilter
+                        title="Job"
+                        options={uniqueJobs}
+                        selected={selectedJobs}
+                        onToggle={handleJobToggle}
+                        searchValue={jobSearch}
+                        onSearchChange={setJobSearch}
+                        fieldName="job"
+                      />
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[100px]">
-                      <div className="flex items-center gap-2">
-                        Mode <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <SortableFilter field="mode" title="Mode" />
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <div className="flex items-center gap-2">
-                        Resume <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <span className="font-semibold">Resume</span>
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <div className="flex items-center gap-2">
-                        Calendar <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <span className="font-semibold">Calendar</span>
                     </th>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[140px]">
-                      <div className="flex items-center gap-2">
-                        Status <ChevronDown className="h-4 w-4" />
-                      </div>
+                      <MultiSelectFilter
+                        title="Status"
+                        options={uniqueStatuses}
+                        selected={selectedStatuses}
+                        onToggle={handleStatusToggle}
+                        searchValue={statusSearch}
+                        onSearchChange={setStatusSearch}
+                        fieldName="status"
+                      />
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {applicants.map((applicant) => (
+                  {filteredAndSortedApplicants.map((applicant) => (
                     <tr key={applicant.id} className="border-b hover:bg-gray-50">
                       <td className="p-4 text-gray-800 w-[180px] truncate">{applicant.name}</td>
                       <td className="p-4 text-gray-800 w-[80px] truncate">{applicant.school}</td>
