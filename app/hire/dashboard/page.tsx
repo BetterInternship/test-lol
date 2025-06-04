@@ -172,9 +172,9 @@ export default function Dashboard() {
         {/* Table */}
         <div className="p-6 flex flex-col h-0 flex-1">
           <div className="bg-white border rounded-lg overflow-hidden flex flex-col h-full">
-            <div className="overflow-x-auto">
+            <div className="flex-1 overflow-auto">
               <table className="w-full table-fixed">
-                <thead>
+                <thead className="sticky top-0 bg-white border-b">
                   <tr>
                     <th className="text-left p-4 font-semibold text-gray-800 w-[180px]">
                       <div className="flex items-center gap-2">
@@ -218,12 +218,6 @@ export default function Dashboard() {
                     </th>
                   </tr>
                 </thead>
-              </table>
-            </div>
-            
-            {/* Scrollable Table Body */}
-            <div className="flex-1 overflow-auto">
-              <table className="w-full table-fixed">
                 <tbody>
                   {applicants.map((applicant) => (
                     <tr key={applicant.id} className="border-b hover:bg-gray-50">
