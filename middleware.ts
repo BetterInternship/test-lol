@@ -2,15 +2,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Domain name of website
-const DOMAIN = process.env.NEXT_PUBLIC_DOMAIN ?? "localhost:3000";
-
 // Pull this from db next time
 const REGISTERED_SCHOOLS = ["dlsu"];
 
 // Helper function for checking subdomain
 const subdomain_is = (hostname: string, subdomain: string): boolean =>
-  hostname.startsWith(subdomain + ".") || hostname === subdomain;
+  subdomain !== "" ? hostname.startsWith(subdomain + ".") : true;
 
 // Redirection
 const reroute_to_subdomain = (
@@ -34,10 +31,6 @@ export function middleware(request: NextRequest) {
     subdomain_is(hostname, school)
   );
 
-  console.log("hostname", hostname);
-  console.log("pathname", pathname);
-  console.log("domain", DOMAIN);
-
   // There's a matching school
   if (school.length) {
     return reroute_to_subdomain("school", pathname, request.url);
@@ -47,7 +40,7 @@ export function middleware(request: NextRequest) {
     return reroute_to_subdomain("hire", pathname, request.url);
   }
 
-  if (subdomain_is(hostname, DOMAIN)) {
+  if (subdomain_is(hostname, "")) {
     return reroute_to_subdomain("student", pathname, request.url);
   }
 
