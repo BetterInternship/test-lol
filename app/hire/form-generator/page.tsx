@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,7 +23,13 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 
-export default function FormGenerator() {
+export default function Page() {
+  return (<Suspense>
+    <FormGenerator></FormGenerator>
+  </Suspense>)
+}
+
+function FormGenerator() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const formType = searchParams.get('form')

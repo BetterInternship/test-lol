@@ -3,7 +3,7 @@ import '../globals.css'
 import { AuthContextProvider } from './authctx'
 
 export const metadata: Metadata = {
-  title: 'Better Internships',
+  title: 'Better Internship',
   description: 'The Best College Careers Website for Students.',
 }
 

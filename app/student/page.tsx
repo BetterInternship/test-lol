@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import {
@@ -27,6 +27,7 @@ export default function HomePage() {
   const [jobTypeFilter, setJobTypeFilter] = useState("Internships")
   const [locationFilter, setLocationFilter] = useState("Face to Face")
   const router = useRouter()
+  const justBetterRef = useRef<HTMLSpanElement>(null);
 
   const handleSearch = () => {
     const params = new URLSearchParams()
@@ -55,7 +56,7 @@ export default function HomePage() {
         <div className="w-80 border-r bg-gray-50 flex flex-col">
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
             <Link href="/" className="block">
-              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internships</h1>
+              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internship</h1>
             </Link>
 
             <Link
@@ -95,7 +96,32 @@ export default function HomePage() {
               <h1 className="text-4xl font-bold text-gray-800 leading-tight mb-4">
                 The Best College Careers Website for Students.
               </h1>
-              <p className="text-xl text-gray-600">An independent project for students, by students.</p>
+              <div onMouseOver={() => {
+                console.log(justBetterRef.current?.style.scale)
+                if (justBetterRef.current) {
+                  justBetterRef.current.style.transform = 'scale(1, 1)';
+                  justBetterRef.current.style.width = '100px';
+                }
+              }} onMouseLeave={() => {
+                if (justBetterRef.current) {
+                  justBetterRef.current.style.transform = 'scale(0, 1)';
+                  justBetterRef.current.style.width = '0px';
+                }
+              }}>
+                <div className="group flex flex-row justify-center">
+                  <div className="inline-block relative text-xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
+                    By DLSU students, for DLSU students. Not official. 
+                  </div>
+                  <div className="inline-block relative text-xl text-gray-600 overflow-hidden ">
+                    <span className="invisible m-0">Just Better...</span>
+                    <div className="absolute top-0 left-0 text-xl h-full w-full flex items-center justify-center opacity-0
+                                    transform -translate-x-full transition-all duration-300 ease-in-out
+                                    group-hover:translate-x-0 group-hover:opacity-100">
+                      Just better.
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Search Bar */}

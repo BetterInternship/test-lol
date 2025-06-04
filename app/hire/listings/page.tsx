@@ -17,7 +17,7 @@ import {
   FileText,
   MapPin,
   Clock,
-  DollarSign,
+  PhilippinePeso,
   Monitor,
   Building2,
   UserPlus,
@@ -334,32 +334,40 @@ export default function MyListings() {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Location:</p>
-                    <p className="text-sm text-gray-600">{selectedJob.location}</p>
+                    <p className="text-sm">
+                      <span className="font-medium">Location: </span>
+                      <span className="opacity-80">{selectedJob.location || "Not specified"}</span>
+                    </p>                  
                   </div>
                 </div>
                 
                 <div className="flex items-start gap-3">
                   <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Mode:</p>
-                    <p className="text-sm text-gray-600">{selectedJob.mode}</p>
+                    <p className="text-sm">
+                      <span className="font-medium">Mode: </span>
+                      <span className="opacity-80">{selectedJob.mode || "Not specified"}</span>
+                    </p>                  
                   </div>
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <DollarSign className="h-5 w-5 text-gray-400 mt-0.5" />
+                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Allowance:</p>
-                    <p className="text-sm text-gray-600">{selectedJob.allowance}</p>
+                    <p className="text-sm">
+                      <span className="font-medium">Allowance: </span>
+                      <span className="opacity-80">{selectedJob.allowance || "Not specified"}</span>
+                    </p>                  
                   </div>
                 </div>
                 
                 <div className="flex items-start gap-3">
                   <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Project-Based/</p>
-                    <p className="text-sm text-gray-600">{selectedJob.projectType}</p>
+                    <p className="text-sm">
+                      <span className="font-medium">Project-Based: </span>
+                      <span className="opacity-80">{selectedJob.projectType || "Not specified"}</span>
+                    </p>                  
                   </div>
                 </div>
               </div>

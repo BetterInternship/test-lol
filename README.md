@@ -1,4 +1,4 @@
-# Better Internships
+# Better Internship
 
 A comprehensive internship platform connecting students with employers.
 

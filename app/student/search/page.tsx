@@ -17,7 +17,7 @@ import {
   Building2,
   MapPin,
   Clock,
-  DollarSign,
+  PhilippinePeso,
   Briefcase,
   ChevronDown,
   X,
@@ -211,7 +211,7 @@ export default function SearchPage() {
         <div className="w-80 border-r bg-gray-50 flex flex-col">
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
             <Link href="/" className="block">
-              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internships</h1>
+              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internship</h1>
             </Link>
 
             <Link
@@ -669,7 +669,7 @@ function JobDetails({
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-gray-500" />
             <div>
-              <p className="font-medium text-sm">Location:</p>
+              <p className="font-medium text-sm">Location: {job.location}</p>
               <p className="text-sm text-gray-600">{job.location}</p>
             </div>
           </div>
@@ -677,24 +677,30 @@ function JobDetails({
           <div className="flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-gray-500" />
             <div>
-              <p className="font-medium text-sm">Mode:</p>
-              <p className="text-sm text-gray-600">{job.mode}</p>
+              <p className="text-sm">
+                <span className="font-medium">Mode: </span>
+                <span className="opacity-80">{job.mode || "Not specified"}</span>
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-gray-500" />
+            <PhilippinePeso className="w-4 h-4 text-gray-500" />
             <div>
-              <p className="font-medium text-sm">Salary:</p>
-              <p className="text-sm text-gray-600">{job.salary || "Not specified"}</p>
+              <p className="text-sm">
+                <span className="font-medium">Salary: </span>
+                <span className="opacity-80">{job.salary || "Not specified"}</span>
+              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gray-500" />
             <div>
-              <p className="font-medium text-sm">Applications:</p>
-              <p className="text-sm text-gray-600">{job.applicationCount} applicants</p>
+              <p className="text-sm">
+                <span className="font-medium">Applicants: </span>
+                <span className="opacity-80">{job.applicationCount || "0"} applicants</span>
+              </p>
             </div>
           </div>
         </div>
