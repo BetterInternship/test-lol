@@ -34,6 +34,10 @@ export function middleware(request: NextRequest) {
     subdomain_is(hostname, school)
   );
 
+  console.log("hostname", hostname);
+  console.log("pathname", pathname);
+  console.log("domain", DOMAIN);
+
   // There's a matching school
   if (school.length) {
     return reroute_to_subdomain("school", pathname, request.url);
