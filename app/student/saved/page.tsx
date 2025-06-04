@@ -18,7 +18,9 @@ import {
   Calendar,
   MapPin,
   Building,
-  Trash2
+  Trash2,
+  Briefcase,
+  PhilippinePeso
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
 import { useSavedJobs, useJobActions } from "@/hooks/useApi"
@@ -177,11 +179,17 @@ export default function SavedJobsPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-2 mb-4">
-                            <Badge variant="outline">{savedJob.job.type}</Badge>
-                            <Badge variant="outline">{savedJob.job.mode}</Badge>
-                            <Badge variant="outline">{savedJob.job.category}</Badge>
+                            {savedJob.job.mode && (
+                              <Badge variant="outline">
+                                <Briefcase className="w-3 h-3 mr-1" />
+                                {savedJob.job.mode}
+                              </Badge>
+                            )}
                             {savedJob.job.salary && (
-                              <Badge variant="outline">{savedJob.job.salary}</Badge>
+                              <Badge variant="outline">
+                                <PhilippinePeso className="w-3 h-3 mr-1" />
+                                {savedJob.job.salary}
+                              </Badge>
                             )}
                           </div>
 

@@ -87,12 +87,11 @@ interface SendOTPResponse {
 }
 
 export const auth_service = {
-  async login(email: string, password: string) {
-    return APIClient.post<AuthResponse>(APIRoute("auth").r("login").build());
-  },
-
   async register(user: Partial<User>) {
-    return APIClient.post<AuthResponse>(APIRoute("auth").r("register").build());
+    return APIClient.post<AuthResponse>(
+      APIRoute("auth").r("register").build(),
+      user
+    );
   },
 
   async verify(user_id: string, key: string) {

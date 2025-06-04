@@ -84,8 +84,9 @@ export default function OTPPage() {
     try {
       setLoading(true)
       setError("")
-      verify_otp(email, otpString)
+      await verify_otp(email, otpString)
         .then(r => r.token ? (alert('Successfully logged in!'), router.push('/')) : setError('Invalid OTP.'))
+        .catch((e) => setError(e))
 
     } catch (err: any) {
       setError(err.message || 'Verification failed. Please try again.')
@@ -131,7 +132,7 @@ export default function OTPPage() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-800">Better Internship</h1>
+        <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
       </div>
 
       {/* Main Content */}

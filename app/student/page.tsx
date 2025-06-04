@@ -56,7 +56,7 @@ export default function HomePage() {
         <div className="w-80 border-r bg-gray-50 flex flex-col">
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
             <Link href="/" className="block">
-              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internship</h1>
+              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">BetterInternship</h1>
             </Link>
 
             <Link
@@ -94,7 +94,7 @@ export default function HomePage() {
             {/* Hero Text - Centered vertically */}
             <div className="text-center mb-12">
               <h1 className="text-4xl font-bold text-gray-800 leading-tight mb-4">
-                The Best College Careers Website for Students.
+                Better Internships Start Here.
               </h1>
               <div onMouseOver={() => {
                 console.log(justBetterRef.current?.style.scale)
@@ -166,13 +166,6 @@ export default function HomePage() {
           {/* Footer */}
           <div className="p-6 text-center text-sm text-gray-500 border-t">
             Are you an Employer? Send us an Email:{" "}
-            <a href="mailto:dru@betterinternship.com" className="text-blue-600 hover:underline">
-              dru@betterinternship.com
-            </a>{" "}
-            <a href="mailto:mo@betterinternship.com" className="text-blue-600 hover:underline">
-              mo@betterinternship.com
-            </a>{" "}
-            or{" "}
             <a href="mailto:hello@betterinternship.com" className="text-blue-600 hover:underline">
               hello@betterinternship.com
             </a>

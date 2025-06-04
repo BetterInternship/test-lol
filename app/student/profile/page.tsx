@@ -287,7 +287,7 @@ export default function ProfilePage() {
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
             <Link href="/" className="block">
               <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">
-                Better Internship
+                BetterInternship
               </h1>
             </Link>
 

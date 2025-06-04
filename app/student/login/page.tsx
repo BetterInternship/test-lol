@@ -40,9 +40,7 @@ export default function LoginPage() {
       setLoading(true)
       setError("")
       
-
-      emailStatus(email).then(response => {
-
+      await emailStatus(email).then(response => {
         if (!response?.existing_user || !response?.verified_user) {
           router.push(`/register?email=${encodeURIComponent(email)}`)
         } else {
@@ -68,7 +66,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-800">Better Internship</h1>
+        <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
       </div>
 
       {/* Main Content - Centered */}

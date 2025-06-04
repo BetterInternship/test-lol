@@ -95,7 +95,6 @@ export default function RegisterPage() {
       
       // Create user profile
       const newUser = {
-        id: Date.now().toString(),
         email,
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
@@ -112,7 +111,9 @@ export default function RegisterPage() {
       }
 
       // @ts-ignore
-      register(newUser).then(() => { alert('Check your inbox for a verification email.') })
+      await register(newUser)
+        .then(() => { alert('Check your inbox for a verification email.'); router.push('/verify') })
+        .catch((e) => { alert(e) })
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.")
     } finally {

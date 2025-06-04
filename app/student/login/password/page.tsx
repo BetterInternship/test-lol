@@ -68,7 +68,7 @@ export default function PasswordPage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-800">Better Internship</h1>
+        <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
       </div>
 
       {/* Main Content */}

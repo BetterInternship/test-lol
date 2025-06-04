@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthContext } from "../authctx";
 
 export default function RegisterPage() {
-  const [loading, setLoading] = useState(true);
+  const [verified, setVerified] = useState(false);
   const router = useRouter()
   const searchParams = useSearchParams()
   const { verify } = useAuthContext()
@@ -15,8 +15,7 @@ export default function RegisterPage() {
     const key = searchParams.get('key')
 
     if (user && key) 
-      verify(user, key).then(() => (alert('You are now verified!'), router.push('/')))
-    else router.push('/')
+      verify(user, key).then(() => (setVerified(true), alert('You are now verified!'), router.push('/')))
   }, [searchParams, router])
 
   return (
@@ -24,7 +23,10 @@ export default function RegisterPage() {
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Verifying your account...</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            {verified ? 'Your account has been verified.' : 'Verifying your account...'}
+          </h2>
+          { !verified && (<p className="text-opacity-65 text-xl">Please check your inbox for a verification email.</p>) }
         </div>
 
         {/* Footer */}

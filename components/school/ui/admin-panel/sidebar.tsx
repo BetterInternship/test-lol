@@ -54,7 +54,7 @@ export function Sidebar() {
             >
               <span>
                 {process.env.NEXT_PUBLIC_DASHBOARD_TITLE ||
-                  "Better Internship Dashboard"}
+                  "BetterInternship Dashboard"}
               </span>
             </div>
           </Link>

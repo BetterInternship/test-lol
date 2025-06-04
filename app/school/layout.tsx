@@ -16,7 +16,7 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   title: "Internship Dashboard",
-  description: "Better Internship Dashboard",
+  description: "BetterInternship Dashboard",
 };
 
 export default function RootLayout({

@@ -211,7 +211,7 @@ export default function SearchPage() {
         <div className="w-80 border-r bg-gray-50 flex flex-col">
           <div className="p-6 space-y-4 flex-1 overflow-y-auto">
             <Link href="/" className="block">
-              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">Better Internship</h1>
+              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">BetterInternship</h1>
             </Link>
 
             <Link
@@ -586,20 +586,24 @@ function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; 
             {job.shift}
           </Badge>
         )}
-        <Badge variant="outline" className="text-xs">
+        {job.type && (<Badge variant="outline" className="text-xs">
           {job.type}
-        </Badge>
+        </Badge>)}
       </div>
 
       <div className="flex flex-wrap gap-2">
         {job.salary && (
           <Badge variant="outline" className="text-xs">
+            <PhilippinePeso className="w-3 h-3 mr-1" />
             {job.salary}
           </Badge>
         )}
-        <Badge variant="outline" className="text-xs">
-          {job.workType}
-        </Badge>
+        {job.mode && (
+          <Badge variant="outline" className="text-xs">
+            <Briefcase className="w-3 h-3 mr-1" />
+            {job.mode}
+          </Badge>
+         )}
       </div>
     </div>
   )
