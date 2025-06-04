@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import type React from "react"
 import {
@@ -26,6 +26,7 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [jobTypeFilter, setJobTypeFilter] = useState("Internships")
   const [locationFilter, setLocationFilter] = useState("Face to Face")
+  const [activeFilter, setActiveFilter] = useState("");
   const router = useRouter()
   const justBetterRef = useRef<HTMLSpanElement>(null);
 
@@ -140,16 +141,22 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <FilterDropdown
-                    options={["Internships", "Full-time", "Part-time", "All types"]}
-                    value={jobTypeFilter}
-                    onChange={setJobTypeFilter}
-                  />
-                  <span className="text-gray-300">|</span>
-                  <FilterDropdown
-                    options={["Face to Face", "Remote", "Hybrid", "Any location"]}
-                    value={locationFilter}
-                    onChange={setLocationFilter}
-                  />
+                  name="jobType"
+                  options={["Internships", "Full-time", "Part-time", "All types"]}
+                  value={jobTypeFilter}
+                  activeFilter={activeFilter}
+                  onChange={setJobTypeFilter}
+                  onClick={() => { setActiveFilter("jobType") }}
+                />
+                <span className="text-gray-300">|</span>
+                <FilterDropdown
+                  name="location"
+                  options={["Face to Face", "Remote", "Hybrid", "Any location"]}
+                  value={locationFilter}
+                  activeFilter={activeFilter}
+                  onChange={setLocationFilter}
+                  onClick={() => { setActiveFilter("location") }}
+                />
                   <Button onClick={handleSearch} className="h-12 px-6">
                     Find Jobs
                   </Button>
@@ -176,14 +183,19 @@ export default function HomePage() {
   )
 }
 
-function FilterDropdown({ options, value, onChange }: { options: string[]; value: string; onChange: (value: string) => void }) {
+function FilterDropdown({ name, options, value, onChange, activeFilter, onClick }: { name: string; options: string[]; value: string; onChange: (value: string) => void, activeFilter: string, onClick: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (name != activeFilter)
+      setIsOpen(false);
+  }, [name, activeFilter])
   
   return (
     <div className="relative">
       <Button
         variant="outline" 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => (setIsOpen(!isOpen), onClick())}
         className="h-12 px-4 flex items-center gap-2"
       >
         {value}

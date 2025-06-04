@@ -44,6 +44,7 @@ export default function SearchPage() {
   const { isAuthenticated } = useAuthContext()
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [activeFilter, setActiveFilter] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [jobTypeFilter, setJobTypeFilter] = useState("All types")
   const [locationFilter, setLocationFilter] = useState("Any location")
@@ -261,15 +262,21 @@ export default function SearchPage() {
               </div>
               <div className="flex items-center gap-3">
                 <FilterDropdown
+                  name="jobType"
                   options={["Internships", "Full-time", "Part-time", "All types"]}
                   value={tempJobTypeFilter}
+                  activeFilter={activeFilter}
                   onChange={setTempJobTypeFilter}
+                  onClick={() => { setActiveFilter("jobType") }}
                 />
                 <span className="text-gray-300">|</span>
                 <FilterDropdown
+                  name="location"
                   options={["Face to Face", "Remote", "Hybrid", "Any location"]}
                   value={tempLocationFilter}
+                  activeFilter={activeFilter}
                   onChange={setTempLocationFilter}
+                  onClick={() => { setActiveFilter("location") }}
                 />
                 <Button onClick={handleSearch} className="h-12 px-6">
                   Find Jobs
@@ -522,14 +529,19 @@ export default function SearchPage() {
   )
 }
 
-function FilterDropdown({ options, value, onChange }: { options: string[]; value: string; onChange: (value: string) => void }) {
+function FilterDropdown({ name, options, value, onChange, activeFilter, onClick }: { name: string; options: string[]; value: string; onChange: (value: string) => void, activeFilter: string, onClick: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (name != activeFilter)
+      setIsOpen(false);
+  }, [name, activeFilter])
   
   return (
     <div className="relative">
       <Button
         variant="outline" 
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => (setIsOpen(!isOpen), onClick())}
         className="h-12 px-4 flex items-center gap-2"
       >
         {value}
