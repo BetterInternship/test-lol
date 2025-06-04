@@ -1,0 +1,209 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { 
+  User, 
+  BarChart3, 
+  FileText,
+  Building2,
+  UserPlus,
+  LogOut,
+  FileEdit,
+  Settings
+} from "lucide-react"
+import Link from "next/link"
+
+export default function FormsAutomation() {
+  const router = useRouter()
+
+  const handleLogout = () => {
+    router.push('/login')
+  }
+
+  const dlsuForms = [
+    "Company Project Details form",
+    "Student Agreement Form", 
+    "External Relations Form",
+    "Student Evaluation form",
+    "Training plan for Students",
+    "Initial and Final review form"
+  ]
+
+  const dlsuCcsForms = [
+    "CCS Form 1"
+  ]
+
+  const ateneoForms = [
+    "Ateneo Form 1"
+  ]
+
+  return (
+    <div className="h-screen bg-white flex">
+      {/* Sidebar */}
+      <div className="w-64 border-r bg-gray-50 flex flex-col">
+        <div className="p-6">
+          <h1 className="text-xl font-bold text-gray-800">Intern&apos;s Launchpad</h1>
+        </div>
+        
+        <div className="px-6">
+          <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
+          <div className="space-y-2">
+            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+              <BarChart3 className="h-5 w-5" />
+              Dashboard
+            </Link>
+            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+              <FileText className="h-5 w-5" />
+              My Listings
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b">
+          <h1 className="text-2xl font-bold text-gray-800">School Forms Automation</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <User className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href="/company-profile">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  <span>Edit Company Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href="/forms-automation">
+                  <FileEdit className="mr-2 h-4 w-4" />
+                  <span>Forms automation</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href="/add-users">
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  <span>Add Users</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer" asChild>
+                <Link href="/settings">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer text-red-600"
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex gap-12 justify-center">
+              {/* Left Section - School Forms */}
+              <div className="flex-1 max-w-2xl">
+                {/* DLSU School Forms */}
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-green-500 mb-4">DLSU School Forms</h2>
+                  <div className="space-y-2">
+                    {dlsuForms.map((form, index) => (
+                      <Link key={index} href={`/form-generator?form=${encodeURIComponent(form)}`}>
+                        <div className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors">
+                          {form}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* DLSU CCS School Forms */}
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-green-500 mb-4">DLSU CCS School Forms</h2>
+                  <div className="space-y-2">
+                    {dlsuCcsForms.map((form, index) => (
+                      <Link key={index} href={`/form-generator?form=${encodeURIComponent(form)}`}>
+                        <div className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors">
+                          {form}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ateneo School Forms */}
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-green-500 mb-4">Ateneo School Forms</h2>
+                  <div className="space-y-2">
+                    {ateneoForms.map((form, index) => (
+                      <Link key={index} href={`/form-generator?form=${encodeURIComponent(form)}`}>
+                        <div className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors">
+                          {form}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Section - Generate Pre-filled Forms */}
+              <div className="w-80">
+                <h2 className="text-lg font-semibold text-gray-800 mb-6">Generate Pre-filled Forms</h2>
+                
+                <div className="space-y-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                    asChild
+                  >
+                    <Link href="/form-generator?form=Pre-Hire Forms">
+                      Pre-Hire Forms
+                    </Link>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                    asChild
+                  >
+                    <Link href="/form-generator?form=Evaluation Forms">
+                      Evaluation Forms
+                    </Link>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                    asChild
+                  >
+                    <Link href="/form-generator?form=Post-Hire Forms">
+                      Post-Hire Forms
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

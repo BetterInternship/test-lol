@@ -7,7 +7,7 @@ import {
   handle_api_error,
 } from "@/lib/api";
 import { Job, User, Application } from "@/lib/api-client";
-import { useAuthContext } from "@/app/authctx";
+import { useAuthContext } from "@/app/student/authctx";
 
 // Jobs Hook
 export function useJobs(

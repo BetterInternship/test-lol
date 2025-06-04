@@ -1,4 +1,4 @@
-import { AuthContextTokenStore } from "@/app/authctx";
+import { AuthContextTokenStore } from "@/app/student/authctx";
 
 // HTTP client with auth handling
 class FetchClient {
