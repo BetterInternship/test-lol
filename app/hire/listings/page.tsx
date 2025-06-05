@@ -10,6 +10,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { 
   User, 
   BarChart3, 
@@ -22,7 +38,9 @@ import {
   Building2,
   UserPlus,
   LogOut,
-  FileEdit
+  FileEdit,
+  Plus,
+  X
 } from "lucide-react"
 import Link from "next/link"
 
@@ -183,6 +201,26 @@ const jobListings = [
 export default function MyListings() {
   const [selectedJob, setSelectedJob] = useState(jobListings[0])
   const [searchTerm, setSearchTerm] = useState("")
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    location: "",
+    allowance: "",
+    mode: "",
+    projectType: "",
+    description: "",
+    requirements: [""]
+  })
+  const [addFormData, setAddFormData] = useState({
+    title: "",
+    location: "",
+    allowance: "",
+    mode: "",
+    projectType: "",
+    description: "",
+    requirements: [""]
+  })
   const router = useRouter()
 
   const filteredJobs = jobListings.filter(job =>
@@ -196,6 +234,91 @@ export default function MyListings() {
     
     // Redirect to login page
     router.push('/login')
+  }
+
+  const handleEditJob = (jobId: number) => {
+    // Find the job and populate form data
+    const job = jobListings.find(j => j.id === jobId)
+    if (job) {
+      setEditFormData({
+        title: job.title,
+        location: job.location,
+        allowance: job.allowance,
+        mode: job.mode,
+        projectType: job.projectType,
+        description: job.description,
+        requirements: job.requirements
+      })
+      setIsEditModalOpen(true)
+    }
+  }
+
+  const handleAddJob = () => {
+    // Reset form data and open modal
+    setAddFormData({
+      title: "",
+      location: "",
+      allowance: "",
+      mode: "",
+      projectType: "",
+      description: "",
+      requirements: [""]
+    })
+    setIsAddModalOpen(true)
+  }
+
+  const handleSaveEdit = () => {
+    // Here you would typically save to database
+    console.log('Saving job edit:', editFormData)
+    setIsEditModalOpen(false)
+    // You could update the jobListings array here or refetch from API
+  }
+
+  const handleSaveAdd = () => {
+    // Here you would typically save to database
+    console.log('Adding new job:', addFormData)
+    setIsAddModalOpen(false)
+    // You could add to the jobListings array here or refetch from API
+  }
+
+  const handleRequirementChange = (index: number, value: string) => {
+    const newRequirements = [...editFormData.requirements]
+    newRequirements[index] = value
+    setEditFormData(prev => ({ ...prev, requirements: newRequirements }))
+  }
+
+  const handleAddRequirementChange = (index: number, value: string) => {
+    const newRequirements = [...addFormData.requirements]
+    newRequirements[index] = value
+    setAddFormData(prev => ({ ...prev, requirements: newRequirements }))
+  }
+
+  const addRequirement = () => {
+    setEditFormData(prev => ({ 
+      ...prev, 
+      requirements: [...prev.requirements, ""] 
+    }))
+  }
+
+  const addRequirementToAdd = () => {
+    setAddFormData(prev => ({ 
+      ...prev, 
+      requirements: [...prev.requirements, ""] 
+    }))
+  }
+
+  const removeRequirement = (index: number) => {
+    if (editFormData.requirements.length > 1) {
+      const newRequirements = editFormData.requirements.filter((_, i) => i !== index)
+      setEditFormData(prev => ({ ...prev, requirements: newRequirements }))
+    }
+  }
+
+  const removeAddRequirement = (index: number) => {
+    if (addFormData.requirements.length > 1) {
+      const newRequirements = addFormData.requirements.filter((_, i) => i !== index)
+      setAddFormData(prev => ({ ...prev, requirements: newRequirements }))
+    }
   }
 
   return (
@@ -264,16 +387,25 @@ export default function MyListings() {
         <div className="flex-1 p-6 flex gap-6 overflow-hidden">
           {/* Left Panel - Job List */}
           <div className="w-96 flex flex-col h-full">
-            {/* Search Bar - Fixed */}
-            <div className="relative mb-4 flex-shrink-0">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search listings..."
-                className="pl-10"
-              />
+            {/* Search Bar and Add Button - Fixed */}
+            <div className="flex gap-3 mb-4 flex-shrink-0">
+              <div className="relative flex-1 w-5/6">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search listings..."
+                  className="pl-10"
+                />
+              </div>
+              <Button 
+                className="w-1/6 flex-shrink-0"
+                onClick={handleAddJob}
+                size="icon"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
             </div>
 
             {/* Job Cards - Scrollable */}
@@ -313,8 +445,12 @@ export default function MyListings() {
               <p className="text-sm text-gray-500 mb-4">Listed on {selectedJob.listedDate}</p>
               
               <div className="flex gap-3">
-                <Button variant="outline">Visit</Button>
-                <Button variant="outline">Edit</Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => handleEditJob(selectedJob.id)}
+                >
+                  Edit
+                </Button>
               </div>
             </div>
 
@@ -356,7 +492,7 @@ export default function MyListings() {
                   <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-sm">
-                      <span className="font-medium">Project-Based: </span>
+                      <span className="font-medium">Type: </span>
                       <span className="opacity-80">{selectedJob.projectType || "Not specified"}</span>
                     </p>                  
                   </div>
@@ -385,6 +521,308 @@ export default function MyListings() {
           </div>
         </div>
       </div>
+
+      {/* Edit Job Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Job Listing</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Job Title */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Job Title</Label>
+              <Input
+                id="title"
+                value={editFormData.title}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter job title"
+              />
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                value={editFormData.location}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, location: e.target.value }))}
+                placeholder="Enter location"
+              />
+            </div>
+
+            {/* Row for Allowance, Mode, Project-based */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="allowance">Allowance</Label>
+                <Select 
+                  value={editFormData.allowance} 
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, allowance: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select allowance" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Paid">Paid</SelectItem>
+                    <SelectItem value="Non-paid">Non-paid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="mode">Mode</Label>
+                <Select 
+                  value={editFormData.mode} 
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, mode: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Remote">Remote</SelectItem>
+                    <SelectItem value="Hybrid">Hybrid</SelectItem>
+                    <SelectItem value="In-Person">In-Person</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="projectType">Type</Label>
+                <Select 
+                  value={editFormData.projectType} 
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, projectType: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Flexible">Flexible</SelectItem>
+                    <SelectItem value="Project-Based">Project-Based</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Job Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">Job Description</Label>
+              <Textarea
+                id="description"
+                value={editFormData.description}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Enter detailed job description"
+                rows={6}
+                className="resize-none"
+              />
+            </div>
+
+            {/* Requirements */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Requirements</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addRequirement}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Requirement
+                </Button>
+              </div>
+              
+              <div className="space-y-2">
+                {editFormData.requirements.map((req, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={req}
+                      onChange={(e) => handleRequirementChange(index, e.target.value)}
+                      placeholder={`Requirement ${index + 1}`}
+                      className="flex-1"
+                    />
+                    {editFormData.requirements.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeRequirement(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button onClick={handleSaveEdit} className="flex-1">
+                Save Changes
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsEditModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Job Modal */}
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Job Listing</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            {/* Job Title */}
+            <div className="space-y-2">
+              <Label htmlFor="add-title">Job Title</Label>
+              <Input
+                id="add-title"
+                value={addFormData.title}
+                onChange={(e) => setAddFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter job title"
+              />
+            </div>
+
+            {/* Location */}
+            <div className="space-y-2">
+              <Label htmlFor="add-location">Location</Label>
+              <Input
+                id="add-location"
+                value={addFormData.location}
+                onChange={(e) => setAddFormData(prev => ({ ...prev, location: e.target.value }))}
+                placeholder="Enter location"
+              />
+            </div>
+
+            {/* Row for Allowance, Mode, Type */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="add-allowance">Allowance</Label>
+                <Select 
+                  value={addFormData.allowance} 
+                  onValueChange={(value) => setAddFormData(prev => ({ ...prev, allowance: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select allowance" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Paid">Paid</SelectItem>
+                    <SelectItem value="Non-paid">Non-paid</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="add-mode">Mode</Label>
+                <Select 
+                  value={addFormData.mode} 
+                  onValueChange={(value) => setAddFormData(prev => ({ ...prev, mode: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Remote">Remote</SelectItem>
+                    <SelectItem value="Hybrid">Hybrid</SelectItem>
+                    <SelectItem value="In-Person">In-Person</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="add-projectType">Type</Label>
+                <Select 
+                  value={addFormData.projectType} 
+                  onValueChange={(value) => setAddFormData(prev => ({ ...prev, projectType: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Flexible">Flexible</SelectItem>
+                    <SelectItem value="Project-Based">Project-Based</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Job Description */}
+            <div className="space-y-2">
+              <Label htmlFor="add-description">Job Description</Label>
+              <Textarea
+                id="add-description"
+                value={addFormData.description}
+                onChange={(e) => setAddFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Enter detailed job description"
+                rows={6}
+                className="resize-none"
+              />
+            </div>
+
+            {/* Requirements */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Requirements</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addRequirementToAdd}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Requirement
+                </Button>
+              </div>
+              
+              <div className="space-y-2">
+                {addFormData.requirements.map((req, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={req}
+                      onChange={(e) => handleAddRequirementChange(index, e.target.value)}
+                      placeholder={`Requirement ${index + 1}`}
+                      className="flex-1"
+                    />
+                    {addFormData.requirements.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removeAddRequirement(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button onClick={handleSaveAdd} className="flex-1">
+                Add Job Listing
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAddModalOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
