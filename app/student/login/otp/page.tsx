@@ -23,20 +23,9 @@ export default function OTPPage() {
     const emailParam = searchParams.get('email')
     if (emailParam) {
       setEmail(emailParam);
-      if (typeof window !== 'undefined') {
-        send_otp_request(emailParam).then(r => {
-          if (!r.email) {
-            router.push('/login');
-          } else {
-            // Only generate mock OTP if using mock API
-            if (USE_MOCK_API) {
-              const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
-              setMockOtpCode(mockOTP);
-              console.log(`🔑 Mock OTP for ${emailParam}: ${mockOTP}`);
-            }
-          }
-        });      
-      }
+
+      if (typeof window !== 'undefined')
+        send_otp_request(emailParam).then(r => !r.success && setError(r.message));
     } else {
       // If no email, redirect back to login
       router.push('/login')
@@ -99,7 +88,7 @@ export default function OTPPage() {
       setLoading(true)
       setError("")
       await verify_otp(email, otpString)
-        .then(r => r.token ? (alert('Successfully logged in!'), router.push('/')) : setError('Invalid OTP.'))
+        .then(r => r.success ? router.push('/') : setError('Invalid OTP.'))
         .catch((e) => setError(e))
 
     } catch (err: any) {

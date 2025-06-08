@@ -1,0 +1,2 @@
+Make all api responses extend a common response object with "success" and "message" fields
+Make sure that no matter where you go, loggedin() is called FIRST (try landing on a private page randomly instead of navigating the site EVEN IF you're session is still valid)

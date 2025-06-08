@@ -39,7 +39,7 @@ import { useAuthContext } from "../authctx"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function ProfilePage() {
-  const { isAuthenticated } = useAuthContext()
+  const { is_authenticated } = useAuthContext()
   const { profile, error, updateProfile } = useProfile()
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<any>({ skills: [] })
@@ -56,7 +56,7 @@ export default function ProfilePage() {
   // Fetch files info
   useEffect(() => {
     const fetchFilesInfo = async () => {
-      if (isAuthenticated) {
+      if (is_authenticated()) {
         try {
           const info = await file_service.getFilesInfo()
           setFilesInfo(info)
@@ -67,7 +67,7 @@ export default function ProfilePage() {
     }
     
     fetchFilesInfo()
-  }, [isAuthenticated])
+  }, [is_authenticated()])
 
   // File upload handlers
   const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,10 +184,10 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!is_authenticated()) {
       router.push('/login')
     }
-  }, [isAuthenticated, router])
+  }, [is_authenticated(), router])
 
   useEffect(() => {
     if (profile) {
@@ -251,7 +251,7 @@ export default function ProfilePage() {
     })
   }
 
-  if (!isAuthenticated) {
+  if (!is_authenticated()) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="text-center">
