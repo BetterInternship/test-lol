@@ -1,4 +1,6 @@
 import { APIClient, Job, User, Application, MockInterview } from "./api-client";
+import { USE_MOCK_API } from "./mock/config";
+import { mockApiService } from "./mock/api";
 
 // API configuration and helper funcs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -236,34 +238,52 @@ export const job_service = {
       location?: string;
     } = {}
   ) {
+    if (USE_MOCK_API) {
+      return mockApiService.getJobs(params);
+    }
     return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
   },
 
   async get_job_by_id(job_id: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.getJobById(job_id);
+    }
     return APIClient.get<JobResponse>(
       APIRoute("jobs").r("detail", job_id).build()
     );
   },
 
   async get_recommended_jobs(limit = 10) {
+    if (USE_MOCK_API) {
+      return mockApiService.getRecommendedJobs(limit);
+    }
     return APIClient.get<JobsResponse>(
       APIRoute("jobs").r("recommended").p({ limit }).build()
     );
   },
 
   async get_categories() {
+    if (USE_MOCK_API) {
+      return mockApiService.getCategories();
+    }
     return APIClient.get<CategoriesResponse>(
       APIRoute("jobs").r("categories").build()
     );
   },
 
   async track_view(job_id: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.trackJobView(job_id);
+    }
     return APIClient.post<NoResponse>(
       APIRoute("jobs").r(job_id, "track-view").build()
     );
   },
 
   async get_search_suggestions(params: { [key: string]: any }) {
+    if (USE_MOCK_API) {
+      return mockApiService.getSearchSuggestions(params.q || '');
+    }
     return APIClient.get<SuggestionsResponse>(
       APIRoute("jobs").r("search", "suggestions").p(params).build()
     );

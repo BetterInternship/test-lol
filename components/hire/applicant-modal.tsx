@@ -15,6 +15,7 @@ import {
   X,
   FileText
 } from "lucide-react"
+import CalendarModal from "./calendar-modal"
 
 interface ApplicantModalProps {
   applicant: {
@@ -32,6 +33,7 @@ interface ApplicantModalProps {
 
 export default function ApplicantModal({ applicant, isOpen, onClose }: ApplicantModalProps) {
   const [isResumeOpen, setIsResumeOpen] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   return (
     <>
@@ -58,7 +60,11 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
                     <FileText className="h-4 w-4 mr-2" />
                     View Resume
                   </Button>
-                  <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50">
+                  <Button 
+                    variant="outline" 
+                    className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    onClick={() => setIsCalendarOpen(true)}
+                  >
                     <CalendarIcon className="h-4 w-4 mr-2" />
                     Schedule Interview
                   </Button>
@@ -182,6 +188,13 @@ export default function ApplicantModal({ applicant, isOpen, onClose }: Applicant
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Calendar Modal */}
+      <CalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        applicantName={applicant.name}
+      />
     </>
   )
 }
