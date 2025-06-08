@@ -26,15 +26,15 @@ import { useRouter } from "next/navigation"
 import { useAuthContext } from "../authctx"
 
 export default function ApplicationsPage() {
-  const { isAuthenticated } = useAuthContext()
+  const { is_authenticated } = useAuthContext()
   const { applications, loading, error, refetch } = useApplications()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!is_authenticated()) {
       router.push('/login')
     }
-  }, [isAuthenticated, router])
+  }, [is_authenticated(), router])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -44,7 +44,7 @@ export default function ApplicationsPage() {
     })
   }
 
-  if (!isAuthenticated) {
+  if (!is_authenticated()) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -142,7 +142,7 @@ export default function ApplicationsPage() {
                               </h3>
                               <div className="flex items-center gap-2 text-gray-600 mb-2">
                                 <Building className="w-4 h-4" />
-                                <span className="font-medium">{application.job?.company.name}</span>
+                                <span className="font-medium">{application.job?.employer.name}</span>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                                 <div className="flex items-center gap-1">

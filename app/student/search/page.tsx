@@ -33,15 +33,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import ProfileButton from "@/components/student/profile-button"
-import { useJobs, useJobActions } from "@/hooks/useApi"
+import { useJobs, useJobActions, useSavedJobs } from "@/hooks/useApi"
 import { useAuthContext } from "../authctx"
-import { Application, Job } from "@/lib/api-client"
+import { Application, Job } from "@/lib/db/db.types"
 import Markdown from 'react-markdown'
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams()
-  const { isAuthenticated } = useAuthContext()
+  const { is_authenticated } = useAuthContext()
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeFilter, setActiveFilter] = useState("");
@@ -69,12 +69,9 @@ export default function SearchPage() {
     limit: 50
   })
 
+  const { is_saved, saving, save_job } = useSavedJobs();
   const { 
-    checkSaved, 
-    checkApplied, 
-    saveJob, 
-    applyToJob, 
-    isSaved, 
+    applyToJob,  
     getApplicationStatus 
   } = useJobActions()
 
@@ -118,14 +115,6 @@ export default function SearchPage() {
     }
   }, [jobs, selectedJob])
 
-  // Check saved and applied status for selected job
-  useEffect(() => {
-    if (selectedJob && isAuthenticated) {
-      checkSaved(selectedJob.id)
-      checkApplied(selectedJob.id)
-    }
-  }, [selectedJob, isAuthenticated])
-
   const handleSearch = () => {
     // Apply temp filters to actual filters
     setJobTypeFilter(tempJobTypeFilter)
@@ -136,13 +125,13 @@ export default function SearchPage() {
   }
 
   const handleSave = async (job: Job) => {
-    if (!isAuthenticated) {
+    if (!is_authenticated()) {
       window.location.href = '/login'
       return
     }
 
     try {
-      await saveJob(job.id)
+      await save_job(job.id ?? "")
     } catch (error) {
       console.error('Failed to save job:', error)
     }
@@ -150,7 +139,7 @@ export default function SearchPage() {
 
   const handleApply = () => {
 
-    if (!isAuthenticated) {
+    if (!is_authenticated()) {
       window.location.href = '/login'
       return
     }
@@ -329,10 +318,11 @@ export default function SearchPage() {
                   {selectedJob && (
                     <JobDetails 
                       job={selectedJob} 
+                      saving={saving}
                       onApply={handleApply} 
                       onSave={handleSave}
-                      isSaved={isSaved(selectedJob.id)}
-                      applicationStatus={getApplicationStatus(selectedJob.id)}
+                      isSaved={is_saved(selectedJob.id ?? '')}
+                      applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
                     />
                   )}
                 </div>
@@ -589,7 +579,7 @@ function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; 
       onClick={onClick}
     >
       <h3 className="font-semibold text-gray-800 mb-1">{job.title}</h3>
-      <p className="text-sm text-gray-600 mb-3">{job.company.name}</p>
+      <p className="text-sm text-gray-600 mb-3">{job.employer.name}</p>
 
       <div className="flex flex-wrap gap-2 mb-2">
         {job.shift && (
@@ -626,11 +616,13 @@ function JobDetails({
   onApply, 
   onSave, 
   isSaved, 
+  saving,
   applicationStatus 
 }: { 
   job: Job
   onApply: () => void
   onSave: (job: Job) => void
+  saving: boolean,
   isSaved: boolean
   applicationStatus?: any
 }) {
@@ -648,7 +640,7 @@ function JobDetails({
         <h1 className="text-xl font-bold text-gray-800 mb-1">{job.title}</h1>
         <div className="flex items-center gap-2 mb-2">
           <Building className="w-4 h-4 text-gray-500" />
-          <p className="text-gray-600">{job.company.name}</p>
+          <p className="text-gray-600">{job.employer.name}</p>
         </div>
         <div className="flex items-center gap-2 mb-4">
           <Calendar className="w-4 h-4 text-gray-500" />
@@ -672,8 +664,11 @@ function JobDetails({
             onClick={() => onSave(job)}
             className={isSaved ? "bg-red-50 border-red-200 text-red-600" : ""}
           >
-            <Heart className={`w-4 h-4 mr-2 ${isSaved ? "fill-current" : ""}`} />
-            {isSaved ? "Saved" : "Save"}
+            { isSaved ? (
+                <>
+                  <Heart></Heart>
+                  <span>Saved</span>
+                </>) : saving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -724,7 +719,7 @@ function JobDetails({
         <h3 className="text-lg font-semibold mb-3">Job Description</h3>
         <Markdown>{job.description}</Markdown>
 
-        {job.requirements.length > 0 && (
+        {(job.requirements?.length ?? 0) > 0 && (
           <>
             <h3 className="text-lg font-semibold mb-3">Requirements</h3>
             <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
@@ -735,7 +730,7 @@ function JobDetails({
           </>
         )}
 
-        {job.responsibilities.length > 0 && (
+        {(job.responsibilities?.length ?? 0) > 0 && (
           <>
             <h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
             <ul className="list-disc list-inside text-gray-700 space-y-1">
@@ -746,10 +741,10 @@ function JobDetails({
           </>
         )}
 
-        {job.company.description && (
+        {job.employer.description && (
           <>
             <h3 className="text-lg font-semibold mb-3 mt-6">About the Company</h3>
-            <p className="text-gray-700 leading-relaxed">{job.company.description}</p>
+            <p className="text-gray-700 leading-relaxed">{job.employer.description}</p>
           </>
         )}
       </div>

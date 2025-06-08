@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Upload } from "lucide-react"
 import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
+import { PublicUser } from "@/lib/db/db.types"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -15,7 +16,6 @@ export default function RegisterPage() {
     schoolYear: "",
     portfolioLink: "",
     githubLink: "",
-    currentProgram: "",
     phoneNumber: "",
     linkedinProfile: "",
   })
@@ -79,7 +79,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.fullName || !formData.schoolYear || !formData.currentProgram || !formData.phoneNumber) {
+    if (!formData.fullName || !formData.schoolYear || !formData.phoneNumber) {
       setError("Please fill in all required fields")
       return
     }
@@ -94,20 +94,15 @@ export default function RegisterPage() {
       setError("")
       
       // Create user profile
-      const newUser = {
+      const newUser: Partial<PublicUser> = {
         email,
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        currentProgram: formData.currentProgram,
-        yearLevel: formData.schoolYear,
-        portfolioLink: formData.portfolioLink || '',
-        githubLink: formData.githubLink || '',
-        linkedinProfile: formData.linkedinProfile || '',
-        resumeFile: resumeFile ? resumeFile.name : null,
-        skills: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
+        full_name: formData.fullName,
+        phone_number: formData.phoneNumber,
+        year_level: formData.schoolYear,
+        portfolio_link: formData.portfolioLink || '',
+        github_link: formData.githubLink || '',
+        linkedin_link: formData.linkedinProfile || '',
+        resume: resumeFile ? resumeFile.name : null,
       }
 
       // @ts-ignore
@@ -153,22 +148,6 @@ export default function RegisterPage() {
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 placeholder="Enter Full Name"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            {/* Current Program */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current Program
-              </label>
-              <Input
-                type="text"
-                value={formData.currentProgram}
-                onChange={(e) => handleInputChange('currentProgram', e.target.value)}
-                placeholder="Enter Current Program"
                 className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
                 disabled={loading}
                 required

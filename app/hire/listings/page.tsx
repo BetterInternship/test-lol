@@ -187,7 +187,7 @@ export default function MyListings() {
 
   const filteredJobs = jobListings.filter(job =>
     job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company.toLowerCase().includes(searchTerm.toLowerCase())
+    job.employer.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleLogout = () => {
@@ -374,7 +374,7 @@ export default function MyListings() {
             <div>
               <h3 className="text-lg font-semibold mb-3">Requirements</h3>
               <ul className="space-y-2">
-                {selectedJob.requirements.map((req, index) => (
+                {selectedJob?.requirements?.map((req, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></span>
                     <span className="text-gray-700">{req}</span>

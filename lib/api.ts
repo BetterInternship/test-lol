@@ -1,4 +1,5 @@
-import { APIClient, Job, User, Application, MockInterview } from "./api-client";
+import { Job, PublicUser, Application, SavedJob } from "@/lib/db/db.types";
+import { APIClient } from "./api-client";
 
 // API configuration and helper funcs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -67,14 +68,10 @@ interface ToggleResponse {
   state: boolean;
 }
 
-interface CheckResponse {
-  state: boolean;
-}
-
 // Auth Services
 interface AuthResponse {
-  token: string;
-  user: Partial<User>;
+  success: boolean;
+  user: Partial<PublicUser>;
 }
 
 interface EmailStatusResponse {
@@ -87,7 +84,11 @@ interface SendOTPResponse {
 }
 
 export const auth_service = {
-  async register(user: Partial<User>) {
+  async loggedin() {
+    return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
+  },
+
+  async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("register").build(),
       user
@@ -95,10 +96,13 @@ export const auth_service = {
   },
 
   async verify(user_id: string, key: string) {
-    return APIClient.post<AuthResponse>(APIRoute("auth").r("verify").build(), {
-      user_id,
-      key,
-    });
+    return APIClient.post<AuthResponse>(
+      APIRoute("auth").r("verify-email").build(),
+      {
+        user_id,
+        key,
+      }
+    );
   },
 
   async email_status(email: string) {
@@ -110,7 +114,7 @@ export const auth_service = {
 
   async send_otp_request(email: string) {
     return APIClient.post<SendOTPResponse>(
-      APIRoute("auth").r("send-otp").build(),
+      APIRoute("auth").r("send-new-otp").build(),
       { email }
     );
   },
@@ -136,35 +140,12 @@ export const auth_service = {
 };
 
 // User Services
-interface UserResponse extends Partial<User> {}
+interface UserResponse extends Partial<PublicUser> {}
 
-interface DashboardResponse {
-  applications: {
-    total_applications: number;
-    pending: number;
-    reviewed: number;
-    shortlisted: number;
-    accepted: number;
-    rejected: number;
-  };
-  saved_jobs_count: number;
-  recent_activity: Array<{
-    activity_type: string;
-    created_at: string;
-    metadata?: any;
-  }>;
-  profile_completeness: number;
-}
-
-interface SavedJobsResponse {
-  savedJobs: Array<{
-    savedId: string;
-    savedAt: string;
-    job: Job;
-  }>;
-  totalPages: number;
-  currentPage: number;
-  total: number;
+interface SaveJobResponse {
+  job?: Job;
+  success: boolean;
+  message: string;
 }
 
 export const user_service = {
@@ -172,34 +153,17 @@ export const user_service = {
     return APIClient.get<UserResponse>(APIRoute("users").r("profile").build());
   },
 
-  async update_profile(data: Partial<User>) {
+  async update_profile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(
       APIRoute("users").r("profile").build(),
       data
     );
   },
 
-  async get_dashboard_stats() {
-    return APIClient.get<DashboardResponse>(
-      APIRoute("users").r("dashboard-stats").build()
-    );
-  },
-
-  async get_saved_jobs(page = 1, limit = 10) {
-    return APIClient.get<SavedJobsResponse>(
-      APIRoute("users").r("saved-jobs").p({ page, limit }).build()
-    );
-  },
-
   async save_job(job_id: string) {
-    return APIClient.post<ToggleResponse>(
-      APIRoute("users").r("save-job", job_id).build()
-    );
-  },
-
-  async check_saved(job_id: string) {
-    return APIClient.get<CheckResponse>(
-      APIRoute("users").r("check-saved", job_id).build()
+    return APIClient.post<SaveJobResponse>(
+      APIRoute("users").r("save-job").build(),
+      { id: job_id }
     );
   },
 };
@@ -208,34 +172,19 @@ export const user_service = {
 interface JobResponse extends Job {}
 
 interface JobsResponse {
-  jobs: Job[];
-  totalPages: number;
-  currentPage: number;
-  total: number;
+  jobs?: Job[];
+  success?: boolean;
+  message: string;
 }
 
-type CategoriesResponse = Array<{
-  category: string;
-  count: number;
-}>;
-
-type SuggestionsResponse = Array<{
-  type: "job_title" | "company" | "category";
-  value: string;
-}>;
+interface SavedJobsResponse {
+  jobs: SavedJob[];
+  success?: boolean;
+  message: string;
+}
 
 export const job_service = {
-  async get_jobs(
-    params: {
-      page?: number;
-      limit?: number;
-      category?: string;
-      type?: string;
-      mode?: string;
-      search?: string;
-      location?: string;
-    } = {}
-  ) {
+  async get_jobs(params: { last_update: number }) {
     return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
   },
 
@@ -245,27 +194,9 @@ export const job_service = {
     );
   },
 
-  async get_recommended_jobs(limit = 10) {
-    return APIClient.get<JobsResponse>(
-      APIRoute("jobs").r("recommended").p({ limit }).build()
-    );
-  },
-
-  async get_categories() {
-    return APIClient.get<CategoriesResponse>(
-      APIRoute("jobs").r("categories").build()
-    );
-  },
-
-  async track_view(job_id: string) {
-    return APIClient.post<NoResponse>(
-      APIRoute("jobs").r(job_id, "track-view").build()
-    );
-  },
-
-  async get_search_suggestions(params: { [key: string]: any }) {
-    return APIClient.get<SuggestionsResponse>(
-      APIRoute("jobs").r("search", "suggestions").p(params).build()
+  async get_saved_jobs() {
+    return APIClient.get<SavedJobsResponse>(
+      APIRoute("jobs").r("saved").build()
     );
   },
 };
@@ -283,13 +214,6 @@ interface ApplicationResponse extends Application {}
 interface CreateApplicationResponse {
   message: string;
   application: Application;
-}
-
-interface ApplicationJobResponse {
-  hasApplied: boolean;
-  applicationId?: string;
-  status?: string;
-  appliedAt?: string;
 }
 
 interface ApplicationStatsResponse {
@@ -351,12 +275,6 @@ export const application_service = {
   async withdraw_application(id: string) {
     return APIClient.delete<StatusResponse>(
       APIRoute("applications").r(id).build()
-    );
-  },
-
-  async check_application(job_id: string) {
-    return APIClient.get<ApplicationJobResponse>(
-      APIRoute("applications").r("check", job_id).build()
     );
   },
 
