@@ -10,9 +10,13 @@ export default function ProfileButton() {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
-  const { user, isAuthenticated, logout } = useAuthContext()
+  const { user, recheck_authentication: loggedin, is_authenticated, logout } = useAuthContext()
 
   useEffect(() => {
+    // Check if authed
+    if (!is_authenticated())
+      loggedin()
+
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false)
@@ -32,9 +36,9 @@ export default function ProfileButton() {
   }
 
   const getUserDisplayName = () => {
-    if (user?.fullName) {
+    if (user?.full_name) {
       // Show first name and last initial
-      const names = user.fullName.split(' ')
+      const names = user.full_name.split(' ')
       if (names.length > 1) {
         return `${names[0]} ${names[names.length - 1].charAt(0)}.`
       }
@@ -60,17 +64,17 @@ export default function ProfileButton() {
           <User className="w-4 h-4 text-gray-600" />
         </div>
         <span className="text-gray-700 font-medium">
-          {isAuthenticated ? getUserDisplayName() : "Account"}
+          {is_authenticated() ? getUserDisplayName() : "Account"}
         </span>
         <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-          {isAuthenticated ? (
+          {is_authenticated() ? (
             <div className="py-1">
               <div className="px-4 py-3 border-b border-gray-200">
-                <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
+                <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
               

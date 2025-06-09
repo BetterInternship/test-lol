@@ -3,30 +3,14 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { job_service } from "@/lib/api"
-import { Job } from "@/lib/api-client"
+import { Job } from "@/lib/db/db.types"
+import { useCache } from "@/hooks/use-cache"
+import { useJobs } from "@/hooks/useApi"
 
 export default function JobScroller() {
   const scrollerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const [jobs, setJobs] = useState<Job[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await job_service.get_jobs({ limit: 20 })
-        setJobs(response.jobs)
-      } catch (error) {
-        console.error('Failed to fetch jobs for scroller:', error)
-        // Fallback to sample data if API fails
-        setJobs([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchJobs()
-  }, [])
+  const { jobs, loading } = useJobs();
 
   useEffect(() => {
     if (!scrollerRef.current || !contentRef.current || jobs.length === 0) return
@@ -103,7 +87,7 @@ export default function JobScroller() {
 
   // Generate job listing titles for the scroller
   const jobListings = jobs.map(job => 
-    `${job.title} at ${job.company.name}${job.type === 'Internship' ? ' Intern' : job.type === 'Full-time' ? ' Full-time' : job.type === 'Part-time' ? ' Part-time' : ''}`
+    `${job.title} at ${job.employer?.name}${job.type === 'Internship' ? ' Intern' : job.type === 'Full-time' ? ' Full-time' : job.type === 'Part-time' ? ' Part-time' : ''}`
   )
 
   return (
@@ -125,7 +109,7 @@ export default function JobScroller() {
                 key={index}
                 href={`/search?q=${encodeURIComponent(jobListing)}`}
                 className="flex-shrink-0 border rounded-md px-3 py-2 bg-white hover:bg-gray-50 transition-colors whitespace-nowrap shadow-sm text-sm"
-                title={`${job.title} - ${job.company.name} (${job.location})`}
+                title={`${job.title} - ${job.employer?.name} (${job.location})`}
               >
                 {jobListing}
               </Link>

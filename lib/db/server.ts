@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Database } from "@/lib/supabase/types";
-import { createFetch } from "@/lib/supabase/cache";
+import { Database } from "@/lib/db/old-types";
+import { createFetch } from "@/lib/db/cache";
 
 export async function supabaseServer() {
   const cookieStore = await cookies();
@@ -19,7 +19,7 @@ export async function supabaseServer() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
+              cookieStore.set(name, value, options)
             );
           } catch {}
         },
@@ -29,6 +29,6 @@ export async function supabaseServer() {
           cache: "no-store",
         }),
       },
-    },
+    }
   );
 }

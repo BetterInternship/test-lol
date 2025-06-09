@@ -1,46 +1,24 @@
-import { AuthContextTokenStore } from "@/app/student/authctx";
-
 // HTTP client with auth handling
 class FetchClient {
   private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
-    const token = AuthContextTokenStore.get();
-
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       ...options.headers,
     };
 
-    if (token) {
-      // @ts-ignore
-      headers.Authorization = `Bearer ${token}`;
-    }
-
     const config: RequestInit = {
       ...options,
+      credentials: "include",
       headers,
     };
 
     try {
       const response = await fetch(url, config);
 
-      // Handle 401 unauthorized
-      if (response.status === 401) {
-        AuthContextTokenStore.remove();
-        // Only redirect to login if we're not already on the login page
-        if (
-          typeof window !== "undefined" &&
-          !window.location.pathname.includes("/login")
-        ) {
-          window.location.href = "/login";
-        }
-        throw new Error("Unauthorized");
-      }
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
+        console.warn(`${url}: ${errorData.message || response.status}`);
+        return { error: errorData.message } as T;
       }
 
       const contentType = response.headers.get("content-type");
@@ -78,14 +56,7 @@ class FetchClient {
   }
 
   async uploadFile<T>(url: string, formData: FormData): Promise<T> {
-    const token = AuthContextTokenStore.get();
-
     const headers: HeadersInit = {};
-
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-
     const config: RequestInit = {
       method: "POST",
       headers,
@@ -94,19 +65,6 @@ class FetchClient {
 
     try {
       const response = await fetch(url, config);
-
-      // Handle 401 unauthorized
-      if (response.status === 401) {
-        AuthContextTokenStore.remove();
-        // Only redirect to login if we're not already on the login page
-        if (
-          typeof window !== "undefined" &&
-          !window.location.pathname.includes("/login")
-        ) {
-          window.location.href = "/login";
-        }
-        throw new Error("Unauthorized");
-      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -142,101 +100,6 @@ export interface PaginatedResponse<T> {
   totalPages: number;
   currentPage: number;
   total: number;
-}
-
-// Job types
-export interface Job {
-  id: string;
-  title: string;
-  description: string;
-  requirements: string[];
-  responsibilities: string[];
-  requiresGithub?: boolean;
-  requiresPortfolio?: boolean;
-  location: string;
-  salary?: string;
-  type: "Internship" | "Full-time" | "Part-time" | "Contract";
-  mode: "Remote" | "Hybrid" | "Face to Face";
-  workType: "Remote" | "Hybrid" | "On-site";
-  allowance: "Paid" | "Non-paid";
-  projectType:
-    | "Full-time"
-    | "Part-time"
-    | "Project-Based/Flexible"
-    | "Flexible";
-  shift?: string;
-  category: string;
-  keywords: string[];
-  isActive: boolean;
-  applicationDeadline?: string;
-  startDate?: string;
-  duration?: string;
-  applicationCount: number;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
-  company: Company;
-}
-
-export interface MockInterview {
-  id: string;
-  title: string;
-  questions: {
-    roundNumber: string;
-    difficultyLevel: string;
-    questionText: string;
-    questionNumber: string;
-    subSkills: string[];
-  }[];
-  error?: string;
-}
-
-export interface Company {
-  id: string;
-  name: string;
-  logo?: string;
-  industry?: string;
-  location?: string;
-  website?: string;
-  description?: string;
-}
-
-// User types
-export interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  phoneNumber?: string;
-  currentProgram?: string;
-  idNumber?: string;
-  portfolioLink?: string;
-  githubLink?: string;
-  linkedinProfile?: string;
-  resumeFilename?: string;
-  profilePicture?: string;
-  bio?: string;
-  skills: string[];
-  isActive: boolean;
-  lastLogin?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Application types
-export interface Application {
-  id: string;
-  jobId: string;
-  coverLetter?: string;
-  githubLink?: string;
-  portfolioLink?: string;
-  resumeFilename?: string;
-  status: "pending" | "reviewed" | "shortlisted" | "rejected" | "accepted";
-  appliedAt: string;
-  reviewedAt?: string;
-  reviewNotes?: string;
-  createdAt: string;
-  updatedAt: string;
-  job?: Job;
 }
 
 // Error handling

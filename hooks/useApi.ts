@@ -3,11 +3,11 @@ import {
   job_service,
   user_service,
   application_service,
-  auth_service,
   handle_api_error,
 } from "@/lib/api";
-import { Job, User, Application } from "@/lib/api-client";
+import { Job, PublicUser, Application } from "@/lib/db/db.types";
 import { useAuthContext } from "@/app/student/authctx";
+import { useCache } from "./use-cache";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -22,7 +22,8 @@ export function useJobs(
     industry?: string;
   } = {}
 ) {
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
+  const { get_cache_item, set_cache_item } = useCache();
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,9 +32,19 @@ export function useJobs(
     try {
       setLoading(true);
       setError(null);
-      // Fetch all jobs with a high limit to get everything
-      const response = await job_service.get_jobs({ limit: 1000 });
-      setAllJobs(response.jobs);
+      const response = await job_service.get_jobs({
+        last_update:
+          (get_cache_item("_jobs_last_update") as number) ??
+          new Date(0).getTime(),
+      });
+
+      if (response.success) {
+        if (response.jobs) {
+          setJobs(response.jobs);
+          set_cache_item("_jobs_last_update", new Date().getTime());
+          set_cache_item("_jobs_active_list", response.jobs);
+        } else setJobs(get_cache_item("_jobs_active_list") as Job[]);
+      }
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -53,21 +64,26 @@ export function useJobs(
 
     // Apply type filter
     if (type && type !== "All types") {
-      filtered = filtered.filter(job => {
-        if (type === "Internships") return job.type?.toLowerCase().includes('intern');
-        if (type === "Full-time") return job.type?.toLowerCase().includes('full');
-        if (type === "Part-time") return job.type?.toLowerCase().includes('part');
+      filtered = filtered.filter((job) => {
+        if (type === "Internships")
+          return job.type?.toLowerCase().includes("intern");
+        if (type === "Full-time")
+          return job.type?.toLowerCase().includes("full");
+        if (type === "Part-time")
+          return job.type?.toLowerCase().includes("part");
         return job.type === type;
       });
     }
 
     // Apply mode filter
     if (mode && mode !== "Any location") {
-      filtered = filtered.filter(job => {
+      filtered = filtered.filter((job) => {
         if (mode === "In-Person") {
-          return job.mode?.toLowerCase().includes('face to face') || 
-                 job.mode?.toLowerCase().includes('in-person') ||
-                 job.mode?.toLowerCase().includes('onsite');
+          return (
+            job.mode?.toLowerCase().includes("face to face") ||
+            job.mode?.toLowerCase().includes("in-person") ||
+            job.mode?.toLowerCase().includes("onsite")
+          );
         }
         return job.mode?.toLowerCase().includes(mode.toLowerCase());
       });
@@ -75,15 +91,17 @@ export function useJobs(
 
     // Apply industry filter
     if (industry && industry !== "All industries") {
-      filtered = filtered.filter(job => {
-        return job.company?.industry?.toLowerCase().includes(industry.toLowerCase());
+      filtered = filtered.filter((job) => {
+        return job.company?.industry
+          ?.toLowerCase()
+          .includes(industry.toLowerCase());
       });
     }
 
     // Apply search filter
     if (search && search.trim()) {
       const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter(job => {
+      filtered = filtered.filter((job) => {
         // Search in multiple fields
         const searchableText = [
           job.title,
@@ -93,16 +111,18 @@ export function useJobs(
           job.location,
           ...(job.keywords || []),
           ...(job.requirements || []),
-          ...(job.responsibilities || [])
-        ].join(' ').toLowerCase();
-        
+          ...(job.responsibilities || []),
+        ]
+          .join(" ")
+          .toLowerCase();
+
         return searchableText.includes(searchLower);
       });
     }
 
     // Apply location filter
     if (location && location.trim()) {
-      filtered = filtered.filter(job => 
+      filtered = filtered.filter((job) =>
         job.location?.toLowerCase().includes(location.toLowerCase())
       );
     }
@@ -127,8 +147,7 @@ export function useJobs(
     allJobs: filteredJobs, // Expose filtered jobs for search components
     loading,
     error,
-    pagination,
-    refetch: fetchAllJobs,
+    refetch: fetchJobs,
   };
 }
 
@@ -173,7 +192,7 @@ export function useJob(jobId: string | null) {
 // User Profile Hook
 export function useProfile() {
   const { is_authenticated } = useAuthContext();
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -182,7 +201,7 @@ export function useProfile() {
       setLoading(true);
       setError(null);
       const userData = await user_service.get_profile();
-      setProfile(userData as User);
+      setProfile(userData as PublicUser);
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -199,11 +218,11 @@ export function useProfile() {
     }
   }, [fetchProfile]);
 
-  const updateProfile = async (data: Partial<User>) => {
+  const updateProfile = async (data: Partial<PublicUser>) => {
     try {
       setError(null);
       const updatedProfile = await user_service.update_profile(data);
-      setProfile(updatedProfile as User);
+      setProfile(updatedProfile as PublicUser);
       return updatedProfile;
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -222,56 +241,92 @@ export function useProfile() {
 }
 
 // Saved Jobs Hook
-export function useSavedJobs(page = 1, limit = 10) {
-  const { is_authenticated } = useAuthContext();
-  const [savedJobs, setSavedJobs] = useState<
-    Array<{
-      savedId: string;
-      savedAt: string;
-      job: Job;
-    }>
-  >([]);
+export function useSavedJobs() {
+  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const { get_cache_item, set_cache_item } = useCache();
+  const [savedJobs, setSavedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    totalPages: 0,
-    currentPage: 1,
-    total: 0,
-  });
+
+  const save_job = async (job_id: string) => {
+    try {
+      setSaving(true);
+      const response = await user_service.save_job(job_id);
+
+      // We saved a job
+      if (response.job) {
+        if (!get_cache_item("_jobs_saved_list"))
+          set_cache_item("_jobs_saved_list", []);
+        const new_saved_jobs = [
+          ...(get_cache_item("_jobs_saved_list") as Job[]),
+          { ...response.job },
+        ] as Job[];
+        set_cache_item("_jobs_saved_list", new_saved_jobs);
+        setSavedJobs(new_saved_jobs);
+        console.log(new_saved_jobs);
+
+        // We unsaved a job
+      } else {
+        const new_saved_jobs = (
+          get_cache_item("_jobs_saved_list") as Job[]
+        ).filter((saved_job) => saved_job.id !== job_id);
+        set_cache_item("_jobs_saved_list", new_saved_jobs);
+        setSavedJobs(new_saved_jobs);
+      }
+      return response;
+    } catch (error) {
+      handle_api_error(error);
+      throw error;
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const fetchSavedJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await user_service.get_saved_jobs(page, limit);
-      console.log(response);
-      setSavedJobs(response.savedJobs);
-      setPagination({
-        totalPages: response.totalPages,
-        currentPage: response.currentPage,
-        total: response.total,
-      });
+
+      // Check cache first
+      const cached_saved_jobs = get_cache_item("_jobs_saved_list") as Job[];
+      if (cached_saved_jobs) {
+        await setTimeout(() => {}, 500);
+        setSavedJobs(cached_saved_jobs);
+        return;
+      }
+
+      // Otherwise, pull from server
+      const response = await job_service.get_saved_jobs();
+      if (response.success) {
+        setSavedJobs(response.jobs ?? []);
+        set_cache_item("_jobs_saved_list", response.jobs ?? []);
+      }
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [page, limit]);
+  }, []);
 
   useEffect(() => {
-    if (is_authenticated()) {
-      fetchSavedJobs();
-    } else {
-      setLoading(false);
-    }
+    recheck_authentication().then((r) =>
+      r ? fetchSavedJobs() : setLoading(false)
+    );
   }, [fetchSavedJobs]);
 
+  const is_saved = (job_id: string): boolean => {
+    return savedJobs.some((saved_job) => saved_job.id === job_id);
+  };
+
   return {
+    save_job,
     savedJobs,
     loading,
+    saving,
     error,
-    pagination,
+    is_saved: is_saved,
     refetch: fetchSavedJobs,
   };
 }
@@ -336,21 +391,6 @@ export function useJobActions() {
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Map<string, any>>(new Map());
 
-  const checkSaved = async (jobId: string) => {
-    try {
-      if (!is_authenticated()) return false;
-
-      const response = await user_service.check_saved(jobId);
-      if (response.state) {
-        setSavedJobs((prev) => new Set(prev).add(jobId));
-      }
-      return response.state;
-    } catch (error) {
-      console.error("Error checking saved status:", error);
-      return false;
-    }
-  };
-
   const checkApplied = async (jobId: string) => {
     try {
       if (!is_authenticated()) return null;
@@ -369,25 +409,6 @@ export function useJobActions() {
     } catch (error) {
       console.error("Error checking application status:", error);
       return null;
-    }
-  };
-
-  const saveJob = async (jobId: string) => {
-    try {
-      const response = await user_service.save_job(jobId);
-      if (response.state) {
-        setSavedJobs((prev) => new Set(prev).add(jobId));
-      } else {
-        setSavedJobs((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(jobId);
-          return newSet;
-        });
-      }
-      return response;
-    } catch (error) {
-      handle_api_error(error);
-      throw error;
     }
   };
 
@@ -425,64 +446,9 @@ export function useJobActions() {
   const getApplicationStatus = (jobId: string) => appliedJobs.get(jobId);
 
   return {
-    checkSaved,
     checkApplied,
-    saveJob,
     applyToJob,
     isSaved,
     getApplicationStatus,
-  };
-}
-
-// Dashboard Stats Hook
-export function useDashboardStats() {
-  const [stats, setStats] = useState<{
-    applications: {
-      total_applications: number;
-      pending: number;
-      reviewed: number;
-      shortlisted: number;
-      accepted: number;
-      rejected: number;
-    };
-    saved_jobs_count: number;
-    recent_activity: Array<{
-      activity_type: string;
-      created_at: string;
-      metadata?: any;
-    }>;
-    profile_completeness: number;
-  } | null>(null);
-  const { is_authenticated } = useAuthContext();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await user_service.get_dashboard_stats();
-      setStats(data);
-    } catch (err) {
-      const errorMessage = handle_api_error(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (is_authenticated()) {
-      fetchStats();
-    } else {
-      setLoading(false);
-    }
-  }, [fetchStats]);
-
-  return {
-    stats,
-    loading,
-    error,
-    refetch: fetchStats,
   };
 }

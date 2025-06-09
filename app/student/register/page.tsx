@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Upload } from "lucide-react"
 import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
-import { USE_MOCK_API } from "@/lib/mock/config"
+import { PublicUser } from "@/lib/db/db.types"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -16,7 +16,6 @@ export default function RegisterPage() {
     idNumber: "",
     portfolioLink: "",
     githubLink: "",
-    currentProgram: "",
     phoneNumber: "",
     linkedinProfile: "",
   })
@@ -95,20 +94,16 @@ export default function RegisterPage() {
       setError("")
       
       // Create user profile
-      const newUser = {
+      const newUser: Partial<PublicUser> = {
         email,
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        currentProgram: formData.currentProgram,
-        idNumber: formData.idNumber,
-        portfolioLink: formData.portfolioLink || '',
-        githubLink: formData.githubLink || '',
-        linkedinProfile: formData.linkedinProfile || '',
-        resumeFile: resumeFile ? resumeFile.name : null,
-        skills: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        isActive: true
+        full_name: formData.fullName,
+        phone_number: formData.phoneNumber,
+        year_level: formData.schoolYear,
+        current_program: formData.currentProgram,
+        portfolio_link: formData.portfolioLink || '',
+        github_link: formData.githubLink || '',
+        linkedin_link: formData.linkedinProfile || '',
+        resume: resumeFile ? resumeFile.name : null,
       }
 
       // @ts-ignore
@@ -185,16 +180,16 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* ID Number */}
+            {/* School Year */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID Number
+                Year Level
               </label>
               <Input
                 type="text"
-                value={formData.idNumber}
+                value={formData.yearLevel}
                 onChange={(e) => handleInputChange('idNumber', e.target.value)}
-                placeholder="Enter Student ID Number"
+                placeholder="Enter Year Level"
                 className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
                 disabled={loading}
                 required

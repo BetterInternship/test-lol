@@ -28,20 +28,17 @@ import { useRouter } from "next/navigation"
 import { useAuthContext } from "../authctx"
 
 export default function SavedJobsPage() {
-  const { isAuthenticated } = useAuthContext()
-  const { savedJobs, loading, error, refetch } = useSavedJobs()
-  const { saveJob } = useJobActions()
+  const { is_authenticated, recheck_authentication } = useAuthContext()
+  const { save_job, savedJobs, loading, error, refetch } = useSavedJobs()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
-    }
-  }, [isAuthenticated, router])
+    recheck_authentication().then(r => !r && router.push('/login'))
+  }, [is_authenticated(), router])
 
-  const handleUnsaveJob = async (jobId: string) => {
+  const handleUnsaveJob = async (job_id: string) => {
     try {
-      await saveJob(jobId) // This will toggle the saved status
+      await save_job(job_id) // This will toggle the saved status
       refetch() // Refresh the saved jobs list
     } catch (error) {
       console.error('Failed to unsave job:', error)
@@ -56,7 +53,7 @@ export default function SavedJobsPage() {
     })
   }
 
-  if (!isAuthenticated) {
+  if (!is_authenticated()) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -144,33 +141,29 @@ export default function SavedJobsPage() {
               ) : (
                 <div className="space-y-4">
                   {savedJobs.map((savedJob) => (
-                    <div key={savedJob.savedId} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                    <div key={savedJob.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-3">
                             <div>
                               <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                                {savedJob.job.title}
+                                {savedJob.title}
                               </h3>
                               <div className="flex items-center gap-2 text-gray-600 mb-2">
                                 <Building className="w-4 h-4" />
-                                <span className="font-medium">{savedJob.job.company.name}</span>
+                                <span className="font-medium">{savedJob.employer?.name}</span>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                                 <div className="flex items-center gap-1">
                                   <MapPin className="w-4 h-4" />
-                                  <span>{savedJob.job.location}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="w-4 h-4" />
-                                  <span>Saved {formatDate(savedJob.savedAt)}</span>
+                                  <span>{savedJob.employer?.location}</span>
                                 </div>
                               </div>
                             </div>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleUnsaveJob(savedJob.job.id)}
+                              onClick={() => handleUnsaveJob(savedJob.job?.id ?? '')}
                               className="text-red-600 border-red-200 hover:bg-red-50"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -179,13 +172,13 @@ export default function SavedJobsPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-2 mb-4">
-                            {savedJob.job.mode && (
+                            {savedJob.job?.mode && (
                               <Badge variant="outline">
                                 <Briefcase className="w-3 h-3 mr-1" />
                                 {savedJob.job.mode}
                               </Badge>
                             )}
-                            {savedJob.job.salary && (
+                            {savedJob.job?.salary && (
                               <Badge variant="outline">
                                 <PhilippinePeso className="w-3 h-3 mr-1" />
                                 {savedJob.job.salary}
@@ -194,11 +187,11 @@ export default function SavedJobsPage() {
                           </div>
 
                           <p className="text-gray-700 text-sm mb-4 line-clamp-2">
-                            {savedJob.job.description}
+                            {savedJob.job?.description}
                           </p>
 
                           <div className="flex gap-3">
-                            <Link href={`/search?jobId=${savedJob.job.id}`}>
+                            <Link href={`/search?jobId=${savedJob.job?.id}`}>
                               <Button size="sm">
                                 View Details
                               </Button>
