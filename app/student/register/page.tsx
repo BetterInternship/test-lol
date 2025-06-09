@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Upload } from "lucide-react"
 import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
+import { USE_MOCK_API } from "@/lib/mock/config"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
-    schoolYear: "",
+    idNumber: "",
     portfolioLink: "",
     githubLink: "",
     currentProgram: "",
@@ -79,7 +80,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.fullName || !formData.schoolYear || !formData.currentProgram || !formData.phoneNumber) {
+    if (!formData.fullName || !formData.idNumber || !formData.currentProgram || !formData.phoneNumber) {
       setError("Please fill in all required fields")
       return
     }
@@ -99,7 +100,7 @@ export default function RegisterPage() {
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
         currentProgram: formData.currentProgram,
-        yearLevel: formData.schoolYear,
+        idNumber: formData.idNumber,
         portfolioLink: formData.portfolioLink || '',
         githubLink: formData.githubLink || '',
         linkedinProfile: formData.linkedinProfile || '',
@@ -112,8 +113,16 @@ export default function RegisterPage() {
 
       // @ts-ignore
       await register(newUser)
-        .then(() => { alert('Check your inbox for a verification email.'); router.push('/verify') })
-        .catch((e) => { alert(e) })
+        .then(() => { 
+          if (USE_MOCK_API) {
+            router.push('/login?verified=pending')
+          } else {
+            router.push('/verify')
+          }
+        })
+        .catch((e) => { 
+          setError(e.message || "Registration failed. Please try again.")
+        })
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.")
     } finally {
@@ -175,16 +184,16 @@ export default function RegisterPage() {
               />
             </div>
 
-            {/* School Year */}
+            {/* ID Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                School Year
+                ID Number
               </label>
               <Input
                 type="text"
-                value={formData.schoolYear}
-                onChange={(e) => handleInputChange('schoolYear', e.target.value)}
-                placeholder="Enter School Year"
+                value={formData.idNumber}
+                onChange={(e) => handleInputChange('idNumber', e.target.value)}
+                placeholder="Enter Student ID Number"
                 className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
                 disabled={loading}
                 required

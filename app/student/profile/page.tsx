@@ -22,28 +22,31 @@ import {
   User,
   Mail,
   Phone,
-  GraduationCap as Program,
   Github,
   ExternalLink,
   FileText,
   Camera,
   Trash2,
-  Download
+  Download,
+  Eye,
+  Calendar
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
 import { useProfile } from "@/hooks/useApi"
 import { useRouter } from "next/navigation"
 import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function ProfilePage() {
   const { isAuthenticated } = useAuthContext()
   const { profile, error, updateProfile } = useProfile()
   const [isEditing, setIsEditing] = useState(false)
-  const [editedData, setEditedData] = useState<any>({})
+  const [editedData, setEditedData] = useState<any>({ skills: [] })
   const [saving, setSaving] = useState(false)
   const [filesInfo, setFilesInfo] = useState<any>(null)
-  const [uploading, setUploading] = useState({ resume: false, profilePicture: false })
+  const [uploading, setUploading] = useState<{ resume: boolean; profilePicture: boolean }>({ resume: false, profilePicture: false })
+  const [showEmployerPreview, setShowEmployerPreview] = useState(false)
   const router = useRouter()
   
   // File input refs
@@ -192,10 +195,11 @@ export default function ProfilePage() {
         fullName: profile.fullName || '',
         phoneNumber: profile.phoneNumber || '',
         currentProgram: profile.currentProgram || '',
-        yearLevel: profile.yearLevel || '',
+        idNumber: profile.idNumber || '',
         portfolioLink: profile.portfolioLink || '',
         githubLink: profile.githubLink || '',
         linkedinProfile: profile.linkedinProfile || '',
+        calendlyLink: profile.calendlyLink || '',
         bio: profile.bio || '',
       })
     }
@@ -220,10 +224,11 @@ export default function ProfilePage() {
         fullName: profile.fullName || '',
         phoneNumber: profile.phoneNumber || '',
         currentProgram: profile.currentProgram || '',
-        yearLevel: profile.yearLevel || '',
+        idNumber: profile.idNumber || '',
         portfolioLink: profile.portfolioLink || '',
         githubLink: profile.githubLink || '',
         linkedinProfile: profile.linkedinProfile || '',
+        calendlyLink: profile.calendlyLink || '',
         bio: profile.bio || '',
       })
     }
@@ -278,7 +283,6 @@ export default function ProfilePage() {
     )
   }
 
-
   return (
     <div className="h-screen bg-white overflow-hidden">
       <div className="flex h-full">
@@ -320,10 +324,10 @@ export default function ProfilePage() {
           </div>
           
           {/* Profile Content */}
-          <div className="flex-1 p-8 overflow-y-auto">
+          <div className="flex-1 p-4 overflow-y-auto">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
                 <div className="flex gap-2">
                   {isEditing ? (
                     <>
@@ -343,187 +347,235 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
-                {/* Basic Information */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <User className="w-4 h-4 inline mr-2" />
-                        Full Name
-                      </label>
-                      {isEditing ? (
-                        <Input
-                          value={editedData.fullName}
-                          onChange={(e) => setEditedData({ ...editedData, fullName: e.target.value })}
-                          placeholder="Enter your full name"
-                        />
-                      ) : (
-                        <p className="text-gray-900">{profile.fullName || 'Not provided'}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <Mail className="w-4 h-4 inline mr-2" />
-                        Email
-                      </label>
-                      <p className="text-gray-900">{profile.email}</p>
-                      <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
-                    </div>
+              <div className="grid gap-8 lg:grid-cols-3">
+                {/* Left Column - Basic Info & Links */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Basic Information Card */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <User className="w-4 h-4 text-blue-600" />
+                      </div>
+                      Basic Information
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Full Name */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <User className="w-4 h-4 mr-2 text-gray-500" />
+                          Full Name
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.fullName || ''}
+                            onChange={(e) => setEditedData({ ...editedData, fullName: e.target.value })}
+                            placeholder="Enter your full name"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium text-sm">{profile.fullName || 'Not provided'}</p>
+                        )}
+                      </div>
+                      
+                      {/* Email */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Mail className="w-4 h-4 mr-2 text-gray-500" />
+                          Email
+                        </label>
+                        <p className="text-gray-900 font-medium text-sm">{profile.email}</p>
+                        <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md inline-block">Email cannot be changed</p>
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <Phone className="w-4 h-4 inline mr-2" />
-                        Phone Number
-                      </label>
-                      {isEditing ? (
-                        <Input
-                          value={editedData.phoneNumber}
-                          onChange={(e) => setEditedData({ ...editedData, phoneNumber: e.target.value })}
-                          placeholder="Enter your phone number"
-                        />
-                      ) : (
-                        <p className="text-gray-900">{profile.phoneNumber || 'Not provided'}</p>
-                      )}
-                    </div>
+                      {/* Phone Number */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Phone className="w-4 h-4 mr-2 text-gray-500" />
+                          Phone Number
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.phoneNumber || ''}
+                            onChange={(e) => setEditedData({ ...editedData, phoneNumber: e.target.value })}
+                            placeholder="Enter your phone number"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium text-sm">{profile.phoneNumber || <span className="text-gray-400 italic">Not provided</span>}</p>
+                        )}
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <Program className="w-4 h-4 inline mr-2" />
-                        Current Program
-                      </label>
-                      {isEditing ? (
-                        <Input
-                          value={editedData.currentProgram}
-                          onChange={(e) => setEditedData({ ...editedData, currentProgram: e.target.value })}
-                          placeholder="e.g. BS Computer Science"
-                        />
-                      ) : (
-                        <p className="text-gray-900">{profile.currentProgram || 'Not provided'}</p>
-                      )}
-                    </div>
+                      {/* Current Program */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+                          Current Program
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.currentProgram || ''}
+                            onChange={(e) => setEditedData({ ...editedData, currentProgram: e.target.value })}
+                            placeholder="e.g. BS Computer Science"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium text-sm">{profile.currentProgram || <span className="text-gray-400 italic">Not provided</span>}</p>
+                        )}
+                      </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-                      {isEditing ? (
-                        <select
-                          value={editedData.yearLevel}
-                          onChange={(e) => setEditedData({ ...editedData, yearLevel: e.target.value })}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2"
-                        >
-                          <option value="">Select year level</option>
-                          <option value="1st Year">1st Year</option>
-                          <option value="2nd Year">2nd Year</option>
-                          <option value="3rd Year">3rd Year</option>
-                          <option value="4th Year">4th Year</option>
-                          <option value="Graduate">Graduate</option>
-                        </select>
-                      ) : (
-                        <p className="text-gray-900">{profile.yearLevel || 'Not provided'}</p>
-                      )}
+                      {/* ID Number */}
+                      <div className="space-y-2 md:col-span-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Badge className="w-4 h-4 mr-2 text-gray-500" />
+                          ID Number
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.idNumber || ''}
+                            onChange={(e) => setEditedData({ ...editedData, idNumber: e.target.value })}
+                            placeholder="Enter your student ID number"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 max-w-xs text-sm"
+                          />
+                        ) : (
+                          <p className="text-gray-900 font-medium font-mono text-sm">{profile.idNumber || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Professional Links Card */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <ExternalLink className="w-4 h-4 text-green-600" />
+                      </div>
+                      Professional Links
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Portfolio */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
+                          Portfolio Website
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.portfolioLink || ''}
+                            onChange={(e) => setEditedData({ ...editedData, portfolioLink: e.target.value })}
+                            placeholder="https://yourportfolio.com"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <div>
+                            {profile.portfolioLink ? (
+                              <a href={profile.portfolioLink} target="_blank" rel="noopener noreferrer" 
+                                 className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
+                                <ExternalLink className="w-3 h-3 mr-1" />
+                                {profile.portfolioLink}
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 italic text-sm">Not provided</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* GitHub */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Github className="w-4 h-4 mr-2 text-gray-500" />
+                          GitHub Profile
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.githubLink || ''}
+                            onChange={(e) => setEditedData({ ...editedData, githubLink: e.target.value })}
+                            placeholder="https://github.com/yourusername"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <div>
+                            {profile.githubLink ? (
+                              <a href={profile.githubLink} target="_blank" rel="noopener noreferrer" 
+                                 className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
+                                <Github className="w-3 h-3 mr-1" />
+                                {profile.githubLink}
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 italic text-sm">Not provided</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* LinkedIn */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
+                          LinkedIn Profile
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.linkedinProfile || ''}
+                            onChange={(e) => setEditedData({ ...editedData, linkedinProfile: e.target.value })}
+                            placeholder="https://linkedin.com/in/yourusername"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <div>
+                            {profile.linkedinProfile ? (
+                              <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" 
+                                 className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
+                                <ExternalLink className="w-3 h-3 mr-1" />
+                                {profile.linkedinProfile}
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 italic text-sm">Not provided</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Calendly */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                          Calendly Link
+                        </label>
+                        {isEditing ? (
+                          <Input
+                            value={editedData.calendlyLink || ''}
+                            onChange={(e) => setEditedData({ ...editedData, calendlyLink: e.target.value })}
+                            placeholder="https://calendly.com/yourusername"
+                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                          />
+                        ) : (
+                          <div>
+                            {profile.calendlyLink ? (
+                              <a href={profile.calendlyLink} target="_blank" rel="noopener noreferrer" 
+                                 className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
+                                <Calendar className="w-3 h-3 mr-1" />
+                                {profile.calendlyLink}
+                              </a>
+                            ) : (
+                              <span className="text-gray-400 italic text-sm">Not provided</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Links */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Professional Links</h2>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <ExternalLink className="w-4 h-4 inline mr-2" />
-                        Portfolio Website
-                      </label>
-                      {isEditing ? (
-                        <Input
-                          value={editedData.portfolioLink}
-                          onChange={(e) => setEditedData({ ...editedData, portfolioLink: e.target.value })}
-                          placeholder="https://yourportfolio.com"
-                        />
-                      ) : (
-                        <p className="text-gray-900">
-                          {profile.portfolioLink ? (
-                            <a href={profile.portfolioLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              {profile.portfolioLink}
-                            </a>
-                          ) : (
-                            'Not provided'
-                          )}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <Github className="w-4 h-4 inline mr-2" />
-                        GitHub Profile
-                      </label>
-                      {isEditing ? (
-                        <Input
-                          value={editedData.githubLink}
-                          onChange={(e) => setEditedData({ ...editedData, githubLink: e.target.value })}
-                          placeholder="https://github.com/yourusername"
-                        />
-                      ) : (
-                        <p className="text-gray-900">
-                          {profile.githubLink ? (
-                            <a href={profile.githubLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              {profile.githubLink}
-                            </a>
-                          ) : (
-                            'Not provided'
-                          )}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <ExternalLink className="w-4 h-4 inline mr-2" />
-                        LinkedIn Profile
-                      </label>
-                      {isEditing ? (
-                        <Input
-                          value={editedData.linkedinProfile}
-                          onChange={(e) => setEditedData({ ...editedData, linkedinProfile: e.target.value })}
-                          placeholder="https://linkedin.com/in/yourusername"
-                        />
-                      ) : (
-                        <p className="text-gray-900">
-                          {profile.linkedinProfile ? (
-                            <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              {profile.linkedinProfile}
-                            </a>
-                          ) : (
-                            'Not provided'
-                          )}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">About</h2>
-                  {isEditing ? (
-                    <textarea
-                      value={editedData.bio}
-                      onChange={(e) => setEditedData({ ...editedData, bio: e.target.value })}
-                      placeholder="Tell us about yourself..."
-                      className="w-full border border-gray-300 rounded-md px-3 py-2 h-24 resize-none"
-                      maxLength={500}
-                    />
-                  ) : (
-                    <p className="text-gray-900">{profile.bio || 'No bio provided'}</p>
-                  )}
-                </div>
-
-                {/* Resume */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Resume</h2>
+                {/* Right Column - Resume */}
+                <div className="lg:col-span-1">
+                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow sticky top-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                        <FileText className="w-4 h-4 text-orange-600" />
+                      </div>
+                      Resume
+                    </h2>
                   
                   {/* Hidden file inputs */}
                   <input
@@ -543,139 +595,221 @@ export default function ProfilePage() {
 
                   {filesInfo?.resume ? (
                     // Resume exists
-                    <div className="border-2 border-green-200 bg-green-50 rounded-lg p-6">
+                    <div className="border border-green-200 bg-green-50 rounded-md p-3">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <FileText className="w-8 h-8 text-green-600" />
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-5 h-5 text-green-600" />
                           <div>
-                            <p className="font-medium text-green-800">Resume uploaded</p>
-                            <p className="text-sm text-green-600">
+                            <p className="text-sm font-medium text-green-800">Resume uploaded</p>
+                            <p className="text-xs text-green-600">
                               {filesInfo.resume.filename?.split('/').pop()?.substring(14) || 'resume.pdf'}
                             </p>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => window.open(filesInfo.resume.url, '_blank')}
-                            className="text-green-600 border-green-600 hover:bg-green-100"
+                            className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                           >
-                            <Download className="w-4 h-4 mr-1" />
-                            View
+                            <Download className="w-3 h-3" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => resumeInputRef.current?.click()}
                             disabled={uploading.resume}
-                            className="text-blue-600 border-blue-600 hover:bg-blue-100"
+                            className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
                           >
-                            <Upload className="w-4 h-4 mr-1" />
-                            {uploading.resume ? 'Uploading...' : 'Replace'}
+                            <Upload className="w-3 h-3" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={handleDeleteResume}
-                            className="text-red-600 border-red-600 hover:bg-red-100"
+                            className="text-red-600 border-red-600 hover:bg-red-100 h-7 px-2"
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
                     </div>
                   ) : (
                     // No resume
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-600 mb-3">
-                        {uploading.resume ? 'Uploading resume...' : 'No resume uploaded'}
+                    <div className="border border-dashed border-gray-300 rounded-md p-4 text-center">
+                      <FileText className="w-6 h-6 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 mb-2">
+                        {uploading.resume ? 'Uploading...' : 'No resume uploaded'}
                       </p>
                       <Button
                         onClick={() => resumeInputRef.current?.click()}
                         disabled={uploading.resume}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 h-8"
                       >
-                        <Upload className="w-4 h-4 mr-2" />
+                        <Upload className="w-3 h-3 mr-1" />
                         {uploading.resume ? 'Uploading...' : 'Upload Resume'}
                       </Button>
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-1">
                         PDF, DOC, or DOCX files up to 5MB
                       </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Profile Picture */}
-                {/* <div>
-                  <h2 className="text-xl font-semibold mb-4">Profile Picture</h2>
-                  
-                  {filesInfo?.profilePicture ? (
-                    // Profile picture exists
-                    <div className="border-2 border-green-200 bg-green-50 rounded-lg p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-green-300">
-                            <img 
-                              src={filesInfo.profilePicture.url} 
-                              alt="Profile" 
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div>
-                            <p className="font-medium text-green-800">Profile picture uploaded</p>
-                            <p className="text-sm text-green-600">Click to view or replace</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => profilePictureInputRef.current?.click()}
-                            disabled={uploading.profilePicture}
-                            className="text-blue-600 border-blue-600 hover:bg-blue-100"
-                          >
-                            <Camera className="w-4 h-4 mr-1" />
-                            {uploading.profilePicture ? 'Uploading...' : 'Replace'}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleDeleteProfilePicture}
-                            className="text-red-600 border-red-600 hover:bg-red-100"
-                          >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    // No profile picture
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-600 mb-3">
-                        {uploading.profilePicture ? 'Uploading profile picture...' : 'No profile picture uploaded'}
-                      </p>
+                    )}
+                    
+                    {/* Employer Preview Button */}
+                    <div className="mt-6">
                       <Button
-                        onClick={() => profilePictureInputRef.current?.click()}
-                        disabled={uploading.profilePicture}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        variant="outline"
+                        onClick={() => setShowEmployerPreview(true)}
+                        className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                       >
-                        <Camera className="w-4 h-4 mr-2" />
-                        {uploading.profilePicture ? 'Uploading...' : 'Upload Photo'}
+                        <Eye className="w-4 h-4 mr-2" />
+                        Preview
                       </Button>
-                      <p className="text-xs text-gray-500 mt-2">
-                        JPEG, PNG, GIF, or WebP files up to 2MB
-                      </p>
                     </div>
-                  )}
-                </div> */}
+                  </div>
+                  
+                  {/* About Card - Moved here under Resume */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow mt-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                      <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                        <FileText className="w-4 h-4 text-purple-600" />
+                      </div>
+                      About
+                    </h2>
+                    {isEditing ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={editedData.bio || ''}
+                          onChange={(e) => setEditedData({ ...editedData, bio: e.target.value })}
+                          placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
+                          className="w-full border border-gray-200 rounded-lg px-4 py-3 h-32 resize-none focus:border-blue-500 focus:ring-blue-500 text-gray-900"
+                          maxLength={500}
+                        />
+                        <p className="text-xs text-gray-500 text-right">{(editedData.bio || '').length}/500 characters</p>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <p className="text-gray-900 leading-relaxed break-words overflow-wrap-anywhere text-sm">
+                          {profile.bio || (
+                            <span className="text-gray-400 italic">
+                              No bio provided. Click "Edit Profile" to add information about yourself.
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Employer Preview Modal */}
+      <AnimatePresence>
+        {showEmployerPreview && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setShowEmployerPreview(false)}
+          >
+            <motion.div 
+              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EmployerPreviewModal profile={profile} filesInfo={filesInfo} onClose={() => setShowEmployerPreview(false)} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; filesInfo: any; onClose: () => void }) {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  return (
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span className="text-sm text-gray-600">Applied 16H 58M ago</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </Button>
+      </div>
+
+      {/* Student Name */}
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile?.fullName || 'John Doe'}</h1>
+      <p className="text-gray-600 mb-8">Applying for DevOps • Full-Time</p>
+
+      {/* Academic Background Section */}
+      <div className="bg-blue-50 rounded-lg p-4 mb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="bg-blue-100 rounded-full p-2">
+            <GraduationCap className="w-5 h-5 text-blue-600" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900">Academic Background</h2>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">Program</h3>
+            <p className="text-gray-900 font-medium">{profile?.currentProgram || 'Computer Science'}</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">Institution</h3>
+            <p className="text-gray-900 font-medium">DLSU Manila</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">Minor</h3>
+            <p className="text-gray-900 font-medium">Data Science</p>
+          </div>
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">Year Level</h3>
+            <p className="text-gray-900 font-medium">2nd Year Student</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Cover Letter and About sections */}
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">Cover Letter</h2>
+          <p className="text-gray-700 text-sm leading-relaxed">
+            {profile?.bio || "I wish to work with you guys more effectively. I have an efficiency with Robotics so I think I would be best suited here."}
+          </p>
+        </div>
+        
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">About the Candidate</h2>
+          <p className="text-gray-700 text-sm leading-relaxed">
+            Your Momma lmaoooo did you actually think that I would apply to your bad company?
+          </p>
         </div>
       </div>
     </div>

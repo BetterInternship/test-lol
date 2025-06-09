@@ -90,6 +90,9 @@ interface SendOTPResponse {
 
 export const auth_service = {
   async register(user: Partial<User>) {
+    if (USE_MOCK_API) {
+      return mockApiService.register(user);
+    }
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("register").build(),
       user
@@ -97,6 +100,9 @@ export const auth_service = {
   },
 
   async verify(user_id: string, key: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.verify(user_id, key);
+    }
     return APIClient.post<AuthResponse>(APIRoute("auth").r("verify").build(), {
       user_id,
       key,
@@ -104,6 +110,9 @@ export const auth_service = {
   },
 
   async email_status(email: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.emailStatus(email);
+    }
     return APIClient.post<EmailStatusResponse>(
       APIRoute("auth").r("email-status").build(),
       { email }
@@ -111,6 +120,9 @@ export const auth_service = {
   },
 
   async send_otp_request(email: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.sendOtpRequest(email);
+    }
     return APIClient.post<SendOTPResponse>(
       APIRoute("auth").r("send-otp").build(),
       { email }
@@ -118,6 +130,9 @@ export const auth_service = {
   },
 
   async verify_otp(email: string, otp: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.verifyOtp(email, otp);
+    }
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("verify-otp").build(),
       { email, otp }
@@ -133,6 +148,9 @@ export const auth_service = {
       window.location.href = "/";
     }
 
+    if (USE_MOCK_API) {
+      return Promise.resolve();
+    }
     return APIClient.post<NoResponse>(APIRoute("auth").r("logout").build());
   },
 };
@@ -171,10 +189,16 @@ interface SavedJobsResponse {
 
 export const user_service = {
   async get_profile() {
+    if (USE_MOCK_API) {
+      return mockApiService.getProfile();
+    }
     return APIClient.get<UserResponse>(APIRoute("users").r("profile").build());
   },
 
   async update_profile(data: Partial<User>) {
+    if (USE_MOCK_API) {
+      return mockApiService.updateProfile(data);
+    }
     return APIClient.put<UserResponse>(
       APIRoute("users").r("profile").build(),
       data
@@ -182,24 +206,36 @@ export const user_service = {
   },
 
   async get_dashboard_stats() {
+    if (USE_MOCK_API) {
+      return mockApiService.getDashboardStats();
+    }
     return APIClient.get<DashboardResponse>(
       APIRoute("users").r("dashboard-stats").build()
     );
   },
 
   async get_saved_jobs(page = 1, limit = 10) {
+    if (USE_MOCK_API) {
+      return mockApiService.getSavedJobs(page, limit);
+    }
     return APIClient.get<SavedJobsResponse>(
       APIRoute("users").r("saved-jobs").p({ page, limit }).build()
     );
   },
 
   async save_job(job_id: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.saveJob(job_id);
+    }
     return APIClient.post<ToggleResponse>(
       APIRoute("users").r("save-job", job_id).build()
     );
   },
 
   async check_saved(job_id: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.checkSaved(job_id);
+    }
     return APIClient.get<CheckResponse>(
       APIRoute("users").r("check-saved", job_id).build()
     );
@@ -329,6 +365,9 @@ export const application_service = {
       status?: string;
     } = {}
   ) {
+    if (USE_MOCK_API) {
+      return mockApiService.getApplications(params);
+    }
     return APIClient.get<ApplicationsResponse>(
       APIRoute("applications").p(params).build()
     );
@@ -341,6 +380,9 @@ export const application_service = {
     portfolioLink?: string;
     resumeFilename?: string;
   }) {
+    if (USE_MOCK_API) {
+      return mockApiService.createApplication(data);
+    }
     return APIClient.post<CreateApplicationResponse>(
       APIRoute("applications").build(),
       data
@@ -348,6 +390,9 @@ export const application_service = {
   },
 
   async get_application_by_id(id: string): Promise<ApplicationResponse> {
+    if (USE_MOCK_API) {
+      return mockApiService.getApplicationById(id);
+    }
     return APIClient.get<ApplicationResponse>(
       APIRoute("applications").r(id).build()
     );
@@ -362,6 +407,9 @@ export const application_service = {
       resumeFilename?: string;
     }
   ) {
+    if (USE_MOCK_API) {
+      return mockApiService.updateApplication(id, data);
+    }
     return APIClient.put<ApplicationResponse>(
       APIRoute("applications").r(id).build(),
       data
@@ -369,18 +417,27 @@ export const application_service = {
   },
 
   async withdraw_application(id: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.withdrawApplication(id);
+    }
     return APIClient.delete<StatusResponse>(
       APIRoute("applications").r(id).build()
     );
   },
 
   async check_application(job_id: string) {
+    if (USE_MOCK_API) {
+      return mockApiService.checkApplication(job_id);
+    }
     return APIClient.get<ApplicationJobResponse>(
       APIRoute("applications").r("check", job_id).build()
     );
   },
 
   async get_stats() {
+    if (USE_MOCK_API) {
+      return mockApiService.getApplicationStats();
+    }
     return APIClient.get<ApplicationStatsResponse>(
       APIRoute("applications").r("stats").build()
     );
@@ -415,6 +472,9 @@ interface FileUploadResponse {
 
 export const file_service = {
   async upload_resume(file: File) {
+    if (USE_MOCK_API) {
+      return mockApiService.uploadResume(file);
+    }
     const formData = new FormData();
     formData.append("resume", file);
 
@@ -425,6 +485,9 @@ export const file_service = {
   },
 
   async upload_profile_picture(file: File) {
+    if (USE_MOCK_API) {
+      return mockApiService.uploadProfilePicture(file);
+    }
     const formData = new FormData();
     formData.append("profilePicture", file);
 
@@ -435,12 +498,18 @@ export const file_service = {
   },
 
   async delete_resume() {
+    if (USE_MOCK_API) {
+      return mockApiService.deleteResume();
+    }
     return APIClient.delete<StatusResponse>(
       APIRoute("files").r("resume").build()
     );
   },
 
   async delete_profile_picture() {
+    if (USE_MOCK_API) {
+      return mockApiService.deleteProfilePicture();
+    }
     return APIClient.delete<StatusResponse>(
       APIRoute("files").r("profile-picture").build()
     );

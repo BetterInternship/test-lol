@@ -151,6 +151,8 @@ export interface Job {
   description: string;
   requirements: string[];
   responsibilities: string[];
+  requiresGithub?: boolean;
+  requiresPortfolio?: boolean;
   location: string;
   salary?: string;
   type: "Internship" | "Full-time" | "Part-time" | "Contract";
@@ -206,7 +208,7 @@ export interface User {
   fullName: string;
   phoneNumber?: string;
   currentProgram?: string;
-  yearLevel?: string;
+  idNumber?: string;
   portfolioLink?: string;
   githubLink?: string;
   linkedinProfile?: string;

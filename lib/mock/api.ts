@@ -1,11 +1,190 @@
-import { mockJobs, mockCategories, mockCompanies, mockApplications, mockUsers } from './data';
+import { mockJobs, mockCategories, mockCompanies, mockApplications, userHelpers } from './data';
 import { Job, User, Application } from '../api-client';
 
 // Simulate API delays
 const delay = (ms: number = 500) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Generate a mock JWT token
+const generateMockToken = (email: string) => {
+  return `mock_jwt_token_${email}_${Date.now()}`;
+};
+
+// Helper function to normalize pricing and add frequency
+const normalizePricing = (salary: string | null | undefined, showNormalized: boolean = true) => {
+  if (!salary || salary.trim() === '') {
+    return "Not specified";
+  }
+
+  // Extract numeric value from salary string
+  const numericValue = parseFloat(salary.replace(/[^\d.]/g, ''));
+  
+  if (isNaN(numericValue)) {
+    return "Not specified";
+  }
+
+  let frequency = '';
+  let normalizedText = '';
+
+  // Format number with proper decimal places
+  const formatNumber = (num: number) => {
+    if (num % 1 === 0) {
+      // If it's a whole number, don't show decimals
+      return num.toLocaleString();
+    } else {
+      // Show 2 decimal places
+      return num.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+  };
+
+  if (numericValue > 1000) {
+    frequency = '/month';
+    if (showNormalized) {
+      // Calculate normalized daily rate (assuming 22 working days per month)
+      const dailyRate = numericValue / 22;
+      normalizedText = ` (≈ PHP ${formatNumber(dailyRate)}/day)`;
+    }
+  } else {
+    frequency = '/day';
+    if (showNormalized) {
+      // Calculate normalized monthly rate (assuming 22 working days per month)
+      const monthlyRate = numericValue * 22;
+      normalizedText = ` (≈ PHP ${formatNumber(monthlyRate)}/month)`;
+    }
+  }
+
+  return `PHP ${formatNumber(numericValue)}${frequency}${normalizedText}`;
+};
+
+// Helper function to handle empty fields
+const handleEmptyField = (value: any): string => {
+  if (!value || value === null || value === undefined || 
+      (typeof value === 'string' && value.trim() === '')) {
+    return "Not specified";
+  }
+  return value;
+};
+
+// Helper function to process job data for listings (no normalized pricing)
+const processJobDataForListing = (job: any) => ({
+  ...job,
+  salary: normalizePricing(job.salary, false), // Don't show normalized pricing in listings
+  location: handleEmptyField(job.location),
+  mode: handleEmptyField(job.mode),
+  workType: handleEmptyField(job.workType),
+  allowance: handleEmptyField(job.allowance),
+  projectType: handleEmptyField(job.projectType),
+  duration: handleEmptyField(job.duration),
+  company: job.company ? {
+    ...job.company,
+    name: handleEmptyField(job.company.name),
+    industry: handleEmptyField(job.company.industry),
+    location: handleEmptyField(job.company.location),
+    website: handleEmptyField(job.company.website),
+    description: handleEmptyField(job.company.description)
+  } : null
+});
+
+// Helper function to process job data for detailed view (with normalized pricing)
+const processJobDataForDetail = (job: any) => ({
+  ...job,
+  salary: normalizePricing(job.salary, true), // Show normalized pricing in detail view
+  location: handleEmptyField(job.location),
+  mode: handleEmptyField(job.mode),
+  workType: handleEmptyField(job.workType),
+  allowance: handleEmptyField(job.allowance),
+  projectType: handleEmptyField(job.projectType),
+  duration: handleEmptyField(job.duration),
+  company: job.company ? {
+    ...job.company,
+    name: handleEmptyField(job.company.name),
+    industry: handleEmptyField(job.company.industry),
+    location: handleEmptyField(job.company.location),
+    website: handleEmptyField(job.company.website),
+    description: handleEmptyField(job.company.description)
+  } : null
+});
+
 // Mock API responses to match your real API structure
 export const mockApiService = {
+  // Auth API - Simplified for mock mode
+  async register(user: Partial<User>) {
+    await delay();
+
+    // Validate email
+    if (!user.email || !user.email.includes('@dlsu.edu.ph')) {
+      throw new Error("Please use a valid DLSU email address");
+    }
+
+    // Check if email already registered
+    if (userHelpers.isEmailRegistered(user.email)) {
+      throw new Error("User with this email already exists");
+    }
+
+    // Register the email and create user data
+    const newUser = userHelpers.registerEmail(user.email);
+    const token = generateMockToken(user.email);
+
+    console.log(`Registered new user: ${user.email}`);
+
+    return {
+      token,
+      user: newUser
+    };
+  },
+
+  async emailStatus(email: string) {
+    await delay();
+    
+    const isRegistered = userHelpers.isEmailRegistered(email);
+    console.log(`Email status for ${email}: existing=${isRegistered}, verified=${isRegistered}`);
+    
+    return {
+      existing_user: isRegistered,
+      verified_user: isRegistered // In simplified mock, registered = verified
+    };
+  },
+
+  async login(email: string) {
+    await delay();
+    
+    if (!userHelpers.isEmailRegistered(email)) {
+      throw new Error("User not found");
+    }
+
+    const user = userHelpers.getUserByEmail(email);
+    const token = generateMockToken(email);
+    
+    console.log(`User logged in: ${email}`);
+
+    return {
+      token,
+      user
+    };
+  },
+
+  // Simplified - no OTP needed
+  async sendOtpRequest(email: string) {
+    await delay();
+    return { email };
+  },
+
+  async verifyOtp(email: string, otp: string) {
+    await delay();
+    // In simplified mock, any OTP works
+    return await this.login(email);
+  },
+
+  async verify(userId: string, key: string) {
+    await delay();
+    // In simplified mock, verification always works
+    return {
+      token: generateMockToken('verified'),
+      user: userHelpers.getUserByEmail('john.doe@students.dlsu.edu.ph')
+    };
+  },
   // Jobs API
   async getJobs(params: {
     page?: number;
@@ -58,8 +237,11 @@ export const mockApiService = {
     const endIndex = startIndex + limit;
     const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
 
+    // Process jobs for listings (no normalized pricing)
+    const processedJobs = paginatedJobs.map(processJobDataForListing);
+
     return {
-      jobs: paginatedJobs,
+      jobs: processedJobs,
       totalPages: Math.ceil(filteredJobs.length / limit),
       currentPage: page,
       total: filteredJobs.length
@@ -72,12 +254,13 @@ export const mockApiService = {
     if (!job) {
       throw new Error('Job not found');
     }
-    return job;
+    return processJobDataForDetail(job); // Show normalized pricing in detail view
   },
 
   async getRecommendedJobs(limit: number = 10) {
     await delay();
-    return mockJobs.slice(0, limit);
+    const jobs = mockJobs.slice(0, limit);
+    return jobs.map(processJobDataForListing); // No normalized pricing for recommendations
   },
 
   async getCategories() {
@@ -122,7 +305,7 @@ export const mockApiService = {
     await delay();
     return {
       token: "mock_jwt_token_12345",
-      user: { ...mockUsers[0], ...user }
+      user: { id: "user-1", email: user.email, ...user }
     };
   },
 
@@ -130,7 +313,7 @@ export const mockApiService = {
     await delay();
     return {
       token: "mock_jwt_token_12345",
-      user: mockUsers[0]
+      user: userHelpers.getUserByEmail(email) || { id: "user-1", email }
     };
   },
 
@@ -138,19 +321,35 @@ export const mockApiService = {
     await delay();
     return {
       token: "mock_jwt_token_12345",
-      user: mockUsers[0]
+      user: userHelpers.getUserByEmail(email) || { id: "user-1", email }
     };
   },
 
   // User API
   async getProfile() {
     await delay();
-    return mockUsers[0];
+    // Return a default mock user profile
+    return userHelpers.getUserByEmail('john.doe@students.dlsu.edu.ph') || {
+      id: "user-1",
+      email: "mock@students.dlsu.edu.ph",
+      fullName: "Mock User",
+      phoneNumber: "+639123456789",
+      currentProgram: "BS Computer Science",
+      idNumber: "12112345",
+      skills: ["React", "JavaScript"],
+      bio: "Mock user profile",
+      isActive: true,
+      isVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   },
 
   async updateProfile(data: Partial<User>) {
     await delay();
-    return { ...mockUsers[0], ...data };
+    // In simplified mock, just return the updated data
+    const currentProfile = await this.getProfile();
+    return { ...currentProfile, ...data, updatedAt: new Date().toISOString() };
   },
 
   async getDashboardStats() {
@@ -186,7 +385,7 @@ export const mockApiService = {
     const savedJobs = mockJobs.slice(0, 3).map((job, index) => ({
       savedId: `saved-${index + 1}`,
       savedAt: "2025-06-05T10:00:00.000000+00:00",
-      job
+      job: processJobDataForListing(job) // Use listing format for saved jobs too
     }));
 
     return {
@@ -242,7 +441,7 @@ export const mockApiService = {
     await delay();
     const newApp = {
       id: `app-${Date.now()}`,
-      userId: mockUsers[0].id,
+      userId: "user-1",
       status: "pending",
       appliedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

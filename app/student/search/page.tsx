@@ -27,13 +27,20 @@ import {
   Heart,
   Send,
   CheckCircle,
+  Clipboard,
+  Wifi,
+  Globe,
+  Users2,
+  AlertTriangle,
+  User,
+  Filter
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import ProfileButton from "@/components/student/profile-button"
-import { useJobs, useJobActions } from "@/hooks/useApi"
+import { useJobs, useJobActions, useProfile } from "@/hooks/useApi"
 import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/api-client"
 import Markdown from 'react-markdown'
@@ -42,23 +49,64 @@ export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuthContext()
+  const { profile } = useProfile()
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [activeFilter, setActiveFilter] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [jobTypeFilter, setJobTypeFilter] = useState("All types")
   const [locationFilter, setLocationFilter] = useState("Any location")
+  const [industryFilter, setIndustryFilter] = useState("All industries")
   const [tempJobTypeFilter, setTempJobTypeFilter] = useState("All types")
   const [tempLocationFilter, setTempLocationFilter] = useState("Any location")
+  const [tempIndustryFilter, setTempIndustryFilter] = useState("All industries")
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showFilterModal, setShowFilterModal] = useState(false)
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
   const [applicationData, setApplicationData] = useState({
-    githubLink: "",
-    portfolioLink: "",
     coverLetter: ""
   })
   const [applying, setApplying] = useState(false)
+
+  // Check if profile is complete
+  const isProfileComplete = () => {
+    if (!profile) return false
+    return !!(profile.fullName && profile.phoneNumber && profile.currentProgram && profile.idNumber)
+  }
+
+  const getMissingFields = () => {
+    if (!profile) return []
+    const missing = []
+    if (!profile.fullName) missing.push('Full Name')
+    if (!profile.phoneNumber) missing.push('Phone Number')
+    if (!profile.currentProgram) missing.push('Current Program')
+    if (!profile.idNumber) missing.push('ID Number')
+    return missing
+  }
+
+  // Check if job-specific requirements are met
+  const areJobRequirementsMet = () => {
+    if (!selectedJob || !profile) return false
+    
+    let requirementsMet = true
+    if (selectedJob.requiresGithub && !profile.githubLink) requirementsMet = false
+    if (selectedJob.requiresPortfolio && !profile.portfolioLink) requirementsMet = false
+    
+    return requirementsMet
+  }
+
+  const getMissingJobRequirements = () => {
+    if (!selectedJob || !profile) return []
+    const missing = []
+    if (selectedJob.requiresGithub && !profile.githubLink) missing.push('GitHub Link')
+    if (selectedJob.requiresPortfolio && !profile.portfolioLink) missing.push('Portfolio Link')
+    return missing
+  }
+
+  const isFullyReadyToApply = () => {
+    return isProfileComplete() && areJobRequirementsMet()
+  }
 
   // API hooks
   const { jobs, loading: jobs_loading, error: jobs_error, refetch } = useJobs({
@@ -66,6 +114,7 @@ export default function SearchPage() {
     category: selectedCategory || undefined,
     type: jobTypeFilter !== "All types" ? jobTypeFilter : undefined,
     mode: locationFilter !== "Any location" ? locationFilter : undefined,
+    industry: industryFilter !== "All industries" ? industryFilter : undefined,
     limit: 50
   })
 
@@ -90,14 +139,12 @@ export default function SearchPage() {
     const jobId = searchParams.get('jobId')    
     setSelectedCategory(category)
     
-    // Set filters from URL params
-    if (jobType) {
+    // Set filters from URL params only if not already set
+    if (jobType && jobTypeFilter === "All types") {
       setJobTypeFilter(jobType)
-      setTempJobTypeFilter(jobType)
     }
-    if (location) {
+    if (location && locationFilter === "Any location") {
       setLocationFilter(location)
-      setTempLocationFilter(location)
     }
 
     // If jobId is specified, we'll select it once jobs are loaded
@@ -118,6 +165,15 @@ export default function SearchPage() {
     }
   }, [jobs, selectedJob])
 
+  // Initialize temp filters when modal opens
+  useEffect(() => {
+    if (showFilterModal) {
+      setTempJobTypeFilter(jobTypeFilter)
+      setTempLocationFilter(locationFilter)
+      setTempIndustryFilter(industryFilter)
+    }
+  }, [showFilterModal, jobTypeFilter, locationFilter, industryFilter])
+
   // Check saved and applied status for selected job
   useEffect(() => {
     if (selectedJob && isAuthenticated) {
@@ -130,9 +186,9 @@ export default function SearchPage() {
     // Apply temp filters to actual filters
     setJobTypeFilter(tempJobTypeFilter)
     setLocationFilter(tempLocationFilter)
+    setIndustryFilter(tempIndustryFilter)
     
-    // The useJobs hook will automatically refetch with new params
-    refetch()
+    // No need to refetch - filtering happens automatically via useJobs hook
   }
 
   const handleSave = async (job: Job) => {
@@ -172,8 +228,8 @@ export default function SearchPage() {
       setApplying(true)
       applyToJob(selectedJob.id, {
         coverLetter: applicationData.coverLetter || undefined,
-        githubLink: applicationData.githubLink || undefined,
-        portfolioLink: applicationData.portfolioLink || undefined,
+        githubLink: profile?.githubLink || undefined,
+        portfolioLink: profile?.portfolioLink || undefined,
       }).then(response => {
         setLastApplication(response.application);
         setShowApplicationModal(false)
@@ -190,7 +246,9 @@ export default function SearchPage() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSearch()
+      // Apply current search term along with active filters
+      // The useJobs hook will automatically filter based on both search and filters
+      e.currentTarget.blur()
     }
   }
 
@@ -242,54 +300,15 @@ export default function SearchPage() {
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Top bar with Profile button */}
-          <div className="flex justify-end p-4">
+          <div className="flex justify-end p-4 bg-white border-b">
             <ProfileButton />
-          </div>
-          
-          {/* Search Bar */}
-          <div className="px-6 pb-6 border-b bg-white">
-            <div className="flex items-stretch gap-3 p-3 border rounded-lg bg-white shadow-sm">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Job Title, keywords, Company"
-                  className="pl-10 w-full h-12 bg-white"
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <FilterDropdown
-                  name="jobType"
-                  options={["Internships", "Full-time", "Part-time", "All types"]}
-                  value={tempJobTypeFilter}
-                  activeFilter={activeFilter}
-                  onChange={setTempJobTypeFilter}
-                  onClick={() => { setActiveFilter("jobType") }}
-                />
-                <span className="text-gray-300">|</span>
-                <FilterDropdown
-                  name="location"
-                  options={["Face to Face", "Remote", "Hybrid", "Any location"]}
-                  value={tempLocationFilter}
-                  activeFilter={activeFilter}
-                  onChange={setTempLocationFilter}
-                  onClick={() => { setActiveFilter("location") }}
-                />
-                <Button onClick={handleSearch} className="h-12 px-6">
-                  Find Jobs
-                </Button>
-              </div>
-            </div>
           </div>
 
           {/* Search Results */}
           <div className="flex-1 flex overflow-hidden">
             {jobs_loading ? (
               /* Loading State */
-              <div className="w-full flex items-center justify-center p-6">
+              <div className="w-full flex items-center justify-center">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
                   <p className="text-gray-600">Loading jobs...</p>
@@ -297,7 +316,7 @@ export default function SearchPage() {
               </div>
             ) : jobs.length === 0 ? (
               /* No Results */
-              <div className="w-full flex items-center justify-center p-6">
+              <div className="w-full flex items-center justify-center">
                 <div className="text-center text-gray-500">
                   <p>No jobs found</p>
                   <p className="text-sm mt-2">Try adjusting your search criteria</p>
@@ -306,11 +325,31 @@ export default function SearchPage() {
             ) : (
               <>
                 {/* Job List */}
-                <div className="w-1/3 border-r overflow-y-auto p-6">
-                  <div className="mb-4">
-                    <p className="text-sm text-gray-600">
-                      Showing {jobs.length} job{jobs.length !== 1 ? 's' : ''}
-                    </p>
+                <div className="w-1/3 border-r overflow-y-auto p-4">
+                  {/* Compact Search Bar */}
+                  <div className="flex gap-2 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value)
+                          // No need for setTimeout anymore - filtering is instant
+                        }}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Search listings..."
+                        className="pl-10 w-full h-10 bg-white border border-gray-300 rounded-lg"
+                      />
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowFilterModal(true)}
+                      className="h-10 px-3 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
                   </div>
                   <div className="space-y-4">
                     {jobs.map((job) => (
@@ -372,71 +411,131 @@ export default function SearchPage() {
               </div>
 
               <div className="space-y-4">
+                {/* Profile Completeness Check */}
+                {!isProfileComplete() ? (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-yellow-800 mb-2">Profile Incomplete</h3>
+                        <p className="text-sm text-yellow-700 mb-3">
+                          Please complete your profile before applying. Missing:
+                        </p>
+                        <ul className="text-sm text-yellow-700 list-disc list-inside mb-3">
+                          {getMissingFields().map((field, index) => (
+                            <li key={index}>{field}</li>
+                          ))}
+                        </ul>
+                        <Button
+                          onClick={() => router.push('/profile')}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm h-9"
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          Complete Profile
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : !areJobRequirementsMet() ? (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-medium text-orange-800 mb-2">Missing Job Requirements</h3>
+                        <p className="text-sm text-orange-700 mb-3">
+                          This job requires additional profile information:
+                        </p>
+                        <ul className="text-sm text-orange-700 list-disc list-inside mb-3">
+                          {getMissingJobRequirements().map((field, index) => (
+                            <li key={index}>{field}</li>
+                          ))}
+                        </ul>
+                        <Button
+                          onClick={() => router.push('/profile')}
+                          className="bg-orange-600 hover:bg-orange-700 text-white text-sm h-9"
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          Update Profile
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <h3 className="font-medium text-green-800">Profile Data Ready</h3>
+                    </div>
+                    <div className="text-sm text-green-700 space-y-1">
+                      <p>✓ Name: {profile?.fullName}</p>
+                      <p>✓ Phone: {profile?.phoneNumber}</p>
+                      <p>✓ Program: {profile?.currentProgram}</p>
+                      <p>✓ ID: {profile?.idNumber}</p>
+                      {selectedJob?.requiresGithub && (
+                        <p className={profile?.githubLink ? "" : "text-red-600"}>
+                          {profile?.githubLink ? "✓" : "✗"} GitHub: {profile?.githubLink ? "Included" : "Required but missing"}
+                        </p>
+                      )}
+                      {selectedJob?.requiresPortfolio && (
+                        <p className={profile?.portfolioLink ? "" : "text-red-600"}>
+                          {profile?.portfolioLink ? "✓" : "✗"} Portfolio: {profile?.portfolioLink ? "Included" : "Required but missing"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Resume and Links Section */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.1, duration: 0.3 }}
                 >
-                  <label className="block text-sm font-medium mb-2">Resume</label>
+                  <label className="block text-sm font-medium mb-2">Resume and Links</label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <p className="text-sm text-gray-600">Resume from profile will be attached</p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">Resume from profile will be attached</p>
+                      {(selectedJob?.requiresGithub || selectedJob?.requiresPortfolio) && (
+                        <div className="text-xs text-gray-500">
+                          <p>Job requirements:</p>
+                          {selectedJob?.requiresGithub && (
+                            <p>• GitHub Link {profile?.githubLink ? "(✓ included)" : "(✗ missing)"}</p>
+                          )}
+                          {selectedJob?.requiresPortfolio && (
+                            <p>• Portfolio Link {profile?.portfolioLink ? "(✓ included)" : "(✗ missing)"}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
 
+                {/* Cover Letter Section */}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.2, duration: 0.3 }}
-                >
-                  <label className="block text-sm font-medium mb-2">GitHub Link</label>
-                  <Input
-                    value={applicationData.githubLink}
-                    onChange={(e) => setApplicationData({...applicationData, githubLink: e.target.value})}
-                    placeholder="https://github.com/yourusername"
-                    className="w-full"
-                    disabled={applying}
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                >
-                  <label className="block text-sm font-medium mb-2">Portfolio Link</label>
-                  <Input
-                    value={applicationData.portfolioLink}
-                    onChange={(e) => setApplicationData({...applicationData, portfolioLink: e.target.value})}
-                    placeholder="https://yourportfolio.com"
-                    className="w-full"
-                    disabled={applying}
-                  />
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
                 >
                   <label className="block text-sm font-medium mb-2">Cover Letter</label>
                   <textarea
                     value={applicationData.coverLetter}
                     onChange={(e) => setApplicationData({...applicationData, coverLetter: e.target.value})}
                     placeholder="Tell the company why you're interested in this position..."
-                    className="w-full h-24 p-3 border border-gray-300 rounded-lg resize-none"
+                    className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:border-blue-500 focus:ring-blue-500"
                     disabled={applying}
                   />
                 </motion.div>
 
+                {/* Submit Button */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.3 }}
+                  transition={{ delay: 0.3, duration: 0.3 }}
                 >
                   <Button 
                     onClick={handleSubmitApplication}
                     className="w-full h-12 bg-black text-white hover:bg-gray-800 rounded-lg font-medium"
-                    disabled={applying}
+                    disabled={applying || !isFullyReadyToApply()}
                   >
                     {applying ? (
                       <div className="flex items-center gap-2">
@@ -450,6 +549,14 @@ export default function SearchPage() {
                       </div>
                     )}
                   </Button>
+                  {!isFullyReadyToApply() && (
+                    <p className="text-xs text-gray-500 text-center mt-2">
+                      {!isProfileComplete() 
+                        ? "Complete your profile to submit applications"
+                        : "Update profile with required links for this job"
+                      }
+                    </p>
+                  )}
                 </motion.div>
               </div>
             </motion.div>
@@ -525,6 +632,167 @@ export default function SearchPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Filter Modal */}
+      <AnimatePresence>
+        {showFilterModal && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setActiveFilter("")}
+          >
+            <motion.div 
+              className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl"
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowFilterModal(false)}
+                  className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Job Type</label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setActiveFilter(activeFilter === "jobType" ? "" : "jobType")}
+                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
+                    >
+                      {tempJobTypeFilter}
+                    </button>
+                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "jobType" ? "rotate-180" : ""}`} />
+                    
+                    {activeFilter === "jobType" && (
+                      <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                        {["All types", "Internships", "Full-time", "Part-time"].map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              setTempJobTypeFilter(option)
+                              setActiveFilter("")
+                            }}
+                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
+                              tempJobTypeFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Work Mode</label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setActiveFilter(activeFilter === "workMode" ? "" : "workMode")}
+                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
+                    >
+                      {tempLocationFilter}
+                    </button>
+                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "workMode" ? "rotate-180" : ""}`} />
+                    
+                    {activeFilter === "workMode" && (
+                      <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                        {["Any location", "In-Person", "Remote", "Hybrid"].map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              setTempLocationFilter(option)
+                              setActiveFilter("")
+                            }}
+                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
+                              tempLocationFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Industry</label>
+                  <div className="relative">
+                    <button
+                      onClick={() => setActiveFilter(activeFilter === "industry" ? "" : "industry")}
+                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
+                    >
+                      {tempIndustryFilter}
+                    </button>
+                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "industry" ? "rotate-180" : ""}`} />
+                    
+                    {activeFilter === "industry" && (
+                      <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                        {["All industries", "Technology", "Creative Services", "Consumer Goods"].map((option) => (
+                          <button
+                            key={option}
+                            onClick={() => {
+                              setTempIndustryFilter(option)
+                              setActiveFilter("")
+                            }}
+                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
+                              tempIndustryFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
+                            }`}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-6">
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      // Clear temp filters but keep search term
+                      setTempJobTypeFilter("All types")
+                      setTempLocationFilter("Any location")
+                      setTempIndustryFilter("All industries")
+                    }}
+                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+                  >
+                    Clear Filters
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // Apply filters along with current search term
+                      setJobTypeFilter(tempJobTypeFilter)
+                      setLocationFilter(tempLocationFilter)
+                      setIndustryFilter(tempIndustryFilter)
+                      setShowFilterModal(false)
+                      // Search term is already active in the useJobs hook
+                    }}
+                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -580,6 +848,21 @@ function CategoryLink({ icon, label, category }: { icon: React.ReactNode; label:
   )
 }
 
+function getModeIcon(mode: string) {
+  if (!mode) return <Briefcase className="w-3 h-3 mr-1" />
+  
+  const modeStr = mode.toLowerCase()
+  if (modeStr.includes('remote')) {
+    return <Wifi className="w-3 h-3 mr-1" />
+  } else if (modeStr.includes('hybrid')) {
+    return <Globe className="w-3 h-3 mr-1" />
+  } else if (modeStr.includes('in-person') || modeStr.includes('face to face') || modeStr.includes('onsite')) {
+    return <Users2 className="w-3 h-3 mr-1" />
+  }
+  
+  return <Briefcase className="w-3 h-3 mr-1" />
+}
+
 function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; onClick: () => void }) {
   return (
     <div
@@ -612,13 +895,40 @@ function JobCard({ job, isSelected, onClick }: { job: Job; isSelected: boolean; 
         )}
         {job.mode && (
           <Badge variant="outline" className="text-xs">
-            <Briefcase className="w-3 h-3 mr-1" />
+            {getModeIcon(job.mode)}
             {job.mode}
           </Badge>
          )}
       </div>
     </div>
   )
+}
+
+function getModeIconForDetails(mode: string) {
+  if (!mode) return <Briefcase className="w-4 h-4 text-gray-500" />
+  
+  const modeStr = mode.toLowerCase()
+  if (modeStr.includes('remote')) {
+    return <Wifi className="w-4 h-4 text-gray-500" />
+  } else if (modeStr.includes('hybrid')) {
+    return <Globe className="w-4 h-4 text-gray-500" />
+  } else if (modeStr.includes('in-person') || modeStr.includes('face to face') || modeStr.includes('onsite')) {
+    return <Users2 className="w-4 h-4 text-gray-500" />
+  }
+  
+  return <Briefcase className="w-4 h-4 text-gray-500" />
+}
+
+function getEmploymentType(job: Job): string {
+  // Logic to determine employment type based on job data
+  if (job.type) {
+    if (job.type.toLowerCase().includes('intern')) return 'Project Based'
+    if (job.type.toLowerCase().includes('full')) return 'Full-Time'
+    if (job.type.toLowerCase().includes('part')) return 'Part-Time'
+  }
+  
+  // Default fallback - could be based on other job properties
+  return 'Flexible'
 }
 
 function JobDetails({ 
@@ -644,7 +954,7 @@ function JobDetails({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-6 border-b">
+      <div className="p-4 border-b">
         <h1 className="text-xl font-bold text-gray-800 mb-1">{job.title}</h1>
         <div className="flex items-center gap-2 mb-2">
           <Building className="w-4 h-4 text-gray-500" />
@@ -672,13 +982,12 @@ function JobDetails({
             onClick={() => onSave(job)}
             className={isSaved ? "bg-red-50 border-red-200 text-red-600" : ""}
           >
-            <Heart className={`w-4 h-4 mr-2 ${isSaved ? "fill-current" : ""}`} />
             {isSaved ? "Saved" : "Save"}
           </Button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-4">
         <h2 className="text-lg font-semibold mb-4">Job Details</h2>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
@@ -691,7 +1000,7 @@ function JobDetails({
           </div>
 
           <div className="flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-gray-500" />
+            {getModeIconForDetails(job.mode)}
             <div>
               <p className="text-sm">
                 <span className="font-medium">Mode: </span>
@@ -711,11 +1020,11 @@ function JobDetails({
           </div>
 
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-gray-500" />
+            <Clipboard className="w-4 h-4 text-gray-500" />
             <div>
               <p className="text-sm">
-                <span className="font-medium">Applicants: </span>
-                <span className="opacity-80">{job.applicationCount || "0"} applicants</span>
+                <span className="font-medium">Employment Type: </span>
+                <span className="opacity-80">{getEmploymentType(job)}</span>
               </p>
             </div>
           </div>

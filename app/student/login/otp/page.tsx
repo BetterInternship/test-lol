@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useAuthContext } from "@/app/student/authctx"
+import { USE_MOCK_API } from "@/lib/mock/config"
 
 export default function OTPPage() {
   const { send_otp_request, verify_otp } = useAuthContext();
@@ -13,6 +14,7 @@ export default function OTPPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [resending, setResending] = useState(false)
+  const [mockOtpCode, setMockOtpCode] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -21,13 +23,25 @@ export default function OTPPage() {
     const emailParam = searchParams.get('email')
     if (emailParam) {
       setEmail(emailParam);
-      if (typeof window !== 'undefined')
-        send_otp_request(emailParam).then(r => !r.email && router.push('/login'));      
+      if (typeof window !== 'undefined') {
+        send_otp_request(emailParam).then(r => {
+          if (!r.email) {
+            router.push('/login');
+          } else {
+            // Only generate mock OTP if using mock API
+            if (USE_MOCK_API) {
+              const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
+              setMockOtpCode(mockOTP);
+              console.log(`🔑 Mock OTP for ${emailParam}: ${mockOTP}`);
+            }
+          }
+        });      
+      }
     } else {
       // If no email, redirect back to login
       router.push('/login')
     }
-  }, [searchParams, router])
+  }, [searchParams, router, send_otp_request])
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return // Only allow single digit
@@ -155,6 +169,21 @@ export default function OTPPage() {
             <p className="text-gray-600">We've sent a verification code to</p>
             <p className="text-gray-900 font-medium">{email}</p>
           </div>
+
+          {/* Mock OTP Display */}
+          {mockOtpCode && USE_MOCK_API && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h4 className="text-sm font-semibold text-green-700 mb-2">🔧 Mock System - Your OTP Code:</h4>
+              <div className="text-center">
+                <span className="text-2xl font-mono font-bold text-green-800 bg-green-100 px-4 py-2 rounded-lg">
+                  {mockOtpCode}
+                </span>
+              </div>
+              <p className="text-xs text-green-600 text-center mt-2">
+                Copy this code into the fields below
+              </p>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (

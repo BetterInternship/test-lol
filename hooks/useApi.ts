@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   job_service,
   user_service,
@@ -9,7 +9,7 @@ import {
 import { Job, User, Application } from "@/lib/api-client";
 import { useAuthContext } from "@/app/student/authctx";
 
-// Jobs Hook
+// Jobs Hook with Client-Side Filtering
 export function useJobs(
   params: {
     page?: number;
@@ -19,46 +19,116 @@ export function useJobs(
     mode?: string;
     search?: string;
     location?: string;
+    industry?: string;
   } = {}
 ) {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    totalPages: 0,
-    currentPage: 1,
-    total: 0,
-  });
 
-  const fetchJobs = useCallback(async () => {
+  // Load all jobs initially
+  const fetchAllJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await job_service.get_jobs(params);
-      setJobs(response.jobs);
-      setPagination({
-        totalPages: response.totalPages,
-        currentPage: response.currentPage,
-        total: response.total,
-      });
+      // Fetch all jobs with a high limit to get everything
+      const response = await job_service.get_jobs({ limit: 1000 });
+      setAllJobs(response.jobs);
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(params)]);
+  }, []);
 
   useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
+    fetchAllJobs();
+  }, [fetchAllJobs]);
+
+  // Client-side filtering
+  const filteredJobs = useMemo(() => {
+    let filtered = [...allJobs];
+    const { type, mode, search, location, industry } = params;
+
+    // Apply type filter
+    if (type && type !== "All types") {
+      filtered = filtered.filter(job => {
+        if (type === "Internships") return job.type?.toLowerCase().includes('intern');
+        if (type === "Full-time") return job.type?.toLowerCase().includes('full');
+        if (type === "Part-time") return job.type?.toLowerCase().includes('part');
+        return job.type === type;
+      });
+    }
+
+    // Apply mode filter
+    if (mode && mode !== "Any location") {
+      filtered = filtered.filter(job => {
+        if (mode === "In-Person") {
+          return job.mode?.toLowerCase().includes('face to face') || 
+                 job.mode?.toLowerCase().includes('in-person') ||
+                 job.mode?.toLowerCase().includes('onsite');
+        }
+        return job.mode?.toLowerCase().includes(mode.toLowerCase());
+      });
+    }
+
+    // Apply industry filter
+    if (industry && industry !== "All industries") {
+      filtered = filtered.filter(job => {
+        return job.company?.industry?.toLowerCase().includes(industry.toLowerCase());
+      });
+    }
+
+    // Apply search filter
+    if (search && search.trim()) {
+      const searchLower = search.toLowerCase().trim();
+      filtered = filtered.filter(job => {
+        // Search in multiple fields
+        const searchableText = [
+          job.title,
+          job.description,
+          job.company?.name,
+          job.company?.industry,
+          job.location,
+          ...(job.keywords || []),
+          ...(job.requirements || []),
+          ...(job.responsibilities || [])
+        ].join(' ').toLowerCase();
+        
+        return searchableText.includes(searchLower);
+      });
+    }
+
+    // Apply location filter
+    if (location && location.trim()) {
+      filtered = filtered.filter(job => 
+        job.location?.toLowerCase().includes(location.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [allJobs, params]);
+
+  // Pagination
+  const { page = 1, limit = 10 } = params;
+  const startIndex = (page - 1) * limit;
+  const endIndex = startIndex + limit;
+  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
+  const pagination = {
+    totalPages: Math.ceil(filteredJobs.length / limit),
+    currentPage: page,
+    total: filteredJobs.length,
+  };
 
   return {
-    jobs,
+    jobs: paginatedJobs,
+    allJobs: filteredJobs, // Expose filtered jobs for search components
     loading,
     error,
     pagination,
-    refetch: fetchJobs,
+    refetch: fetchAllJobs,
   };
 }
 

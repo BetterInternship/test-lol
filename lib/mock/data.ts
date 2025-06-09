@@ -74,8 +74,10 @@ export const mockJobs = [
       "Write clean, maintainable code",
       "Test and debug applications"
     ],
+    requiresGithub: true,
+    requiresPortfolio: true,
     location: "Makati City",
-    salary: "PHP 300/Day",
+    salary: "300.50",
     type: "Internship",
     mode: "Hybrid",
     workType: "Hybrid",
@@ -107,8 +109,10 @@ export const mockJobs = [
       "Participate in code reviews",
       "Support API development"
     ],
+    requiresGithub: true,
+    requiresPortfolio: false,
     location: "Taguig City",
-    salary: "PHP 350/Day",
+    salary: "350",
     type: "Internship", 
     mode: "Remote",
     workType: "Remote",
@@ -138,12 +142,14 @@ export const mockJobs = [
       "Report generation", 
       "Dashboard creation"
     ],
+    requiresGithub: false,
+    requiresPortfolio: false,
     location: "BGC, Taguig",
-    salary: "PHP 320/Day",
+    salary: "320",
     type: "Internship",
     mode: "Remote",
     workType: "Remote", 
-    allowance: "Paid",
+    allowance: "",
     projectType: "Flexible",
     keywords: ["data", "analyst", "statistics", "sql", "remote", "intern"],
     isActive: true,
@@ -153,167 +159,6 @@ export const mockJobs = [
     viewCount: 89,
     createdAt: "2025-06-08T17:58:09.599385+00:00",
     updatedAt: "2025-06-08T17:58:09.599385+00:00",
-    company: mockCompanies[2]
-  },
-  {
-    id: "job-4",
-    title: "Software Engineer",
-    description: "Develop enterprise software solutions using cutting-edge technologies. Join a team of experienced engineers working on products used by millions of users worldwide.",
-    requirements: [
-      "CS degree",
-      "5+ years experience",
-      "C#/.NET expertise"
-    ],
-    responsibilities: [
-      "Software development",
-      "Architecture design",
-      "Code mentoring"
-    ],
-    location: "BGC, Taguig",
-    salary: "PHP 65,000/Month",
-    type: "Full-time",
-    mode: "Face to Face",
-    workType: "On-site",
-    allowance: "Paid",
-    projectType: "Full-time",
-    keywords: ["software", "engineer", "full", "time", "microsoft", "development"],
-    isActive: true,
-    applicationDeadline: null,
-    startDate: null,
-    duration: "Permanent",
-    viewCount: 156,
-    createdAt: "2025-06-08T17:58:09.777895+00:00",
-    updatedAt: "2025-06-08T17:58:09.777895+00:00",
-    company: mockCompanies[3]
-  },
-  {
-    id: "job-5",
-    title: "UI/UX Design Intern",
-    description: "We are looking for a creative UI/UX Design Intern to contribute to our design projects. This is an excellent opportunity to gain practical experience in user interface and experience design.",
-    requirements: [
-      "Understanding of design principles",
-      "Familiarity with Figma or Adobe XD",
-      "Attention to detail",
-      "Team collaboration skills"
-    ],
-    responsibilities: [
-      "Support UI/UX design initiatives",
-      "Learn industry best practices", 
-      "Assist with user research",
-      "Create wireframes and prototypes"
-    ],
-    location: "Pasig City",
-    salary: "PHP 280/Day",
-    type: "Internship",
-    mode: "Hybrid",
-    workType: "Hybrid",
-    allowance: "Non-paid",
-    projectType: "Project-Based/Flexible",
-    keywords: ["ui", "ux", "design", "figma", "adobe", "wireframe", "prototype", "user", "interface", "experience"],
-    isActive: true,
-    applicationDeadline: null,
-    startDate: null,
-    duration: "3 months",
-    viewCount: 73,
-    createdAt: "2025-06-08T17:58:09.966579+00:00",
-    updatedAt: "2025-06-08T17:58:09.966579+00:00",
-    company: mockCompanies[4]
-  },
-  {
-    id: "job-6",
-    title: "Marketing Intern",
-    description: "Support marketing campaigns and brand management initiatives while learning from industry professionals. Get hands-on experience with digital marketing, content creation, and brand strategy.",
-    requirements: [
-      "Marketing or Business student",
-      "Creative thinking",
-      "MS Office proficiency"
-    ],
-    responsibilities: [
-      "Campaign assistance",
-      "Market research",
-      "Content creation support"
-    ],
-    location: "BGC, Taguig",
-    salary: "PHP 350/Day",
-    type: "Internship",
-    mode: "Hybrid",
-    workType: "Hybrid",
-    allowance: "Paid",
-    projectType: "Full-time",
-    keywords: ["marketing", "campaigns", "brand", "research"],
-    isActive: true,
-    applicationDeadline: null,
-    startDate: null,
-    duration: "4 months",
-    viewCount: 112,
-    createdAt: "2025-06-08T17:58:10.152105+00:00",
-    updatedAt: "2025-06-08T17:58:10.152105+00:00",
-    company: mockCompanies[5]
-  },
-  {
-    id: "job-7",
-    title: "Product Management Intern",
-    description: "Learn product management fundamentals while working on real products. Collaborate with engineering, design, and business teams to deliver exceptional user experiences.",
-    requirements: [
-      "Business or Engineering background",
-      "Analytical mindset",
-      "Strong communication skills",
-      "Interest in technology products"
-    ],
-    responsibilities: [
-      "Assist in product roadmap planning",
-      "Conduct user research",
-      "Support product launches",
-      "Analyze product metrics"
-    ],
-    location: "Makati City",
-    salary: "PHP 400/Day",
-    type: "Internship",
-    mode: "Hybrid",
-    workType: "Hybrid",
-    allowance: "Paid",
-    projectType: "Full-time",
-    keywords: ["product", "management", "strategy", "roadmap", "analytics"],
-    isActive: true,
-    applicationDeadline: "2025-07-15",
-    startDate: "2025-08-01",
-    duration: "6 months",
-    viewCount: 89,
-    createdAt: "2025-06-07T10:30:00.000000+00:00",
-    updatedAt: "2025-06-07T10:30:00.000000+00:00",
-    company: mockCompanies[0]
-  },
-  {
-    id: "job-8",
-    title: "DevOps Engineering Intern", 
-    description: "Join our infrastructure team to learn about cloud computing, automation, and DevOps practices. Work with modern tools and technologies to support our development teams.",
-    requirements: [
-      "Basic Linux knowledge",
-      "Interest in cloud technologies",
-      "Problem-solving skills",
-      "Willingness to learn automation"
-    ],
-    responsibilities: [
-      "Support CI/CD pipeline maintenance",
-      "Learn infrastructure as code",
-      "Monitor system performance",
-      "Assist with deployment processes"
-    ],
-    location: "BGC, Taguig",
-    salary: "PHP 380/Day",
-    type: "Internship",
-    mode: "Face to Face",
-    workType: "On-site",
-    allowance: "Paid",
-    projectType: "Full-time",
-    keywords: ["devops", "cloud", "automation", "cicd", "infrastructure"],
-    isActive: true,
-    applicationDeadline: "2025-07-20",
-    startDate: "2025-08-15",
-    duration: "5 months",
-    viewCount: 56,
-    createdAt: "2025-06-06T14:15:00.000000+00:00", 
-    updatedAt: "2025-06-06T14:15:00.000000+00:00",
     company: mockCompanies[2]
   }
 ];
@@ -339,26 +184,95 @@ export const mockApplications = [
   }
 ];
 
-export const mockUsers = [
-  {
-    id: "user-1",
-    email: "john.doe@email.com",
-    firstName: "John",
-    lastName: "Doe", 
-    phone: "+639123456789",
-    university: "University of the Philippines",
-    course: "Computer Science",
-    yearLevel: "4th Year",
-    skills: ["React", "JavaScript", "HTML", "CSS", "Node.js"],
-    bio: "Passionate frontend developer with experience in modern web technologies",
-    resumeUrl: "https://example.com/resume.pdf",
-    profilePictureUrl: null,
-    linkedinUrl: "https://linkedin.com/in/johndoe",
-    githubUrl: "https://github.com/johndoe",
-    portfolioUrl: "https://johndoe.dev",
-    location: "Manila, Philippines",
-    isVerified: true,
-    createdAt: "2025-05-01T00:00:00.000000+00:00",
-    updatedAt: "2025-06-01T00:00:00.000000+00:00"
+// Simple email storage for mock mode
+const getStoredEmails = () => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('mockRegisteredEmails');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.error('Error parsing stored emails:', e);
+      }
+    }
   }
-];
+  return ['john.doe@students.dlsu.edu.ph']; // Default test email
+};
+
+let registeredEmails = getStoredEmails();
+
+const saveEmails = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('mockRegisteredEmails', JSON.stringify(registeredEmails));
+  }
+};
+
+// Simple mock user data
+const getMockUserData = (email: string) => ({
+  id: `user-${Date.now()}`,
+  email: email,
+  fullName: "Mock User",
+  phoneNumber: "+639123456789",
+  currentProgram: "BS Computer Science",
+  idNumber: "12112345",
+  skills: ["React", "JavaScript", "HTML", "CSS", "Node.js"],
+  bio: "Mock user for testing",
+  resumeFilename: null,
+  profilePicture: null,
+  linkedinProfile: "",
+  githubLink: "",
+  portfolioLink: "",
+  isActive: true,
+  isVerified: true,
+  lastLogin: new Date().toISOString(),
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+});
+
+// Helper functions for simple email management
+export const userHelpers = {
+  // Add email to registered list
+  registerEmail: (email: string) => {
+    if (!registeredEmails.includes(email.toLowerCase())) {
+      registeredEmails.push(email.toLowerCase());
+      saveEmails();
+      console.log(`Registered email: ${email}. Total emails: ${registeredEmails.length}`);
+    }
+    return getMockUserData(email);
+  },
+
+  // Check if email is registered
+  isEmailRegistered: (email: string) => {
+    registeredEmails = getStoredEmails(); // Refresh from storage
+    const isRegistered = registeredEmails.includes(email.toLowerCase());
+    console.log(`Email ${email} registered:`, isRegistered);
+    console.log('All registered emails:', registeredEmails);
+    return isRegistered;
+  },
+
+  // Get user data for registered email
+  getUserByEmail: (email: string) => {
+    if (userHelpers.isEmailRegistered(email)) {
+      return getMockUserData(email);
+    }
+    return null;
+  },
+
+  // Get all registered emails
+  getAllEmails: () => {
+    registeredEmails = getStoredEmails();
+    return registeredEmails;
+  },
+
+  // Clear all data
+  clearAllData: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('mockRegisteredEmails');
+      registeredEmails = getStoredEmails();
+    }
+  }
+};
+
+// Export for backward compatibility
+export const mockUsers = [];
+export { registeredEmails };
