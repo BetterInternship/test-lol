@@ -130,21 +130,15 @@ export function useJobs(
     return filtered;
   }, [jobs, params]);
 
-  // Pagination
-  const { page = 1, limit = 10 } = params;
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
-
-  const pagination = {
-    totalPages: Math.ceil(filteredJobs.length / limit),
-    currentPage: page,
-    total: filteredJobs.length,
+  const getJobsPage = ({ page = 1, limit = 10 }) => {
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    return filteredJobs.slice(startIndex, endIndex);
   };
 
   return {
-    jobs: paginatedJobs,
-    allJobs: filteredJobs, // Expose filtered jobs for search components
+    getJobsPage,
+    jobs: filteredJobs, // Expose filtered jobs for search components
     loading,
     error,
     refetch: fetchAllActiveJobs,

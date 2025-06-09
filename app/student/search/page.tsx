@@ -44,6 +44,7 @@ import { useJobs, useJobActions, useSavedJobs, useProfile } from "@/hooks/use-ap
 import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/db/db.types"
 import Markdown from 'react-markdown'
+import { Paginator } from "@/components/ui/paginator"
 
 export default function SearchPage() {
   const router = useRouter();
@@ -106,14 +107,22 @@ export default function SearchPage() {
   }
 
   // API hooks
-  const { jobs, loading: jobs_loading, error: jobs_error, refetch } = useJobs({
+  const jobs_page_size = 10;
+  const [jobs_page, setJobsPage] = useState(1);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const { getJobsPage, jobs: allJobs, loading: jobs_loading, error: jobs_error, refetch } = useJobs({
     search: searchTerm.trim() || undefined,
     category: selectedCategory || undefined,
     type: jobTypeFilter !== "All types" ? jobTypeFilter : undefined,
     mode: locationFilter !== "Any location" ? locationFilter : undefined,
     industry: industryFilter !== "All industries" ? industryFilter : undefined,
-    limit: 50
+    limit: jobs_page_size,
+    page: jobs_page,
   })
+
+  useEffect(() => {
+    setJobs(getJobsPage({ page: jobs_page, limit: jobs_page_size }))
+  }, [ jobs_page, jobs_loading ])
 
   const { is_saved, saving, save_job } = useSavedJobs();
   const { 
@@ -379,6 +388,9 @@ export default function SearchPage() {
                       <p className="p-4">No jobs found.</p>  
                     </div>)
                   }
+
+                  {/* Paginator */}
+                  <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)}></Paginator>
                 </div>
 
                 {/* Job Details */}
