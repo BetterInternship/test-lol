@@ -5,7 +5,7 @@ import Link from "next/link"
 import { job_service } from "@/lib/api"
 import { Job } from "@/lib/db/db.types"
 import { useCache } from "@/hooks/use-cache"
-import { useJobs } from "@/hooks/useApi"
+import { useJobs } from "@/hooks/use-api"
 
 export default function JobScroller() {
   const scrollerRef = useRef<HTMLDivElement>(null)

@@ -11,6 +11,15 @@ export default function VerifyPage() {
   const searchParams = useSearchParams()
   const { verify } = useAuthContext()
 
+  // Redirect to home page when verified
+  useEffect(() => {
+    if (verified) {
+      setTimeout(() => {
+        router.push("/")
+      }, 1500)
+    }
+  }, [verified])
+
   useEffect(() => {
     const user = searchParams.get('user_id')
     const key = searchParams.get('key')
@@ -28,11 +37,7 @@ export default function VerifyPage() {
         })
         .finally(() => setLoading(false))
     } else {
-      // Production mode without parameters - wait for email verification
-      setLoading(false)
-      setTimeout(() => {
-        router.push('/login')
-      }, 5000) // Redirect after 5 seconds
+      setLoading(false);
     }
   }, [searchParams, router, verify])
 

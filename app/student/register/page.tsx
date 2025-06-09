@@ -4,14 +4,19 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Upload } from "lucide-react"
+import { ChevronDown, Upload } from "lucide-react"
 import { useAuthContext } from "../authctx"
+import { useRefs } from "@/hooks/use-refs"
 
 export default function RegisterPage() {
+  const defaultYearLevel = "Select Year Level";
+  const defaultCollege = "Select College";
+  const validFieldClassName = "border-green-600 border-opacity-50";
+  const { levels, colleges } = useRefs();
   const [formData, setFormData] = useState({
     fullName: "",
-    yearLevel: "",
-    currentProgram: "",
+    yearLevel: defaultYearLevel,
+    college: defaultCollege,
     portfolioLink: "",
     githubLink: "",
     phoneNumber: "",
@@ -19,6 +24,7 @@ export default function RegisterPage() {
   })
   const { register } = useAuthContext()
   const [email, setEmail] = useState("")
+  const [activeDropdown, setActiveDropdown] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -57,7 +63,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.yearLevel || !formData.currentProgram || !formData.phoneNumber) {
+    if (!formData.fullName || !formData.yearLevel || !formData.phoneNumber) {
       setError("Please fill in all required fields")
       return
     }
@@ -65,6 +71,11 @@ export default function RegisterPage() {
     if (!validateDLSUEmail(email)) {
       setError("Please use your DLSU email address (@dlsu.edu.ph)")
       return
+    }
+
+    if (formData.college === defaultCollege || formData.yearLevel === defaultYearLevel) {
+      setError("Please fill in the dropdown fields too.");
+      return;
     }
 
     try {
@@ -76,18 +87,18 @@ export default function RegisterPage() {
       user_form_data.append("email", email);
       user_form_data.append("full_name", formData.fullName);
       user_form_data.append("phone_number", formData.phoneNumber);
-      user_form_data.append("year_level", formData.yearLevel);
-      user_form_data.append("current_program", formData.currentProgram);
+      user_form_data.append("year_level", levels.filter(l => l.name === formData.yearLevel)[0].id + "");
+      user_form_data.append("college", colleges.filter(c => c.name === formData.college)[0].id);
       user_form_data.append("portfolio_link", formData.portfolioLink);
       user_form_data.append("github_link", formData.githubLink);
       user_form_data.append("linkedin_link", formData.linkedinProfile);
+      // @ts-ignore
       user_form_data.append("resume", resumeFile);
 
-      // @ts-ignore
-      console.log(user_form_data)
       for (let pair of user_form_data.entries()) {
         console.log(pair[0], pair[1]);
       }
+      // @ts-ignore
       await register(user_form_data)
         .then(r => { 
           r && r.success ? router.push('/verify') : setError("Ensure that your inputs are correct.");
@@ -127,30 +138,16 @@ export default function RegisterPage() {
             {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
+                Full Name <span className="text-red-500">*</span>
               </label>
               <Input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
                 placeholder="Enter Full Name"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
-                disabled={loading}
-                required
-              />
-            </div>
-
-            {/* School Year */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                ID Number
-              </label>
-              <Input
-                type="text"
-                value={formData.yearLevel}
-                onChange={(e) => handleInputChange('yearLevel', e.target.value)}
-                placeholder="Enter Year Level"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
+                className={
+                  (formData.fullName === "" ? "border-gray-300" : validFieldClassName) + 
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"}
                 disabled={loading}
                 required
               />
@@ -159,30 +156,69 @@ export default function RegisterPage() {
             {/* Phone Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
+                Phone Number <span className="text-red-500">*</span>
               </label>
               <Input
                 type="tel"
                 value={formData.phoneNumber}
                 onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                 placeholder="Enter Phone Number"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
+                className={
+                  (formData.phoneNumber === "" ? "border-gray-300" : validFieldClassName) + 
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"}
                 disabled={loading}
                 required
               />
             </div>
 
+            {/* College */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                College <span className="text-red-500">*</span>
+              </label>
+              <Dropdown 
+                name="college" 
+                defaultValue={defaultCollege}
+                value={formData.college} 
+                options={colleges.sort((a, b) => a.name.localeCompare(b.name)).map(college => college.name)} 
+                activeDropdown={activeDropdown}
+                validFieldClassName={validFieldClassName}
+                onChange={(value) => handleInputChange("college", value)}
+                onClick={() => setActiveDropdown("college")}>
+              </Dropdown>
+            </div>
+
+            {/* School Year */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Year Level <span className="text-red-500">*</span>
+              </label>
+              <Dropdown 
+                name="yearLevel" 
+                defaultValue={defaultYearLevel}
+                value={formData.yearLevel} 
+                options={levels.sort((a, b) => 
+                  (a.order - b.order) || a.name.localeCompare(b.name)).map(level => level.name)} 
+                activeDropdown={activeDropdown}
+                validFieldClassName={validFieldClassName}
+                onChange={(value) => handleInputChange("yearLevel", value)}
+                onClick={() => setActiveDropdown("yearLevel")}>
+              </Dropdown>
+            </div>
+
             {/* Portfolio Link */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Portfolio Link <span className="text-gray-500">(Optional)</span>
+                Portfolio Link <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <Input
                 type="url"
                 value={formData.portfolioLink}
                 onChange={(e) => handleInputChange('portfolioLink', e.target.value)}
                 placeholder="Enter Portfolio Link"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
+                className={
+                  (formData.portfolioLink === "" ? "border-gray-300" : validFieldClassName) + 
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"}
                 disabled={loading}
               />
             </div>
@@ -190,14 +226,17 @@ export default function RegisterPage() {
             {/* LinkedIn Profile */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                LinkedIn Profile <span className="text-gray-500">(Optional)</span>
+                LinkedIn Profile <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <Input
                 type="url"
                 value={formData.linkedinProfile}
                 onChange={(e) => handleInputChange('linkedinProfile', e.target.value)}
                 placeholder="Enter LinkedIn Profile Link"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
+                className={
+                  (formData.linkedinProfile === "" ? "border-gray-300" : validFieldClassName) + 
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                }
                 disabled={loading}
               />
             </div>
@@ -205,14 +244,17 @@ export default function RegisterPage() {
             {/* Github Link */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Github Link <span className="text-gray-500">(Optional)</span>
+                Github Link <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <Input
                 type="url"
                 value={formData.githubLink}
                 onChange={(e) => handleInputChange('githubLink', e.target.value)}
                 placeholder="Enter Github Link"
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
+                className={
+                  (formData.githubLink === "" ? "border-gray-300" : validFieldClassName) + 
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                }
                 disabled={loading}
               />
             </div>
@@ -220,7 +262,7 @@ export default function RegisterPage() {
             {/* Resume Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Resume
+                Resume <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <input
                 type="file"
@@ -232,7 +274,10 @@ export default function RegisterPage() {
               />
               <div
                 onClick={() => resumeInputRef.current?.click()}
-                className="w-full h-12 px-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors flex items-center justify-between"
+                className={
+                  (!resumeFile || !resumeFile.name ? "border-gray-300" : validFieldClassName) + 
+                  " w-full h-12 px-4 border-2 rounded-lg cursor-pointer hover:border-gray-400 transition-colors flex items-center justify-between"
+                }
               >
                 <span className={resumeFile ? " line-clamp-1 text-gray-900 text-ellipsis" : "line-clamp-1 text-gray-500 text-ellipsis"}>
                   {resumeFile ? resumeFile.name : "Upload File Here"}
@@ -264,6 +309,53 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+function Dropdown({ name, options, defaultValue, value, onChange, activeDropdown, onClick, validFieldClassName }: { name: string; options: string[]; value: string; defaultValue: string; onChange: (value: string) => void, activeDropdown: string, onClick: () => void, validFieldClassName: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (name != activeDropdown)
+      setIsOpen(false);
+  }, [name, activeDropdown])
+  
+  return (
+    <div className="relative w-80">
+      <Button
+        type="button"
+        variant="outline" 
+        onClick={() => (setIsOpen(!isOpen), onClick())}
+        className={
+          (value === defaultValue ? "border-gray-300" : validFieldClassName) +
+          " h-12 px-4 flex items-center gap-2 w-full text-ellipsis  border-2"
+        }
+      >
+        <p className={ (value === defaultValue ? "text-opacity-50 text-gray-800" : "") + " line-clamp-1"}>
+          {value}
+        </p>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </Button>
+      
+      {isOpen && (
+        <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg z-50 min-w-full">
+          {options.map((option) => (
+            <button
+              key={option}
+              onClick={() => {
+                onChange(option)
+                setIsOpen(false)
+              }}
+              className={
+                (option === value ? "bg-gray-200" :
+                "") + " w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg"}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

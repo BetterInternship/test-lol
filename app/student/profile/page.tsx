@@ -32,7 +32,7 @@ import {
   Calendar
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
-import { useProfile } from "@/hooks/useApi"
+import { useProfile } from "@/hooks/use-api"
 import { useRouter } from "next/navigation"
 import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"

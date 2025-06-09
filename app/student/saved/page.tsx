@@ -23,7 +23,7 @@ import {
   PhilippinePeso
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
-import { useSavedJobs, useJobActions } from "@/hooks/useApi"
+import { useSavedJobs, useJobActions } from "@/hooks/use-api"
 import { useRouter } from "next/navigation"
 import { useAuthContext } from "../authctx"
 
