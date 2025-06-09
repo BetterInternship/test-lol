@@ -28,7 +28,7 @@ export function useJobs(
   const [error, setError] = useState<string | null>(null);
 
   // Load all jobs initially
-  const fetchAllJobs = useCallback(async () => {
+  const fetchAllActiveJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -54,12 +54,12 @@ export function useJobs(
   }, []);
 
   useEffect(() => {
-    fetchAllJobs();
-  }, [fetchAllJobs]);
+    fetchAllActiveJobs();
+  }, [fetchAllActiveJobs]);
 
   // Client-side filtering
   const filteredJobs = useMemo(() => {
-    let filtered = [...allJobs];
+    let filtered = [...jobs];
     const { type, mode, search, location, industry } = params;
 
     // Apply type filter
@@ -92,7 +92,7 @@ export function useJobs(
     // Apply industry filter
     if (industry && industry !== "All industries") {
       filtered = filtered.filter((job) => {
-        return job.company?.industry
+        return job.employer?.industry
           ?.toLowerCase()
           .includes(industry.toLowerCase());
       });
@@ -106,8 +106,8 @@ export function useJobs(
         const searchableText = [
           job.title,
           job.description,
-          job.company?.name,
-          job.company?.industry,
+          job.employer?.name,
+          job.employer?.industry,
           job.location,
           ...(job.keywords || []),
           ...(job.requirements || []),
@@ -128,7 +128,7 @@ export function useJobs(
     }
 
     return filtered;
-  }, [allJobs, params]);
+  }, [jobs, params]);
 
   // Pagination
   const { page = 1, limit = 10 } = params;
@@ -147,7 +147,7 @@ export function useJobs(
     allJobs: filteredJobs, // Expose filtered jobs for search components
     loading,
     error,
-    refetch: fetchJobs,
+    refetch: fetchAllActiveJobs,
   };
 }
 

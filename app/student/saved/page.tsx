@@ -29,7 +29,7 @@ import { useAuthContext } from "../authctx"
 
 export default function SavedJobsPage() {
   const { is_authenticated, recheck_authentication } = useAuthContext()
-  const { save_job, savedJobs, loading, error, refetch } = useSavedJobs()
+  const { save_job, savedJobs, saving, loading, error, refetch } = useSavedJobs()
   const router = useRouter()
 
   useEffect(() => {
@@ -163,7 +163,8 @@ export default function SavedJobsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleUnsaveJob(savedJob.job?.id ?? '')}
+                              disabled={saving}
+                              onClick={() => handleUnsaveJob(savedJob.id ?? '')}
                               className="text-red-600 border-red-200 hover:bg-red-50"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
@@ -172,26 +173,26 @@ export default function SavedJobsPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-2 mb-4">
-                            {savedJob.job?.mode && (
+                            {savedJob.mode && (
                               <Badge variant="outline">
                                 <Briefcase className="w-3 h-3 mr-1" />
-                                {savedJob.job.mode}
+                                {savedJob.mode}
                               </Badge>
                             )}
-                            {savedJob.job?.salary && (
+                            {savedJob.salary && (
                               <Badge variant="outline">
                                 <PhilippinePeso className="w-3 h-3 mr-1" />
-                                {savedJob.job.salary}
+                                {savedJob.salary}
                               </Badge>
                             )}
                           </div>
 
                           <p className="text-gray-700 text-sm mb-4 line-clamp-2">
-                            {savedJob.job?.description}
+                            {savedJob.description}
                           </p>
 
                           <div className="flex gap-3">
-                            <Link href={`/search?jobId=${savedJob.job?.id}`}>
+                            <Link href={`/search?jobId=${savedJob.id}`}>
                               <Button size="sm">
                                 View Details
                               </Button>

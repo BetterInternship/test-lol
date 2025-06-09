@@ -3,7 +3,6 @@
 import { useState, useEffect, } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthContext } from "../authctx";
-import { USE_MOCK_API } from "@/lib/mock/config"
 
 export default function VerifyPage() {
   const [verified, setVerified] = useState(false);
@@ -16,14 +15,7 @@ export default function VerifyPage() {
     const user = searchParams.get('user_id')
     const key = searchParams.get('key')
 
-    if (USE_MOCK_API) {
-      // In mock mode, auto-verify quickly
-      setTimeout(() => {
-        setVerified(true)
-        setTimeout(() => router.push('/'), 1500)
-      }, 1000)
-      setLoading(false)
-    } else if (user && key) {
+    if (user && key) {
       // Production mode with real verification
       verify(user, key)
         .then(() => {
@@ -59,10 +51,10 @@ export default function VerifyPage() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           )}
-          {!loading && !verified && !USE_MOCK_API && (
+          {!loading && !verified && (
             <p className="text-gray-600 text-xl">Please check your inbox for a verification email and click the link to verify your account.</p>
           )}
-          {!loading && !verified && USE_MOCK_API && (
+          {!loading && !verified && (
             <p className="text-red-600 text-xl">Verification failed. Please try again.</p>
           )}
           {!loading && verified && (

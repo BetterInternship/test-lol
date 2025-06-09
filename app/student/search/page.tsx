@@ -159,6 +159,22 @@ export default function SearchPage() {
     }
   }, [jobs, selectedJob])
 
+  // Initialize temp filters when modal opens
+  useEffect(() => {
+    if (showFilterModal) {
+      setTempJobTypeFilter(jobTypeFilter)
+      setTempLocationFilter(locationFilter)
+      setTempIndustryFilter(industryFilter)
+    }
+  }, [showFilterModal, jobTypeFilter, locationFilter, industryFilter])
+
+  // Reset progress when modal closes
+  useEffect(() => {
+    if (!showSuccessModal) {
+      setAutoCloseProgress(100)
+    }
+  }, [showSuccessModal])
+
   const handleSearch = () => {
     // Apply temp filters to actual filters
     setJobTypeFilter(tempJobTypeFilter)
@@ -318,14 +334,6 @@ export default function SearchPage() {
                   <p className="text-gray-600">Loading jobs...</p>
                 </div>
               </div>
-            ) : jobs.length === 0 ? (
-              /* No Results */
-              <div className="w-full flex items-center justify-center">
-                <div className="text-center text-gray-500">
-                  <p>No jobs found</p>
-                  <p className="text-sm mt-2">Try adjusting your search criteria</p>
-                </div>
-              </div>
             ) : (
               <>
                 {/* Job List */}
@@ -355,16 +363,20 @@ export default function SearchPage() {
                       <Filter className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="space-y-4">
-                    {jobs.map((job) => (
-                      <JobCard
-                        key={job.id}
-                        job={job}
-                        isSelected={selectedJob?.id === job.id}
-                        onClick={() => setSelectedJob(job)}
-                      />
-                    ))}
-                  </div>
+                  { jobs.length ?
+                    (<div className="space-y-4">
+                      {jobs.map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          isSelected={selectedJob?.id === job.id}
+                          onClick={() => setSelectedJob(job)}
+                        />
+                      ))}
+                    </div>) : (<div>
+                      <p className="p-4">No jobs found.</p>  
+                    </div>)
+                  }
                 </div>
 
                 {/* Job Details */}

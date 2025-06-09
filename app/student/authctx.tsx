@@ -61,7 +61,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 		
 		setUser(response.user)
 		setIsAuthenticated(true)
-		return response.user;	
+		return response;	
 	}
 
 	const verify = async (user_id: string, key: string) => {
@@ -70,7 +70,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 
 		setUser(response.user)
 		setIsAuthenticated(true)
-		return response.user;
+		return response;
 	}	
 
 	const send_otp_request = async (email: string) => {
@@ -84,7 +84,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 		
 		setUser(response.user)
 		setIsAuthenticated(true)
-		return response.user;	
+		return response;	
 	}
 
 	const email_status = async (email: string) => {
