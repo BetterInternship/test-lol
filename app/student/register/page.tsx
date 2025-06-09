@@ -115,7 +115,8 @@ export default function RegisterPage() {
       await register(newUser)
         .then(() => { 
           if (USE_MOCK_API) {
-            router.push('/login?verified=pending')
+            // In mock mode, go directly to homepage after registration
+            router.push('/')
           } else {
             router.push('/verify')
           }

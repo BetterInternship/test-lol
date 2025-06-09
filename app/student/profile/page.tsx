@@ -347,18 +347,18 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="grid gap-8 lg:grid-cols-3">
+              <div className="grid gap-4 lg:grid-cols-3">
                 {/* Left Column - Basic Info & Links */}
-                <div className="lg:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4">
                   {/* Basic Information Card */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                         <User className="w-4 h-4 text-blue-600" />
                       </div>
                       Basic Information
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Full Name */}
                       <div className="space-y-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700">
@@ -444,14 +444,14 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Professional Links Card */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                         <ExternalLink className="w-4 h-4 text-green-600" />
                       </div>
                       Professional Links
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Portfolio */}
                       <div className="space-y-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700">
@@ -567,10 +567,34 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Right Column - Resume */}
+                {/* Right Column - Preview Profile & Resume */}
                 <div className="lg:col-span-1">
-                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow sticky top-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  {/* Preview Profile Section */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow sticky top-6 mb-4">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                        <Eye className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      Preview Profile
+                    </h2>
+                    
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowEmployerPreview(true)}
+                      className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      Preview
+                    </Button>
+                    
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      See how employers view your profile
+                    </p>
+                  </div>
+
+                  {/* Resume Section */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
                         <FileText className="w-4 h-4 text-orange-600" />
                       </div>
@@ -656,23 +680,11 @@ export default function ProfilePage() {
                       </p>
                       </div>
                     )}
-                    
-                    {/* Employer Preview Button */}
-                    <div className="mt-6">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowEmployerPreview(true)}
-                        className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
-                    </div>
                   </div>
                   
                   {/* About Card - Moved here under Resume */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow mt-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mt-4">
+                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                         <FileText className="w-4 h-4 text-purple-600" />
                       </div>
@@ -720,7 +732,7 @@ export default function ProfilePage() {
             onClick={() => setShowEmployerPreview(false)}
           >
             <motion.div 
-              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+              className="bg-white rounded-2xl w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden shadow-2xl"
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
@@ -737,22 +749,10 @@ export default function ProfilePage() {
 }
 
 function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; filesInfo: any; onClose: () => void }) {
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span className="text-sm text-gray-600">Applied 16H 58M ago</span>
-        </div>
+    <div className="flex flex-col h-full">
+      {/* Header with close button */}
+      <div className="flex justify-end p-4">
         <Button
           variant="ghost"
           size="sm"
@@ -763,53 +763,80 @@ function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; f
         </Button>
       </div>
 
-      {/* Student Name */}
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile?.fullName || 'John Doe'}</h1>
-      <p className="text-gray-600 mb-8">Applying for DevOps • Full-Time</p>
+      {/* Main Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-6">
+        {/* Header */}
+        <div className="mb-6 md:mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-gray-600">Applied 16H 58M ago</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{profile?.fullName || 'Your Name'}</h1>
+          <p className="text-gray-600 mb-4 md:mb-6">Applying for DevOps • Full-Time</p>
+          
+          {/* Quick Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+              disabled
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              View Resume
+            </Button>
+            <Button 
+              variant="outline" 
+              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+              disabled
+            >
+              <Calendar className="h-4 w-4 mr-2" />
+              Schedule Interview
+            </Button>
+          </div>
+        </div>
 
-      {/* Academic Background Section */}
-      <div className="bg-blue-50 rounded-lg p-4 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="bg-blue-100 rounded-full p-2">
-            <GraduationCap className="w-5 h-5 text-blue-600" />
+        {/* Academic Background Card */}
+        <div className="bg-blue-50 rounded-lg p-4 md:p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <GraduationCap className="h-4 w-4 text-blue-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900">Academic Background</h3>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900">Academic Background</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Program</p>
+              <p className="font-medium">{profile?.currentProgram || 'Computer Science'}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Institution</p>
+              <p className="font-medium">DLSU Manila</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Minor</p>
+              <p className="font-medium">Data Science</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Year Level</p>
+              <p className="font-medium">2nd Year Student</p>
+            </div>
+          </div>
         </div>
-        
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">Program</h3>
-            <p className="text-gray-900 font-medium">{profile?.currentProgram || 'Computer Science'}</p>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">Institution</h3>
-            <p className="text-gray-900 font-medium">DLSU Manila</p>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">Minor</h3>
-            <p className="text-gray-900 font-medium">Data Science</p>
-          </div>
-          <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">Year Level</h3>
-            <p className="text-gray-900 font-medium">2nd Year Student</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Cover Letter and About sections */}
-      <div className="grid grid-cols-2 gap-6">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Cover Letter</h2>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            {profile?.bio || "I wish to work with you guys more effectively. I have an efficiency with Robotics so I think I would be best suited here."}
-          </p>
-        </div>
-        
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">About the Candidate</h2>
-          <p className="text-gray-700 text-sm leading-relaxed">
-            Your Momma lmaoooo did you actually think that I would apply to your bad company?
-          </p>
+        {/* Application Details */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3">Cover Letter</h3>
+            <p className="text-gray-700 text-sm leading-relaxed">
+              {profile?.bio || "I wish to work with you guys more effectively. I have an efficiency with Robotics so I think I would be best suited here."}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-3">About the Candidate</h3>
+            <p className="text-gray-700 text-sm leading-relaxed">
+              Your Momma lmaoooo did you actually think that I would apply to your bad company?
+            </p>
+          </div>
         </div>
       </div>
     </div>

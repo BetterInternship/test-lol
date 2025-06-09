@@ -208,26 +208,50 @@ const saveEmails = () => {
 };
 
 // Simple mock user data
-const getMockUserData = (email: string) => ({
-  id: `user-${Date.now()}`,
-  email: email,
-  fullName: "Mock User",
-  phoneNumber: "+639123456789",
-  currentProgram: "BS Computer Science",
-  idNumber: "12112345",
-  skills: ["React", "JavaScript", "HTML", "CSS", "Node.js"],
-  bio: "Mock user for testing",
-  resumeFilename: null,
-  profilePicture: null,
-  linkedinProfile: "",
-  githubLink: "",
-  portfolioLink: "",
-  isActive: true,
-  isVerified: true,
-  lastLogin: new Date().toISOString(),
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-});
+const getMockUserData = (email: string) => {
+  // Provide different mock data based on email for testing
+  const baseData = {
+    id: `user-${Date.now()}`,
+    email: email,
+    fullName: "Mock User",
+    phoneNumber: "+639123456789",
+    currentProgram: "BS Computer Science",
+    idNumber: "12112345",
+    skills: ["React", "JavaScript", "HTML", "CSS", "Node.js"],
+    bio: "Mock user for testing",
+    resumeFilename: null,
+    profilePicture: null,
+    linkedinProfile: "",
+    isActive: true,
+    isVerified: true,
+    lastLogin: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+
+  // Different test scenarios based on email
+  if (email.includes('complete')) {
+    return {
+      ...baseData,
+      fullName: "Complete User",
+      githubLink: "https://github.com/completeuser",
+      portfolioLink: "https://completeuser.dev",
+    }
+  } else if (email.includes('github')) {
+    return {
+      ...baseData,
+      fullName: "GitHub User", 
+      githubLink: "https://github.com/githubuser",
+      portfolioLink: "", // Missing portfolio
+    }
+  } else {
+    return {
+      ...baseData,
+      githubLink: "",
+      portfolioLink: "",
+    }
+  }
+};
 
 // Helper functions for simple email management
 export const userHelpers = {
@@ -239,6 +263,44 @@ export const userHelpers = {
       console.log(`Registered email: ${email}. Total emails: ${registeredEmails.length}`);
     }
     return getMockUserData(email);
+  },
+
+  // Add email to registered list with full profile data
+  registerEmailWithProfile: (email: string, profileData: any) => {
+    if (!registeredEmails.includes(email.toLowerCase())) {
+      registeredEmails.push(email.toLowerCase());
+      saveEmails();
+      console.log(`Registered email with profile: ${email}. Total emails: ${registeredEmails.length}`);
+    }
+
+    // Create user data with provided profile information
+    const baseUserData = getMockUserData(email);
+    const userWithProfile = {
+      ...baseUserData,
+      // Override with provided profile data
+      fullName: profileData.fullName || baseUserData.fullName,
+      phoneNumber: profileData.phoneNumber || baseUserData.phoneNumber,
+      currentProgram: profileData.currentProgram || baseUserData.currentProgram,
+      idNumber: profileData.idNumber || baseUserData.idNumber,
+      portfolioLink: profileData.portfolioLink || baseUserData.portfolioLink || "",
+      githubLink: profileData.githubLink || baseUserData.githubLink || "",
+      linkedinProfile: profileData.linkedinProfile || baseUserData.linkedinProfile || "",
+      resumeFile: profileData.resumeFile || baseUserData.resumeFilename,
+      skills: profileData.skills || baseUserData.skills,
+      bio: profileData.bio || baseUserData.bio,
+      // Keep timestamps current
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Store the user profile data in localStorage for persistence
+    if (typeof window !== 'undefined') {
+      const userProfiles = JSON.parse(localStorage.getItem('mockUserProfiles') || '{}');
+      userProfiles[email.toLowerCase()] = userWithProfile;
+      localStorage.setItem('mockUserProfiles', JSON.stringify(userProfiles));
+    }
+
+    return userWithProfile;
   },
 
   // Check if email is registered
@@ -253,6 +315,15 @@ export const userHelpers = {
   // Get user data for registered email
   getUserByEmail: (email: string) => {
     if (userHelpers.isEmailRegistered(email)) {
+      // Check if we have stored profile data
+      if (typeof window !== 'undefined') {
+        const userProfiles = JSON.parse(localStorage.getItem('mockUserProfiles') || '{}');
+        const storedProfile = userProfiles[email.toLowerCase()];
+        if (storedProfile) {
+          return storedProfile;
+        }
+      }
+      // Fallback to generated mock data
       return getMockUserData(email);
     }
     return null;
@@ -268,8 +339,133 @@ export const userHelpers = {
   clearAllData: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('mockRegisteredEmails');
+      localStorage.removeItem('mockUserProfiles');
+      localStorage.removeItem('mockApplications');
+      localStorage.removeItem('mockSavedJobs');
       registeredEmails = getStoredEmails();
     }
+  }
+};
+
+// Application helpers for mock mode
+export const applicationHelpers = {
+  // Get current user's applications
+  getUserApplications: (userEmail: string) => {
+    if (typeof window !== 'undefined') {
+      const applications = JSON.parse(localStorage.getItem('mockApplications') || '{}');
+      return applications[userEmail.toLowerCase()] || [];
+    }
+    return [];
+  },
+
+  // Add new application for user
+  addApplication: (userEmail: string, application: any) => {
+    if (typeof window !== 'undefined') {
+      const applications = JSON.parse(localStorage.getItem('mockApplications') || '{}');
+      if (!applications[userEmail.toLowerCase()]) {
+        applications[userEmail.toLowerCase()] = [];
+      }
+      
+      // Find the job details to include in the application
+      const jobData = mockJobs.find(job => job.id === application.jobId);
+      
+      const fullApplication = {
+        ...application,
+        id: `app-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        userId: userEmail,
+        status: 'pending',
+        appliedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        job: jobData // Include full job data
+      };
+      
+      applications[userEmail.toLowerCase()].push(fullApplication);
+      localStorage.setItem('mockApplications', JSON.stringify(applications));
+      
+      console.log(`Added application for ${userEmail}:`, fullApplication);
+      return fullApplication;
+    }
+    return null;
+  },
+
+  // Check if user has applied to a job
+  hasAppliedToJob: (userEmail: string, jobId: string) => {
+    const userApplications = applicationHelpers.getUserApplications(userEmail);
+    const application = userApplications.find((app: any) => app.jobId === jobId);
+    return application ? {
+      hasApplied: true,
+      applicationId: application.id,
+      status: application.status,
+      appliedAt: application.appliedAt
+    } : {
+      hasApplied: false
+    };
+  },
+
+  // Get application by ID
+  getApplicationById: (applicationId: string) => {
+    if (typeof window !== 'undefined') {
+      const applications = JSON.parse(localStorage.getItem('mockApplications') || '{}');
+      for (const userEmail in applications) {
+        const userApps = applications[userEmail];
+        const application = userApps.find((app: any) => app.id === applicationId);
+        if (application) {
+          return application;
+        }
+      }
+    }
+    return null;
+  }
+};
+
+// Saved jobs helpers for mock mode
+export const savedJobsHelpers = {
+  // Get user's saved jobs
+  getUserSavedJobs: (userEmail: string) => {
+    if (typeof window !== 'undefined') {
+      const savedJobs = JSON.parse(localStorage.getItem('mockSavedJobs') || '{}');
+      return savedJobs[userEmail.toLowerCase()] || [];
+    }
+    return [];
+  },
+
+  // Toggle save status for a job
+  toggleSaveJob: (userEmail: string, jobId: string) => {
+    if (typeof window !== 'undefined') {
+      const savedJobs = JSON.parse(localStorage.getItem('mockSavedJobs') || '{}');
+      if (!savedJobs[userEmail.toLowerCase()]) {
+        savedJobs[userEmail.toLowerCase()] = [];
+      }
+      
+      const userSavedJobs = savedJobs[userEmail.toLowerCase()];
+      const existingIndex = userSavedJobs.findIndex((saved: any) => saved.jobId === jobId);
+      
+      if (existingIndex >= 0) {
+        // Remove from saved
+        userSavedJobs.splice(existingIndex, 1);
+        localStorage.setItem('mockSavedJobs', JSON.stringify(savedJobs));
+        return { state: false, message: "Job removed from saved" };
+      } else {
+        // Add to saved
+        const jobData = mockJobs.find(job => job.id === jobId);
+        const savedJob = {
+          savedId: `saved-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          jobId: jobId,
+          savedAt: new Date().toISOString(),
+          job: jobData
+        };
+        userSavedJobs.push(savedJob);
+        localStorage.setItem('mockSavedJobs', JSON.stringify(savedJobs));
+        return { state: true, message: "Job saved successfully" };
+      }
+    }
+    return { state: false, message: "Failed to save job" };
+  },
+
+  // Check if job is saved
+  isJobSaved: (userEmail: string, jobId: string) => {
+    const userSavedJobs = savedJobsHelpers.getUserSavedJobs(userEmail);
+    return userSavedJobs.some((saved: any) => saved.jobId === jobId);
   }
 };
 

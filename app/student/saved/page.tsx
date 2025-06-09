@@ -203,11 +203,6 @@ export default function SavedJobsPage() {
                                 View Details
                               </Button>
                             </Link>
-                            <Link href={`/search?q=${encodeURIComponent(savedJob.job.title)}`}>
-                              <Button variant="outline" size="sm">
-                                Find Similar
-                              </Button>
-                            </Link>
                           </div>
                         </div>
                       </div>

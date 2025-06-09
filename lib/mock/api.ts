@@ -1,4 +1,4 @@
-import { mockJobs, mockCategories, mockCompanies, mockApplications, userHelpers } from './data';
+import { mockJobs, mockCategories, mockCompanies, mockApplications, userHelpers, applicationHelpers, savedJobsHelpers } from './data';
 import { Job, User, Application } from '../api-client';
 
 // Simulate API delays
@@ -123,11 +123,11 @@ export const mockApiService = {
       throw new Error("User with this email already exists");
     }
 
-    // Register the email and create user data
-    const newUser = userHelpers.registerEmail(user.email);
+    // Register the email and create user data with provided profile information
+    const newUser = userHelpers.registerEmailWithProfile(user.email, user);
     const token = generateMockToken(user.email);
 
-    console.log(`Registered new user: ${user.email}`);
+    console.log(`Registered new user: ${user.email} with profile data`);
 
     return {
       token,
@@ -300,35 +300,21 @@ export const mockApiService = {
     return suggestions.slice(0, 10);
   },
 
-  // Auth API
-  async register(user: Partial<User>) {
-    await delay();
-    return {
-      token: "mock_jwt_token_12345",
-      user: { id: "user-1", email: user.email, ...user }
-    };
-  },
-
-  async login(email: string, password: string) {
-    await delay();
-    return {
-      token: "mock_jwt_token_12345",
-      user: userHelpers.getUserByEmail(email) || { id: "user-1", email }
-    };
-  },
-
-  async verifyOtp(email: string, otp: string) {
-    await delay();
-    return {
-      token: "mock_jwt_token_12345",
-      user: userHelpers.getUserByEmail(email) || { id: "user-1", email }
-    };
-  },
-
   // User API
   async getProfile() {
     await delay();
-    // Return a default mock user profile
+    // Check if we have a current user in session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const userData = userHelpers.getUserByEmail(currentUser.email);
+        if (userData) {
+          return userData;
+        }
+      }
+    }
+    
+    // Return default mock user profile if no session
     return userHelpers.getUserByEmail('john.doe@students.dlsu.edu.ph') || {
       id: "user-1",
       email: "mock@students.dlsu.edu.ph",
@@ -347,66 +333,158 @@ export const mockApiService = {
 
   async updateProfile(data: Partial<User>) {
     await delay();
-    // In simplified mock, just return the updated data
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const currentProfile = userHelpers.getUserByEmail(currentUser.email);
+        if (currentProfile) {
+          const updatedProfile = { 
+            ...currentProfile, 
+            ...data, 
+            updatedAt: new Date().toISOString() 
+          };
+          
+          // Store updated profile
+          const userProfiles = JSON.parse(localStorage.getItem('mockUserProfiles') || '{}');
+          userProfiles[currentUser.email.toLowerCase()] = updatedProfile;
+          localStorage.setItem('mockUserProfiles', JSON.stringify(userProfiles));
+          
+          // Update session user data
+          sessionStorage.setItem('user', JSON.stringify(updatedProfile));
+          
+          return updatedProfile;
+        }
+      }
+    }
+    
+    // Fallback - return updated default profile
     const currentProfile = await this.getProfile();
     return { ...currentProfile, ...data, updatedAt: new Date().toISOString() };
   },
 
   async getDashboardStats() {
     await delay();
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const userApplications = applicationHelpers.getUserApplications(currentUser.email);
+        const userSavedJobs = savedJobsHelpers.getUserSavedJobs(currentUser.email);
+        
+        // Calculate application statistics
+        const totalApplications = userApplications.length;
+        const pending = userApplications.filter((app: any) => app.status === 'pending').length;
+        const reviewed = userApplications.filter((app: any) => app.status === 'reviewed').length;
+        const shortlisted = userApplications.filter((app: any) => app.status === 'shortlisted').length;
+        const accepted = userApplications.filter((app: any) => app.status === 'accepted').length;
+        const rejected = userApplications.filter((app: any) => app.status === 'rejected').length;
+        
+        // Generate recent activity from applications
+        const recentActivity = userApplications
+          .slice(0, 3) // Get last 3 applications
+          .map((app: any) => ({
+            activity_type: "job_application",
+            created_at: app.appliedAt,
+            metadata: { job_title: app.job?.title || "Unknown Job" }
+          }));
+
+        return {
+          applications: {
+            total_applications: totalApplications,
+            pending,
+            reviewed,
+            shortlisted,
+            accepted,
+            rejected
+          },
+          saved_jobs_count: userSavedJobs.length,
+          recent_activity: recentActivity,
+          profile_completeness: 85 // Could calculate this based on profile fields
+        };
+      }
+    }
+    
+    // Fallback to default mock stats
     return {
       applications: {
-        total_applications: 5,
-        pending: 2,
-        reviewed: 1,
-        shortlisted: 1,
-        accepted: 1,
+        total_applications: 0,
+        pending: 0,
+        reviewed: 0,
+        shortlisted: 0,
+        accepted: 0,
         rejected: 0
       },
-      saved_jobs_count: 3,
-      recent_activity: [
-        {
-          activity_type: "job_application",
-          created_at: "2025-06-07T09:00:00.000000+00:00",
-          metadata: { job_title: "Frontend Developer Intern" }
-        },
-        {
-          activity_type: "job_view",
-          created_at: "2025-06-06T14:30:00.000000+00:00",
-          metadata: { job_title: "Backend Developer Intern" }
-        }
-      ],
+      saved_jobs_count: 0,
+      recent_activity: [],
       profile_completeness: 85
     };
   },
 
   async getSavedJobs(page: number = 1, limit: number = 10) {
     await delay();
-    const savedJobs = mockJobs.slice(0, 3).map((job, index) => ({
-      savedId: `saved-${index + 1}`,
-      savedAt: "2025-06-05T10:00:00.000000+00:00",
-      job: processJobDataForListing(job) // Use listing format for saved jobs too
-    }));
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const userSavedJobs = savedJobsHelpers.getUserSavedJobs(currentUser.email);
+        
+        // Sort by saved date (newest first)
+        userSavedJobs.sort((a: any, b: any) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime());
+        
+        // Apply pagination
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedSavedJobs = userSavedJobs.slice(startIndex, endIndex);
 
+        return {
+          savedJobs: paginatedSavedJobs,
+          totalPages: Math.ceil(userSavedJobs.length / limit),
+          currentPage: page,
+          total: userSavedJobs.length
+        };
+      }
+    }
+
+    // Fallback to empty saved jobs
     return {
-      savedJobs,
-      totalPages: 1,
+      savedJobs: [],
+      totalPages: 0,
       currentPage: page,
-      total: savedJobs.length
+      total: 0
     };
   },
 
   async saveJob(jobId: string) {
     await delay();
-    return {
-      message: "Job saved successfully",
-      state: true
-    };
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        return savedJobsHelpers.toggleSaveJob(currentUser.email, jobId);
+      }
+    }
+    
+    return { message: "Job saved successfully", state: true };
   },
 
   async checkSaved(jobId: string) {
     await delay();
-    return { state: Math.random() > 0.5 }; // Randomly return saved/not saved
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const isSaved = savedJobsHelpers.isJobSaved(currentUser.email, jobId);
+        return { state: isSaved };
+      }
+    }
+    
+    return { state: false };
   },
 
   // Applications API
@@ -418,16 +496,40 @@ export const mockApiService = {
     await delay();
     const { page = 1, limit = 10, status } = params;
 
-    let filteredApps = [...mockApplications];
-    if (status) {
-      filteredApps = filteredApps.filter(app => app.status === status);
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        let userApplications = applicationHelpers.getUserApplications(currentUser.email);
+        
+        // Apply status filter
+        if (status) {
+          userApplications = userApplications.filter((app: any) => app.status === status);
+        }
+
+        // Sort by application date (newest first)
+        userApplications.sort((a: any, b: any) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime());
+
+        // Apply pagination
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedApplications = userApplications.slice(startIndex, endIndex);
+
+        return {
+          applications: paginatedApplications,
+          totalPages: Math.ceil(userApplications.length / limit),
+          currentPage: page,
+          total: userApplications.length
+        };
+      }
     }
 
+    // Fallback to empty applications
     return {
-      applications: filteredApps,
-      totalPages: Math.ceil(filteredApps.length / limit),
+      applications: [],
+      totalPages: 0,
       currentPage: page,
-      total: filteredApps.length
+      total: 0
     };
   },
 
@@ -439,63 +541,91 @@ export const mockApiService = {
     resumeFilename?: string;
   }) {
     await delay();
-    const newApp = {
-      id: `app-${Date.now()}`,
-      userId: "user-1",
-      status: "pending",
-      appliedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      ...data
-    };
     
-    return {
-      message: "Application submitted successfully",
-      application: newApp
-    };
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const newApplication = applicationHelpers.addApplication(currentUser.email, data);
+        
+        if (newApplication) {
+          return {
+            message: "Application submitted successfully",
+            application: newApplication
+          };
+        }
+      }
+    }
+    
+    throw new Error("Failed to submit application");
   },
 
   async getApplicationById(id: string) {
     await delay();
-    const app = mockApplications.find(a => a.id === id);
-    if (!app) {
+    const application = applicationHelpers.getApplicationById(id);
+    if (!application) {
       throw new Error('Application not found');
     }
-    return app;
+    return application;
   },
 
   async updateApplication(id: string, data: any) {
     await delay();
-    const app = mockApplications.find(a => a.id === id);
-    if (!app) {
+    const application = applicationHelpers.getApplicationById(id);
+    if (!application) {
       throw new Error('Application not found');
     }
-    return { ...app, ...data, updatedAt: new Date().toISOString() };
+    // For mock mode, just return the updated application
+    return { ...application, ...data, updatedAt: new Date().toISOString() };
   },
 
   async withdrawApplication(id: string) {
     await delay();
+    // For now, just return success message - could implement removal logic later
     return { message: "Application withdrawn successfully" };
   },
 
   async checkApplication(jobId: string) {
     await delay();
-    const hasApplied = Math.random() > 0.7; // 30% chance of having applied
-    return {
-      hasApplied,
-      applicationId: hasApplied ? "app-1" : undefined,
-      status: hasApplied ? "pending" : undefined,
-      appliedAt: hasApplied ? "2025-06-07T09:00:00.000000+00:00" : undefined
-    };
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        return applicationHelpers.hasAppliedToJob(currentUser.email, jobId);
+      }
+    }
+    
+    return { hasApplied: false };
   },
 
   async getApplicationStats() {
     await delay();
+    
+    // Get current user from session
+    if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      if (currentUser && currentUser.email) {
+        const userApplications = applicationHelpers.getUserApplications(currentUser.email);
+        
+        return {
+          total_applications: userApplications.length,
+          pending: userApplications.filter((app: any) => app.status === 'pending').length,
+          reviewed: userApplications.filter((app: any) => app.status === 'reviewed').length,
+          shortlisted: userApplications.filter((app: any) => app.status === 'shortlisted').length,
+          accepted: userApplications.filter((app: any) => app.status === 'accepted').length,
+          rejected: userApplications.filter((app: any) => app.status === 'rejected').length
+        };
+      }
+    }
+    
+    // Fallback to empty stats
     return {
-      total_applications: 5,
-      pending: 2,
-      reviewed: 1,
-      shortlisted: 1,
-      accepted: 1,
+      total_applications: 0,
+      pending: 0,
+      reviewed: 0,
+      shortlisted: 0,
+      accepted: 0,
       rejected: 0
     };
   },

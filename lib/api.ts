@@ -99,6 +99,16 @@ export const auth_service = {
     );
   },
 
+  async login(email: string, password: string = '') {
+    if (USE_MOCK_API) {
+      return mockApiService.login(email);
+    }
+    return APIClient.post<AuthResponse>(
+      APIRoute("auth").r("login").build(),
+      { email, password }
+    );
+  },
+
   async verify(user_id: string, key: string) {
     if (USE_MOCK_API) {
       return mockApiService.verify(user_id, key);

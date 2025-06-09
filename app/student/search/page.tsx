@@ -64,10 +64,8 @@ export default function SearchPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
-  const [applicationData, setApplicationData] = useState({
-    coverLetter: ""
-  })
   const [applying, setApplying] = useState(false)
+  const [autoCloseProgress, setAutoCloseProgress] = useState(100)
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -90,8 +88,8 @@ export default function SearchPage() {
     if (!selectedJob || !profile) return false
     
     let requirementsMet = true
-    if (selectedJob.requiresGithub && !profile.githubLink) requirementsMet = false
-    if (selectedJob.requiresPortfolio && !profile.portfolioLink) requirementsMet = false
+    if (selectedJob.requiresGithub && (!profile.githubLink || profile.githubLink.trim() === '')) requirementsMet = false
+    if (selectedJob.requiresPortfolio && (!profile.portfolioLink || profile.portfolioLink.trim() === '')) requirementsMet = false
     
     return requirementsMet
   }
@@ -99,8 +97,8 @@ export default function SearchPage() {
   const getMissingJobRequirements = () => {
     if (!selectedJob || !profile) return []
     const missing = []
-    if (selectedJob.requiresGithub && !profile.githubLink) missing.push('GitHub Link')
-    if (selectedJob.requiresPortfolio && !profile.portfolioLink) missing.push('Portfolio Link')
+    if (selectedJob.requiresGithub && (!profile.githubLink || profile.githubLink.trim() === '')) missing.push('GitHub Link')
+    if (selectedJob.requiresPortfolio && (!profile.portfolioLink || profile.portfolioLink.trim() === '')) missing.push('Portfolio Link')
     return missing
   }
 
@@ -174,6 +172,13 @@ export default function SearchPage() {
     }
   }, [showFilterModal, jobTypeFilter, locationFilter, industryFilter])
 
+  // Reset progress when modal closes
+  useEffect(() => {
+    if (!showSuccessModal) {
+      setAutoCloseProgress(100)
+    }
+  }, [showSuccessModal])
+
   // Check saved and applied status for selected job
   useEffect(() => {
     if (selectedJob && isAuthenticated) {
@@ -218,23 +223,50 @@ export default function SearchPage() {
       return
     }
 
-    setShowApplicationModal(true)
+    // Check if profile is complete
+    if (!isProfileComplete()) {
+      alert('Please complete your profile before applying.')
+      router.push('/profile')
+      return
+    }
+
+    // Check if job requirements are met
+    if (!areJobRequirementsMet()) {
+      setShowApplicationModal(true)
+      return
+    }
+
+    // If everything is complete, apply directly
+    handleDirectApplication()
   }
 
-  const handleSubmitApplication = async () => {
+  const handleDirectApplication = async () => {
     if (!selectedJob) return
 
     try {
       setApplying(true)
-      applyToJob(selectedJob.id, {
-        coverLetter: applicationData.coverLetter || undefined,
+      const application = await applyToJob(selectedJob.id, {
+        coverLetter: undefined,
         githubLink: profile?.githubLink || undefined,
         portfolioLink: profile?.portfolioLink || undefined,
-      }).then(response => {
-        setLastApplication(response.application);
-        setShowApplicationModal(false)
-        setShowSuccessModal(true)
       })
+      
+      // Store application details and show success modal
+      setLastApplication(application.application || {})
+      setShowSuccessModal(true)
+      setAutoCloseProgress(100)
+      
+      // Progress countdown animation
+      const interval = setInterval(() => {
+        setAutoCloseProgress(prev => {
+          if (prev <= 0) {
+            clearInterval(interval)
+            setShowSuccessModal(false)
+            return 0
+          }
+          return prev - 2 // Decrease by 2% every 100ms (5 seconds total)
+        })
+      }, 100)
       
     } catch (error) {
       console.error('Failed to submit application:', error)
@@ -381,7 +413,7 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {/* Application Modal */}
+      {/* Application Modal - Only for Missing Job Requirements */}
       <AnimatePresence>
         {showApplicationModal && (
           <motion.div 
@@ -404,161 +436,40 @@ export default function SearchPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowApplicationModal(false)}
-                  disabled={applying}
                 >
                   <X className="h-5 w-5" />
                 </Button>
               </div>
 
-              <div className="space-y-4">
-                {/* Profile Completeness Check */}
-                {!isProfileComplete() ? (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="font-medium text-yellow-800 mb-2">Profile Incomplete</h3>
-                        <p className="text-sm text-yellow-700 mb-3">
-                          Please complete your profile before applying. Missing:
-                        </p>
-                        <ul className="text-sm text-yellow-700 list-disc list-inside mb-3">
-                          {getMissingFields().map((field, index) => (
-                            <li key={index}>{field}</li>
-                          ))}
-                        </ul>
-                        <Button
-                          onClick={() => router.push('/profile')}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white text-sm h-9"
-                        >
-                          <User className="w-4 h-4 mr-2" />
-                          Complete Profile
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : !areJobRequirementsMet() ? (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="font-medium text-orange-800 mb-2">Missing Job Requirements</h3>
-                        <p className="text-sm text-orange-700 mb-3">
-                          This job requires additional profile information:
-                        </p>
-                        <ul className="text-sm text-orange-700 list-disc list-inside mb-3">
-                          {getMissingJobRequirements().map((field, index) => (
-                            <li key={index}>{field}</li>
-                          ))}
-                        </ul>
-                        <Button
-                          onClick={() => router.push('/profile')}
-                          className="bg-orange-600 hover:bg-orange-700 text-white text-sm h-9"
-                        >
-                          <User className="w-4 h-4 mr-2" />
-                          Update Profile
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                      <h3 className="font-medium text-green-800">Profile Data Ready</h3>
-                    </div>
-                    <div className="text-sm text-green-700 space-y-1">
-                      <p>✓ Name: {profile?.fullName}</p>
-                      <p>✓ Phone: {profile?.phoneNumber}</p>
-                      <p>✓ Program: {profile?.currentProgram}</p>
-                      <p>✓ ID: {profile?.idNumber}</p>
-                      {selectedJob?.requiresGithub && (
-                        <p className={profile?.githubLink ? "" : "text-red-600"}>
-                          {profile?.githubLink ? "✓" : "✗"} GitHub: {profile?.githubLink ? "Included" : "Required but missing"}
-                        </p>
-                      )}
-                      {selectedJob?.requiresPortfolio && (
-                        <p className={profile?.portfolioLink ? "" : "text-red-600"}>
-                          {profile?.portfolioLink ? "✓" : "✗"} Portfolio: {profile?.portfolioLink ? "Included" : "Required but missing"}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Resume and Links Section */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1, duration: 0.3 }}
-                >
-                  <label className="block text-sm font-medium mb-2">Resume and Links</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Resume from profile will be attached</p>
-                      {(selectedJob?.requiresGithub || selectedJob?.requiresPortfolio) && (
-                        <div className="text-xs text-gray-500">
-                          <p>Job requirements:</p>
-                          {selectedJob?.requiresGithub && (
-                            <p>• GitHub Link {profile?.githubLink ? "(✓ included)" : "(✗ missing)"}</p>
-                          )}
-                          {selectedJob?.requiresPortfolio && (
-                            <p>• Portfolio Link {profile?.portfolioLink ? "(✓ included)" : "(✗ missing)"}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Cover Letter Section */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                >
-                  <label className="block text-sm font-medium mb-2">Cover Letter</label>
-                  <textarea
-                    value={applicationData.coverLetter}
-                    onChange={(e) => setApplicationData({...applicationData, coverLetter: e.target.value})}
-                    placeholder="Tell the company why you're interested in this position..."
-                    className="w-full h-32 p-3 border border-gray-300 rounded-lg resize-none focus:border-blue-500 focus:ring-blue-500"
-                    disabled={applying}
-                  />
-                </motion.div>
-
-                {/* Submit Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                >
-                  <Button 
-                    onClick={handleSubmitApplication}
-                    className="w-full h-12 bg-black text-white hover:bg-gray-800 rounded-lg font-medium"
-                    disabled={applying || !isFullyReadyToApply()}
-                  >
-                    {applying ? (
-                      <div className="flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        Applying...
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Send className="h-4 w-4" />
-                        Submit Application
-                      </div>
-                    )}
-                  </Button>
-                  {!isFullyReadyToApply() && (
-                    <p className="text-xs text-gray-500 text-center mt-2">
-                      {!isProfileComplete() 
-                        ? "Complete your profile to submit applications"
-                        : "Update profile with required links for this job"
-                      }
+              {/* Missing Job Requirements Warning */}
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-medium text-orange-800 mb-2">Missing Job Requirements</h3>
+                    <p className="text-sm text-orange-700 mb-3">
+                      This job requires additional profile information:
                     </p>
-                  )}
-                </motion.div>
+                    <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
+                      {getMissingJobRequirements().map((field, index) => (
+                        <li key={index}>{field}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
+
+              {/* Update Profile Button */}
+              <Button
+                onClick={() => {
+                  setShowApplicationModal(false)
+                  router.push('/profile')
+                }}
+                className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Update Profile
+              </Button>
             </motion.div>
           </motion.div>
         )}
@@ -575,59 +486,117 @@ export default function SearchPage() {
             transition={{ duration: 0.2 }}
           >
             <motion.div 
-              className="bg-white rounded-lg w-11/12 max-w-md p-8 text-center"
+              className="bg-white rounded-2xl w-11/12 max-w-md mx-4 shadow-2xl overflow-hidden"
               initial={{ scale: 0.5, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.5, opacity: 0, y: 50 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-end mb-4">
+              {/* Header with close button */}
+              <div className="flex justify-between items-center p-6 pb-0">
+                <div></div>
                 <motion.button
-                  className="p-1 hover:bg-gray-100 rounded-full"
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                   onClick={() => setShowSuccessModal(false)}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-5 w-5 text-gray-400" />
                 </motion.button>
               </div>
 
-              <motion.div 
-                className="mb-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-              >
+              {/* Content */}
+              <div className="px-6 pb-8 text-center">
+                {/* Success Animation */}
                 <motion.div 
-                  className="text-4xl mb-4"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6, type: "spring", bounce: 0.5 }}
+                  className="mb-6"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
                 >
-                  ✈️
+                  <motion.div 
+                    className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ delay: 0.3, duration: 0.6, type: "spring", bounce: 0.5 }}
+                  >
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8, duration: 0.3 }}
+                    >
+                      <CheckCircle className="w-10 h-10 text-green-600" />
+                    </motion.div>
+                  </motion.div>
+
+                  <motion.h2 
+                    className="text-2xl font-bold text-gray-800 mb-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4, duration: 0.4 }}
+                  >
+                    Application Sent!
+                  </motion.h2>
+                  
+                  <motion.p 
+                    className="text-gray-600 mb-6 leading-relaxed"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 0.4 }}
+                  >
+                    Your application for <span className="font-semibold text-gray-800">{selectedJob?.title}</span> has been successfully submitted.
+                  </motion.p>
+
+                  <motion.div 
+                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6, duration: 0.4 }}
+                  >
+                    <p className="text-sm text-blue-800">
+                      💼 Check <span className="font-semibold">My Applications</span> to keep track of all your submissions and updates.
+                    </p>
+                  </motion.div>
                 </motion.div>
-                <motion.h2 
-                  className="text-xl font-bold mb-2"
+
+                {/* Action Buttons */}
+                <motion.div 
+                  className="space-y-3"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 0.4 }}
+                  transition={{ delay: 0.7, duration: 0.4 }}
                 >
-                  Your Application has been sent!
-                </motion.h2>
-                <br />
-                <motion.h2 
-                  className="text-sm"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.0, duration: 0.4 }}
-                >
-                  Would you want to practice interviewing for this job?
-                  <Button className="bg-blue-600 hover:bg-blue-700 w-1/2 mt-4" onClick={() => router.push(`/mock-interview?application=${lastApplication?.id ?? ''}`)}>
-                    Practice
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+                    onClick={() => {
+                      setShowSuccessModal(false)
+                      router.push('/applications')
+                    }}
+                  >
+                    <Clipboard className="w-4 h-4 mr-2" />
+                    View My Applications
                   </Button>
-                </motion.h2>
-              </motion.div>
+                </motion.div>
+
+                {/* Auto-dismiss indicator with progress bar */}
+                <motion.div 
+                  className="mt-6"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1, duration: 0.3 }}
+                >
+                  <div className="text-xs text-gray-400 mb-2">
+                    Auto-closing in {Math.ceil(autoCloseProgress / 20)} seconds
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1">
+                    <motion.div 
+                      className="bg-blue-600 h-1 rounded-full transition-all duration-100 ease-linear"
+                      style={{ width: `${autoCloseProgress}%` }}
+                    />
+                  </div>
+                </motion.div>
+              </div>
             </motion.div>
           </motion.div>
         )}

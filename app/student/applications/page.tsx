@@ -18,7 +18,14 @@ import {
   Calendar,
   MapPin,
   Building,
-  Trash2
+  Trash2,
+  Briefcase,
+  Wifi,
+  Globe,
+  Users2,
+  PhilippinePeso,
+  Clock,
+  Clipboard
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
 import { useJobActions, useApplications } from "@/hooks/useApi"
@@ -42,6 +49,79 @@ export default function ApplicationsPage() {
       month: 'short',
       day: 'numeric'
     })
+  }
+
+  // Helper function to get mode icon
+  const getModeIcon = (mode: string) => {
+    if (!mode) return <Briefcase className="w-3 h-3 mr-1" />
+    
+    const modeStr = mode.toLowerCase()
+    if (modeStr.includes('remote')) {
+      return <Wifi className="w-3 h-3 mr-1" />
+    } else if (modeStr.includes('hybrid')) {
+      return <Globe className="w-3 h-3 mr-1" />
+    } else if (modeStr.includes('in-person') || modeStr.includes('face to face') || modeStr.includes('onsite')) {
+      return <Users2 className="w-3 h-3 mr-1" />
+    }
+    
+    return <Briefcase className="w-3 h-3 mr-1" />
+  }
+
+  // Helper function to get employment type icon
+  const getEmploymentTypeIcon = (type: string) => {
+    if (!type) return <Clipboard className="w-3 h-3 mr-1" />
+    
+    const typeStr = type.toLowerCase()
+    if (typeStr.includes('intern')) {
+      return <GraduationCap className="w-3 h-3 mr-1" />
+    } else if (typeStr.includes('full')) {
+      return <Briefcase className="w-3 h-3 mr-1" />
+    } else if (typeStr.includes('part')) {
+      return <Clock className="w-3 h-3 mr-1" />
+    }
+    
+    return <Clipboard className="w-3 h-3 mr-1" />
+  }
+
+  // Helper function to get allowance/salary icon
+  const getSalaryIcon = () => {
+    return <PhilippinePeso className="w-3 h-3 mr-1" />
+  }
+
+  // Helper function to get status badge color
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return 'default'
+      case 'reviewed':
+        return 'secondary'
+      case 'shortlisted':
+        return 'default'
+      case 'accepted':
+        return 'default'
+      case 'rejected':
+        return 'destructive'
+      default:
+        return 'outline'
+    }
+  }
+
+  // Helper function to get status display text
+  const getStatusDisplayText = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return '⏳ Pending'
+      case 'reviewed':
+        return '👀 Reviewed'
+      case 'shortlisted':
+        return '⭐ Shortlisted'
+      case 'accepted':
+        return '✅ Accepted'
+      case 'rejected':
+        return '❌ Rejected'
+      default:
+        return status || 'Unknown'
+    }
   }
 
   if (!isAuthenticated) {
@@ -136,10 +216,15 @@ export default function ApplicationsPage() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-3">
-                            <div>
-                              <h3 className="text-xl font-semibold text-gray-900 mb-1">
-                                {application.job?.title}
-                              </h3>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-1">
+                                <h3 className="text-xl font-semibold text-gray-900">
+                                  {application.job?.title}
+                                </h3>
+                                <Badge variant={getStatusBadgeVariant(application.status)} className="text-xs">
+                                  {getStatusDisplayText(application.status)}
+                                </Badge>
+                              </div>
                               <div className="flex items-center gap-2 text-gray-600 mb-2">
                                 <Building className="w-4 h-4" />
                                 <span className="font-medium">{application.job?.company.name}</span>
@@ -158,11 +243,35 @@ export default function ApplicationsPage() {
                           </div>
 
                           <div className="flex flex-wrap gap-2 mb-4">
-                            <Badge variant="outline">{application.job?.type}</Badge>
-                            <Badge variant="outline">{application.job?.mode}</Badge>
-                            <Badge variant="outline">{application.job?.category}</Badge>
+                            {application.job?.type && (
+                              <Badge variant="outline" className="text-xs flex items-center">
+                                {getEmploymentTypeIcon(application.job.type)}
+                                {application.job.type}
+                              </Badge>
+                            )}
+                            {application.job?.mode && (
+                              <Badge variant="outline" className="text-xs flex items-center">
+                                {getModeIcon(application.job.mode)}
+                                {application.job.mode}
+                              </Badge>
+                            )}
+                            {application.job?.allowance && application.job.allowance.trim() !== '' && (
+                              <Badge variant="outline" className="text-xs flex items-center">
+                                <Clipboard className="w-3 h-3 mr-1" />
+                                {application.job.allowance}
+                              </Badge>
+                            )}
                             {application.job?.salary && (
-                              <Badge variant="outline">{application.job?.salary}</Badge>
+                              <Badge variant="outline" className="text-xs flex items-center">
+                                {getSalaryIcon()}
+                                {application.job.salary}
+                              </Badge>
+                            )}
+                            {application.job?.duration && (
+                              <Badge variant="outline" className="text-xs flex items-center">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {application.job.duration}
+                              </Badge>
                             )}
                           </div>
 
