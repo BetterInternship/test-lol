@@ -109,12 +109,7 @@ export default function RegisterPage() {
       // @ts-ignore
       await register(newUser)
         .then(() => { 
-          if (USE_MOCK_API) {
-            // In mock mode, go directly to homepage after registration
-            router.push('/')
-          } else {
-            router.push('/verify')
-          }
+          router.push('/verify')
         })
         .catch((e) => { 
           setError(e.message || "Registration failed. Please try again.")

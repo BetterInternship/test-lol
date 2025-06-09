@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useAuthContext } from "@/app/student/authctx"
-import { USE_MOCK_API } from "@/lib/mock/config"
 
 export default function OTPPage() {
   const { send_otp_request, verify_otp } = useAuthContext();
@@ -158,21 +157,6 @@ export default function OTPPage() {
             <p className="text-gray-900 font-medium">{email}</p>
           </div>
 
-          {/* Mock OTP Display */}
-          {mockOtpCode && USE_MOCK_API && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h4 className="text-sm font-semibold text-green-700 mb-2">🔧 Mock System - Your OTP Code:</h4>
-              <div className="text-center">
-                <span className="text-2xl font-mono font-bold text-green-800 bg-green-100 px-4 py-2 rounded-lg">
-                  {mockOtpCode}
-                </span>
-              </div>
-              <p className="text-xs text-green-600 text-center mt-2">
-                Copy this code into the fields below
-              </p>
-            </div>
-          )}
-
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -211,15 +195,15 @@ export default function OTPPage() {
           {/* Resend OTP */}
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-2">
-              Didn't receive the code?
+              Didn't receive the code? 
+              <button
+                onClick={handleResendOTP}
+                disabled={resending || loading}
+                className="ml-1 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors disabled:opacity-50"
+              >
+                {resending ? "Sending..." : "Resend OTP"}
+              </button>
             </p>
-            <button
-              onClick={handleResendOTP}
-              disabled={resending || loading}
-              className="text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors disabled:opacity-50"
-            >
-              {resending ? "Sending..." : "Resend OTP"}
-            </button>
           </div>
         </div>
       </div>
