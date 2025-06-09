@@ -10,6 +10,7 @@ interface IAuthContext {
 	register: (user: Partial<PublicUser>) => Promise<Partial<PublicUser> | null>,
 	verify: (user_id: string, key: string) => Promise<Partial<PublicUser> | null>,
 	send_otp_request: (email: string) => Promise<{ email: string }>,
+	resend_otp_request: (email: string) => Promise<{ email: string }>
 	verify_otp: (email: string, otp: string) => Promise<Partial<PublicUser> | null>,
 	email_status: (email: string) => Promise<{ existing_user: boolean, verified_user: boolean }>,
 	logout: (user: Partial<PublicUser>) => void,
@@ -78,6 +79,11 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 		return response;
 	}
 
+	const resend_otp_request = async (email: string) => {
+		const response = await auth_service.send_otp_request(email);
+		return response;
+	}
+
 	const verify_otp = async (email: string, otp: string) => {
 		const response = await auth_service.verify_otp(email, otp);
 		if (!response.success) return null;
@@ -103,7 +109,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
 	}
 
 	return (
-		<AuthContext.Provider value={{ user, recheck_authentication, register, verify, send_otp_request: send_otp_request, verify_otp, email_status, logout, is_authenticated }}>
+		<AuthContext.Provider value={{ user, recheck_authentication, register, verify, send_otp_request, resend_otp_request, verify_otp, email_status, logout, is_authenticated }}>
 			{ children }
 		</AuthContext.Provider>
 	)

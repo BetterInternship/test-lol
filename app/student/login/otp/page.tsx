@@ -13,7 +13,6 @@ export default function OTPPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [resending, setResending] = useState(false)
-  const [mockOtpCode, setMockOtpCode] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
@@ -23,7 +22,7 @@ export default function OTPPage() {
     if (emailParam) {
       setEmail(emailParam);
       if (typeof window !== 'undefined')
-        send_otp_request(emailParam).then(r => !r.success && setError(r.message));
+        send_otp_request(emailParam).then(r => !r.success && setError(r.message ?? ""));
     } else {
       // If no email, redirect back to login
       router.push('/login')
@@ -86,8 +85,8 @@ export default function OTPPage() {
       setLoading(true)
       setError("")
       await verify_otp(email, otpString)
-        .then(r => r.success ? router.push('/') : setError('Invalid OTP.'))
-        .catch((e) => setError(e))
+        .then(r => r?.success ? router.push('/') : setError('Invalid OTP.'))
+        .catch((e) => setError(e.message ?? ""))
 
     } catch (err: any) {
       setError(err.message || 'Verification failed. Please try again.')
@@ -104,7 +103,7 @@ export default function OTPPage() {
     try {
       setResending(true)
       setError("")
-      // ! to handle
+      
 
     } catch (err: any) {
       setError(err.message || 'Failed to resend OTP')

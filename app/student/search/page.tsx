@@ -40,7 +40,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import ProfileButton from "@/components/student/profile-button"
-import { useJobs, useJobActions, useSavedJobs, useProfile } from "@/hooks/useApi"
+import { useJobs, useJobActions, useSavedJobs, useProfile } from "@/hooks/use-api"
 import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/db/db.types"
 import Markdown from 'react-markdown'
