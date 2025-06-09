@@ -1,10 +1,17 @@
 // HTTP client with auth handling
 class FetchClient {
-  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-      ...options.headers,
-    };
+  private async request<T>(
+    url: string,
+    options: RequestInit = {},
+    type: string = "json"
+  ): Promise<T> {
+    const headers: HeadersInit =
+      type === "json"
+        ? {
+            "Content-Type": "application/json",
+            ...options.headers,
+          }
+        : { ...options.headers };
 
     const config: RequestInit = {
       ...options,
@@ -37,11 +44,19 @@ class FetchClient {
     return this.request<T>(url, { method: "GET" });
   }
 
-  async post<T>(url: string, data?: any): Promise<T> {
-    return this.request<T>(url, {
-      method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  async post<T>(url: string, data?: any, type: string = "json"): Promise<T> {
+    return this.request<T>(
+      url,
+      {
+        method: "POST",
+        body: data
+          ? type === "json"
+            ? JSON.stringify(data)
+            : data
+          : undefined,
+      },
+      type
+    );
   }
 
   async put<T>(url: string, data?: any): Promise<T> {

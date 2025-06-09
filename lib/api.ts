@@ -91,7 +91,8 @@ export const auth_service = {
   async register(user: Partial<PublicUser>) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("register").build(),
-      user
+      user,
+      "form-data"
     );
   },
 

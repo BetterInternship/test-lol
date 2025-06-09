@@ -127,10 +127,22 @@ export default function SearchPage() {
   }, [searchParams])
 
   useEffect(() => {
+    const jobId = searchParams.get('jobId')
+    if (jobId && jobs.length > 0) {
+      const targetJob = jobs.find(job => job.id === jobId)
+      if (targetJob) {
+        setSelectedJob(targetJob)
+      }
+    } else if (jobs.length > 0 && !selectedJob) {
+      setSelectedJob(jobs[0])
+    }
+  }, [])
+
+  useEffect(() => {
+    const jobId = searchParams.get('jobId')
     const category = searchParams.get('category')
     const jobType = searchParams.get('jobType')
     const location = searchParams.get('location')
-    const jobId = searchParams.get('jobId')    
     setSelectedCategory(category)
     
     // Set filters from URL params only if not already set
@@ -139,16 +151,6 @@ export default function SearchPage() {
     }
     if (location && locationFilter === "Any location") {
       setLocationFilter(location)
-    }
-
-    // If jobId is specified, we'll select it once jobs are loaded
-    if (jobId && jobs.length > 0) {
-      const targetJob = jobs.find(job => job.id === jobId)
-      if (targetJob) {
-        setSelectedJob(targetJob)
-      }
-    } else if (jobs.length > 0 && !selectedJob) {
-      setSelectedJob(jobs[0])
     }
   }, [searchParams, jobs])
 

@@ -18,10 +18,10 @@ export default function LoginPage() {
   // Check if user just registered
   useEffect(() => {
     const verified = searchParams.get('verified')
-    if (verified === 'pending') {
+    if (verified === 'pending' && error.trim() === "") {
       setShowVerificationMessage(true)
     }
-  }, [searchParams])
+  }, [searchParams, error])
 
   const validateDLSUEmail = (email: string): boolean => {
     const dlsuDomains = [
