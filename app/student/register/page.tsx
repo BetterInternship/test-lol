@@ -2,30 +2,28 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload } from "lucide-react"
-import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
-import { PublicUser } from "@/lib/db/db.types"
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
-    idNumber: "",
+    yearLevel: "",
+    currentProgram: "",
     portfolioLink: "",
     githubLink: "",
     phoneNumber: "",
     linkedinProfile: "",
   })
+  const { register } = useAuthContext()
   const [email, setEmail] = useState("")
-  const [resumeFile, setResumeFile] = useState<File | null>(null)
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { register } = useAuthContext()
   const resumeInputRef = useRef<HTMLInputElement>(null)
 
   // Pre-fill email if coming from login redirect
@@ -46,26 +44,6 @@ export default function RegisterPage() {
     }))
   }
 
-  const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-    if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a PDF or Word document')
-      return
-    }
-
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB')
-      return
-    }
-
-    setResumeFile(file)
-  }
-
   const validateDLSUEmail = (email: string): boolean => {
     const dlsuDomains = [
       '@dlsu.edu.ph',
@@ -77,9 +55,9 @@ export default function RegisterPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.fullName || !formData.idNumber || !formData.currentProgram || !formData.phoneNumber) {
+    e.preventDefault();
+
+    if (!formData.fullName || !formData.yearLevel || !formData.currentProgram || !formData.phoneNumber) {
       setError("Please fill in all required fields")
       return
     }
@@ -92,24 +70,27 @@ export default function RegisterPage() {
     try {
       setLoading(true)
       setError("")
-      
-      // Create user profile
-      const newUser: Partial<PublicUser> = {
-        email,
-        full_name: formData.fullName,
-        phone_number: formData.phoneNumber,
-        year_level: formData.schoolYear,
-        current_program: formData.currentProgram,
-        portfolio_link: formData.portfolioLink || '',
-        github_link: formData.githubLink || '',
-        linkedin_link: formData.linkedinProfile || '',
-        resume: resumeFile ? resumeFile.name : null,
-      }
+
+      // User form
+      const user_form_data = new FormData();
+      user_form_data.append("email", email);
+      user_form_data.append("full_name", formData.fullName);
+      user_form_data.append("phone_number", formData.phoneNumber);
+      user_form_data.append("year_level", formData.yearLevel);
+      user_form_data.append("current_program", formData.currentProgram);
+      user_form_data.append("portfolio_link", formData.portfolioLink);
+      user_form_data.append("github_link", formData.githubLink);
+      user_form_data.append("linkedin_link", formData.linkedinProfile);
+      user_form_data.append("resume", resumeFile);
 
       // @ts-ignore
-      await register(newUser)
-        .then(() => { 
-          router.push('/verify')
+      console.log(user_form_data)
+      for (let pair of user_form_data.entries()) {
+        console.log(pair[0], pair[1]);
+      }
+      await register(user_form_data)
+        .then(r => { 
+          r && r.success ? router.push('/verify') : setError("Ensure that your inputs are correct.");
         })
         .catch((e) => { 
           setError(e.message || "Registration failed. Please try again.")
@@ -183,7 +164,7 @@ export default function RegisterPage() {
               <Input
                 type="text"
                 value={formData.yearLevel}
-                onChange={(e) => handleInputChange('idNumber', e.target.value)}
+                onChange={(e) => handleInputChange('yearLevel', e.target.value)}
                 placeholder="Enter Year Level"
                 className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
                 disabled={loading}
@@ -260,15 +241,16 @@ export default function RegisterPage() {
               <input
                 type="file"
                 ref={resumeInputRef}
-                onChange={handleResumeUpload}
+                onChange={(r) => setResumeFile((r.target?.files ?? [])[0] ?? null)}
                 accept=".pdf,.doc,.docx"
+                disabled={loading}
                 style={{ display: 'none' }}
               />
               <div
                 onClick={() => resumeInputRef.current?.click()}
                 className="w-full h-12 px-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors flex items-center justify-between"
               >
-                <span className={resumeFile ? "text-gray-900" : "text-gray-500"}>
+                <span className={resumeFile ? " line-clamp-1 text-gray-900 text-ellipsis" : "line-clamp-1 text-gray-500 text-ellipsis"}>
                   {resumeFile ? resumeFile.name : "Upload File Here"}
                 </span>
                 <Upload className="h-4 w-4 text-gray-400" />

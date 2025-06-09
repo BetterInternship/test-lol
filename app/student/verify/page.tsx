@@ -54,9 +54,6 @@ export default function VerifyPage() {
           {!loading && !verified && (
             <p className="text-gray-600 text-xl">Please check your inbox for a verification email and click the link to verify your account.</p>
           )}
-          {!loading && !verified && (
-            <p className="text-red-600 text-xl">Verification failed. Please try again.</p>
-          )}
           {!loading && verified && (
             <p className="text-green-600 text-xl">Redirecting you to the dashboard...</p>
           )}
