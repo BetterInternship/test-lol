@@ -1,10 +1,10 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { User, ChevronDown, LogOut, Settings, BookA, Heart } from "lucide-react"
+import { User, ChevronDown, LogOut, Settings, BookA, Heart, Building2, UserPlus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { useAuthContext } from "@/app/student/authctx"
+import { useAuthContext } from "@/app/hire/authctx"
 
 export default function ProfileButton() {
   const [isOpen, setIsOpen] = useState(false)
@@ -16,6 +16,7 @@ export default function ProfileButton() {
     // Check if authed
     if (!is_authenticated())
       recheck_authentication()
+        .then(r => !r && router.push("/login"))
 
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -77,21 +78,21 @@ export default function ProfileButton() {
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
                 onClick={() => {
                   setIsOpen(false)
-                  router.push('/profile')
+                  router.push('/company-profile')
                 }}
               >
-                <Settings className="w-4 h-4" />
-                Profile Settings
+                <Building2 className="w-4 h-4" />
+                Edit Company Profile
               </button>
               
               <button 
                 className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
                 onClick={() => {
                   setIsOpen(false)
-                  router.push('/applications')
+                  router.push('/add-users')
                 }}
               >
-                <BookA className="w-4 h-4" />
+                <UserPlus className="w-4 h-4" />
                 Applications
               </button>
 

@@ -49,7 +49,6 @@ import { Paginator } from "@/components/ui/paginator"
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams()
-  const { profile } = useProfile()
   const { is_authenticated } = useAuthContext()
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -67,6 +66,7 @@ export default function SearchPage() {
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
   const [applying, setApplying] = useState(false)
   const [autoCloseProgress, setAutoCloseProgress] = useState(100)
+  const { profile } = useProfile();
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -281,6 +281,8 @@ export default function SearchPage() {
       // Apply current search term along with active filters
       // The useJobs hook will automatically filter based on both search and filters
       e.currentTarget.blur()
+      setJobsPage(1);
+      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }))
     }
   }
 

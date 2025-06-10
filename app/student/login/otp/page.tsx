@@ -21,6 +21,7 @@ export default function OTPPage() {
     const emailParam = searchParams.get('email')
     if (emailParam) {
       setEmail(emailParam);
+
       if (typeof window !== 'undefined')
         send_otp_request(emailParam).then(r => !r.success && setError(r.message ?? ""));
     } else {

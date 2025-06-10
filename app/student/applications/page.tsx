@@ -285,12 +285,6 @@ export default function ApplicationsPage() {
                                 View Details
                               </Button>
                             </Link>
-                            {/* // ! UNCOMMENT THIS LATER ON */}
-                            {/* <Link href={`/search?q=${encodeURIComponent(application.job?.title ?? '')}`}>
-                              <Button variant="outline" size="sm">
-                                Find Similar
-                              </Button>
-                            </Link> */}
                           </div>
                         </div>
                       </div>

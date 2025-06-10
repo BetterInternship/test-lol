@@ -53,7 +53,11 @@ export default function LoginPage() {
       // Production flow with OTP
       await emailStatus(email).then(response => {
         if (!response?.existing_user || !response?.verified_user) {
-          router.push(`/register?email=${encodeURIComponent(email)}`)
+          if (!response?.existing_user) {
+            router.push(`/register?email=${encodeURIComponent(email)}`)
+          } else {
+            router.push(`/login?verified=pending`)
+          }
         } else {
           router.push(`/login/otp?email=${encodeURIComponent(email)}`) 
         }

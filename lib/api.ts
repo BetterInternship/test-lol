@@ -1,4 +1,10 @@
-import { Job, PublicUser, Application, SavedJob } from "@/lib/db/db.types";
+import {
+  Job,
+  PublicUser,
+  Application,
+  SavedJob,
+  PublicEmployerUser,
+} from "@/lib/db/db.types";
 import { APIClient } from "./api-client";
 
 // API configuration and helper funcs
@@ -71,7 +77,7 @@ interface ToggleResponse {
 // Auth Services
 interface AuthResponse {
   success: boolean;
-  user: Partial<PublicUser>;
+  user: Partial<PublicUser> | Partial<PublicEmployerUser>;
 }
 
 interface EmailStatusResponse {
@@ -84,6 +90,50 @@ interface SendOTPResponse {
 }
 
 export const auth_service = {
+  // Employer auth
+  employer: {
+    async loggedin() {
+      return APIClient.post<AuthResponse>(
+        APIRoute("auth").r("hire", "loggedin").build()
+      );
+    },
+
+    async email_status(email: string) {
+      return APIClient.post<EmailStatusResponse>(
+        APIRoute("auth").r("hire", "email-status").build(),
+        { email }
+      );
+    },
+
+    async send_otp_request(email: string) {
+      return APIClient.post<SendOTPResponse>(
+        APIRoute("auth").r("hire", "send-new-otp").build(),
+        { email }
+      );
+    },
+
+    async verify_otp(email: string, otp: string) {
+      return APIClient.post<AuthResponse>(
+        APIRoute("auth").r("hire", "verify-otp").build(),
+        { email, otp }
+      );
+    },
+
+    // ! to implement
+    async refresh_token() {},
+
+    async logout() {
+      // ! to remove
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+
+      return APIClient.post<NoResponse>(
+        APIRoute("auth").r("hire", "logout").build()
+      );
+    },
+  },
+
   async loggedin() {
     return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
   },
@@ -94,6 +144,13 @@ export const auth_service = {
       user,
       "form-data"
     );
+  },
+
+  async login(email: string, password: string = "") {
+    return APIClient.post<AuthResponse>(APIRoute("auth").r("login").build(), {
+      email,
+      password,
+    });
   },
 
   async verify(user_id: string, key: string) {
@@ -190,7 +247,9 @@ export const job_service = {
   },
 
   async get_job_by_id(job_id: string) {
-    return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
+    return APIClient.get<JobResponse>(
+      APIRoute("jobs").r("detail", job_id).build()
+    );
   },
 
   async get_saved_jobs() {
