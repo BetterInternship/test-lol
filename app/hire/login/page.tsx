@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft } from "lucide-react"
+import { useAuthContext } from "../authctx"
 
 export default function LoginPage() {
+  const { email_status, send_otp_request, verify_otp } = useAuthContext()
   const [email, setEmail] = useState("")
   const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [step, setStep] = useState<"email" | "otp">("email")
@@ -20,22 +22,25 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
     
-    // Demo authentication - allow both hr@google.com and test@google.com
-    if (email.toLowerCase() !== "hr@google.com" && email.toLowerCase() !== "test@google.com") {
-      setTimeout(() => {
-        setIsLoading(false)
-        setError("You are not in our company database, please contact sherwin_yaun@dlsu.edu.ph")
-      }, 1000)
-      return
+    if (email.trim() === "") {
+      setIsLoading(false)
+      setError("Email is required.");
+      return;
     }
 
-    // Simulate sending OTP
-    setTimeout(() => {
+    await email_status(email).then(async r => {
+      if (!r.existing_user) {
+        setIsLoading(false)
+        setError("Account does not exist in our database.");
+        return
+      }
+
+      // Wait for confirmation of otp being sent, then focus on otp input
+      await send_otp_request(email.trim());
       setIsLoading(false)
       setStep("otp")
-      // Focus first OTP input
       setTimeout(() => otpRefs.current[0]?.focus(), 100)
-    }, 1000)
+    })
   }
 
   const handleOtpChange = (index: number, value: string) => {
@@ -56,6 +61,25 @@ export default function LoginPage() {
     }
   }
 
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData('text')
+    const digits = pastedData.replace(/\D/g, '').slice(0, 6).split('')
+    
+    const newOtp = [...otp]
+    digits.forEach((digit, index) => {
+      if (index < 6) {
+        newOtp[index] = digit
+      }
+    })
+    setOtp(newOtp)
+    
+    // Focus the next empty input or the last one
+    const nextEmptyIndex = newOtp.findIndex(digit => digit === '')
+    const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex
+    otpRefs.current[focusIndex]?.focus()
+  }
+
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
     // Handle backspace
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
@@ -69,36 +93,23 @@ export default function LoginPage() {
     setError("")
     
     const otpString = otp.join("")
-    
-    // Demo OTP verification - only allow 12345
-    if (otpString !== "123456") {
-      setTimeout(() => {
-        setIsLoading(false)
-        setError("Incorrect OTP. Please try again.")
-        // Clear the OTP inputs so user can try again
-        setOtp(["", "", "", "", "", ""])
-        // Focus back to first input
-        setTimeout(() => otpRefs.current[0]?.focus(), 100)
-      }, 1000)
-      return
-    }
-
-    // Simulate successful login
-    setTimeout(() => {
-      setIsLoading(false)
-      // Store user email for tour detection
-      sessionStorage.setItem('userEmail', email.toLowerCase())
-      router.push("/dashboard")
-    }, 1000)
+    await verify_otp(email, otpString).then(r => {
+      setIsLoading(false);
+      if (r.success) {
+        router.push("/dashboard");
+      } else {
+        setError("Invalid OTP.");
+      }
+    });
   }
 
   const handleBackToEmail = () => {
     setStep("email")
-    setOtp(["", "", "", "", ""])
+    setOtp(["", "", "", "", "", ""])
     setError("")
   }
 
-  // Auto-submit when all 5 digits are entered
+  // Auto-submit when all 6 digits are entered
   useEffect(() => {
     const otpString = otp.join("")
     if (otpString.length === 6 && !isLoading && !error) {
@@ -135,7 +146,7 @@ export default function LoginPage() {
             ) : (
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Enter OTP</h2>
-                <p className="text-gray-600">We've sent a verification code to {email}</p>
+                <p className="text-gray-600">We've sent an OTP to {email}</p>
               </div>
             )}
           </div>
@@ -143,7 +154,7 @@ export default function LoginPage() {
           {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-red-600 justify-center">{error}</p>
             </div>
           )}
 
@@ -183,6 +194,7 @@ export default function LoginPage() {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                    onPaste={index === 0 ? handleOtpPaste : undefined}
                     className="w-12 h-16 text-center text-2xl font-semibold border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition-colors disabled:opacity-50"
                   />
                 ))}
@@ -206,9 +218,6 @@ export default function LoginPage() {
               </p>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  <span className="font-medium">Demo:</span> Use OTP <span className="font-mono font-bold">12345</span> to continue
-                </p>
                 <p className="text-xs text-gray-400">
                   Didn't receive the code? Check your email or try again.
                 </p>

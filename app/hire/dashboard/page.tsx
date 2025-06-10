@@ -42,6 +42,7 @@ import CalendarModal from "@/components/hire/calendar-modal"
 import ProductTour from "@/components/ProductTour"
 import TourButton from "@/components/TourButton"
 import { useTourIntegration } from "@/components/useTourIntegration"
+import ProfileButton from "@/components/hire/profile-button"
 
 // Placeholder data for applicants
 const applicantsData = [
@@ -307,14 +308,6 @@ export default function Dashboard() {
     </Popover>
   )
 
-  const handleLogout = () => {
-    // Clear any stored authentication data (if you add localStorage/sessionStorage later)
-    // localStorage.removeItem('authToken') // Future implementation
-    
-    // Redirect to login page
-    router.push('/login')
-  }
-
   return (
     <div className="h-screen bg-white flex">
       {/* Sidebar */}
@@ -352,34 +345,7 @@ export default function Dashboard() {
               onClick={startTour}
               pageName="dashboard"
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" data-tour="user-menu">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem className="cursor-pointer" asChild>
-                  <Link href="/company-profile">
-                    <Building2 className="mr-2 h-4 w-4" />
-                    <span>Edit Company Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer" asChild>
-                  <Link href="/add-users">
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    <span>Add Users</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer text-red-600"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ProfileButton />
           </div>
         </div>
 

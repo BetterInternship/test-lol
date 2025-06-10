@@ -280,6 +280,8 @@ export default function SearchPage() {
       // Apply current search term along with active filters
       // The useJobs hook will automatically filter based on both search and filters
       e.currentTarget.blur()
+      setJobsPage(1);
+      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }))
     }
   }
 
