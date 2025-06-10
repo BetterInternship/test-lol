@@ -28,7 +28,7 @@ import {
   Clipboard
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
-import { useJobActions, useApplications } from "@/hooks/use-api"
+import { useApplications } from "@/hooks/use-api"
 import { useRouter } from "next/navigation"
 import { useAuthContext } from "../authctx"
 

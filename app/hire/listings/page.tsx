@@ -47,163 +47,15 @@ import Link from "next/link"
 import ProductTour from "@/components/ProductTour"
 import TourButton from "@/components/TourButton"
 import { useTourIntegration } from "@/components/useTourIntegration"
-
-// Sample job listings data for Google
-const jobListings = [
-  {
-    id: 1,
-    title: "Frontend Developer Intern",
-    company: "Google",
-    location: "Legazpi Village, Makati",
-    listedDate: "May 16, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 300/Day",
-    mode: "Remote",
-    allowance: "Non-paid",
-    projectType: "Project-Based/Flexible",
-    description: "Our brand seeks a creative and enthusiastic Social Media Intern to join our team. The Social Media Intern will assist with the management and creation of TikTok content to increase our brand's online presence and engagement. You will work closely with our marketing team to develop engaging content, monitor social media trends, and help grow our online community.",
-    requirements: ["Knowledge of HTML, CSS, JavaScript", "Experience with React or Angular", "Understanding of responsive design principles"]
-  },
-  {
-    id: 2,
-    title: "Backend Developer Intern", 
-    company: "Google",
-    location: "Legazpi Village, Makati",
-    listedDate: "May 16, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 350/Day",
-    mode: "Remote",
-    allowance: "Paid",
-    projectType: "Full-time",
-    description: "Join our backend development team to work on scalable server-side applications. You'll be involved in API development, database optimization, and cloud infrastructure management.",
-    requirements: ["Python or Java proficiency", "Database knowledge (SQL/NoSQL)", "RESTful API experience"]
-  },
-  {
-    id: 3,
-    title: "UI/UX Design Intern",
-    company: "Google", 
-    location: "Legazpi Village, Makati",
-    listedDate: "May 16, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship", 
-    salary: "PHP 280/Day",
-    mode: "Hybrid",
-    allowance: "Non-paid",
-    projectType: "Project-Based/Flexible",
-    description: "Create intuitive and engaging user experiences for our digital products. Work with design systems, conduct user research, and collaborate with development teams.",
-    requirements: ["Figma/Sketch proficiency", "Design thinking methodology", "Portfolio of design work"]
-  },
-  {
-    id: 4,
-    title: "Software Engineering Intern",
-    company: "Google",
-    location: "Legazpi Village, Makati", 
-    listedDate: "May 16, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 400/Day",
-    mode: "Hybrid",
-    allowance: "Paid",
-    projectType: "Full-time",
-    description: "Work on cutting-edge software solutions and contribute to products used by millions. Gain experience in large-scale system design and modern development practices.",
-    requirements: ["Computer Science fundamentals", "Programming in multiple languages", "Problem-solving skills"]
-  },
-  {
-    id: 5,
-    title: "Data Science Intern",
-    company: "Google",
-    location: "BGC, Taguig",
-    listedDate: "May 15, 2025",
-    shift: "Flexible Hours",
-    type: "Internship",
-    salary: "PHP 450/Day",
-    mode: "Hybrid",
-    allowance: "Paid",
-    projectType: "Project-Based/Flexible",
-    description: "Analyze large datasets to extract meaningful insights. Work with machine learning models and statistical analysis to drive business decisions.",
-    requirements: ["Python/R proficiency", "Statistics knowledge", "SQL experience", "Machine learning basics"]
-  },
-  {
-    id: 6,
-    title: "Mobile App Developer Intern",
-    company: "Google",
-    location: "Ortigas, Pasig",
-    listedDate: "May 14, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 320/Day",
-    mode: "Remote",
-    allowance: "Non-paid",
-    projectType: "Part-time",
-    description: "Develop mobile applications for Android and iOS platforms. Learn modern mobile development frameworks and best practices.",
-    requirements: ["Flutter or React Native", "Mobile UI/UX principles", "API integration experience"]
-  },
-  {
-    id: 7,
-    title: "DevOps Engineer Intern",
-    company: "Google",
-    location: "Alabang, Muntinlupa",
-    listedDate: "May 13, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 380/Day",
-    mode: "Hybrid",
-    allowance: "Paid",
-    projectType: "Full-time",
-    description: "Learn cloud infrastructure management, CI/CD pipelines, and automation tools. Gain hands-on experience with AWS, Docker, and Kubernetes.",
-    requirements: ["Linux command line", "Docker basics", "Cloud platforms (AWS/GCP)", "Scripting languages"]
-  },
-  {
-    id: 8,
-    title: "Product Manager Intern",
-    company: "Google",
-    location: "Makati CBD",
-    listedDate: "May 12, 2025",
-    shift: "Flexible Hours",
-    type: "Internship",
-    salary: "PHP 360/Day",
-    mode: "Hybrid",
-    allowance: "Paid",
-    projectType: "Project-Based/Flexible",
-    description: "Support product development lifecycle from ideation to launch. Conduct market research, analyze user feedback, and assist in roadmap planning.",
-    requirements: ["Analytical thinking", "Communication skills", "Basic knowledge of Agile", "Data analysis tools"]
-  },
-  {
-    id: 9,
-    title: "Cybersecurity Intern",
-    company: "Google",
-    location: "Bonifacio Global City",
-    listedDate: "May 11, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 420/Day",
-    mode: "On-site",
-    allowance: "Paid",
-    projectType: "Full-time",
-    description: "Learn security protocols, vulnerability assessment, and incident response. Assist in monitoring security systems and threat analysis.",
-    requirements: ["Network security basics", "Ethical hacking interest", "Security frameworks knowledge", "Problem-solving skills"]
-  },
-  {
-    id: 10,
-    title: "QA Tester Intern",
-    company: "Google",
-    location: "Mandaluyong City",
-    listedDate: "May 10, 2025",
-    shift: "8 Hour Shift",
-    type: "Internship",
-    salary: "PHP 290/Day",
-    mode: "Remote",
-    allowance: "Non-paid",
-    projectType: "Part-time",
-    description: "Test software applications for bugs and usability issues. Learn automated testing tools and quality assurance methodologies.",
-    requirements: ["Attention to detail", "Testing methodologies", "Bug tracking tools", "Basic scripting knowledge"]
-  }
-]
+import { useOwnedJobs } from "@/hooks/use-employer-api"
+import { Job } from "@/lib/db/db.types"
+import ProfileButton from "@/components/hire/profile-button"
+import { useRefs } from "@/hooks/use-refs"
 
 export default function MyListings() {
-  const [selectedJob, setSelectedJob] = useState(jobListings[0])
+  const { ownedJobs } = useOwnedJobs();
+  const { ref_loading, get_job_mode, get_job_type, job_types, job_modes } = useRefs();
+  const [selectedJob, setSelectedJob] = useState<Job>({} as Job)
   const [searchTerm, setSearchTerm] = useState("")
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -237,11 +89,6 @@ export default function MyListings() {
     requirePortfolio: false
   })
 
-  const filteredJobs = jobListings.filter(job =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.employer.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
   const handleLogout = () => {
     // Clear any stored authentication data (if you add localStorage/sessionStorage later)
     // localStorage.removeItem('authToken') // Future implementation
@@ -250,27 +97,27 @@ export default function MyListings() {
     router.push('/login')
   }
 
-  const handleEditJob = (jobId: number) => {
+  const handleEditJob = (job_id: string) => {
     // Find the job and populate form data
-    const job = jobListings.find(j => j.id === jobId)
+    const job =  true//jobListings.find(j => j.id === jobId)
     if (job) {
-      // Parse salary to extract amount and period
-      const salaryMatch = job.salary?.match(/(\d+)\/(\w+)/) || []
-      const amount = salaryMatch[1] || ""
-      const period = salaryMatch[2] === "Day" ? "day" : salaryMatch[2] === "Hour" ? "hour" : salaryMatch[2] === "Month" ? "month" : ""
+      // // Parse salary to extract amount and period
+      // const salaryMatch = job.salary?.match(/(\d+)\/(\w+)/) || []
+      // const amount = salaryMatch[1] || ""
+      // const period = salaryMatch[2] === "Day" ? "day" : salaryMatch[2] === "Hour" ? "hour" : salaryMatch[2] === "Month" ? "month" : ""
       
-      setEditFormData({
-        title: job.title,
-        location: job.location,
-        salaryAmount: amount,
-        salaryPeriod: period,
-        mode: job.mode,
-        projectType: job.projectType,
-        description: job.description,
-        requirements: job.requirements,
-        requireGithub: false, // Default to false since not in current data
-        requirePortfolio: false // Default to false since not in current data
-      })
+      // setEditFormData({
+      //   title: job.title,
+      //   location: job.location,
+      //   salaryAmount: amount,
+      //   salaryPeriod: period,
+      //   mode: job.mode,
+      //   projectType: job.projectType,
+      //   description: job.description,
+      //   requirements: job.requirements,
+      //   requireGithub: false, // Default to false since not in current data
+      //   requirePortfolio: false // Default to false since not in current data
+      // })
       setIsEditModalOpen(true)
     }
   }
@@ -347,6 +194,14 @@ export default function MyListings() {
     }
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
   return (
     <div className="h-screen bg-white flex">
       {/* Sidebar */}
@@ -384,34 +239,7 @@ export default function MyListings() {
               onClick={startTour}
               pageName="listings"
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/company-profile">
-                  <Building2 className="mr-2 h-4 w-4" />
-                  <span>Edit Company Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/add-users">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="cursor-pointer text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ProfileButton></ProfileButton>
           </div>
         </div>
 
@@ -443,7 +271,7 @@ export default function MyListings() {
 
             {/* Job Cards - Scrollable */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0 scrollbar-custom" data-tour="job-cards">
-              {filteredJobs.map((job) => (
+              {ownedJobs.map((job) => (
                 <div
                   key={job.id}
                   onClick={() => setSelectedJob(job)}
@@ -455,15 +283,15 @@ export default function MyListings() {
                 >
                   <h3 className="font-semibold text-gray-900">{job.title}</h3>
                   <p className="text-sm text-gray-600">{job.location}</p>
-                  <p className="text-sm text-gray-500 mb-3">Listed on {job.listedDate}</p>
+                  <p className="text-sm text-gray-500 mb-3">Listed on {formatDate(job.created_at ?? "")}</p>
                   
                   <div className="flex gap-2 flex-wrap">
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                      {job.shift}
-                    </span>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                      {job.type}
-                    </span>
+                    { !ref_loading && !!job.mode && <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                      {get_job_mode(job.mode)?.name ?? ""}
+                    </span> }
+                    { !ref_loading && !!job.type && <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                      {get_job_type(job.type)?.name ?? ""}
+                    </span> }
                   </div>
                 </div>
               ))}
@@ -474,13 +302,13 @@ export default function MyListings() {
           <div className="flex-1 border-2 border-gray-200 rounded-lg p-6 overflow-y-auto">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">{selectedJob.title}</h2>
-              <p className="text-gray-600 mb-1">{selectedJob.company}</p>
-              <p className="text-sm text-gray-500 mb-4">Listed on {selectedJob.listedDate}</p>
+              <p className="text-gray-600 mb-1">{selectedJob.employer?.name}</p>
+              <p className="text-sm text-gray-500 mb-4">Listed on {formatDate(selectedJob.created_at ?? "")}</p>
               
               <div className="flex gap-3">
                 <Button 
                   variant="outline"
-                  onClick={() => handleEditJob(selectedJob.id)}
+                  onClick={() => handleEditJob(selectedJob.id ?? "")}
                   data-tour="bulk-actions"
                 >
                   Edit
@@ -527,7 +355,7 @@ export default function MyListings() {
                   <div>
                     <p className="text-sm">
                       <span className="font-medium">Employment Type: </span>
-                      <span className="opacity-80">{selectedJob.projectType || "Not specified"}</span>
+                      <span className="opacity-80">{selectedJob.type || "Not specified"}</span>
                     </p>                  
                   </div>
                 </div>
@@ -657,9 +485,9 @@ export default function MyListings() {
                           <SelectValue placeholder="Select work arrangement" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Remote">Remote</SelectItem>
-                          <SelectItem value="Hybrid">Hybrid</SelectItem>
-                          <SelectItem value="On-site">On-site</SelectItem>
+                          { job_modes.map(job_mode => 
+                            <SelectItem value={job_mode.id + ""}>{job_mode.name}</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -674,10 +502,7 @@ export default function MyListings() {
                           <SelectValue placeholder="Employment type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Project-Based">Project-Based</SelectItem>
-                          <SelectItem value="Flexible">Flexible</SelectItem>
+                          { job_types.map(job_type => <SelectItem value={job_type.id + ""}>{job_type.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
@@ -880,9 +705,9 @@ export default function MyListings() {
                           <SelectValue placeholder="Select work arrangement" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Remote">Remote</SelectItem>
-                          <SelectItem value="Hybrid">Hybrid</SelectItem>
-                          <SelectItem value="On-site">On-site</SelectItem>
+                          { job_modes.map(job_mode => 
+                            <SelectItem value={job_mode.id + ""}>{job_mode.name}</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -897,10 +722,7 @@ export default function MyListings() {
                           <SelectValue placeholder="Employment type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Project-Based">Project-Based</SelectItem>
-                          <SelectItem value="Flexible">Flexible</SelectItem>
+                          { job_types.map(job_type => <SelectItem value={job_type.id + ""}>{job_type.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>

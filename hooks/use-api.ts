@@ -12,8 +12,6 @@ import { useCache } from "./use-cache";
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
   params: {
-    page?: number;
-    limit?: number;
     category?: string;
     type?: string;
     mode?: string;
@@ -65,27 +63,18 @@ export function useJobs(
     // Apply type filter
     if (type && type !== "All types") {
       filtered = filtered.filter((job) => {
-        if (type === "Internships")
-          return job.type?.toLowerCase().includes("intern");
-        if (type === "Full-time")
-          return job.type?.toLowerCase().includes("full");
-        if (type === "Part-time")
-          return job.type?.toLowerCase().includes("part");
-        return job.type === type;
+        if (type === "Internships") return job.type === 0;
+        if (type === "Full-time") return job.type === 1;
+        if (type === "Part-time") return job.type === 2;
+        return false;
       });
     }
 
     // Apply mode filter
     if (mode && mode !== "Any location") {
       filtered = filtered.filter((job) => {
-        if (mode === "In-Person") {
-          return (
-            job.mode?.toLowerCase().includes("face to face") ||
-            job.mode?.toLowerCase().includes("in-person") ||
-            job.mode?.toLowerCase().includes("onsite")
-          );
-        }
-        return job.mode?.toLowerCase().includes(mode.toLowerCase());
+        if (mode === "In-Person") return job.mode === 0;
+        return job.mode === 1 || job.mode === 2;
       });
     }
 
@@ -164,11 +153,6 @@ export function useJob(jobId: string | null) {
         setError(null);
         const jobData = await job_service.get_job_by_id(jobId);
         setJob(jobData);
-
-        // Track view if user is authenticated
-        if (is_authenticated()) {
-          job_service.track_view(jobId).catch(console.error);
-        }
       } catch (err) {
         const errorMessage = handle_api_error(err);
         setError(errorMessage);
@@ -382,29 +366,7 @@ export function useApplications(
 // Job Save/Unsave Hook
 export function useJobActions() {
   const { is_authenticated } = useAuthContext();
-  const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Map<string, any>>(new Map());
-
-  const checkApplied = async (jobId: string) => {
-    try {
-      if (!is_authenticated()) return null;
-
-      const response = await application_service.check_application(jobId);
-      if (response.hasApplied) {
-        setAppliedJobs((prev) =>
-          new Map(prev).set(jobId, {
-            applicationId: response.applicationId,
-            status: response.status,
-            appliedAt: response.appliedAt,
-          })
-        );
-      }
-      return response;
-    } catch (error) {
-      console.error("Error checking application status:", error);
-      return null;
-    }
-  };
 
   const applyToJob = async (
     jobId: string,
@@ -425,7 +387,7 @@ export function useJobActions() {
         new Map(prev).set(jobId, {
           applicationId: response.application.id,
           status: response.application.status,
-          appliedAt: response.application.appliedAt,
+          appliedAt: response.application.applied_at,
         })
       );
 
@@ -436,13 +398,10 @@ export function useJobActions() {
     }
   };
 
-  const isSaved = (jobId: string) => savedJobs.has(jobId);
   const getApplicationStatus = (jobId: string) => appliedJobs.get(jobId);
 
   return {
-    checkApplied,
     applyToJob,
-    isSaved,
     getApplicationStatus,
   };
 }

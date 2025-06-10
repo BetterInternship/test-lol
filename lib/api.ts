@@ -241,6 +241,12 @@ interface SavedJobsResponse {
   message: string;
 }
 
+interface OwnedJobsResponse {
+  jobs: Job[];
+  success?: boolean;
+  message: string;
+}
+
 export const job_service = {
   async get_jobs(params: { last_update: number }) {
     return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
@@ -255,6 +261,12 @@ export const job_service = {
   async get_saved_jobs() {
     return APIClient.get<SavedJobsResponse>(
       APIRoute("jobs").r("saved").build()
+    );
+  },
+
+  async get_owned_jobs() {
+    return APIClient.get<OwnedJobsResponse>(
+      APIRoute("jobs").r("owned").build()
     );
   },
 };
