@@ -90,25 +90,21 @@ export default function Dashboard() {
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("")
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
   const [selectedJobs, setSelectedJobs] = useState<string[]>([])
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
-  const [programSearch, setProgramSearch] = useState("")
   const [jobSearch, setJobSearch] = useState("")
   const [statusSearch, setStatusSearch] = useState("")
 
   // Get unique values for filters
-  const uniquePrograms = useMemo(() => [...new Set(applicantsData.map(a => a.program))].sort(), [])
   const uniqueJobs = useMemo(() => [...new Set(applicantsData.map(a => a.job))].sort(), [])
   const uniqueStatuses = useMemo(() => [...new Set(applicantsData.map(a => a.status))].sort(), [])
 
   // Filter and sort applicants
   const filteredAndSortedApplicants = useMemo(() => {
     let filtered = applicantsData.filter(applicant => {
-      const programMatch = selectedPrograms.length === 0 || selectedPrograms.includes(applicant.program)
       const jobMatch = selectedJobs.length === 0 || selectedJobs.includes(applicant.job)
       const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(applicant.status)
-      return programMatch && jobMatch && statusMatch
+      return jobMatch && statusMatch
     })
 
     if (sortField) {
@@ -126,7 +122,7 @@ export default function Dashboard() {
     }
 
     return filtered
-  }, [selectedPrograms, selectedJobs, selectedStatuses, sortField, sortDirection])
+  }, [selectedJobs, selectedStatuses, sortField, sortDirection])
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -135,14 +131,6 @@ export default function Dashboard() {
       setSortField(field)
       setSortDirection("asc")
     }
-  }
-
-  const handleProgramToggle = (program: string) => {
-    setSelectedPrograms(prev => 
-      prev.includes(program) 
-        ? prev.filter(p => p !== program)
-        : [...prev, program]
-    )
   }
 
   const handleJobToggle = (job: string) => {
@@ -382,97 +370,184 @@ export default function Dashboard() {
           </DropdownMenu>
         </div>
 
-        {/* Table */}
-        <div className="p-6 flex flex-col h-0 flex-1">
-          <div className="bg-white border rounded-lg overflow-hidden flex flex-col h-full">
+        {/* Enhanced Dashboard */}
+        <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
+          {/* Quick Stats Cards */}
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600">Total Applications</p>
+                  <p className="text-2xl font-bold text-blue-900">{applicantsData.length}</p>
+                </div>
+                <div className="p-3 bg-blue-200 rounded-lg">
+                  <User className="h-6 w-6 text-blue-700" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600">Hired</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {applicantsData.filter(a => a.status === "Hired").length}
+                  </p>
+                </div>
+                <div className="p-3 bg-green-200 rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-green-700" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-yellow-600">Interviewing</p>
+                  <p className="text-2xl font-bold text-yellow-900">
+                    {applicantsData.filter(a => a.status === "Interviewing").length}
+                  </p>
+                </div>
+                <div className="p-3 bg-yellow-200 rounded-lg">
+                  <Calendar className="h-6 w-6 text-yellow-700" />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-600">New Applications</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {applicantsData.filter(a => a.status === "New").length}
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-200 rounded-lg">
+                  <FileText className="h-6 w-6 text-purple-700" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Table */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+            {/* Table Header with Filters */}
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Applicants</h3>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm text-gray-500">
+                    Showing {filteredAndSortedApplicants.length} of {applicantsData.length} applicants
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Content */}
             <div className="flex-1 overflow-auto">
-              <table className="w-full table-fixed">
-                <thead className="sticky top-0 bg-white border-b">
+              <table className="w-full">
+                <thead className="sticky top-0 bg-white border-b border-gray-100">
                   <tr>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[180px]">
-                      <SortableFilter field="name" title="Name" />
+                    <th className="text-left px-6 py-4 font-semibold text-gray-700 w-[300px]">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        <SortableFilter field="name" title="Candidate" />
+                      </div>
                     </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <SortableFilter field="school" title="School" />
+                    <th className="text-left px-6 py-4 font-semibold text-gray-700 w-[250px]">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-gray-400" />
+                        <MultiSelectFilter
+                          title="Position"
+                          options={uniqueJobs}
+                          selected={selectedJobs}
+                          onToggle={handleJobToggle}
+                          searchValue={jobSearch}
+                          onSearchChange={setJobSearch}
+                          fieldName="job"
+                        />
+                      </div>
                     </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <MultiSelectFilter
-                        title="Program"
-                        options={uniquePrograms}
-                        selected={selectedPrograms}
-                        onToggle={handleProgramToggle}
-                        searchValue={programSearch}
-                        onSearchChange={setProgramSearch}
-                        fieldName="program"
-                      />
+                    <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
+                      <div className="flex items-center justify-center gap-2">
+                        <FileText className="h-4 w-4 text-gray-400" />
+                        <span>Resume</span>
+                      </div>
                     </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[120px]">
-                      <MultiSelectFilter
-                        title="Job"
-                        options={uniqueJobs}
-                        selected={selectedJobs}
-                        onToggle={handleJobToggle}
-                        searchValue={jobSearch}
-                        onSearchChange={setJobSearch}
-                        fieldName="job"
-                      />
+                    <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
+                      <div className="flex items-center justify-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span>Schedule</span>
+                      </div>
                     </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[100px]">
-                      <SortableFilter field="mode" title="Mode" />
-                    </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <span className="font-semibold">Resume</span>
-                    </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[80px]">
-                      <span className="font-semibold">Calendar</span>
-                    </th>
-                    <th className="text-left p-4 font-semibold text-gray-800 w-[140px]">
-                      <MultiSelectFilter
-                        title="Status"
-                        options={uniqueStatuses}
-                        selected={selectedStatuses}
-                        onToggle={handleStatusToggle}
-                        searchValue={statusSearch}
-                        onSearchChange={setStatusSearch}
-                        fieldName="status"
-                      />
+                    <th className="text-left px-6 py-4 font-semibold text-gray-700 w-[200px]">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4 text-gray-400" />
+                        <MultiSelectFilter
+                          title="Status"
+                          options={uniqueStatuses}
+                          selected={selectedStatuses}
+                          onToggle={handleStatusToggle}
+                          searchValue={statusSearch}
+                          onSearchChange={setStatusSearch}
+                          fieldName="status"
+                        />
+                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAndSortedApplicants.map((applicant) => (
-                    <tr key={applicant.id} className="border-b hover:bg-gray-50">
-                      <td className="p-4 text-gray-800 w-[180px] truncate">{applicant.name}</td>
-                      <td className="p-4 text-gray-800 w-[80px] truncate">{applicant.school}</td>
-                      <td className="p-4 text-gray-800 w-[80px] truncate">{applicant.program}</td>
-                      <td className="p-4 text-gray-800 w-[120px] truncate">{applicant.job}</td>
-                      <td className="p-4 text-gray-800 w-[100px] truncate">{applicant.mode}</td>
-                      <td className="p-4 w-[80px]">
+                  {filteredAndSortedApplicants.map((applicant, index) => (
+                    <tr 
+                      key={applicant.id} 
+                      className={`border-b border-gray-50 hover:bg-gray-25 transition-colors ${
+                        index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                      }`}
+                    >
+                      <td className="px-6 py-4 w-[300px]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {applicant.name.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{applicant.name}</p>
+                            <p className="text-sm text-gray-500">{applicant.school} • {applicant.program}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 w-[250px]">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                          <span className="font-medium text-gray-900">{applicant.job}</span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">{applicant.mode}</p>
+                      </td>
+                      <td className="px-6 py-4 w-[120px] text-center">
                         <Button 
-                          variant="outline" 
+                          variant="ghost" 
                           size="sm" 
-                          className="w-10 h-10 p-0"
+                          className="w-10 h-10 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
                           onClick={() => openApplicantModal(applicant)}
                         >
                           <FileText className="h-4 w-4" />
                         </Button>
                       </td>
-                      <td className="p-4 w-[80px]">
+                      <td className="px-6 py-4 w-[120px] text-center">
                         <Button 
-                          variant="outline" 
+                          variant="ghost" 
                           size="sm" 
-                          className="w-10 h-10 p-0"
+                          className="w-10 h-10 p-0 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
                           onClick={() => setIsCalendarOpen(true)}
                         >
                           <Calendar className="h-4 w-4" />
                         </Button>
                       </td>
-                      <td className="p-4 w-[140px]">
+                      <td className="px-6 py-4 w-[200px]">
                         <Select 
                           value={applicant.status} 
                           onValueChange={(value) => updateStatus(applicant.id, value)}
                         >
-                          <SelectTrigger className={`w-full ${getStatusColor(applicant.status)} border-0`}>
+                          <SelectTrigger className={`w-full h-9 ${getStatusColor(applicant.status)} border-0 rounded-full font-medium text-sm`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

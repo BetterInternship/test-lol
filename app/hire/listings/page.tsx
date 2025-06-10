@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { 
   User, 
   BarChart3, 
@@ -206,20 +207,27 @@ export default function MyListings() {
   const [editFormData, setEditFormData] = useState({
     title: "",
     location: "",
-    allowance: "",
+    salaryAmount: "",
+    salaryPeriod: "",
     mode: "",
     projectType: "",
     description: "",
-    requirements: [""]
+    requirements: [""],
+    requireGithub: false,
+    requirePortfolio: false
   })
   const [addFormData, setAddFormData] = useState({
     title: "",
     location: "",
-    allowance: "",
+    allowanceAmount: "",
+    allowancePeriod: "",
     mode: "",
     projectType: "",
     description: "",
-    requirements: [""]
+    responsibilities: "",
+    requirements: [""],
+    requireGithub: false,
+    requirePortfolio: false
   })
   const router = useRouter()
 
@@ -240,14 +248,22 @@ export default function MyListings() {
     // Find the job and populate form data
     const job = jobListings.find(j => j.id === jobId)
     if (job) {
+      // Parse salary to extract amount and period
+      const salaryMatch = job.salary?.match(/(\d+)\/(\w+)/) || []
+      const amount = salaryMatch[1] || ""
+      const period = salaryMatch[2] === "Day" ? "day" : salaryMatch[2] === "Hour" ? "hour" : salaryMatch[2] === "Month" ? "month" : ""
+      
       setEditFormData({
         title: job.title,
         location: job.location,
-        allowance: job.allowance,
+        salaryAmount: amount,
+        salaryPeriod: period,
         mode: job.mode,
         projectType: job.projectType,
         description: job.description,
-        requirements: job.requirements
+        requirements: job.requirements,
+        requireGithub: false, // Default to false since not in current data
+        requirePortfolio: false // Default to false since not in current data
       })
       setIsEditModalOpen(true)
     }
@@ -258,11 +274,15 @@ export default function MyListings() {
     setAddFormData({
       title: "",
       location: "",
-      allowance: "",
+      allowanceAmount: "",
+      allowancePeriod: "",
       mode: "",
       projectType: "",
       description: "",
-      requirements: [""]
+      responsibilities: "",
+      requirements: [""],
+      requireGithub: false,
+      requirePortfolio: false
     })
     setIsAddModalOpen(true)
   }
@@ -482,8 +502,8 @@ export default function MyListings() {
                   <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-sm">
-                      <span className="font-medium">Allowance: </span>
-                      <span className="opacity-80">{selectedJob.allowance || "Not specified"}</span>
+                      <span className="font-medium">Salary: </span>
+                      <span className="opacity-80">{selectedJob.salary || "Not specified"}</span>
                     </p>                  
                   </div>
                 </div>
@@ -492,7 +512,7 @@ export default function MyListings() {
                   <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
                     <p className="text-sm">
-                      <span className="font-medium">Type: </span>
+                      <span className="font-medium">Employment Type: </span>
                       <span className="opacity-80">{selectedJob.projectType || "Not specified"}</span>
                     </p>                  
                   </div>
@@ -524,301 +544,445 @@ export default function MyListings() {
 
       {/* Edit Job Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Edit Job Listing</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            {/* Job Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Job Title</Label>
-              <Input
-                id="title"
-                value={editFormData.title}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter job title"
-              />
-            </div>
-
-            {/* Location */}
-            <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={editFormData.location}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Enter location"
-              />
-            </div>
-
-            {/* Row for Allowance, Mode, Project-based */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="allowance">Allowance</Label>
-                <Select 
-                  value={editFormData.allowance} 
-                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, allowance: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select allowance" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Paid">Paid</SelectItem>
-                    <SelectItem value="Non-paid">Non-paid</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="mode">Mode</Label>
-                <Select 
-                  value={editFormData.mode} 
-                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, mode: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Remote">Remote</SelectItem>
-                    <SelectItem value="Hybrid">Hybrid</SelectItem>
-                    <SelectItem value="In-Person">In-Person</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="projectType">Type</Label>
-                <Select 
-                  value={editFormData.projectType} 
-                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, projectType: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Flexible">Flexible</SelectItem>
-                    <SelectItem value="Project-Based">Project-Based</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Job Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Job Description</Label>
-              <Textarea
-                id="description"
-                value={editFormData.description}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter detailed job description"
-                rows={6}
-                className="resize-none"
-              />
-            </div>
-
-            {/* Requirements */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Requirements</Label>
-                <Button
-                  type="button"
+        <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden bg-white rounded-xl border-0 shadow-2xl [&>button]:hidden">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-white">
+            <div className="flex justify-between items-center">
+              <DialogTitle className="text-xl font-semibold text-gray-900">
+                Edit Job Listing
+              </DialogTitle>
+              <div className="flex gap-3">
+                <Button 
                   variant="outline"
-                  size="sm"
-                  onClick={addRequirement}
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium"
                 >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Requirement
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveEdit} 
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                >
+                  Save Changes
                 </Button>
               </div>
-              
-              <div className="space-y-2">
-                {editFormData.requirements.map((req, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={req}
-                      onChange={(e) => handleRequirementChange(index, e.target.value)}
-                      placeholder={`Requirement ${index + 1}`}
-                      className="flex-1"
-                    />
-                    {editFormData.requirements.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeRequirement(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
+          </div>
+          
+          {/* Main Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Left Column - Basic Information */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Job Information</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-job-title" className="text-sm font-medium text-gray-700">Job Title</Label>
+                      <Input
+                        id="edit-job-title"
+                        value={editFormData.title}
+                        onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Enter job title"
+                        className="mt-1 h-10"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="edit-location" className="text-sm font-medium text-gray-700">Location</Label>
+                      <Input
+                        id="edit-location"
+                        value={editFormData.location}
+                        onChange={(e) => setEditFormData(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Enter location"
+                        className="mt-1 h-10"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
-              <Button onClick={handleSaveEdit} className="flex-1">
-                Save Changes
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsEditModalOpen(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Compensation & Work Details</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Salary</Label>
+                      <div className="grid grid-cols-2 gap-3 mt-1">
+                        <Input
+                          type="number"
+                          value={editFormData.salaryAmount || ""}
+                          onChange={(e) => setEditFormData(prev => ({ ...prev, salaryAmount: e.target.value }))}
+                          placeholder="Amount"
+                          className="h-10"
+                        />
+                        <Select 
+                          value={editFormData.salaryPeriod || ""} 
+                          onValueChange={(value) => setEditFormData(prev => ({ ...prev, salaryPeriod: value }))}
+                        >
+                          <SelectTrigger className="h-10">
+                            <SelectValue placeholder="Period" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="hour">per Hour</SelectItem>
+                            <SelectItem value="day">per Day</SelectItem>
+                            <SelectItem value="month">per Month</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Work Arrangement</Label>
+                      <Select 
+                        value={editFormData.mode} 
+                        onValueChange={(value) => setEditFormData(prev => ({ ...prev, mode: value }))}
+                      >
+                        <SelectTrigger className="mt-1 h-10">
+                          <SelectValue placeholder="Select work arrangement" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Remote">Remote</SelectItem>
+                          <SelectItem value="Hybrid">Hybrid</SelectItem>
+                          <SelectItem value="On-site">On-site</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Employment Type</Label>
+                      <Select 
+                        value={editFormData.projectType} 
+                        onValueChange={(value) => setEditFormData(prev => ({ ...prev, projectType: value }))}
+                      >
+                        <SelectTrigger className="mt-1 h-10">
+                          <SelectValue placeholder="Employment type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Part-time">Part-time</SelectItem>
+                          <SelectItem value="Project-Based">Project-Based</SelectItem>
+                          <SelectItem value="Flexible">Flexible</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Description & Requirements */}
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-lg font-medium text-gray-900">Job Description</Label>
+                  <Textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Share details about:\n\n• Daily responsibilities and key tasks\n• Learning opportunities and mentorship\n• Team collaboration and work environment\n• Technologies and tools they'll use\n• Skills they will develop during the internship"
+                    className="mt-2 min-h-[200px] resize-none text-sm leading-relaxed"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-lg font-medium text-gray-900">Requirements</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addRequirement}
+                      className="h-8 px-3 text-xs"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-[135px] overflow-y-auto">
+                    {editFormData.requirements.map((req, index) => (
+                      <div key={index} className="flex gap-3 items-center group">
+                        <div className="flex-shrink-0 w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-white">{index + 1}</span>
+                        </div>
+                        <Input
+                          value={req}
+                          onChange={(e) => handleRequirementChange(index, e.target.value)}
+                          placeholder={`e.g. ${index === 0 ? 'Knowledge of HTML, CSS, JavaScript' : index === 1 ? 'Experience with React or Vue.js' : 'Strong problem-solving abilities'}`}
+                          className="h-9 text-sm"
+                        />
+                        {editFormData.requirements.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeRequirement(index)}
+                            className="h-9 w-9 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Requirements</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <Checkbox
+                        id="edit-require-github"
+                        checked={editFormData.requireGithub || false}
+                        onCheckedChange={(checked) => 
+                          setEditFormData(prev => ({ ...prev, requireGithub: checked as boolean }))
+                        }
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <label htmlFor="edit-require-github" className="text-sm font-medium text-gray-900 cursor-pointer">
+                        GitHub
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <Checkbox
+                        id="edit-require-portfolio"
+                        checked={editFormData.requirePortfolio || false}
+                        onCheckedChange={(checked) => 
+                          setEditFormData(prev => ({ ...prev, requirePortfolio: checked as boolean }))
+                        }
+                        className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                      />
+                      <label htmlFor="edit-require-portfolio" className="text-sm font-medium text-gray-900 cursor-pointer">
+                        Portfolio
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Add Job Modal */}
+      {/* Add Job Modal - Complete Redesign */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Job Listing</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-6 py-4">
-            {/* Job Title */}
-            <div className="space-y-2">
-              <Label htmlFor="add-title">Job Title</Label>
-              <Input
-                id="add-title"
-                value={addFormData.title}
-                onChange={(e) => setAddFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter job title"
-              />
-            </div>
-
-            {/* Location */}
-            <div className="space-y-2">
-              <Label htmlFor="add-location">Location</Label>
-              <Input
-                id="add-location"
-                value={addFormData.location}
-                onChange={(e) => setAddFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Enter location"
-              />
-            </div>
-
-            {/* Row for Allowance, Mode, Type */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="add-allowance">Allowance</Label>
-                <Select 
-                  value={addFormData.allowance} 
-                  onValueChange={(value) => setAddFormData(prev => ({ ...prev, allowance: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select allowance" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Paid">Paid</SelectItem>
-                    <SelectItem value="Non-paid">Non-paid</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="add-mode">Mode</Label>
-                <Select 
-                  value={addFormData.mode} 
-                  onValueChange={(value) => setAddFormData(prev => ({ ...prev, mode: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Remote">Remote</SelectItem>
-                    <SelectItem value="Hybrid">Hybrid</SelectItem>
-                    <SelectItem value="In-Person">In-Person</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="add-projectType">Type</Label>
-                <Select 
-                  value={addFormData.projectType} 
-                  onValueChange={(value) => setAddFormData(prev => ({ ...prev, projectType: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Flexible">Flexible</SelectItem>
-                    <SelectItem value="Project-Based">Project-Based</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Job Description */}
-            <div className="space-y-2">
-              <Label htmlFor="add-description">Job Description</Label>
-              <Textarea
-                id="add-description"
-                value={addFormData.description}
-                onChange={(e) => setAddFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter detailed job description"
-                rows={6}
-                className="resize-none"
-              />
-            </div>
-
-            {/* Requirements */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label>Requirements</Label>
-                <Button
-                  type="button"
+        <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden bg-white rounded-xl border-0 shadow-2xl [&>button]:hidden">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-gray-200 bg-white">
+            <div className="flex justify-between items-center">
+              <DialogTitle className="text-xl font-semibold text-gray-900">
+                Create Job Listing
+              </DialogTitle>
+              <div className="flex gap-3">
+                <Button 
                   variant="outline"
-                  size="sm"
-                  onClick={addRequirementToAdd}
+                  onClick={() => setIsAddModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium"
                 >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Requirement
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveAdd} 
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+                >
+                  Add Listing
                 </Button>
               </div>
-              
-              <div className="space-y-2">
-                {addFormData.requirements.map((req, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={req}
-                      onChange={(e) => handleAddRequirementChange(index, e.target.value)}
-                      placeholder={`Requirement ${index + 1}`}
-                      className="flex-1"
-                    />
-                    {addFormData.requirements.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => removeAddRequirement(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
+          </div>
+          
+          {/* Main Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              {/* Left Column - Basic Information */}
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Job Information</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="job-title" className="text-sm font-medium text-gray-700">Job Title</Label>
+                      <Input
+                        id="job-title"
+                        value={addFormData.title}
+                        onChange={(e) => setAddFormData(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Enter job title"
+                        className="mt-1 h-10"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="location" className="text-sm font-medium text-gray-700">Location</Label>
+                      <Input
+                        id="location"
+                        value={addFormData.location}
+                        onChange={(e) => setAddFormData(prev => ({ ...prev, location: e.target.value }))}
+                        placeholder="Enter location"
+                        className="mt-1 h-10"
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
-              <Button onClick={handleSaveAdd} className="flex-1">
-                Add Job Listing
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => setIsAddModalOpen(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Compensation & Work Details</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Allowance</Label>
+                      <div className="grid grid-cols-2 gap-3 mt-1">
+                        <Input
+                          type="number"
+                          value={addFormData.allowanceAmount || ""}
+                          onChange={(e) => setAddFormData(prev => ({ ...prev, allowanceAmount: e.target.value }))}
+                          placeholder="Amount"
+                          className="h-10"
+                        />
+                        <Select 
+                          value={addFormData.allowancePeriod || ""} 
+                          onValueChange={(value) => setAddFormData(prev => ({ ...prev, allowancePeriod: value }))}
+                        >
+                          <SelectTrigger className="h-10">
+                            <SelectValue placeholder="Period" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="hour">per Hour</SelectItem>
+                            <SelectItem value="day">per Day</SelectItem>
+                            <SelectItem value="month">per Month</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Work Arrangement</Label>
+                      <Select 
+                        value={addFormData.mode} 
+                        onValueChange={(value) => setAddFormData(prev => ({ ...prev, mode: value }))}
+                      >
+                        <SelectTrigger className="mt-1 h-10">
+                          <SelectValue placeholder="Select work arrangement" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Remote">Remote</SelectItem>
+                          <SelectItem value="Hybrid">Hybrid</SelectItem>
+                          <SelectItem value="On-site">On-site</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Employment Type</Label>
+                      <Select 
+                        value={addFormData.projectType} 
+                        onValueChange={(value) => setAddFormData(prev => ({ ...prev, projectType: value }))}
+                      >
+                        <SelectTrigger className="mt-1 h-10">
+                          <SelectValue placeholder="Employment type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Part-time">Part-time</SelectItem>
+                          <SelectItem value="Project-Based">Project-Based</SelectItem>
+                          <SelectItem value="Flexible">Flexible</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column - Description & Requirements */}
+              <div className="space-y-6">
+                <div>
+                  <Label className="text-lg font-medium text-gray-900">Job Description</Label>
+                  <Textarea
+                    value={addFormData.description}
+                    onChange={(e) => setAddFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Share details about:\n\n• Daily responsibilities and key tasks\n• Learning opportunities and mentorship\n• Team collaboration and work environment\n• Technologies and tools they'll use\n• Skills they will develop during the internship"
+                    className="mt-2 min-h-[200px] resize-none text-sm leading-relaxed"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label className="text-lg font-medium text-gray-900">Requirements</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addRequirementToAdd}
+                      className="h-8 px-3 text-xs"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-3 max-h-[135px] overflow-y-auto">
+                    {addFormData.requirements.map((req, index) => (
+                      <div key={index} className="flex gap-3 items-center group">
+                        <div className="flex-shrink-0 w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-white">{index + 1}</span>
+                        </div>
+                        <Input
+                          value={req}
+                          onChange={(e) => handleAddRequirementChange(index, e.target.value)}
+                          placeholder={`e.g. ${index === 0 ? 'Knowledge of HTML, CSS, JavaScript' : index === 1 ? 'Experience with React or Vue.js' : 'Strong problem-solving abilities'}`}
+                          className="h-9 text-sm"
+                        />
+                        {addFormData.requirements.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeAddRequirement(index)}
+                            className="h-9 w-9 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Requirements</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <Checkbox
+                        id="require-github"
+                        checked={addFormData.requireGithub}
+                        onCheckedChange={(checked) => 
+                          setAddFormData(prev => ({ ...prev, requireGithub: checked as boolean }))
+                        }
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <label htmlFor="require-github" className="text-sm font-medium text-gray-900 cursor-pointer">
+                        GitHub
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <Checkbox
+                        id="require-portfolio"
+                        checked={addFormData.requirePortfolio}
+                        onCheckedChange={(checked) => 
+                          setAddFormData(prev => ({ ...prev, requirePortfolio: checked as boolean }))
+                        }
+                        className="data-[state=checked]:bg-purple-600 data-[state=checked]:border-purple-600"
+                      />
+                      <label htmlFor="require-portfolio" className="text-sm font-medium text-gray-900 cursor-pointer">
+                        Portfolio
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </DialogContent>

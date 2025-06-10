@@ -124,7 +124,7 @@ export default function FormsAutomation() {
               <div className="flex-1 max-w-2xl">
                 {/* DLSU School Forms */}
                 <div className="mb-8">
-                  <h2 className="text-lg font-semibold text-green-500 mb-4">DLSU School Forms</h2>
+                  <h2 className="text-lg font-semibold text-blue-500 mb-4">DLSU School Forms</h2>
                   <div className="space-y-2">
                     {dlsuForms.map((form, index) => (
                       <div 
@@ -140,7 +140,7 @@ export default function FormsAutomation() {
 
                 {/* DLSU CCS School Forms */}
                 <div className="mb-8">
-                  <h2 className="text-lg font-semibold text-green-500 mb-4">DLSU CCS School Forms</h2>
+                  <h2 className="text-lg font-semibold text-blue-500 mb-4">DLSU CCS School Forms</h2>
                   <div className="space-y-2">
                     {dlsuCcsForms.map((form, index) => (
                       <div 
@@ -156,7 +156,7 @@ export default function FormsAutomation() {
 
                 {/* Ateneo School Forms */}
                 <div className="mb-8">
-                  <h2 className="text-lg font-semibold text-green-500 mb-4">Ateneo School Forms</h2>
+                  <h2 className="text-lg font-semibold text-blue-500 mb-4">Ateneo School Forms</h2>
                   <div className="space-y-2">
                     {ateneoForms.map((form, index) => (
                       <div 
@@ -171,8 +171,36 @@ export default function FormsAutomation() {
                 </div>
               </div>
 
-              {/* Right Section - Generate Pre-filled Forms */}
+              {/* Right Section - Edit Default Form Data Values and Generate Pre-filled Forms */}
               <div className="w-80">
+                {/* Edit Default Form Data Values Section */}
+                <div className="mb-8">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-6">Edit Default Form Data Values</h2>
+                  
+                  <div className="space-y-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                      asChild
+                    >
+                      <Link href="/form-data-editor?section=contact">
+                        Contact Details
+                      </Link>
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                      asChild
+                    >
+                      <Link href="/form-data-editor?section=requirements">
+                        Standard Requirements
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Generate Pre-filled Forms Section */}
                 <h2 className="text-lg font-semibold text-gray-800 mb-6">Generate Pre-filled Forms</h2>
                 
                 <div className="space-y-4">
@@ -191,8 +219,8 @@ export default function FormsAutomation() {
                     className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
                     asChild
                   >
-                    <Link href="/form-generator?form=Evaluation Forms">
-                      Evaluation Forms
+                    <Link href="/form-generator?form=Progress Forms">
+                      Progress Forms
                     </Link>
                   </Button>
                   
@@ -201,8 +229,8 @@ export default function FormsAutomation() {
                     className="w-full h-12 text-left justify-start border-2 border-gray-300 hover:border-gray-400 transition-colors"
                     asChild
                   >
-                    <Link href="/form-generator?form=Post-Hire Forms">
-                      Post-Hire Forms
+                    <Link href="/form-generator?form=Post-Hire Evaluation">
+                      Post-Hire Evaluation
                     </Link>
                   </Button>
                 </div>
