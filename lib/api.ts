@@ -269,6 +269,13 @@ export const job_service = {
       APIRoute("jobs").r("owned").build()
     );
   },
+
+  async update_job(job_id: string, job: Partial<Job>) {
+    return APIClient.put<StatusResponse>(
+      APIRoute("jobs").r(job_id).build(),
+      job
+    );
+  },
 };
 
 // Application Services

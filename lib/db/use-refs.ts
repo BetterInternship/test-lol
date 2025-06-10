@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-10 04:31:46
- * @ Modified time: 2025-06-10 19:32:30
+ * @ Modified time: 2025-06-11 02:05:34
  * @ Description:
  *
  * Accesses refs directly from the database.
@@ -13,6 +13,7 @@ import {
   College,
   JobAllowance,
   JobMode,
+  JobPayFreq,
   JobType,
   Level,
   University,
@@ -143,8 +144,15 @@ export const useRefs = () => {
     loading: l6,
   } = createRefHook<number, JobAllowance>("ref_job_allowances");
 
+  const {
+    data: job_pay_freq,
+    get: get_job_pay_freq,
+    get_by_name: get_job_pay_freq_by_name,
+    loading: l7,
+  } = createRefHook<number, JobPayFreq>("ref_job_pay_freq");
+
   useEffect(() => {
-    setLoading(l1 || l2 || l3 || l4 || l5 || l6);
+    setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7);
   });
 
   /**
@@ -170,6 +178,7 @@ export const useRefs = () => {
     job_types,
     job_modes,
     job_allowances,
+    job_pay_freq,
 
     get_level,
     get_college,
@@ -177,6 +186,7 @@ export const useRefs = () => {
     get_job_type,
     get_job_mode,
     get_job_allowance,
+    get_job_pay_freq,
 
     get_level_by_name,
     get_college_by_name,
@@ -185,5 +195,6 @@ export const useRefs = () => {
     get_job_type_by_name,
     get_job_mode_by_name,
     get_job_allowance_by_name,
+    get_job_pay_freq_by_name,
   };
 };

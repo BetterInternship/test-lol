@@ -150,3 +150,27 @@
   animation-iteration-count: infinite;
   animation-duration: 30s;
 }
+
+div[data-radix-select-viewport=""],
+.mdxeditor-select-content,
+.mdxeditor-popup-container {
+  z-index: 50 !important;
+}
+
+div[data-radix-select-viewport=""]>*:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: 300ms;
+}
+
+div[contenteditable="true"] {
+  position: absolute;
+  padding: 1.5rem 2rem;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+  margin: 0.25rem 0em;
+}
+
+.markdown > * {
+  all: revert;
+}

@@ -6,6 +6,7 @@ export type College = Tables<"ref_colleges">;
 export type University = Tables<"ref_universities">;
 export type JobType = Tables<"ref_job_types">;
 export type JobAllowance = Tables<"ref_job_allowances">;
+export type JobPayFreq = Tables<"ref_job_pay_freq">;
 export type JobMode = Tables<"ref_job_modes">;
 export type PrivateUser = Tables<"users">; // Has all fields accessible
 export type PublicUser = Omit<Tables<"users">, "verification_hash">; // Hidden private fields
