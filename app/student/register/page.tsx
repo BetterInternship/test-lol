@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input"
 import { ChevronDown, Upload } from "lucide-react"
 import { useAuthContext } from "../authctx"
 import { useRefs } from "@/hooks/use-refs"
+import { University } from "@/lib/db/db.types"
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
   const defaultCollege = "Select College";
   const validFieldClassName = "border-green-600 border-opacity-50";
-  const { levels, colleges } = useRefs();
+  const { refs_ready, levels, colleges, universities, get_level_by_name, get_college_by_name, get_university_by_domain } = useRefs();
   const [formData, setFormData] = useState({
     fullName: "",
     yearLevel: defaultYearLevel,
@@ -24,6 +25,7 @@ export default function RegisterPage() {
   })
   const { register } = useAuthContext()
   const [email, setEmail] = useState("")
+  const [university, setUniversity] = useState<University>();
   const [activeDropdown, setActiveDropdown] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false)
@@ -35,13 +37,18 @@ export default function RegisterPage() {
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get('email')
-    if (emailParam) {
-      setEmail(emailParam)
-    } else {
-      // If no email, redirect to login
-      router.push('/login')
-    }
-  }, [searchParams, router])
+    if (!emailParam)
+      return router.push('/login')
+    setEmail(emailParam)
+
+    if (!universities.length)
+      return;
+    const domain = emailParam.split("@")[1]
+    const uni = get_university_by_domain(domain)
+    if (!uni)
+      return router.push('/login')
+    setUniversity(uni);
+  }, [searchParams, universities, router])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -50,26 +57,17 @@ export default function RegisterPage() {
     }))
   }
 
-  const validateDLSUEmail = (email: string): boolean => {
-    const dlsuDomains = [
-      '@dlsu.edu.ph',
-      '@students.dlsu.edu.ph',
-      '@staff.dlsu.edu.ph',
-      '@faculty.dlsu.edu.ph'
-    ]
-    return dlsuDomains.some(domain => email.toLowerCase().endsWith(domain))
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const domain = email.split("@")[1]
 
     if (!formData.fullName || !formData.yearLevel || !formData.phoneNumber) {
       setError("Please fill in all required fields")
       return
     }
 
-    if (!validateDLSUEmail(email)) {
-      setError("Please use your DLSU email address (@dlsu.edu.ph)")
+    if (!get_university_by_domain(domain)) {
+      setError("Please use your university email address (e.g. @dlsu.edu.ph)")
       return
     }
 
@@ -87,8 +85,8 @@ export default function RegisterPage() {
       user_form_data.append("email", email);
       user_form_data.append("full_name", formData.fullName);
       user_form_data.append("phone_number", formData.phoneNumber);
-      user_form_data.append("year_level", levels.filter(l => l.name === formData.yearLevel)[0].id + "");
-      user_form_data.append("college", colleges.filter(c => c.name === formData.college)[0].id);
+      user_form_data.append("year_level", (get_level_by_name(formData.yearLevel)?.id ?? "") + "");
+      user_form_data.append("college", (get_college_by_name(formData.college)?.id ?? "") + "");
       user_form_data.append("portfolio_link", formData.portfolioLink);
       user_form_data.append("github_link", formData.githubLink);
       user_form_data.append("linkedin_link", formData.linkedinProfile);
@@ -180,7 +178,9 @@ export default function RegisterPage() {
                 name="college" 
                 defaultValue={defaultCollege}
                 value={formData.college} 
-                options={colleges.sort((a, b) => a.name.localeCompare(b.name)).map(college => college.name)} 
+                options={colleges
+                  .filter((c) => c.university_id === university?.id)
+                  .sort((a, b) => a.name.localeCompare(b.name)).map(college => college.name)} 
                 activeDropdown={activeDropdown}
                 validFieldClassName={validFieldClassName}
                 onChange={(value) => handleInputChange("college", value)}
