@@ -66,6 +66,7 @@ export default function SearchPage() {
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
   const [applying, setApplying] = useState(false)
   const [autoCloseProgress, setAutoCloseProgress] = useState(100)
+  const { profile } = useProfile();
 
   // Check if profile is complete
   const isProfileComplete = () => {
