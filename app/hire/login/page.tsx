@@ -20,8 +20,8 @@ export default function LoginPage() {
     setIsLoading(true)
     setError("")
     
-    // Demo authentication - only allow hr@google.com
-    if (email.toLowerCase() !== "hr@google.com") {
+    // Demo authentication - allow both hr@google.com and test@google.com
+    if (email.toLowerCase() !== "hr@google.com" && email.toLowerCase() !== "test@google.com") {
       setTimeout(() => {
         setIsLoading(false)
         setError("You are not in our company database, please contact sherwin_yaun@dlsu.edu.ph")
@@ -86,6 +86,8 @@ export default function LoginPage() {
     // Simulate successful login
     setTimeout(() => {
       setIsLoading(false)
+      // Store user email for tour detection
+      sessionStorage.setItem('userEmail', email.toLowerCase())
       router.push("/dashboard")
     }, 1000)
   }

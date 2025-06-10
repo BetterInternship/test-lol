@@ -23,6 +23,7 @@ import {
   FileCheck
 } from "lucide-react"
 import Link from "next/link"
+import { usePageTour } from "@/components/PageTourWrapper"
 
 export default function Page() {
   return (<Suspense>
@@ -34,6 +35,9 @@ function FormGenerator() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const formType = searchParams.get('form')
+  
+  // Tour integration
+  const { TourButton, ProductTour } = usePageTour('form-generator')
   
   const [isGenerating, setIsGenerating] = useState(false)
   const [selectedStudents, setSelectedStudents] = useState({
@@ -223,12 +227,14 @@ function FormGenerator() {
                 <p className="text-sm text-gray-600">Generate pre-filled forms for selected students</p>
               </div>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
+            <div className="flex items-center gap-3">
+              <TourButton />
+                <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuItem className="cursor-pointer" asChild>
                   <Link href="/hire/company-profile">
@@ -249,8 +255,9 @@ function FormGenerator() {
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
 
@@ -259,9 +266,9 @@ function FormGenerator() {
           <div className="w-full max-w-4xl flex flex-col h-full">
             
             {/* Minimalistic Student Selection */}
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex-1 flex flex-col max-h-[calc(100vh-200px)]">
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex-1 flex flex-col max-h-[calc(100vh-200px)]" data-tour="student-grid">
               {/* Simple Header */}
-              <div className="bg-gray-50 p-4 border-b">
+              <div className="bg-gray-50 p-4 border-b" data-tour="form-preview">
                 <h2 className="text-lg font-semibold text-gray-900">Select Students</h2>
                 <p className="text-sm text-gray-600">Choose which students to generate forms for</p>
               </div>
@@ -313,7 +320,7 @@ function FormGenerator() {
             </div>
             
             {/* Simple Generate Button */}
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-center pt-4" data-tour="download-options">
               <Button 
                 onClick={handleGenerate}
                 disabled={isGenerating || getSelectedCount() === 0}
@@ -341,6 +348,9 @@ function FormGenerator() {
           </div>
         </div>
       </div>
+
+      {/* Product Tour */}
+      <ProductTour />
     </div>
   )
 }

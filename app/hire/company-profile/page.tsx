@@ -27,9 +27,14 @@ import {
   FileEdit
 } from "lucide-react"
 import Link from "next/link"
+import { usePageTour } from "@/components/PageTourWrapper"
 
 export default function CompanyProfile() {
   const router = useRouter()
+  
+  // Tour integration
+  const { TourButton, ProductTour } = usePageTour('company-profile')
+  
   const [companyData, setCompanyData] = useState({
     name: "Google",
     description: "Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, a search engine, cloud computing, software, and hardware.",
@@ -116,12 +121,14 @@ export default function CompanyProfile() {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">Company Profile</h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center gap-3">
+            <TourButton />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem className="cursor-pointer">
                 <Building2 className="mr-2 h-4 w-4" />
@@ -148,7 +155,7 @@ export default function CompanyProfile() {
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Company Profile Section */}
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-8">
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-8" data-tour="company-details">
               <h2 className="text-xl font-bold text-gray-800 mb-6">Company Information</h2>
               
               {/* Company Name */}
@@ -171,7 +178,7 @@ export default function CompanyProfile() {
               </div>
 
               {/* Company Description */}
-              <div className="mb-6">
+              <div className="mb-6" data-tour="branding-section">
                 <Label htmlFor="company-description" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   Company Description
@@ -246,7 +253,7 @@ export default function CompanyProfile() {
               </div>
 
               {/* HR Email */}
-              <div className="mb-6">
+              <div className="mb-6" data-tour="signatory-info">
                 <Label htmlFor="hr-email" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                   <Mail className="h-4 w-4" />
                   HR Email
@@ -315,6 +322,9 @@ export default function CompanyProfile() {
           </div>
         </div>
       </div>
+
+      {/* Product Tour */}
+      <ProductTour />
     </div>
   )
 }

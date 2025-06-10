@@ -44,6 +44,9 @@ import {
   X
 } from "lucide-react"
 import Link from "next/link"
+import ProductTour from "@/components/ProductTour"
+import TourButton from "@/components/TourButton"
+import { useTourIntegration } from "@/components/useTourIntegration"
 
 // Sample job listings data for Google
 const jobListings = [
@@ -204,6 +207,10 @@ export default function MyListings() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const router = useRouter()
+
+  // Tour integration
+  const { showTour, startTour, closeTour } = useTourIntegration('listings')
   const [editFormData, setEditFormData] = useState({
     title: "",
     location: "",
@@ -229,7 +236,6 @@ export default function MyListings() {
     requireGithub: false,
     requirePortfolio: false
   })
-  const router = useRouter()
 
   const filteredJobs = jobListings.filter(job =>
     job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -373,12 +379,17 @@ export default function MyListings() {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">Your Listings</h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center gap-3">
+            <TourButton
+              onClick={startTour}
+              pageName="listings"
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem className="cursor-pointer" asChild>
                 <Link href="/company-profile">
@@ -399,8 +410,9 @@ export default function MyListings() {
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Logout</span>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Content Area */}
@@ -408,7 +420,7 @@ export default function MyListings() {
           {/* Left Panel - Job List */}
           <div className="w-96 flex flex-col h-full">
             {/* Search Bar and Add Button - Fixed */}
-            <div className="flex gap-3 mb-4 flex-shrink-0">
+            <div className="flex gap-3 mb-4 flex-shrink-0" data-tour="job-filters">
               <div className="relative flex-1 w-5/6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -423,13 +435,14 @@ export default function MyListings() {
                 className="w-1/6 flex-shrink-0"
                 onClick={handleAddJob}
                 size="icon"
+                data-tour="add-job-btn"
               >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
 
             {/* Job Cards - Scrollable */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0 scrollbar-custom">
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0 scrollbar-custom" data-tour="job-cards">
               {filteredJobs.map((job) => (
                 <div
                   key={job.id}
@@ -468,6 +481,7 @@ export default function MyListings() {
                 <Button 
                   variant="outline"
                   onClick={() => handleEditJob(selectedJob.id)}
+                  data-tour="bulk-actions"
                 >
                   Edit
                 </Button>
@@ -987,6 +1001,13 @@ export default function MyListings() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Product Tour */}
+      <ProductTour
+        isOpen={showTour}
+        onClose={closeTour}
+        pageName="listings"
+      />
     </div>
   )
 }

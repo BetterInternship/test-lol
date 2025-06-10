@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,11 +33,15 @@ import {
   UserPlus,
   LogOut,
   FileEdit,
-  Search
+  Search,
+  HelpCircle
 } from "lucide-react"
 import Link from "next/link"
 import ApplicantModal from "@/components/hire/applicant-modal"
 import CalendarModal from "@/components/hire/calendar-modal"
+import ProductTour from "@/components/ProductTour"
+import TourButton from "@/components/TourButton"
+import { useTourIntegration } from "@/components/useTourIntegration"
 
 // Placeholder data for applicants
 const applicantsData = [
@@ -86,6 +90,9 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const router = useRouter()
+
+  // Tour integration
+  const { showTour, startTour, closeTour } = useTourIntegration('dashboard')
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("")
@@ -311,7 +318,7 @@ export default function Dashboard() {
   return (
     <div className="h-screen bg-white flex">
       {/* Sidebar */}
-      <div className="w-64 border-r bg-gray-50 flex flex-col">
+      <div className="w-64 border-r bg-gray-50 flex flex-col" data-tour="sidebar">
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
@@ -340,40 +347,46 @@ export default function Dashboard() {
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">Application Dashboard</h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/company-profile">
-                  <Building2 className="mr-2 h-4 w-4" />
-                  <span>Edit Company Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/add-users">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="cursor-pointer text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-3">
+            <TourButton
+              onClick={startTour}
+              pageName="dashboard"
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" data-tour="user-menu">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="cursor-pointer" asChild>
+                  <Link href="/company-profile">
+                    <Building2 className="mr-2 h-4 w-4" />
+                    <span>Edit Company Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" asChild>
+                  <Link href="/add-users">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    <span>Add Users</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer text-red-600"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Enhanced Dashboard */}
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
           {/* Quick Stats Cards */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-4" data-tour="dashboard-cards">
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
               <div className="flex items-center justify-between">
                 <div>
@@ -582,6 +595,13 @@ export default function Dashboard() {
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         applicantName={selectedApplicant?.name}
+      />
+
+      {/* Product Tour */}
+      <ProductTour
+        isOpen={showTour}
+        onClose={closeTour}
+        pageName="dashboard"
       />
     </div>
   )
