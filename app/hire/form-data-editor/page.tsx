@@ -315,7 +315,7 @@ export default function FormDataEditor() {
       {/* Sidebar */}
       <div className="w-64 border-r bg-gray-50 flex flex-col">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">Intern&apos;s Launchpad</h1>
+          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
         
         <div className="px-6">

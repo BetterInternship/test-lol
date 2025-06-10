@@ -38,20 +38,41 @@ export default function FormsAutomation() {
   }
 
   const dlsuForms = [
-    "Company Project Details template",
-    "Student Agreement Template", 
-    "External Relations Template",
-    "Student Evaluation template",
-    "Training plan for Students",
-    "Initial and Final review template"
-  ]
-
-  const dlsuCcsForms = [
-    "CCS Template 1"
+    {
+      name: "Company Project Details template",
+      tags: ["CCS", "Pre-hire"]
+    },
+    {
+      name: "Student Agreement Template",
+      tags: ["CCS", "Pre-hire"]
+    },
+    {
+      name: "External Relations Template",
+      tags: ["CCS", "Pre-hire"]
+    },
+    {
+      name: "Training plan for Students",
+      tags: ["CCS", "Pre-hire"]
+    },
+    {
+      name: "Student Evaluation template",
+      tags: ["CCS", "Post-hire"]
+    },
+    {
+      name: "Initial and Final review template",
+      tags: ["CCS", "Post-hire"]
+    },
+    {
+      name: "CCS Template 1",
+      tags: ["CCS", "Progress"]
+    }
   ]
 
   const ateneoForms = [
-    "Ateneo Template 1"
+    {
+      name: "Ateneo Template 1",
+      tags: ["CCS", "Pre-hire"]
+    }
   ]
 
   return (
@@ -59,7 +80,7 @@ export default function FormsAutomation() {
       {/* Sidebar */}
       <div className="w-64 border-r bg-gray-50 flex flex-col">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">Intern&apos;s Launchpad</h1>
+          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
         
         <div className="px-6">
@@ -125,30 +146,30 @@ export default function FormsAutomation() {
                 {/* DLSU School Forms */}
                 <div className="mb-8">
                   <h2 className="text-lg font-semibold text-blue-500 mb-4">DLSU School Forms</h2>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {dlsuForms.map((form, index) => (
                       <div 
                         key={index} 
-                        onClick={() => handleTemplateDownload(form)}
-                        className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors"
+                        onClick={() => handleTemplateDownload(form.name)}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                       >
-                        {form}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* DLSU CCS School Forms */}
-                <div className="mb-8">
-                  <h2 className="text-lg font-semibold text-blue-500 mb-4">DLSU CCS School Forms</h2>
-                  <div className="space-y-2">
-                    {dlsuCcsForms.map((form, index) => (
-                      <div 
-                        key={index} 
-                        onClick={() => handleTemplateDownload(form)}
-                        className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors"
-                      >
-                        {form}
+                        <span className="text-gray-800 font-medium">{form.name}</span>
+                        <div className="flex gap-2">
+                          {form.tags.map((tag, tagIndex) => (
+                            <span 
+                              key={tagIndex}
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                tag === 'CCS' ? 'bg-blue-100 text-blue-700' :
+                                tag === 'Pre-hire' ? 'bg-green-100 text-green-700' :
+                                tag === 'Progress' ? 'bg-yellow-100 text-yellow-700' :
+                                tag === 'Post-hire' ? 'bg-purple-100 text-purple-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -157,14 +178,30 @@ export default function FormsAutomation() {
                 {/* Ateneo School Forms */}
                 <div className="mb-8">
                   <h2 className="text-lg font-semibold text-blue-500 mb-4">Ateneo School Forms</h2>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {ateneoForms.map((form, index) => (
                       <div 
                         key={index} 
-                        onClick={() => handleTemplateDownload(form)}
-                        className="text-gray-800 py-1 cursor-pointer hover:text-gray-600 transition-colors"
+                        onClick={() => handleTemplateDownload(form.name)}
+                        className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                       >
-                        {form}
+                        <span className="text-gray-800 font-medium">{form.name}</span>
+                        <div className="flex gap-2">
+                          {form.tags.map((tag, tagIndex) => (
+                            <span 
+                              key={tagIndex}
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                tag === 'CCS' ? 'bg-blue-100 text-blue-700' :
+                                tag === 'Pre-hire' ? 'bg-green-100 text-green-700' :
+                                tag === 'Progress' ? 'bg-yellow-100 text-yellow-700' :
+                                tag === 'Post-hire' ? 'bg-purple-100 text-purple-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -183,7 +183,7 @@ function FormGenerator() {
       {/* Sidebar */}
       <div className="w-64 border-r bg-white/80 backdrop-blur-sm flex flex-col shadow-lg">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">Intern&apos;s Launchpad</h1>
+          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
         
         <div className="px-6">
@@ -258,92 +258,83 @@ function FormGenerator() {
         <div className="flex-1 p-6 flex flex-col items-center justify-center">
           <div className="w-full max-w-4xl flex flex-col h-full">
             
-            {/* Enhanced Student Selection */}
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-200/50 overflow-hidden flex-1 flex flex-col max-h-[calc(100vh-250px)]">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4">
-                <h2 className="text-lg font-bold text-white mb-1">Select Students</h2>
-                <p className="text-blue-100 text-sm">Choose which students to generate forms for</p>
+            {/* Minimalistic Student Selection */}
+            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden flex-1 flex flex-col max-h-[calc(100vh-200px)]">
+              {/* Simple Header */}
+              <div className="bg-gray-50 p-4 border-b">
+                <h2 className="text-lg font-semibold text-gray-900">Select Students</h2>
+                <p className="text-sm text-gray-600">Choose which students to generate forms for</p>
               </div>
 
-              <div className="p-5 flex flex-col">
-                {/* All Students Toggle - Fixed */}
-                <div 
-                  className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-gray-50 border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 mb-4"
-                  onClick={() => handleStudentToggle("All Students")}
-                >
-                  <div className={`w-5 h-5 border-2 rounded-lg ${selectedStudents["All Students"] ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'} flex items-center justify-center transition-all duration-200 shadow-sm`}>
-                    {selectedStudents["All Students"] && <Check className="h-3 w-3 text-white stroke-[3]" />}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-gray-600" />
-                    <span className="text-base font-semibold text-gray-900">Select All Students</span>
-                  </div>
-                </div>
+              <div className="p-4 flex flex-col">
+                {/* Select All Checkbox */}
+                <label className="flex items-center gap-3 p-2 cursor-pointer hover:bg-gray-50 rounded">
+                  <input
+                    type="checkbox"
+                    checked={selectedStudents["All Students"]}
+                    onChange={() => handleStudentToggle("All Students")}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                  />
+                  <span className="font-medium text-gray-900">Select All Students</span>
+                </label>
                 
-                {/* Individual Students Grid - Scrollable Area */}
-                <div className="overflow-y-auto max-h-80">
-                  <div className="grid grid-cols-3 gap-3 pr-2">
+                <hr className="my-3" />
+                
+                {/* Individual Students Grid */}
+                <div className="overflow-y-auto max-h-96">
+                  <div className="grid grid-cols-3 gap-3">
                     {Object.entries(selectedStudents)
                       .filter(([student]) => student !== "All Students")
                       .map(([student, isSelected]) => (
-                      <div 
+                      <label 
                         key={student}
-                        className={`flex items-center gap-2 cursor-pointer p-3 rounded-xl border-2 transition-all duration-200 ${
-                          isSelected 
-                            ? 'bg-blue-50 border-blue-300 shadow-md' 
-                            : 'bg-gray-50 border-gray-200 hover:border-blue-200 hover:bg-blue-25'
-                        }`}
-                        onClick={() => handleStudentToggle(student)}
+                        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 rounded border border-gray-200"
                       >
-                        <div className={`w-4 h-4 border-2 rounded-md ${isSelected ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'} flex items-center justify-center transition-all duration-200`}>
-                          {isSelected && <Check className="h-3 w-3 text-white stroke-[3]" />}
-                        </div>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleStudentToggle(student)}
+                          className="w-4 h-4 text-blue-600 rounded border-gray-300"
+                        />
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-xs">
+                          <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-medium">
                             {student.split(' ').map(n => n[0]).join('')}
                           </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium text-gray-900">{student}</span>
-                            <span className="text-xs text-gray-500">({studentSchools[student as keyof typeof studentSchools]})</span>
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{student}</div>
+                            <div className="text-xs text-gray-500">({studentSchools[student as keyof typeof studentSchools]})</div>
                           </div>
                         </div>
-                      </div>
+                      </label>
                     ))}
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Enhanced Generate Button */}
-            <div className="flex justify-center pt-5">
+            {/* Simple Generate Button */}
+            <div className="flex justify-center pt-4">
               <Button 
                 onClick={handleGenerate}
                 disabled={isGenerating || getSelectedCount() === 0}
-                className={`px-8 py-3 text-base rounded-xl font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 ${
+                className={`px-6 py-2 rounded-md font-medium ${
                   isGenerating 
-                    ? 'bg-gray-400 cursor-not-allowed hover:scale-100' 
+                    ? 'bg-gray-400 cursor-not-allowed' 
                     : getSelectedCount() === 0
-                      ? 'bg-gray-300 cursor-not-allowed hover:scale-100 text-gray-500'
-                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-300'
+                      ? 'bg-gray-300 cursor-not-allowed text-gray-500'
+                      : 'bg-blue-600 hover:bg-blue-700'
                 } text-white`}
               >
                 {isGenerating ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Generating Forms...
-                  </div>
+                  <span>Generating...</span>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <FileCheck className="h-4 w-4" />
-                    Generate Forms
-                  </div>
+                  <span>Generate Forms</span>
                 )}
               </Button>
             </div>
 
             {getSelectedCount() === 0 && (
-              <p className="text-center text-gray-500 mt-2 text-xs">
+              <p className="text-center text-gray-500 mt-2 text-sm">
                 Please select at least one student to generate forms
               </p>
             )}
