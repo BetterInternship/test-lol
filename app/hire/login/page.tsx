@@ -8,7 +8,7 @@ import { ArrowLeft } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
-  const [otp, setOtp] = useState(["", "", "", "", ""])
+  const [otp, setOtp] = useState(["", "", "", "", "", ""])
   const [step, setStep] = useState<"email" | "otp">("email")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -51,7 +51,7 @@ export default function LoginPage() {
     setOtp(newOtp)
 
     // Auto-focus next input
-    if (value && index < 4) {
+    if (value && index < 5) {
       otpRefs.current[index + 1]?.focus()
     }
   }
@@ -71,12 +71,12 @@ export default function LoginPage() {
     const otpString = otp.join("")
     
     // Demo OTP verification - only allow 12345
-    if (otpString !== "12345") {
+    if (otpString !== "123456") {
       setTimeout(() => {
         setIsLoading(false)
         setError("Incorrect OTP. Please try again.")
         // Clear the OTP inputs so user can try again
-        setOtp(["", "", "", "", ""])
+        setOtp(["", "", "", "", "", ""])
         // Focus back to first input
         setTimeout(() => otpRefs.current[0]?.focus(), 100)
       }, 1000)
@@ -101,7 +101,7 @@ export default function LoginPage() {
   // Auto-submit when all 5 digits are entered
   useEffect(() => {
     const otpString = otp.join("")
-    if (otpString.length === 5 && !isLoading && !error) {
+    if (otpString.length === 6 && !isLoading && !error) {
       handleOtpSubmit({ preventDefault: () => {} } as React.FormEvent)
     }
   }, [otp, isLoading, error])
@@ -183,14 +183,14 @@ export default function LoginPage() {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    className="w-16 h-16 text-center text-2xl font-semibold border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition-colors"
+                    className="w-12 h-16 text-center text-2xl font-semibold border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:outline-none transition-colors disabled:opacity-50"
                   />
                 ))}
               </div>
 
               <Button
                 type="submit"
-                disabled={isLoading || otp.join("").length !== 5}
+                disabled={isLoading || otp.join("").length !== 6}
                 className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? "Verifying..." : "Verify OTP"}
