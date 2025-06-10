@@ -176,14 +176,14 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setEditedData({
-        fullName: profile.full_name || '',
-        phoneNumber: profile.phone_number || '',
+        full_name: profile.full_name || '',
+        phone_number: profile.phone_number || '',
         college: profile.college || '',
-        yearLevel: profile.year_level || '',
-        portfolioLink: profile.portfolio_link || '',
-        githubLink: profile.github_link || '',
-        linkedinProfile: profile.linkedin_link || '',
-        calendlyLink: profile.calendly_link || '',
+        year_level: profile.year_level || '',
+        portfolio_link: profile.portfolio_link || '',
+        github_link: profile.github_link || '',
+        linkedin_link: profile.linkedin_link || '',
+        calendly_link: profile.calendly_link || '',
         bio: profile.bio || '',
       })
     }
@@ -192,7 +192,19 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaving(true)
-      await updateProfile(editedData)
+      // Transform frontend field names to backend field names
+      const dataToSend = {
+        full_name: editedData.full_name,
+        phone_number: editedData.phone_number,
+        college: editedData.college,
+        year_level: editedData.year_level,
+        portfolio_link: editedData.portfolio_link,
+        github_link: editedData.github_link,
+        linkedin_link: editedData.linkedin_link,
+        calendly_link: editedData.calendly_link,
+        bio: editedData.bio,
+      }
+      await updateProfile(dataToSend)
       setIsEditing(false)
     } catch (error) {
       console.error('Failed to update profile:', error)
@@ -205,14 +217,14 @@ export default function ProfilePage() {
   const handleCancel = () => {
     if (profile) {
       setEditedData({
-        fullName: profile.fullName || '',
-        phoneNumber: profile.phoneNumber || '',
-        currentProgram: profile.currentProgram || '',
-        idNumber: profile.idNumber || '',
-        portfolioLink: profile.portfolioLink || '',
-        githubLink: profile.githubLink || '',
-        linkedinProfile: profile.linkedinProfile || '',
-        calendlyLink: profile.calendlyLink || '',
+        full_name: profile.full_name || '',
+        phone_number: profile.phone_number || '',
+        college: profile.college || '',
+        year_level: profile.year_level || '',
+        portfolio_link: profile.portfolio_link || '',
+        github_link: profile.github_link || '',
+        linkedin_link: profile.linkedin_link || '',
+        calendly_link: profile.calendly_link || '',
         bio: profile.bio || '',
       })
     }
@@ -351,13 +363,13 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.fullName || ''}
-                            onChange={(e) => setEditedData({ ...editedData, fullName: e.target.value })}
+                            value={editedData.full_name || ''}
+                            onChange={(e) => setEditedData({ ...editedData, full_name: e.target.value })}
                             placeholder="Enter your full name"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium text-sm">{profile.fullName || 'Not provided'}</p>
+                          <p className="text-gray-900 font-medium text-sm">{profile.full_name || 'Not provided'}</p>
                         )}
                       </div>
                       
@@ -379,13 +391,13 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.phoneNumber || ''}
-                            onChange={(e) => setEditedData({ ...editedData, phoneNumber: e.target.value })}
+                            value={editedData.phone_number || ''}
+                            onChange={(e) => setEditedData({ ...editedData, phone_number: e.target.value })}
                             placeholder="Enter your phone number"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium text-sm">{profile.phoneNumber || <span className="text-gray-400 italic">Not provided</span>}</p>
+                          <p className="text-gray-900 font-medium text-sm">{profile.phone_number || <span className="text-gray-400 italic">Not provided</span>}</p>
                         )}
                       </div>
 
@@ -397,8 +409,8 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.currentProgram || ''}
-                            onChange={(e) => setEditedData({ ...editedData, currentProgram: e.target.value })}
+                            value={editedData.college || ''}
+                            onChange={(e) => setEditedData({ ...editedData, college: e.target.value })}
                             placeholder="e.g. BS Computer Science"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
@@ -407,21 +419,24 @@ export default function ProfilePage() {
                         )}
                       </div>
 
-                      {/* ID Number */}
+                      {/* Year Level */}
                       <div className="space-y-2 md:col-span-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700">
                           <Badge className="w-4 h-4 mr-2 text-gray-500" />
-                          ID Number
+                          Year Level
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.idNumber || ''}
-                            onChange={(e) => setEditedData({ ...editedData, idNumber: e.target.value })}
-                            placeholder="Enter your student ID number"
+                            value={editedData.year_level || ''}
+                            onChange={(e) => setEditedData({ ...editedData, year_level: e.target.value })}
+                            placeholder="Enter your year level (1-5)"
+                            type="number"
+                            min="1"
+                            max="5"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 max-w-xs text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium font-mono text-sm">{profile.idNumber || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
+                          <p className="text-gray-900 font-medium font-mono text-sm">{profile.year_level || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
                         )}
                       </div>
                     </div>
@@ -444,8 +459,8 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.portfolioLink || ''}
-                            onChange={(e) => setEditedData({ ...editedData, portfolioLink: e.target.value })}
+                            value={editedData.portfolio_link || ''}
+                            onChange={(e) => setEditedData({ ...editedData, portfolio_link: e.target.value })}
                             placeholder="https://yourportfolio.com"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
@@ -472,18 +487,18 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.githubLink || ''}
-                            onChange={(e) => setEditedData({ ...editedData, githubLink: e.target.value })}
+                            value={editedData.github_link || ''}
+                            onChange={(e) => setEditedData({ ...editedData, github_link: e.target.value })}
                             placeholder="https://github.com/yourusername"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
                           <div>
-                            {profile.githubLink ? (
-                              <a href={profile.githubLink} target="_blank" rel="noopener noreferrer" 
+                            {profile.github_link ? (
+                              <a href={profile.github_link} target="_blank" rel="noopener noreferrer" 
                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
                                 <Github className="w-3 h-3 mr-1" />
-                                {profile.githubLink}
+                                {profile.github_link}
                               </a>
                             ) : (
                               <span className="text-gray-400 italic text-sm">Not provided</span>
@@ -500,18 +515,18 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.linkedinProfile || ''}
-                            onChange={(e) => setEditedData({ ...editedData, linkedinProfile: e.target.value })}
+                            value={editedData.linkedin_link || ''}
+                            onChange={(e) => setEditedData({ ...editedData, linkedin_link: e.target.value })}
                             placeholder="https://linkedin.com/in/yourusername"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
                           <div>
-                            {profile.linkedinProfile ? (
-                              <a href={profile.linkedinProfile} target="_blank" rel="noopener noreferrer" 
+                            {profile.linkedin_link ? (
+                              <a href={profile.linkedin_link} target="_blank" rel="noopener noreferrer" 
                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
                                 <ExternalLink className="w-3 h-3 mr-1" />
-                                {profile.linkedinProfile}
+                                {profile.linkedin_link}
                               </a>
                             ) : (
                               <span className="text-gray-400 italic text-sm">Not provided</span>
@@ -528,18 +543,18 @@ export default function ProfilePage() {
                         </label>
                         {isEditing ? (
                           <Input
-                            value={editedData.calendlyLink || ''}
-                            onChange={(e) => setEditedData({ ...editedData, calendlyLink: e.target.value })}
+                            value={editedData.calendly_link || ''}
+                            onChange={(e) => setEditedData({ ...editedData, calendly_link: e.target.value })}
                             placeholder="https://calendly.com/yourusername"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
                           <div>
-                            {profile.calendlyLink ? (
-                              <a href={profile.calendlyLink} target="_blank" rel="noopener noreferrer" 
+                            {profile.calendly_link ? (
+                              <a href={profile.calendly_link} target="_blank" rel="noopener noreferrer" 
                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
                                 <Calendar className="w-3 h-3 mr-1" />
-                                {profile.calendlyLink}
+                                {profile.calendly_link}
                               </a>
                             ) : (
                               <span className="text-gray-400 italic text-sm">Not provided</span>
@@ -733,6 +748,26 @@ export default function ProfilePage() {
 }
 
 function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; filesInfo: any; onClose: () => void }) {
+  // Helper function to get year level text
+  const getYearLevelText = (yearLevel: number | undefined) => {
+    if (!yearLevel) return 'Not specified'
+    switch (yearLevel) {
+      case 1: return '1st Year Student'
+      case 2: return '2nd Year Student'
+      case 3: return '3rd Year Student'
+      case 4: return '4th Year Student'
+      case 5: return '5th Year Student'
+      default: return `${yearLevel}th Year Student`
+    }
+  }
+
+  // Helper function to get college name
+  const getCollegeName = (college: string | undefined) => {
+    if (!college) return 'DLSU Manila'
+    // You can add mapping logic here if college is stored as UUID
+    return college
+  }
+
   return (
     <div className="flex flex-col h-full">
       {/* Header with close button */}
@@ -755,25 +790,27 @@ function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; f
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <span className="text-sm text-gray-600">Applied 16H 58M ago</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{profile?.fullName || 'Your Name'}</h1>
-          <p className="text-gray-600 mb-4 md:mb-6">Applying for DevOps • Full-Time</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+            {profile?.full_name || profile?.fullName || 'Your Name'}
+          </h1>
+          <p className="text-gray-600 mb-4 md:mb-6">Applying for Sample Position • Full-Time</p>
           
           {/* Quick Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
               className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled
+              disabled={!filesInfo?.resume}
             >
               <FileText className="h-4 w-4 mr-2" />
-              View Resume
+              {filesInfo?.resume ? 'View Resume' : 'No Resume Uploaded'}
             </Button>
             <Button 
               variant="outline" 
               className="border-blue-600 text-blue-600 hover:bg-blue-50"
-              disabled
+              disabled={!profile?.calendly_link}
             >
               <Calendar className="h-4 w-4 mr-2" />
-              Schedule Interview
+              {profile?.calendly_link ? 'Schedule Interview' : 'No Calendly Link'}
             </Button>
           </div>
         </div>
@@ -789,37 +826,99 @@ function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; f
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm text-gray-500">Program</p>
-              <p className="font-medium">{profile?.currentProgram || 'Computer Science'}</p>
+              <p className="font-medium">
+                {profile?.college || profile?.currentProgram || 'Not specified'}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Institution</p>
               <p className="font-medium">DLSU Manila</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Minor</p>
-              <p className="font-medium">Data Science</p>
+              <p className="text-sm text-gray-500">Year Level</p>
+              <p className="font-medium">
+                {getYearLevelText(profile?.year_level || profile?.yearLevel)}
+              </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Year Level</p>
-              <p className="font-medium">2nd Year Student</p>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="font-medium">{profile?.email || 'Not provided'}</p>
             </div>
           </div>
         </div>
 
-        {/* Application Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Cover Letter</h3>
-            <p className="text-gray-700 text-sm leading-relaxed">
-              {profile?.bio || "I wish to work with you guys more effectively. I have an efficiency with Robotics so I think I would be best suited here."}
-            </p>
+        {/* Contact & Links */}
+        <div className="bg-gray-50 rounded-lg p-4 md:p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+              <ExternalLink className="h-4 w-4 text-gray-600" />
+            </div>
+            <h3 className="font-semibold text-gray-900">Contact & Professional Links</h3>
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">Phone Number</p>
+              <p className="font-medium">
+                {profile?.phone_number || profile?.phoneNumber || 'Not provided'}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Portfolio</p>
+              {(profile?.portfolio_link || profile?.portfolioLink) ? (
+                <a 
+                  href={profile?.portfolio_link || profile?.portfolioLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium text-sm"
+                >
+                  View Portfolio
+                </a>
+              ) : (
+                <p className="font-medium">Not provided</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">GitHub</p>
+              {(profile?.github_link || profile?.githubLink) ? (
+                <a 
+                  href={profile?.github_link || profile?.githubLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium text-sm"
+                >
+                  View GitHub
+                </a>
+              ) : (
+                <p className="font-medium">Not provided</p>
+              )}
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">LinkedIn</p>
+              {(profile?.linkedin_link || profile?.linkedinProfile) ? (
+                <a 
+                  href={profile?.linkedin_link || profile?.linkedinProfile} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline font-medium text-sm"
+                >
+                  View LinkedIn
+                </a>
+              ) : (
+                <p className="font-medium">Not provided</p>
+              )}
+            </div>
+          </div>
+        </div>
 
+        {/* About the Candidate */}
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <h3 className="font-semibold text-gray-900 mb-3">About the Candidate</h3>
-            <p className="text-gray-700 text-sm leading-relaxed">
-              Your Momma lmaoooo did you actually think that I would apply to your bad company?
-            </p>
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <p className="text-gray-700 text-sm leading-relaxed">
+                {profile?.bio || 'No bio provided. The candidate has not added any information about themselves yet.'}
+              </p>
+            </div>
           </div>
         </div>
       </div>

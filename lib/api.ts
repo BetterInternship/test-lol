@@ -208,12 +208,12 @@ interface SaveJobResponse {
 
 export const user_service = {
   async get_profile() {
-    return APIClient.get<UserResponse>(APIRoute("users").r("profile").build());
+    return APIClient.get<UserResponse>(APIRoute("users").r("me").build());
   },
 
   async update_profile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(
-      APIRoute("users").r("profile").build(),
+      APIRoute("users").r("me").build(),
       data
     );
   },
