@@ -37,10 +37,12 @@ import { useRouter } from "next/navigation"
 import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
 import { motion, AnimatePresence } from "framer-motion"
+import { useRefs } from "@/lib/db/use-refs"
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext()
   const { profile, error, updateProfile } = useProfile()
+  const { get_level } = useRefs();
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<any>({ skills: [] })
   const [saving, setSaving] = useState(false)
@@ -436,7 +438,7 @@ export default function ProfilePage() {
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 max-w-xs text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium font-mono text-sm">{profile.year_level || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
+                          <p className="text-gray-900 font-medium font-mono text-sm">{get_level(profile.year_level)?.name || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
                         )}
                       </div>
                     </div>

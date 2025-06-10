@@ -179,6 +179,7 @@ export function useProfile() {
       setLoading(true);
       setError(null);
       const userData = await user_service.get_profile();
+      console.log("profile", userData);
       setProfile(userData as PublicUser);
     } catch (err) {
       const errorMessage = handle_api_error(err);
