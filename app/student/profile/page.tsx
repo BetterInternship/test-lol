@@ -53,37 +53,21 @@ export default function ProfilePage() {
   const resumeInputRef = useRef<HTMLInputElement>(null)
   const profilePictureInputRef = useRef<HTMLInputElement>(null)
 
-  // Fetch files info
-  useEffect(() => {
-    const fetchFilesInfo = async () => {
-      if (is_authenticated()) {
-        try {
-          const info = await file_service.getFilesInfo()
-          setFilesInfo(info)
-        } catch (error) {
-          console.error('Failed to fetch files info:', error)
-        }
-      }
-    }
-    
-    fetchFilesInfo()
-  }, [is_authenticated()])
-
   // File upload handlers
   const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
 
     // Validate file type
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    const allowedTypes = ['application/pdf']
     if (!allowedTypes.includes(file.type)) {
-      alert('Please upload a PDF or Word document')
+      alert('Please upload a PDF document')
       return
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB')
+    // Validate file size (3MB)
+    if (file.size > 3 * 1024 * 1024) {
+      alert('File size must be less than 3MB')
       return
     }
 
@@ -192,14 +176,14 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setEditedData({
-        fullName: profile.fullName || '',
-        phoneNumber: profile.phoneNumber || '',
-        currentProgram: profile.currentProgram || '',
-        idNumber: profile.idNumber || '',
-        portfolioLink: profile.portfolioLink || '',
-        githubLink: profile.githubLink || '',
-        linkedinProfile: profile.linkedinProfile || '',
-        calendlyLink: profile.calendlyLink || '',
+        fullName: profile.full_name || '',
+        phoneNumber: profile.phone_number || '',
+        college: profile.college || '',
+        yearLevel: profile.year_level || '',
+        portfolioLink: profile.portfolio_link || '',
+        githubLink: profile.github_link || '',
+        linkedinProfile: profile.linkedin_link || '',
+        calendlyLink: profile.calendly_link || '',
         bio: profile.bio || '',
       })
     }
@@ -405,11 +389,11 @@ export default function ProfilePage() {
                         )}
                       </div>
 
-                      {/* Current Program */}
+                      {/* College */}
                       <div className="space-y-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700">
                           <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                          Current Program
+                          College
                         </label>
                         {isEditing ? (
                           <Input
@@ -419,7 +403,7 @@ export default function ProfilePage() {
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium text-sm">{profile.currentProgram || <span className="text-gray-400 italic">Not provided</span>}</p>
+                          <p className="text-gray-900 font-medium text-sm">{profile.college || <span className="text-gray-400 italic">Not provided</span>}</p>
                         )}
                       </div>
 
@@ -467,11 +451,11 @@ export default function ProfilePage() {
                           />
                         ) : (
                           <div>
-                            {profile.portfolioLink ? (
-                              <a href={profile.portfolioLink} target="_blank" rel="noopener noreferrer" 
+                            {profile.portfolio_link ? (
+                              <a href={profile.portfolio_link} target="_blank" rel="noopener noreferrer" 
                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm">
                                 <ExternalLink className="w-3 h-3 mr-1" />
-                                {profile.portfolioLink}
+                                {profile.portfolio_link}
                               </a>
                             ) : (
                               <span className="text-gray-400 italic text-sm">Not provided</span>
@@ -676,7 +660,7 @@ export default function ProfilePage() {
                         {uploading.resume ? 'Uploading...' : 'Upload Resume'}
                       </Button>
                       <p className="text-xs text-gray-500 mt-1">
-                        PDF, DOC, or DOCX files up to 5MB
+                        PDF files up to 3MB
                       </p>
                       </div>
                     )}

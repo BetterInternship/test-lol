@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-10 04:31:46
- * @ Modified time: 2025-06-10 05:00:19
+ * @ Modified time: 2025-06-10 13:01:57
  * @ Description:
  *
  * Accesses refs directly from the database.
@@ -30,21 +30,67 @@ export const useRefs = () => {
 
   async function fetch_levels() {
     const { data, error } = await db.from("ref_levels").select("*");
-    console.log(data);
     if (error) console.error(error);
     else setLevels(data as Level[]);
+    return data;
   }
 
   async function fetch_colleges() {
     const { data, error } = await db.from("ref_colleges").select("*");
     if (error) console.error(error);
     else setColleges(data as College[]);
+    return data;
   }
 
   async function fetch_universities() {
     const { data, error } = await db.from("ref_universities").select("*");
     if (error) console.error(error);
     else setUniversities(data as University[]);
+    return data;
+  }
+
+  function get_level(id: number): Level | null {
+    const f = levels.filter((l) => l.id === id);
+    if (!f.length) return null;
+    return f[0];
+  }
+
+  function get_level_by_name(name: string): Level | null {
+    const f = levels.filter((l) => l.name === name);
+    if (!f.length) return null;
+    return f[0];
+  }
+
+  function get_college(id: string): College | null {
+    const f = colleges.filter((c) => c.id === id);
+    if (!f.length) return null;
+    return f[0];
+  }
+
+  function get_college_by_name(name: string): College | null {
+    const f = colleges.filter((c) => c.name === name);
+    if (!f.length) return null;
+    return f[0];
+  }
+
+  function get_university(id: string): University | null {
+    const f = universities.filter((u) => u.id === id);
+    if (!f.length) return null;
+    return f[0];
+  }
+
+  function get_university_by_name(name: string): University | null {
+    const f = universities.filter((u) => u.name === name);
+    if (!f.length) return null;
+    return f[0];
+  }
+
+  function get_university_by_domain(domain: string) {
+    const f = universities.filter(
+      (u) => u.domains.includes(domain) || u.domains.includes("@" + domain)
+    );
+    if (!f.length) return null;
+    return f[0];
   }
 
   useEffect(() => {
@@ -53,5 +99,16 @@ export const useRefs = () => {
     fetch_universities();
   }, []);
 
-  return { levels, colleges, universities };
+  return {
+    levels,
+    colleges,
+    universities,
+    get_level,
+    get_college,
+    get_university,
+    get_level_by_name,
+    get_college_by_name,
+    get_university_by_name,
+    get_university_by_domain,
+  };
 };
