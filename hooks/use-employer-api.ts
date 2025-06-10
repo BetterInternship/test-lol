@@ -24,8 +24,6 @@ export function useOwnedJobs(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const updateJob = async (job: Partial<Job>) => {};
-
   const fetchOwnedJobs = useCallback(async () => {
     try {
       setLoading(true);
@@ -52,6 +50,19 @@ export function useOwnedJobs(
       setLoading(false);
     }
   }, []);
+
+  const update_job = async (job_id: string, job: Partial<Job>) => {
+    const response = await job_service.update_job(job_id, job);
+    if (response.success) {
+      const job = response.job;
+      set_cache_item("_jobs_owned_list", [
+        job,
+        ...ownedJobs.filter((oj) => oj.id !== job.id),
+      ]);
+      setOwnedJobs(get_cache_item("_jobs_owned_list") as Job[]);
+    }
+    return response;
+  };
 
   useEffect(() => {
     recheck_authentication().then((r) =>
@@ -125,6 +136,7 @@ export function useOwnedJobs(
 
   return {
     ownedJobs: filteredJobs,
+    update_job,
     loading,
     error,
     refetch: fetchOwnedJobs,

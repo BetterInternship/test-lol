@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChevronDown, Upload } from "lucide-react"
 import { useAuthContext } from "../authctx"
-import { useRefs } from "@/hooks/use-refs"
+import { useRefs } from "@/lib/db/use-refs"
 import { University } from "@/lib/db/db.types"
+import { RefDropdown } from "@/components/ui/ref-dropdown"
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
@@ -174,7 +175,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 College <span className="text-red-500">*</span>
               </label>
-              <Dropdown 
+              <RefDropdown 
                 name="college" 
                 defaultValue={defaultCollege}
                 value={formData.college} 
@@ -185,7 +186,7 @@ export default function RegisterPage() {
                 validFieldClassName={validFieldClassName}
                 onChange={(value) => handleInputChange("college", value)}
                 onClick={() => setActiveDropdown("college")}>
-              </Dropdown>
+              </RefDropdown>
             </div>
 
             {/* School Year */}
@@ -193,7 +194,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year Level <span className="text-red-500">*</span>
               </label>
-              <Dropdown 
+              <RefDropdown 
                 name="yearLevel" 
                 defaultValue={defaultYearLevel}
                 value={formData.yearLevel} 
@@ -203,7 +204,7 @@ export default function RegisterPage() {
                 validFieldClassName={validFieldClassName}
                 onChange={(value) => handleInputChange("yearLevel", value)}
                 onClick={() => setActiveDropdown("yearLevel")}>
-              </Dropdown>
+              </RefDropdown>
             </div>
 
             {/* Portfolio Link */}
@@ -309,53 +310,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-    </div>
-  )
-}
-
-function Dropdown({ name, options, defaultValue, value, onChange, activeDropdown, onClick, validFieldClassName }: { name: string; options: string[]; value: string; defaultValue: string; onChange: (value: string) => void, activeDropdown: string, onClick: () => void, validFieldClassName: string }) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (name != activeDropdown)
-      setIsOpen(false);
-  }, [name, activeDropdown])
-  
-  return (
-    <div className="relative w-80">
-      <Button
-        type="button"
-        variant="outline" 
-        onClick={() => (setIsOpen(!isOpen), onClick())}
-        className={
-          (value === defaultValue ? "border-gray-300" : validFieldClassName) +
-          " h-12 px-4 flex items-center gap-2 w-full text-ellipsis  border-2"
-        }
-      >
-        <p className={ (value === defaultValue ? "text-opacity-50 text-gray-800" : "") + " line-clamp-1"}>
-          {value}
-        </p>
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </Button>
-      
-      {isOpen && (
-        <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg z-50 min-w-full">
-          {options.map((option) => (
-            <button
-              key={option}
-              onClick={() => {
-                onChange(option)
-                setIsOpen(false)
-              }}
-              className={
-                (option === value ? "bg-gray-200" :
-                "") + " w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg"}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   )
 }

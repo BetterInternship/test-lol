@@ -93,20 +93,9 @@ export default function ProfileButton() {
                 }}
               >
                 <UserPlus className="w-4 h-4" />
-                Applications
+                Add Users
               </button>
 
-              <button 
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-                onClick={() => {
-                  setIsOpen(false)
-                  router.push('/saved')
-                }}
-              >
-                <Heart className="w-4 h-4" />
-                Saved Jobs
-              </button>
-              
               <hr className="my-1 border-gray-200" />
               
               <button 
