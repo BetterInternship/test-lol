@@ -14,8 +14,8 @@ jobs:
 
       - name: Set up Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "neue-dev"
+          git config --global user.email "modavid.1964@gmail.com"
 
       - name: Push to deployment fork
         run: |
