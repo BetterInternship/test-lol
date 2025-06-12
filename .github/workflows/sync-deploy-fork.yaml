@@ -19,5 +19,5 @@ jobs:
 
       - name: Push to deployment fork
         run: |
-          git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client/.git
+          git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client.git
           git push fork main --force
