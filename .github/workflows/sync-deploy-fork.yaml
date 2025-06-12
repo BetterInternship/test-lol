@@ -17,12 +17,8 @@ jobs:
           git config --global user.name "neue-dev"
           git config --global user.email "modavid.1964@gmail.com"
 
-      # - name: Push to deployment fork
-      #   run: |
-      #     git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client.git
-      #     git push fork main
-
-      - name: Debug 
+      - name: Push to deployment fork
         run: |
-          git branch
-          git log
+          git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client.git
+          git branch release
+          git push fork --set-upstream release
