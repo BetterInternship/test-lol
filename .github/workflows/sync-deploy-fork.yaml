@@ -1,0 +1,23 @@
+name: Sync to Deployment Fork
+
+on:
+  push:
+    branches:
+      - main  # Release branch
+
+jobs:
+  sync-to-fork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout upstream
+        uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Push to deployment fork
+        run: |
+          git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client/.git
+          git push fork main --force
