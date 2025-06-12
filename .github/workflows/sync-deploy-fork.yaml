@@ -21,4 +21,4 @@ jobs:
         run: |
           git remote add fork https://neue-dev:${{ secrets.DEPLOY_FORK_PAT }}@github.com/neue-dev/Better-Internships-Client.git
           git branch release
-          git push fork --set-upstream release
+          git push fork --set-upstream release 
