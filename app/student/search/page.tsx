@@ -65,10 +65,26 @@ export default function SearchPage() {
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showJobDetailsModal, setShowJobDetailsModal] = useState(false)
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
   const [applying, setApplying] = useState(false)
   const [autoCloseProgress, setAutoCloseProgress] = useState(100)
+  const [isMobile, setIsMobile] = useState(false)
   const { profile } = useProfile();
+
+  // Check if screen width is <= 1024px
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -288,6 +304,13 @@ export default function SearchPage() {
     }
   }
 
+  const handleJobCardClick = (job: Job) => {
+    setSelectedJob(job)
+    if (isMobile) {
+      setShowJobDetailsModal(true)
+    }
+  }
+
   if (jobs_error) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
@@ -302,122 +325,253 @@ export default function SearchPage() {
   return (
     <div className="h-screen bg-white overflow-hidden">
       <div className="flex h-full">
-        {/* Left Sidebar */}
-        <div className="w-80 border-r bg-gray-50 flex flex-col">
-          <div className="p-6 space-y-4 flex-1 overflow-y-auto">
-            <Link href="/" className="block">
-              <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">BetterInternship</h1>
-            </Link>
+        {/* Left Sidebar - Hide on mobile */}
+        {!isMobile && (
+          <div className="w-80 border-r bg-gray-50 flex flex-col">
+            <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+              <Link href="/" className="block">
+                <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">BetterInternship</h1>
+              </Link>
 
-            <Link
-              href="/search?category=all&jobType=All types&location=Any location"
-              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-2 rounded-md hover:bg-gray-100 transition-colors"
-            >
-              <Home className="h-5 w-5" />
-              <span className="font-medium">Browse All</span>
-            </Link>
+              <Link
+                href="/search?category=all&jobType=All types&location=Any location"
+                className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-2 rounded-md hover:bg-gray-100 transition-colors"
+              >
+                <Home className="h-5 w-5" />
+                <span className="font-medium">Browse All</span>
+              </Link>
 
-            <div className="pt-4 border-t border-gray-200">
-              <h2 className="font-semibold mb-4 text-gray-800">All Categories</h2>
-              <div className="space-y-2">
-                <CategoryLink icon={<Monitor className="h-5 w-5" />} label="Technology & Dev." category="Technology & Development" />
-                <CategoryLink icon={<HardHat className="h-5 w-5" />} label="Engineering" category="Engineering" />
-                <CategoryLink icon={<GraduationCap className="h-5 w-5" />} label="Education & Psychology" category="Education & Psychology" />
-                <CategoryLink icon={<Palette className="h-5 w-5" />} label="Design & Arts" category="Design & Arts" />
-                <CategoryLink icon={<Stethoscope className="h-5 w-5" />} label="Medical" category="Medical" />
-                <CategoryLink icon={<Scale className="h-5 w-5" />} label="Law" category="Law" />
-                <CategoryLink icon={<ChefHat className="h-5 w-5" />} label="Culinary Arts" category="Culinary Arts" />
-                <CategoryLink icon={<Building2 className="h-5 w-5" />} label="Banking & Finance" category="Banking & Finance" />
+              <div className="pt-4 border-t border-gray-200">
+                <h2 className="font-semibold mb-4 text-gray-800">All Categories</h2>
+                <div className="space-y-2">
+                  <CategoryLink icon={<Monitor className="h-5 w-5" />} label="Technology & Dev." category="Technology & Development" />
+                  <CategoryLink icon={<HardHat className="h-5 w-5" />} label="Engineering" category="Engineering" />
+                  <CategoryLink icon={<GraduationCap className="h-5 w-5" />} label="Education & Psychology" category="Education & Psychology" />
+                  <CategoryLink icon={<Palette className="h-5 w-5" />} label="Design & Arts" category="Design & Arts" />
+                  <CategoryLink icon={<Stethoscope className="h-5 w-5" />} label="Medical" category="Medical" />
+                  <CategoryLink icon={<Scale className="h-5 w-5" />} label="Law" category="Law" />
+                  <CategoryLink icon={<ChefHat className="h-5 w-5" />} label="Culinary Arts" category="Culinary Arts" />
+                  <CategoryLink icon={<Building2 className="h-5 w-5" />} label="Banking & Finance" category="Banking & Finance" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          {/* Top bar with Profile button */}
-          <div className="flex justify-end p-4 bg-white border-b">
-            <ProfileButton />
-          </div>
+          {/* Mobile Header */}
+          {isMobile && (
+            <div className="flex justify-between items-center p-4 border-b bg-white">
+              <Link href="/" className="block">
+                <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
+              </Link>
+              <ProfileButton />
+            </div>
+          )}
 
-          {/* Search Results */}
-          <div className="flex-1 flex overflow-hidden">
-            {jobs_loading ? (
-              /* Loading State */
-              <div className="w-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading jobs...</p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Job List */}
-                <div className="w-1/3 border-r overflow-y-auto p-4">
-                  {/* Compact Search Bar */}
-                  <div className="flex gap-2 mb-4">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => {
-                          setSearchTerm(e.target.value)
-                          // No need for setTimeout anymore - filtering is instant
-                        }}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Search listings..."
-                        className="pl-10 w-full h-10 bg-white border border-gray-300 rounded-lg"
-                      />
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowFilterModal(true)}
-                      className="h-10 px-3 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
-                    >
-                      <Filter className="h-4 w-4" />
-                    </Button>
+          {/* Desktop Profile button */}
+          {!isMobile && (
+            <div className="flex justify-end p-4 bg-white border-b">
+              <ProfileButton />
+            </div>
+          )}
+
+          {/* Mobile Layout */}
+          {isMobile ? (
+            <div className="flex-1 flex flex-col overflow-hidden">
+              {jobs_loading ? (
+                /* Loading State */
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading jobs...</p>
                   </div>
-                  { jobs.length ?
-                    (<div className="space-y-4">
-                      {jobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          isSelected={selectedJob?.id === job.id}
-                          onClick={() => setSelectedJob(job)}
-                          refs={refs}
+                </div>
+              ) : (
+                <>
+                  {/* Mobile Search Bar */}
+                  <div className="p-4 border-b bg-white">
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          placeholder="Search jobs..."
+                          className="pl-10 w-full h-12 bg-white border border-gray-300 rounded-lg text-base"
                         />
-                      ))}
-                    </div>) : (<div>
-                      <p className="p-4">No jobs found.</p>  
-                    </div>)
-                  }
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowFilterModal(true)}
+                        className="h-12 px-4 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+                      >
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
 
-                  {/* Paginator */}
-                  <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)}></Paginator>
-                </div>
+                  {/* Mobile Job Cards */}
+                  <div className="flex-1 overflow-y-auto p-4 pb-32">
+                    {jobs.length ? (
+                      <div className="space-y-3">
+                        {jobs.map((job) => (
+                          <MobileJobCard
+                            key={job.id}
+                            job={job}
+                            onClick={() => handleJobCardClick(job)}
+                            refs={refs}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-500">No jobs found.</p>  
+                      </div>
+                    )}
 
-                {/* Job Details */}
-                <div className="w-2/3 flex flex-col overflow-hidden">
-                  {selectedJob && (
-                    <JobDetails 
-                      job={selectedJob} 
-                      saving={saving}
-                      onApply={handleApply} 
-                      onSave={handleSave}
-                      isSaved={is_saved(selectedJob.id ?? '')}
-                      applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
-                      refs={refs}
-                    />
-                  )}
+                    {/* Mobile Paginator */}
+                    <div className="mt-8 mb-6">
+                      <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ) : (
+            /* Desktop Layout */
+            <div className="flex-1 flex overflow-hidden">
+              {jobs_loading ? (
+                /* Loading State */
+                <div className="w-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading jobs...</p>
+                  </div>
                 </div>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  {/* Job List */}
+                  <div className="w-1/3 border-r overflow-y-auto p-4">
+                    {/* Compact Search Bar */}
+                    <div className="flex gap-2 mb-4">
+                      <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="text"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          placeholder="Search listings..."
+                          className="pl-10 w-full h-10 bg-white border border-gray-300 rounded-lg"
+                        />
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setShowFilterModal(true)}
+                        className="h-10 px-3 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+                      >
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    {jobs.length ? (
+                      <div className="space-y-4">
+                        {jobs.map((job) => (
+                          <JobCard
+                            key={job.id}
+                            job={job}
+                            isSelected={selectedJob?.id === job.id}
+                            onClick={() => handleJobCardClick(job)}
+                            refs={refs}
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="p-4">No jobs found.</p>  
+                      </div>
+                    )}
+
+                    {/* Paginator */}
+                    <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
+                  </div>
+
+                  {/* Job Details */}
+                  <div className="w-2/3 flex flex-col overflow-hidden">
+                    {selectedJob && (
+                      <JobDetails 
+                        job={selectedJob} 
+                        saving={saving}
+                        onApply={handleApply} 
+                        onSave={handleSave}
+                        isSaved={is_saved(selectedJob.id ?? '')}
+                        applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                        refs={refs}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Mobile Job Details Modal */}
+      <AnimatePresence>
+        {showJobDetailsModal && selectedJob && isMobile && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setShowJobDetailsModal(false)}
+          >
+            <motion.div 
+              className="bg-white rounded-t-2xl w-full h-[90vh] mt-auto shadow-2xl overflow-hidden"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col h-full">
+                {/* Modal Header */}
+                <div className="p-4 border-b bg-white flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-gray-900">Job Details</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowJobDetailsModal(false)}
+                    className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </Button>
+                </div>
+
+                {/* Modal Content */}
+                <div className="flex-1 overflow-hidden">
+                  <JobDetails 
+                    job={selectedJob} 
+                    saving={saving}
+                    onApply={handleApply} 
+                    onSave={handleSave}
+                    isSaved={is_saved(selectedJob.id ?? '')}
+                    applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                    refs={refs}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Application Modal - Only for Missing Job Requirements */}
       <AnimatePresence>
@@ -620,15 +774,19 @@ export default function SearchPage() {
             onClick={() => setActiveFilter("")}
           >
             <motion.div 
-              className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl"
+              className={`bg-white rounded-2xl shadow-2xl ${
+                isMobile 
+                  ? 'w-full max-w-sm p-6' 
+                  : 'w-full max-w-lg p-8'
+              }`}
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
+              <div className={`flex justify-between items-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
+                <h2 className={`font-bold text-gray-900 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Filter Jobs</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -639,13 +797,15 @@ export default function SearchPage() {
                 </Button>
               </div>
 
-              <div className="space-y-6">
+              <div className={`space-y-${isMobile ? '5' : '6'}`}>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Job Type</label>
+                  <label className={`block text-sm font-semibold text-gray-700 ${isMobile ? 'mb-2' : 'mb-3'}`}>Job Type</label>
                   <div className="relative">
                     <button
                       onClick={() => setActiveFilter(activeFilter === "jobType" ? "" : "jobType")}
-                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
+                      className={`w-full px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300 ${
+                        isMobile ? 'h-12' : 'h-14'
+                      }`}
                     >
                       {tempJobTypeFilter}
                     </button>
@@ -673,11 +833,13 @@ export default function SearchPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Work Mode</label>
+                  <label className={`block text-sm font-semibold text-gray-700 ${isMobile ? 'mb-2' : 'mb-3'}`}>Work Mode</label>
                   <div className="relative">
                     <button
                       onClick={() => setActiveFilter(activeFilter === "workMode" ? "" : "workMode")}
-                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
+                      className={`w-full px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300 ${
+                        isMobile ? 'h-12' : 'h-14'
+                      }`}
                     >
                       {tempLocationFilter}
                     </button>
@@ -705,11 +867,13 @@ export default function SearchPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Industry</label>
+                  <label className={`block text-sm font-semibold text-gray-700 ${isMobile ? 'mb-2' : 'mb-3'}`}>Industry</label>
                   <div className="relative">
                     <button
                       onClick={() => setActiveFilter(activeFilter === "industry" ? "" : "industry")}
-                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
+                      className={`w-full px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300 ${
+                        isMobile ? 'h-12' : 'h-14'
+                      }`}
                     >
                       {tempIndustryFilter}
                     </button>
@@ -736,7 +900,7 @@ export default function SearchPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-4 pt-6">
+                <div className={`flex gap-3 ${isMobile ? 'pt-5' : 'pt-6'}`}>
                   <Button 
                     variant="outline"
                     onClick={() => {
@@ -745,7 +909,9 @@ export default function SearchPage() {
                       setTempLocationFilter("Any location")
                       setTempIndustryFilter("All industries")
                     }}
-                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+                    className={`flex-1 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200 ${
+                      isMobile ? 'h-11' : 'h-12'
+                    }`}
                   >
                     Clear Filters
                   </Button>
@@ -758,7 +924,9 @@ export default function SearchPage() {
                       setShowFilterModal(false)
                       // Search term is already active in the useJobs hook
                     }}
-                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                    className={`flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ${
+                      isMobile ? 'h-11' : 'h-12'
+                    }`}
                   >
                     Apply Filters
                   </Button>
@@ -836,6 +1004,70 @@ function getModeIcon(mode: number | null | undefined) {
   }
   
   return <Briefcase className="w-3 h-3 mr-1" />
+}
+
+function MobileJobCard({ job, onClick, refs }: { job: Job; onClick: () => void, refs: RefsAPI }) {
+  const { ref_loading, get_job_mode, get_job_type } = refs;
+  
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  return (
+    <div
+      className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 active:scale-[0.98]"
+      onClick={onClick}
+    >
+      {/* Header */}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex-1">
+          <h3 className="font-semibold text-gray-900 mb-1 text-base leading-tight">{job.title}</h3>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Building className="w-4 h-4" />
+            <span>{job.employer?.name}</span>
+          </div>
+        </div>
+        <div className="text-xs text-gray-500 ml-2">
+          {formatDate(job.created_at ?? "")}
+        </div>
+      </div>
+
+      {/* Badges */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {!ref_loading && job.type !== null && job.type !== undefined && (
+          <Badge variant="outline" className="text-xs">
+            {get_job_type(job.type)?.name}
+          </Badge>
+        )}
+        {!ref_loading && job.salary && (
+          <Badge variant="outline" className="text-xs">
+            <PhilippinePeso className="w-3 h-3 mr-1" />
+            {job.salary}
+          </Badge>
+        )}
+        {!ref_loading && (job.mode !== null && job.mode !== undefined) && (
+          <Badge variant="outline" className="text-xs">
+            {getModeIcon(job.mode)}
+            {get_job_mode(job.mode)?.name}
+          </Badge>
+        )}
+      </div>
+
+      {/* Description Preview */}
+      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+        {job.description}
+      </p>
+
+      {/* Location */}
+      <div className="flex items-center gap-1 text-xs text-gray-500">
+        <MapPin className="w-3 h-3" />
+        <span>{job.location}</span>
+      </div>
+    </div>
+  )
 }
 
 function JobCard({ job, isSelected, onClick, refs }: { job: Job; isSelected: boolean; onClick: () => void, refs: RefsAPI }) {
