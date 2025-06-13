@@ -135,7 +135,7 @@ export default function HomePage() {
           <div className={`flex-1 flex flex-col ${isMobile ? 'justify-center items-center px-6' : 'justify-center'} items-center px-4 sm:px-6 lg:px-12`}>
             {/* Hero Text */}
             <div className={`text-center ${isMobile ? 'mb-16' : 'mb-8 lg:mb-12'}`}>
-              <h1 className={`${isMobile ? 'text-5xl mb-8' : 'text-2xl sm:text-3xl lg:text-4xl mb-4'} font-bold text-gray-800 leading-tight`}>
+              <h1 className={`${isMobile ? 'text-6xl mb-8' : 'text-4xl sm:text-5xl lg:text-6xl mb-6'} font-bold text-gray-800 leading-tight`}>
                 Better Internships Start Here.
               </h1>
               {!isMobile && (
@@ -152,12 +152,12 @@ export default function HomePage() {
                   }
                 }}>
                   <div className="group flex flex-row justify-center">
-                    <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
+                    <div className="inline-block relative text-lg sm:text-xl lg:text-2xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
                       By DLSU students, for DLSU students. Not official. 
                     </div>
-                    <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 overflow-hidden ">
+                    <div className="inline-block relative text-lg sm:text-xl lg:text-2xl text-gray-600 overflow-hidden ">
                       <span className="invisible m-0">Just Better...</span>
-                      <div className="absolute top-0 left-0 text-base sm:text-lg lg:text-xl h-full w-full flex items-center justify-center opacity-0
+                      <div className="absolute top-0 left-0 text-lg sm:text-xl lg:text-2xl h-full w-full flex items-center justify-center opacity-0
                                       transform -translate-x-full transition-all duration-300 ease-in-out
                                       group-hover:translate-x-0 group-hover:opacity-100">
                         Just better.
@@ -167,7 +167,7 @@ export default function HomePage() {
                 </div>
               )}
               {isMobile && (
-                <p className="text-xl text-gray-500">
+                <p className="text-2xl text-gray-500">
                   By students, for students. Not official. Just better.
                 </p>
               )}
@@ -264,9 +264,9 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="w-full max-w-4xl mb-8">
-                {/* Desktop Search Bar - Horizontal Layout */}
+                {/* Desktop Search Bar - Compact Layout */}
                 <div className="flex items-stretch gap-3 p-3 border rounded-lg bg-white shadow-sm">
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 min-w-0">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       type="text"
@@ -274,28 +274,30 @@ export default function HomePage() {
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Job Title, keywords, Company"
-                      className="pl-10 w-full h-12 bg-white"
+                      className="pl-10 w-full h-12 bg-white border-0 focus:ring-0"
                     />
                   </div>
-                  <FilterDropdown
-                    name="jobType"
-                    options={["Internships", "Full-time", "Part-time", "All types"]}
-                    value={jobTypeFilter}
-                    activeFilter={activeFilter}
-                    onChange={setJobTypeFilter}
-                    onClick={() => { setActiveFilter("jobType") }}
-                  />
-                  <FilterDropdown
-                    name="location"
-                    options={["Face to Face", "Remote", "Hybrid", "Any location"]}
-                    value={locationFilter}
-                    activeFilter={activeFilter}
-                    onChange={setLocationFilter}
-                    onClick={() => { setActiveFilter("location") }}
-                  />
-                  <Button onClick={handleSearch} className="h-12 px-6">
-                    Find Jobs
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <FilterDropdown
+                      name="jobType"
+                      options={["Internships", "Full-time", "Part-time", "All types"]}
+                      value={jobTypeFilter}
+                      activeFilter={activeFilter}
+                      onChange={setJobTypeFilter}
+                      onClick={() => { setActiveFilter("jobType") }}
+                    />
+                    <FilterDropdown
+                      name="location"
+                      options={["Face to Face", "Remote", "Hybrid", "Any location"]}
+                      value={locationFilter}
+                      activeFilter={activeFilter}
+                      onChange={setLocationFilter}
+                      onClick={() => { setActiveFilter("location") }}
+                    />
+                    <Button onClick={handleSearch} className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white">
+                      Find Jobs
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
@@ -351,7 +353,7 @@ function FilterDropdown({ name, options, value, onChange, activeFilter, onClick 
       <Button
         variant="outline" 
         onClick={() => (setIsOpen(!isOpen), onClick())}
-        className="h-12 px-4 flex items-center gap-2"
+        className="h-12 px-4 flex items-center gap-2 min-w-[120px] justify-between"
       >
         {value}
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
