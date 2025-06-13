@@ -134,8 +134,8 @@ export default function HomePage() {
           
           <div className={`flex-1 flex flex-col ${isMobile ? 'justify-center items-center px-6' : 'justify-center'} items-center px-4 sm:px-6 lg:px-12`}>
             {/* Hero Text */}
-            <div className={`text-center ${isMobile ? 'mb-16' : 'mb-8 lg:mb-12'}`}>
-              <h1 className={`${isMobile ? 'text-6xl mb-8' : 'text-4xl sm:text-5xl lg:text-6xl mb-6'} font-bold text-gray-800 leading-tight`}>
+            <div className={`text-center ${isMobile ? 'mb-8' : 'mb-8 lg:mb-12'}`}>
+              <h1 className={`${isMobile ? 'text-4xl mb-6' : 'text-4xl sm:text-5xl lg:text-6xl mb-6'} font-bold text-gray-800 leading-tight`}>
                 Better Internships Start Here.
               </h1>
               {!isMobile && (
@@ -167,7 +167,7 @@ export default function HomePage() {
                 </div>
               )}
               {isMobile && (
-                <p className="text-2xl text-gray-500">
+                <p className="text-lg text-gray-500">
                   By students, for students. Not official. Just better.
                 </p>
               )}

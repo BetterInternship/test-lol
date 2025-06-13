@@ -188,27 +188,27 @@ export default function StudentDock({
     {
       icon: <Home size={20} />,
       label: "Home",
-      href: "/student",
+      href: "/",
     },
     {
       icon: <Search size={20} />,
       label: "Search Jobs",
-      href: "/student/search",
+      href: "/search",
     },
     {
       icon: <BookmarkIcon size={20} />,
       label: "Saved Jobs",
-      href: "/student/saved",
+      href: "/saved",
     },
     {
       icon: <FileText size={20} />,
       label: "Applications",
-      href: "/student/applications",
+      href: "/applications",
     },
     {
       icon: <User size={20} />,
       label: "Profile",
-      href: "/student/profile",
+      href: "/profile",
     },
   ];
 
