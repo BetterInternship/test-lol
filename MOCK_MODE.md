@@ -37,12 +37,22 @@ Mock mode allows you to run the application without connecting to the external A
 The mock system includes:
 
 - **Users**: Pre-configured user accounts
-  - `john.doe@example.com` - Regular user account
-  - `hr@techcorp.com` - Employer account
+  - `ric_pagulayan@dlsu.edu.ph` - DLSU student (needs profile setup)
+  - `john.doe@example.com` - Regular user with complete profile
+  - Any @dlsu.edu.ph email will auto-create a new account
 
-- **Jobs**: Sample job listings
+- **Jobs**: 15 realistic job listings including:
+  - Tech companies: Google Philippines, Accenture
+  - Conglomerates: Ayala Corporation, San Miguel Corporation
+  - Banks: BDO Unibank
+  - Media: Rappler
+  - Telecom: Globe Telecom
+  - International: Asian Development Bank
+  - Various positions: Internships, Full-time, Part-time
+  - Work modes: In-person, Remote, Hybrid
+
 - **Applications**: Sample job applications
-- **Saved Jobs**: Sample saved jobs
+- **Saved Jobs**: Sample saved jobs (persists per user)
 
 ## Features
 

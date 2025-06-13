@@ -86,7 +86,7 @@ export default function OTPPage() {
       setLoading(true)
       setError("")
       await verify_otp(email, otpString)
-        .then(r => r?.success ? router.push('/') : setError('Invalid OTP.'))
+        .then(r => r?.success ? console.log(r): setError('Invalid OTP.'))
         .catch((e) => setError(e.message ?? ""))
 
     } catch (err: any) {

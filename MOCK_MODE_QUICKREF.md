@@ -40,12 +40,17 @@ When mock mode is **ENABLED**:
 
 ## Test Accounts
 
-### Student Account:
-- Email: `john.doe@example.com`
-- Password: (any password works in mock mode)
+### Student Accounts:
+- **DLSU Student** (New user): `ric_pagulayan@dlsu.edu.ph`
+  - Will prompt for profile creation on first login
+  - Any @dlsu.edu.ph email will work
+- **Demo Student** (Existing profile): `john.doe@example.com`
+  - Pre-filled profile with saved jobs
 
-### Employer Account:
+### Employer Accounts:
 - Email: `hr@techcorp.com`
+- Email: `careers@google.com.ph`
+- Email: `careers@ayala.com.ph`
 - Password: (any password works in mock mode)
 
 ## Important Notes

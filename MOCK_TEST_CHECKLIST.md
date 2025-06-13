@@ -7,39 +7,71 @@ Run `npm run mock:status` to verify mock mode is enabled.
 ## Test Scenarios
 
 ### 1. Job Listings ✅
-- Jobs should appear on the home page
-- Search should work without API calls
-- Job details should display
+- 15 jobs should appear on the home page
+- Jobs include major Philippine companies
+- Search and filters work without API calls
+- Job details display properly
 
-### 2. Authentication & Profile Creation
+### 2. DLSU User Flow (Primary Test)
+- **Login**: Use `ric_pagulayan@dlsu.edu.ph` (any password)
+- **Profile Creation**: 
+  - Should redirect to profile creation
+  - Fill all required fields
+  - Profile saves without OTP verification
+- **Features to Test**:
+  - Save/unsave jobs
+  - Apply to jobs
+  - View saved jobs
+  - Update profile
+  - All data persists for this user
+
+### 3. Existing User Flow
 - **Login**: Use `john.doe@example.com` (any password)
-- **Register**: 
-  - Use any @dlsu.edu.ph email
-  - Fill the form
-  - Should skip OTP and go directly to profile
+- Has complete profile already
+- Has 1 saved job
 
-### 3. Saved Jobs
-- Click save on any job
+### 4. Saved Jobs
+- Click save on any job listing
+- Click again to unsave
 - Check saved jobs page
-- Should persist in memory
+- Each user has their own saved jobs list
 
-### 4. Applications
+### 5. Applications
 - Apply to any job
+- Fill application form
 - Check applications page
-- Should show in list
+- Should show all your applications
 
 ## Mock Data Available
 
 ### Users
-- `john.doe@example.com` - Student account
+- `ric_pagulayan@dlsu.edu.ph` - DLSU student (primary test account)
+- `john.doe@example.com` - Student with existing profile
 - `hr@techcorp.com` - Employer account
 
-### Jobs (5 available)
-1. Senior Frontend Developer Intern - Tech Corp
-2. Backend Engineer - StartupXYZ
-3. UX/UI Designer Intern - Design Studio
-4. Data Science Intern - Analytics Inc
-5. Marketing Assistant - MediaCo
+### Jobs (15 available)
+**Technology**
+1. Software Engineering Intern - Google Philippines
+2. Full Stack Developer - Accenture Philippines  
+3. Mobile App Developer Intern - Globe Telecom
+4. Senior Frontend Developer Intern - Tech Corp
+5. Backend Engineer - StartupXYZ
+6. Data Science Intern - Analytics Inc
+
+**Business & Finance**
+7. Business Analyst Intern - Ayala Corporation
+8. Finance Intern - BDO Unibank
+9. Research Assistant - Asian Development Bank
+
+**Creative & Media**
+10. UX/UI Designer Intern - Design Studio
+11. Graphic Design Intern - Canva Philippines
+12. Content Writing Intern - Rappler
+
+**Other**
+13. Marketing Intern - Unilever Philippines
+14. Marketing Assistant - MediaCo
+15. HR Management Trainee - San Miguel Corporation
 
 ## Console Logs
 When mock mode is active with logging enabled, you'll see:
