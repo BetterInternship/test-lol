@@ -181,6 +181,26 @@ export class MockFetchClient {
       };
     }
     
+    // If it's a DLSU email that doesn't exist, create a new user
+    if (data.email.endsWith('@dlsu.edu.ph')) {
+      const newUser: PublicUser = {
+        id: `user-${Date.now()}`,
+        email: data.email,
+        name: '',
+        phone: '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as PublicUser;
+      
+      mockUsers[newUser.id] = newUser;
+      mockSessions.currentUser = newUser;
+      
+      return {
+        success: true,
+        user: newUser
+      };
+    }
+    
     return {
       success: false,
       error: 'Invalid credentials'
@@ -209,6 +229,10 @@ export class MockFetchClient {
     if (user) {
       return { existing_user: true, verified_user: true };
     }
+    // DLSU emails are always valid for registration
+    if (data.email.endsWith('@dlsu.edu.ph')) {
+      return { existing_user: false, verified_user: false };
+    }
     return { existing_user: false, verified_user: false };
   }
 
@@ -226,18 +250,32 @@ export class MockFetchClient {
 
   private handleRegister(data: Partial<PublicUser>) {
     // Create new user - skip OTP in mock mode
+    const userId = `user-${Date.now()}`;
     const newUser: PublicUser = {
-      id: `user-${Date.now()}`,
+      id: userId,
       email: data.email || `user${Date.now()}@example.com`,
       name: data.name || data.full_name || 'New User',
       phone: data.phone || data.phone_number || '',
-      ...data,
+      address: data.address || '',
+      bio: data.bio || '',
+      skills: data.skills || [],
+      education: data.education || [],
+      experience: data.experience || [],
+      profile_picture: data.profile_picture || '',
+      year_level: data.year_level,
+      college: data.college,
+      portfolio_link: data.portfolio_link || '',
+      github_link: data.github_link || '',
+      linkedin_link: data.linkedin_link || '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as PublicUser;
     
     mockUsers[newUser.id] = newUser;
     mockSessions.currentUser = newUser;
+    
+    // Initialize empty saved jobs for new user
+    mockSavedJobs[userId] = [];
     
     return {
       success: true,
@@ -285,10 +323,12 @@ export class MockFetchClient {
     
     // Check if already saved
     const userSavedJobs = mockSavedJobs[mockSessions.currentUser.id] || [];
-    const alreadySaved = userSavedJobs.some(sj => sj.job_id === data.id);
+    const savedJobIndex = userSavedJobs.findIndex(sj => sj.job_id === data.id);
     
-    if (alreadySaved) {
-      return { success: false, message: 'Job already saved' };
+    if (savedJobIndex !== -1) {
+      // Job is already saved, so unsave it
+      mockSavedJobs[mockSessions.currentUser.id].splice(savedJobIndex, 1);
+      return { success: true, message: 'Job unsaved successfully' };
     }
     
     // Add to saved jobs
