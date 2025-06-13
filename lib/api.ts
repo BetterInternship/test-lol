@@ -6,6 +6,14 @@ import {
   PublicEmployerUser,
 } from "@/lib/db/db.types";
 import { APIClient } from "./api-client";
+import {
+  isMockMode,
+  createMockAuthService,
+  createMockUserService,
+  createMockJobService,
+  createMockApplicationService,
+  createMockFileService
+} from "./mock";
 
 // API configuration and helper funcs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
