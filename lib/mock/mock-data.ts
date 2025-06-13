@@ -55,7 +55,8 @@ export const mockJobs: { [key: string]: Job } = {
     title: "Senior Frontend Developer",
     company: "Tech Corp",
     location: "San Francisco, CA",
-    type: "Full-time",
+    type: 0, // Internship
+    mode: 0, // In-person
     description: "We are looking for a Senior Frontend Developer...",
     requirements: ["5+ years React experience", "TypeScript proficiency"],
     salary_min: 120000,
@@ -64,13 +65,20 @@ export const mockJobs: { [key: string]: Job } = {
     is_active: true,
     created_at: "2024-01-15T00:00:00Z",
     updated_at: "2024-01-15T00:00:00Z",
+    employer: {
+      id: "employer-1",
+      name: "Tech Corp",
+      industry: "Technology",
+      description: "Leading technology company",
+    },
   },
   "job-2": {
     id: "job-2",
     title: "Backend Engineer",
     company: "StartupXYZ",
     location: "Remote",
-    type: "Full-time",
+    type: 1, // Full-time
+    mode: 1, // Remote
     description: "Join our growing team as a Backend Engineer...",
     requirements: ["Node.js expertise", "Database design skills"],
     salary_min: 100000,
@@ -79,6 +87,78 @@ export const mockJobs: { [key: string]: Job } = {
     is_active: true,
     created_at: "2024-01-20T00:00:00Z",
     updated_at: "2024-01-20T00:00:00Z",
+    employer: {
+      id: "employer-2",
+      name: "StartupXYZ",
+      industry: "Technology",
+      description: "Innovative startup",
+    },
+  },
+  "job-3": {
+    id: "job-3",
+    title: "UX/UI Designer Intern",
+    company: "Design Studio",
+    location: "New York, NY",
+    type: 0, // Internship
+    mode: 2, // Hybrid
+    description: "Looking for a creative UX/UI Designer intern...",
+    requirements: ["Figma proficiency", "Portfolio required"],
+    salary_min: 40000,
+    salary_max: 60000,
+    posted_by: "employer-3",
+    is_active: true,
+    created_at: "2024-01-25T00:00:00Z",
+    updated_at: "2024-01-25T00:00:00Z",
+    employer: {
+      id: "employer-3",
+      name: "Design Studio",
+      industry: "Design & Arts",
+      description: "Creative design agency",
+    },
+  },
+  "job-4": {
+    id: "job-4",
+    title: "Data Science Intern",
+    company: "Analytics Inc",
+    location: "Chicago, IL",
+    type: 0, // Internship
+    mode: 0, // In-person
+    description: "Data Science internship opportunity...",
+    requirements: ["Python", "Machine Learning basics"],
+    salary_min: 50000,
+    salary_max: 70000,
+    posted_by: "employer-4",
+    is_active: true,
+    created_at: "2024-01-28T00:00:00Z",
+    updated_at: "2024-01-28T00:00:00Z",
+    employer: {
+      id: "employer-4",
+      name: "Analytics Inc",
+      industry: "Technology",
+      description: "Data analytics company",
+    },
+  },
+  "job-5": {
+    id: "job-5",
+    title: "Marketing Assistant",
+    company: "MediaCo",
+    location: "Los Angeles, CA",
+    type: 2, // Part-time
+    mode: 2, // Hybrid
+    description: "Part-time Marketing Assistant position...",
+    requirements: ["Social media experience", "Content creation"],
+    salary_min: 35000,
+    salary_max: 45000,
+    posted_by: "employer-5",
+    is_active: true,
+    created_at: "2024-01-30T00:00:00Z",
+    updated_at: "2024-01-30T00:00:00Z",
+    employer: {
+      id: "employer-5",
+      name: "MediaCo",
+      industry: "Marketing",
+      description: "Digital marketing agency",
+    },
   }
 };
 

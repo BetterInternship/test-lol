@@ -4,7 +4,7 @@ import {
   user_service,
   application_service,
   handle_api_error,
-} from "@/lib/api";
+} from "@/lib/api-wrapper";
 import { Job, PublicUser, Application } from "@/lib/db/db.types";
 import { useAuthContext } from "@/app/student/authctx";
 import { useCache } from "./use-cache";

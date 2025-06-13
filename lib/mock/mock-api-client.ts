@@ -2,6 +2,7 @@
 import { getMockConfig } from './mock-config';
 import { mockUsers, mockEmployerUsers, mockJobs, mockSavedJobs, mockApplications, mockSessions } from './mock-data';
 import { ApiResponse } from '../api-client';
+import { PublicUser, SavedJob, Application } from '../db/db.types';
 
 // Utility to simulate async delay
 const simulateDelay = async (delay?: number) => {
@@ -73,35 +74,12 @@ export class MockFetchClient {
       return this.handleEmployerOTP(data);
     }
     
-    if (path.includes('/auth/verify-otp')) {
-      return this.handleOTP(data);
+    if (path.includes('/auth/email-status')) {
+      return this.handleEmailStatus(data);
     }
     
-    if (path.includes('/auth/register')) {
-      return this.handleRegister(data);
-    }
-
-  // Handle specific mock endpoints
-  private async handleMockEndpoint(method: string, url: string, data?: any): Promise<any> {
-    // Extract the path from the full URL
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    const path = url.replace(apiBaseUrl, '');
-    
-    // Auth endpoints
-    if (path.includes('/auth/loggedin')) {
-      return this.handleLoggedIn();
-    }
-    
-    if (path.includes('/auth/hire/loggedin')) {
-      return this.handleEmployerLoggedIn();
-    }
-    
-    if (path.includes('/auth/login')) {
-      return this.handleLogin(data);
-    }
-    
-    if (path.includes('/auth/hire/verify-otp')) {
-      return this.handleEmployerOTP(data);
+    if (path.includes('/auth/send-new-otp')) {
+      return this.handleSendOTP(data);
     }
     
     if (path.includes('/auth/verify-otp')) {
@@ -221,6 +199,19 @@ export class MockFetchClient {
     return { success: false, error: 'Invalid OTP' };
   }
 
+  private handleSendOTP(data: { email: string }) {
+    // Mock sending OTP - just return success
+    return { email: data.email };
+  }
+
+  private handleEmailStatus(data: { email: string }) {
+    const user = Object.values(mockUsers).find(u => u.email === data.email);
+    if (user) {
+      return { existing_user: true, verified_user: true };
+    }
+    return { existing_user: false, verified_user: false };
+  }
+
   private handleEmployerOTP(data: { email: string; otp: string }) {
     // Mock employer OTP verification
     if (data.otp.length === 6) {
@@ -234,9 +225,12 @@ export class MockFetchClient {
   }
 
   private handleRegister(data: Partial<PublicUser>) {
-    // Create new user
+    // Create new user - skip OTP in mock mode
     const newUser: PublicUser = {
       id: `user-${Date.now()}`,
+      email: data.email || `user${Date.now()}@example.com`,
+      name: data.name || data.full_name || 'New User',
+      phone: data.phone || data.phone_number || '',
       ...data,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -416,7 +410,6 @@ export class MockFetchClient {
       application: newApplication
     };
   }
-
   private handleGetApplicationStats() {
     if (!mockSessions.currentUser) {
       return {
@@ -461,6 +454,7 @@ export class MockFetchClient {
   async put<T>(url: string, data?: any): Promise<T> {
     return this.mockRequest<T>('PUT', url, data);
   }
+
   async delete<T>(url: string): Promise<T> {
     return this.mockRequest<T>('DELETE', url);
   }
