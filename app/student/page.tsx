@@ -173,94 +173,132 @@ export default function HomePage() {
               )}
             </div>
 
-            {/* Search Bar - New integrated design */}
-            <div className={`w-full ${isMobile ? 'max-w-sm' : 'max-w-xl'} mb-12`}>
-              {/* Main Search Input with integrated button */}
-              <div className="relative mb-8">
-                <div className="absolute inset-0 bg-white rounded-3xl border border-gray-200 shadow-sm"></div>
-                <div className="relative flex items-center">
-                  <Input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="What's your dream internship?"
-                    className="w-full h-14 pl-5 pr-16 bg-transparent border-0 text-base placeholder:text-gray-400 focus:ring-0 focus:outline-none rounded-3xl font-normal"
+            {/* Search Bar - Responsive design */}
+            {isMobile ? (
+              <div className="w-full max-w-sm mb-12">
+                {/* Mobile Search Input with integrated button */}
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-white rounded-3xl border border-gray-200 shadow-sm"></div>
+                  <div className="relative flex items-center">
+                    <Input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="What's your dream internship?"
+                      className="w-full h-14 pl-5 pr-16 bg-transparent border-0 text-base placeholder:text-gray-400 focus:ring-0 focus:outline-none rounded-3xl font-normal"
+                    />
+                    <Button 
+                      onClick={handleSearch}
+                      className="absolute right-2 h-10 w-10 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-sm flex items-center justify-center p-0"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Mobile Filter Dropdowns */}
+                <div className="flex gap-3 justify-center">
+                  <div className="relative flex-1 max-w-[180px]">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveFilter(activeFilter === "jobType" ? "" : "jobType");
+                      }}
+                      className="w-full px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium text-gray-600 transition-all duration-200 flex items-center justify-between shadow-sm"
+                    >
+                      <span>{jobTypeFilter === "All types" ? "All Job Types" : jobTypeFilter}</span>
+                      <ChevronDown className={`w-3 h-3 ml-2 transition-transform ${activeFilter === "jobType" ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {activeFilter === "jobType" && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+                        {["Internships", "Full-time", "Part-time", "All types"].map((option) => (
+                          <button
+                            key={option}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setJobTypeFilter(option);
+                              setActiveFilter("");
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium"
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative flex-1 max-w-[180px]">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveFilter(activeFilter === "location" ? "" : "location");
+                      }}
+                      className="w-full px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium text-gray-600 transition-all duration-200 flex items-center justify-between shadow-sm"
+                    >
+                      <span>{locationFilter === "Any location" ? "Any location" : locationFilter}</span>
+                      <ChevronDown className={`w-3 h-3 ml-2 transition-transform ${activeFilter === "location" ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {activeFilter === "location" && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
+                        {["Face to Face", "Remote", "Hybrid", "Any location"].map((option) => (
+                          <button
+                            key={option}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocationFilter(option);
+                              setActiveFilter("");
+                            }}
+                            className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium"
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="w-full max-w-4xl mb-8">
+                {/* Desktop Search Bar - Horizontal Layout */}
+                <div className="flex items-stretch gap-3 p-3 border rounded-lg bg-white shadow-sm">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Job Title, keywords, Company"
+                      className="pl-10 w-full h-12 bg-white"
+                    />
+                  </div>
+                  <FilterDropdown
+                    name="jobType"
+                    options={["Internships", "Full-time", "Part-time", "All types"]}
+                    value={jobTypeFilter}
+                    activeFilter={activeFilter}
+                    onChange={setJobTypeFilter}
+                    onClick={() => { setActiveFilter("jobType") }}
                   />
-                  <Button 
-                    onClick={handleSearch}
-                    className="absolute right-2 h-10 w-10 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-sm flex items-center justify-center p-0"
-                  >
-                    <Search className="h-4 w-4" />
+                  <FilterDropdown
+                    name="location"
+                    options={["Face to Face", "Remote", "Hybrid", "Any location"]}
+                    value={locationFilter}
+                    activeFilter={activeFilter}
+                    onChange={setLocationFilter}
+                    onClick={() => { setActiveFilter("location") }}
+                  />
+                  <Button onClick={handleSearch} className="h-12 px-6">
+                    Find Jobs
                   </Button>
                 </div>
               </div>
-              
-              {/* Filter Dropdowns */}
-              <div className="flex gap-3 justify-center">
-                <div className="relative flex-1 max-w-[180px]">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveFilter(activeFilter === "jobType" ? "" : "jobType");
-                    }}
-                    className="w-full px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium text-gray-600 transition-all duration-200 flex items-center justify-between shadow-sm"
-                  >
-                    <span>{jobTypeFilter === "All types" ? "All Job Types" : jobTypeFilter}</span>
-                    <ChevronDown className={`w-3 h-3 ml-2 transition-transform ${activeFilter === "jobType" ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {activeFilter === "jobType" && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
-                      {["Internships", "Full-time", "Part-time", "All types"].map((option) => (
-                        <button
-                          key={option}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setJobTypeFilter(option);
-                            setActiveFilter("");
-                          }}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium"
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="relative flex-1 max-w-[180px]">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActiveFilter(activeFilter === "location" ? "" : "location");
-                    }}
-                    className="w-full px-4 py-3 bg-white hover:bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium text-gray-600 transition-all duration-200 flex items-center justify-between shadow-sm"
-                  >
-                    <span>{locationFilter === "Any location" ? "Any location" : locationFilter}</span>
-                    <ChevronDown className={`w-3 h-3 ml-2 transition-transform ${activeFilter === "location" ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {activeFilter === "location" && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50">
-                      {["Face to Face", "Remote", "Hybrid", "Any location"].map((option) => (
-                        <button
-                          key={option}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setLocationFilter(option);
-                            setActiveFilter("");
-                          }}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-sm text-gray-700 font-medium"
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            )}
 
             {/* Job Suggestions - Hide on mobile */}
             {!isMobile && (

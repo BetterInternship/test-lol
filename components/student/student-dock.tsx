@@ -229,7 +229,7 @@ export default function StudentDock({
   };
 
   return (
-    <div className="fixed bottom-4 left-0 right-0 z-50 pointer-events-none">
+    <div className="fixed bottom-8 left-0 right-0 z-50 pointer-events-none">
       <div className="mx-auto flex max-w-full items-end justify-center pointer-events-auto" style={{ height: Math.max(panelHeight, magnification + 20) }}>
         <motion.div
           onMouseMove={({ pageX }) => {
