@@ -37,7 +37,6 @@ export default function ApplicationsPage() {
   const { is_authenticated } = useAuthContext()
   const { applications, loading, error, refetch } = useApplications()
   const { get_job_mode, get_job_type, get_job_allowance } = useRefs();
-  const isMobile = false;
   const router = useRouter()
   const [isMobile, setIsMobile] = useState(false)
 
@@ -160,6 +159,7 @@ export default function ApplicationsPage() {
           </Link>
           <ProfileButton />
         </div>
+
           
         {/* Applications Content */}
         <div className="flex-1 p-8 overflow-y-auto">
@@ -191,90 +191,77 @@ export default function ApplicationsPage() {
                 <div className="text-gray-400 text-sm mb-6">
                   Click on the apply button on any open job to start an application.
                 </div>
-              ) : error ? (
-                <div className="text-center py-12">
-                  <p className="text-red-600 mb-4">Failed to load applications: {error}</p>
-                  <Button onClick={refetch}>Try Again</Button>
-                </div>
-              ) : applications.length === 0 ? (
-                <div className="text-center py-12">
-                  <BookA className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-                  <div className="text-gray-500 text-lg mb-4 font-medium">No applications yet</div>
-                  <div className="text-gray-400 text-sm mb-6">
-                    Click on the apply button on any open job to start an application.
-                  </div>
-                  <Link href="/search">
-                    <Button>Browse Jobs</Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {applications.map((application) => (
-                    <div key={application.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className={`flex items-start justify-between ${isMobile ? 'mb-3' : 'mb-3'}`}>
-                            <div className="flex-1">
-                              <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-3'} mb-2`}>
-                                <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-semibold text-gray-900 leading-tight`}>
-                                  {application.job?.title}
-                                </h3>
-                                <Badge variant={getStatusBadgeVariant(application.status)} className={`text-xs w-fit ${isMobile ? 'px-3 py-1' : ''}`}>
-                                  {getStatusDisplayText(application.status)}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Calendar className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
-                                <span className={isMobile ? 'text-sm' : ''}>Sent {formatDate(application.applied_at ?? "")}</span>
-                              </div>
+                <Link href="/search">
+                  <Button>Browse Jobs</Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {applications.map((application) => (
+                  <div key={application.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className={`flex items-start justify-between ${isMobile ? 'mb-3' : 'mb-3'}`}>
+                          <div className="flex-1">
+                            <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-3'} mb-2`}>
+                              <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-semibold text-gray-900 leading-tight`}>
+                                {application.job?.title}
+                              </h3>
+                              <Badge variant={getStatusBadgeVariant(application.status)} className={`text-xs w-fit ${isMobile ? 'px-3 py-1' : ''}`}>
+                                {getStatusDisplayText(application.status)}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
+                              <span className={isMobile ? 'text-sm' : ''}>Sent {formatDate(application.applied_at ?? "")}</span>
                             </div>
                           </div>
                         </div>
+                      </div>
 
-                        <div className={`flex flex-wrap gap-2 ${isMobile ? 'mb-4' : 'mb-4'}`}>
-                          {(application.job?.type || application.job?.type === 0) && (
-                            <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
-                              {getEmploymentTypeIcon(get_job_type(application.job.type)?.name ?? "")}
-                              {get_job_type(application.job.type)?.name ?? ""}
-                            </Badge>
-                          )}
-                          {(application.job?.mode || application.job?.mode === 0) && (
-                            <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
-                              {getModeIcon(get_job_mode(application.job.mode)?.name ?? "")}
-                              {get_job_mode(application.job.mode)?.name ?? ""}
-                            </Badge>
-                          )}
-                          {(application.job?.allowance || application.job?.allowance === 0) && (
-                            <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
-                              <Clipboard className="w-3 h-3 mr-1" />
-                              {get_job_allowance(application.job?.allowance)?.name ?? ""}
-                            </Badge>
-                          )}
-                          {application.job?.salary && (
-                            <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
-                              {getSalaryIcon()}
-                              {application.job.salary}
-                            </Badge>
-                          )}
-                          {application.job?.duration && (
-                            <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
-                              <Clock className="w-3 h-3 mr-1" />
-                              {application.job.duration}
-                            </Badge>
-                          )}
-                        </div>
+                      <div className={`flex flex-wrap gap-2 ${isMobile ? 'mb-4' : 'mb-4'}`}>
+                        {(application.job?.type || application.job?.type === 0) && (
+                          <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
+                            {getEmploymentTypeIcon(get_job_type(application.job.type)?.name ?? "")}
+                            {get_job_type(application.job.type)?.name ?? ""}
+                          </Badge>
+                        )}
+                        {(application.job?.mode || application.job?.mode === 0) && (
+                          <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
+                            {getModeIcon(get_job_mode(application.job.mode)?.name ?? "")}
+                            {get_job_mode(application.job.mode)?.name ?? ""}
+                          </Badge>
+                        )}
+                        {(application.job?.allowance || application.job?.allowance === 0) && (
+                          <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
+                            <Clipboard className="w-3 h-3 mr-1" />
+                            {get_job_allowance(application.job?.allowance)?.name ?? ""}
+                          </Badge>
+                        )}
+                        {application.job?.salary && (
+                          <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
+                            {getSalaryIcon()}
+                            {application.job.salary}
+                          </Badge>
+                        )}
+                        {application.job?.duration && (
+                          <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
+                            <Clock className="w-3 h-3 mr-1" />
+                            {application.job.duration}
+                          </Badge>
+                        )}
+                      </div>
 
-                        <p className={`text-gray-700 ${isMobile ? 'text-sm mb-5 leading-relaxed' : 'text-sm mb-4'} line-clamp-2`}>
-                          {application.job?.description}
-                        </p>
+                      <p className={`text-gray-700 ${isMobile ? 'text-sm mb-5 leading-relaxed' : 'text-sm mb-4'} line-clamp-2`}>
+                        {application.job?.description}
+                      </p>
 
-                        <div className="flex gap-3">
-                          <Link href={`/search?jobId=${application.job?.id}`}>
-                            <Button size={isMobile ? "default" : "sm"} className={isMobile ? 'px-6 py-2 font-medium' : ''}>
-                              View Details
-                            </Button>
-                          </Link>
-                        </div>
+                      <div className="flex gap-3">
+                        <Link href={`/search?jobId=${application.job?.id}`}>
+                          <Button size={isMobile ? "default" : "sm"} className={isMobile ? 'px-6 py-2 font-medium' : ''}>
+                            View Details
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -283,6 +270,7 @@ export default function ApplicationsPage() {
             )}
           </div>
         </div>
+      </div>
       </div>
   )
 }
