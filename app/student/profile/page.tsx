@@ -44,7 +44,7 @@ import { useRefs } from "@/lib/db/use-refs"
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext()
   const { profile, error, updateProfile } = useProfile()
-  const { get_level } = useRefs();
+  const { get_level, get_college } = useRefs();
   const [isEditing, setIsEditing] = useState(false)
   const [editedData, setEditedData] = useState<any>({ skills: [] })
   const [saving, setSaving] = useState(false)
@@ -477,7 +477,7 @@ export default function ProfilePage() {
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium text-sm">{profile.college || <span className="text-gray-400 italic">Not provided</span>}</p>
+                          <p className="text-gray-900 font-medium text-sm">{get_college(profile.college)?.name || <span className="text-gray-400 italic">Not provided</span>}</p>
                         )}
                       </div>
 
@@ -882,7 +882,7 @@ export default function ProfilePage() {
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
                           />
                         ) : (
-                          <p className="text-gray-900 font-medium text-sm">{profile.college || <span className="text-gray-400 italic">Not provided</span>}</p>
+                          <p className="text-gray-900 font-medium text-sm">{get_college(profile.college)?.name || <span className="text-gray-400 italic">Not provided</span>}</p>
                         )}
                       </div>
 
@@ -1286,13 +1286,6 @@ function EmployerPreviewModal({ profile, filesInfo, onClose }: { profile: any; f
       case 5: return '5th Year Student'
       default: return `${yearLevel}th Year Student`
     }
-  }
-
-  // Helper function to get college name
-  const getCollegeName = (college: string | undefined) => {
-    if (!college) return 'DLSU Manila'
-    // You can add mapping logic here if college is stored as UUID
-    return college
   }
 
   return (

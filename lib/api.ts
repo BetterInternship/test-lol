@@ -12,7 +12,7 @@ import {
   createMockUserService,
   createMockJobService,
   createMockApplicationService,
-  createMockFileService
+  createMockFileService,
 } from "./mock";
 
 // API configuration and helper funcs
@@ -220,10 +220,7 @@ export const user_service = {
   },
 
   async update_profile(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRoute("users").r("me").build(),
-      data
-    );
+    return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
   },
 
   async save_job(job_id: string) {
@@ -324,14 +321,13 @@ export const application_service = {
   },
 
   async create_application(data: {
-    jobId: string;
-    coverLetter?: string;
-    githubLink?: string;
-    portfolioLink?: string;
-    resumeFilename?: string;
+    job_id: string;
+    github_link?: string;
+    portfolio_link?: string;
+    resume?: string;
   }) {
     return APIClient.post<CreateApplicationResponse>(
-      APIRoute("applications").build(),
+      APIRoute("applications").r("create").build(),
       data
     );
   },

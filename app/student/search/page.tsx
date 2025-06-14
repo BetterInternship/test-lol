@@ -30,7 +30,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import ProfileButton from "@/components/student/profile-button"
-import { useJobs, useJobActions, useSavedJobs, useProfile } from "@/hooks/use-api"
+import { useJobs, useSavedJobs, useProfile, useApplications } from "@/hooks/use-api"
 import { useAuthContext } from "../authctx"
 import { Application, Job } from "@/lib/db/db.types"
 import Markdown from 'react-markdown'
@@ -56,43 +56,25 @@ export default function SearchPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
-  const [applying, setApplying] = useState(false)
   const [autoCloseProgress, setAutoCloseProgress] = useState(100)
   const { profile } = useProfile();
+  const { get_college, get_level } = useRefs();
 
   // Check if profile is complete
   const isProfileComplete = () => {
     if (!profile) return false
-    return !!(profile.fullName && profile.phoneNumber && profile.currentProgram && profile.idNumber)
-  }
-
-  const getMissingFields = () => {
-    if (!profile) return []
-    const missing = []
-    if (!profile.fullName) missing.push('Full Name')
-    if (!profile.phoneNumber) missing.push('Phone Number')
-    if (!profile.currentProgram) missing.push('Current Program')
-    if (!profile.idNumber) missing.push('ID Number')
-    return missing
+    return !!(profile.full_name && profile.phone_number && get_college(profile.college)?.name && get_level(profile.year_level)?.name)
   }
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
     if (!selectedJob || !profile) return false
-    
-    let requirementsMet = true
-    if (selectedJob.requiresGithub && (!profile.githubLink || profile.githubLink.trim() === '')) requirementsMet = false
-    if (selectedJob.requiresPortfolio && (!profile.portfolioLink || profile.portfolioLink.trim() === '')) requirementsMet = false
-    
-    return requirementsMet
+    return true
   }
 
   const getMissingJobRequirements = () => {
     if (!selectedJob || !profile) return []
-    const missing = []
-    if (selectedJob.requiresGithub && (!profile.githubLink || profile.githubLink.trim() === '')) missing.push('GitHub Link')
-    if (selectedJob.requiresPortfolio && (!profile.portfolioLink || profile.portfolioLink.trim() === '')) missing.push('Portfolio Link')
-    return missing
+    return []
   }
 
   const isFullyReadyToApply = () => {
@@ -109,8 +91,6 @@ export default function SearchPage() {
     type: jobTypeFilter !== "All types" ? jobTypeFilter : undefined,
     mode: locationFilter !== "Any location" ? locationFilter : undefined,
     industry: industryFilter !== "All industries" ? industryFilter : undefined,
-    limit: jobs_page_size,
-    page: jobs_page,
   })
 
   useEffect(() => {
@@ -118,10 +98,7 @@ export default function SearchPage() {
   }, [ jobs_page, jobs_loading ])
 
   const { is_saved, saving, save_job } = useSavedJobs();
-  const { 
-    applyToJob,  
-    getApplicationStatus 
-  } = useJobActions()
+  const { applications, appliedJob, apply } = useApplications();
 
   useEffect(() => {
     const query = searchParams.get('q') || ""
@@ -208,8 +185,12 @@ export default function SearchPage() {
       return
     }
 
+    console.log(applications.map(a => a.job_id))
+    console.log("id", selectedJob?.id)
+    console.log(appliedJob(selectedJob?.id ?? ""))
+
     // Check if already applied
-    const applicationStatus = getApplicationStatus(selectedJob?.id || '')
+    const applicationStatus = appliedJob(selectedJob?.id ?? "");
     if (applicationStatus) {
       alert('You have already applied to this job!')
       return
@@ -236,11 +217,9 @@ export default function SearchPage() {
     if (!selectedJob) return
 
     try {
-      setApplying(true)
-      const application = await applyToJob(selectedJob.id, {
-        coverLetter: undefined,
-        githubLink: profile?.githubLink || undefined,
-        portfolioLink: profile?.portfolioLink || undefined,
+      const application = await apply(selectedJob.id ?? "", {
+        github_link: profile?.github_link || undefined,
+        portfolio_link: profile?.portfolio_link || undefined,
       })
       
       // Store application details and show success modal
@@ -264,7 +243,6 @@ export default function SearchPage() {
       console.error('Failed to submit application:', error)
       alert('Failed to submit application. Please try again.')
     } finally {
-      setApplying(false)
     }
   }
 
@@ -371,17 +349,15 @@ export default function SearchPage() {
                         onApply={handleApply} 
                         onSave={handleSave}
                         isSaved={is_saved(selectedJob.id ?? '')}
-                        applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                        applicationStatus={appliedJob(selectedJob.id ?? "")}
                         refs={refs}
                       />
                     )}
                   </div>
                 </>
               )}
-            </div>
           </div>
-        </div>
-      </div>
+    </div>
 
       {/* Application Modal - Only for Missing Job Requirements */}
       <AnimatePresence>
