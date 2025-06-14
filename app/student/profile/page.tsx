@@ -205,6 +205,7 @@ export default function ProfilePage() {
         calendly_link: profile.calendly_link || '',
         bio: profile.bio || '',
         taking_for_credit: profile.taking_for_credit || false,
+        linkage_officer: profile.linkage_officer || '',
       })
     }
   }, [profile])
@@ -224,6 +225,7 @@ export default function ProfilePage() {
         calendly_link: editedData.calendly_link,
         bio: editedData.bio,
         taking_for_credit: editedData.taking_for_credit,
+        linkage_officer: editedData.linkage_officer,
       }
       await updateProfile(dataToSend)
       setIsEditing(false)
@@ -248,6 +250,7 @@ export default function ProfilePage() {
         calendly_link: profile.calendly_link || '',
         bio: profile.bio || '',
         taking_for_credit: profile.taking_for_credit || false,
+        linkage_officer: profile.linkage_officer || '',
       })
     }
     setIsEditing(false)
@@ -509,9 +512,13 @@ export default function ProfilePage() {
                           <div className="flex items-center space-x-2">
                             <Checkbox
                               checked={editedData.taking_for_credit || false}
-                              onCheckedChange={(checked) => 
+                              onCheckedChange={(checked) => {
                                 setEditedData({ ...editedData, taking_for_credit: checked as boolean })
-                              }
+                                // Clear linkage officer if unchecked
+                                if (!checked) {
+                                  setEditedData(prev => ({ ...prev, linkage_officer: '' }))
+                                }
+                              }}
                               className="border-gray-300"
                             />
                             <span className="text-sm text-gray-700">
@@ -531,6 +538,28 @@ export default function ProfilePage() {
                           </p>
                         )}
                       </div>
+
+                      {/* Linkage Officer - Conditional */}
+                      {(isEditing ? editedData.taking_for_credit : profile.taking_for_credit) && (
+                        <div className="space-y-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <User className="w-4 h-4 mr-2 text-gray-500" />
+                            Linkage Officer
+                          </label>
+                          {isEditing ? (
+                            <Input
+                              value={editedData.linkage_officer || ''}
+                              onChange={(e) => setEditedData({ ...editedData, linkage_officer: e.target.value })}
+                              placeholder="Enter your linkage officer's name"
+                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium text-sm">
+                              {profile.linkage_officer || <span className="text-gray-400 italic">Not provided</span>}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -888,9 +917,13 @@ export default function ProfilePage() {
                           <div className="flex items-center space-x-2">
                             <Checkbox
                               checked={editedData.taking_for_credit || false}
-                              onCheckedChange={(checked) => 
+                              onCheckedChange={(checked) => {
                                 setEditedData({ ...editedData, taking_for_credit: checked as boolean })
-                              }
+                                // Clear linkage officer if unchecked
+                                if (!checked) {
+                                  setEditedData(prev => ({ ...prev, linkage_officer: '' }))
+                                }
+                              }}
                               className="border-gray-300"
                             />
                             <span className="text-sm text-gray-700">
@@ -910,6 +943,28 @@ export default function ProfilePage() {
                           </p>
                         )}
                       </div>
+
+                      {/* Linkage Officer - Conditional */}
+                      {(isEditing ? editedData.taking_for_credit : profile.taking_for_credit) && (
+                        <div className="space-y-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <User className="w-4 h-4 mr-2 text-gray-500" />
+                            Linkage Officer
+                          </label>
+                          {isEditing ? (
+                            <Input
+                              value={editedData.linkage_officer || ''}
+                              onChange={(e) => setEditedData({ ...editedData, linkage_officer: e.target.value })}
+                              placeholder="Enter your linkage officer's name"
+                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+                            />
+                          ) : (
+                            <p className="text-gray-900 font-medium text-sm">
+                              {profile.linkage_officer || <span className="text-gray-400 italic">Not provided</span>}
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
