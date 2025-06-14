@@ -218,6 +218,7 @@ export default function MyListings() {
                 >
                   <h3 className="font-semibold text-gray-900">{job.title}</h3>
                   <p className="text-sm text-gray-600">{job.location}</p>
+                  <p className="text-sm text-gray-600">{job.employer?.name ?? "Not known"}</p>
                   <p className="text-sm text-gray-500 mb-3">Last updated on {formatDate(job.updated_at ?? "")}</p>
                   
                   <div className="flex gap-2 flex-wrap">
@@ -307,7 +308,7 @@ export default function MyListings() {
             </div>
 
             {/* Requirements */}
-            <div>
+            {/* <div>
               <h3 className="text-lg font-semibold mb-3">Requirements</h3>
               <ul className="space-y-2">
                 {selectedJob?.requirements?.map((req, index) => (
@@ -317,7 +318,7 @@ export default function MyListings() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
