@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useDetectClickOutside } from "react-detect-click-outside";
 import type React from "react"
 import {
   Search,
@@ -13,14 +14,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import JobScroller from "@/components/student/job-scroller"
 import ProfileButton from "@/components/student/profile-button"
+import { DropdownGroup, GroupableRadioDropdown } from "@/components/student/dropdown";
+import { useFilter } from "@/lib/filter";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [jobTypeFilter, setJobTypeFilter] = useState("All types")
-  const [locationFilter, setLocationFilter] = useState("Any location")
-  const [categoryFilter, setCategoryFilter] = useState("All categories")
+  const { filters, set_filter, filter_setter } = useFilter<{
+    job_type: string,
+    location: string,
+    category: string,
+  }>();
   const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [activeFilter, setActiveFilter] = useState("");
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
   const justBetterRef = useRef<HTMLSpanElement>(null);
@@ -39,31 +43,21 @@ export default function HomePage() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Close filter dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setActiveFilter("");
-    };
-
-    if (activeFilter) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [activeFilter]);
-
   const handleSearch = () => {
     const params = new URLSearchParams()
+    const { job_type, location, category } = filters;
+
     if (searchTerm.trim()) {
       params.set('q', searchTerm)
     }
-    if (jobTypeFilter !== "All types") {
-      params.set('jobType', jobTypeFilter)
+    if (job_type !== "All types") {
+      params.set('jobType', job_type)
     }
-    if (locationFilter !== "Any location") {
-      params.set('location', locationFilter)
+    if (location !== "Any location") {
+      params.set('location', location)
     }
-    if (categoryFilter !== "All categories") {
-      params.set('category', categoryFilter)
+    if (category !== "All categories") {
+      params.set('category', category)
     }
     router.push(`/search?${params.toString()}`)
   }
@@ -145,50 +139,44 @@ export default function HomePage() {
                 </div>
                 
                 {/* Filter Row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="relative">
-                    <FilterDropdown
-                      name="jobType"
-                      options={["Internships", "Full-time", "Part-time", "All types"]}
-                      value={jobTypeFilter}
-                      activeFilter={activeFilter}
-                      onChange={setJobTypeFilter}
-                      onClick={() => { setActiveFilter("jobType") }}
-                    />
+                <DropdownGroup>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <GroupableRadioDropdown
+                        name="jobType"
+                        options={["Internships", "Full-time", "Part-time", "All types"]}
+                        on_change={filter_setter("job_type")}
+                      />
+                    </div>
+                    <div className="relative">
+                      <GroupableRadioDropdown
+                        name="location"
+                        options={["Face to Face", "Remote", "Hybrid", "Any location"]}
+                        on_change={filter_setter("location")}
+                      />
+                    </div>
                   </div>
+                  
+                  {/* Category Filter Row */}
                   <div className="relative">
-                    <FilterDropdown
-                      name="location"
-                      options={["Face to Face", "Remote", "Hybrid", "Any location"]}
-                      value={locationFilter}
-                      activeFilter={activeFilter}
-                      onChange={setLocationFilter}
-                      onClick={() => { setActiveFilter("location") }}
-                    />
+                    {isMobile ? (
+                      <Button
+                        onClick={() => setShowCategoryModal(true)}
+                        className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      >
+                        <span className="truncate">{filters.category}</span>
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      </Button>
+                    ) : (
+                      <GroupableRadioDropdown
+                        name="category"
+                        options={["Tech", "Non-Tech", "Engineering", "Research", "Education", "Others", "All categories"]}
+                        on_change={filter_setter("category")}
+                      />
+                    )}
                   </div>
-                </div>
-                
-                {/* Category Filter Row */}
-                <div className="relative">
-                  {isMobile ? (
-                    <Button
-                      onClick={() => setShowCategoryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
-                    >
-                      <span className="truncate">{categoryFilter}</span>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    </Button>
-                  ) : (
-                    <FilterDropdown
-                      name="category"
-                      options={["Tech", "Non-Tech", "Engineering", "Research", "Education", "Others", "All categories"]}
-                      value={categoryFilter}
-                      activeFilter={activeFilter}
-                      onChange={setCategoryFilter}
-                      onClick={() => { setActiveFilter("category") }}
-                    />
-                  )}
-                </div>
+                </DropdownGroup>
                 
                 {/* Search Button */}
                 <Button 
@@ -219,38 +207,31 @@ export default function HomePage() {
                     {/* Filter Dropdowns with Dividers */}
                     <div className="flex items-center">
                       <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-24">
-                        <FilterDropdown
-                          name="jobType"
-                          options={["All types", "Internships", "Full-time", "Part-time"]}
-                          value={jobTypeFilter}
-                          activeFilter={activeFilter}
-                          onChange={setJobTypeFilter}
-                          onClick={() => { setActiveFilter("jobType") }}
-                        />
-                      </div>
-                      <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-28">
-                        <FilterDropdown
-                          name="location"
-                          options={["Any location", "Face to Face", "Remote", "Hybrid"]}
-                          value={locationFilter}
-                          activeFilter={activeFilter}
-                          onChange={setLocationFilter}
-                          onClick={() => { setActiveFilter("location") }}
-                        />
-                      </div>
-                      <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-32">
-                        <FilterDropdown
-                          name="category"
-                          options={["All categories", "Tech", "Non-Tech", "Engineering", "Research", "Education", "Others"]}
-                          value={categoryFilter}
-                          activeFilter={activeFilter}
-                          onChange={setCategoryFilter}
-                          onClick={() => { setActiveFilter("category") }}
-                        />
-                      </div>
+                      <DropdownGroup>
+                        <div className="w-24">
+                          <GroupableRadioDropdown
+                            name="jobType"
+                            options={["All types", "Internships", "Full-time", "Part-time"]}
+                            on_change={filter_setter("job_type")}
+                          />
+                        </div>
+                        <div className="h-8 w-px bg-gray-300 mx-1" />
+                        <div className="w-28">
+                          <GroupableRadioDropdown
+                            name="location"
+                            options={["Any location", "Face to Face", "Remote", "Hybrid"]}
+                            on_change={filter_setter("location")}
+                          />
+                        </div>
+                        <div className="h-8 w-px bg-gray-300 mx-1" />
+                        <div className="w-32">
+                          <GroupableRadioDropdown
+                            name="category"
+                            options={["All categories", "Tech", "Non-Tech", "Engineering", "Research", "Education", "Others"]}
+                            on_change={filter_setter("category")}
+                          />
+                        </div>
+                      </DropdownGroup>
                     </div>
                     
                     {/* Search Button */}
@@ -305,11 +286,11 @@ export default function HomePage() {
                 <button
                   key={option}
                   onClick={() => {
-                    setCategoryFilter(option)
+                    set_filter("category", option)
                     setShowCategoryModal(false)
                   }}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                    categoryFilter === option 
+                    filters.category === option 
                       ? 'bg-blue-50 text-blue-600 border border-blue-200' 
                       : 'hover:bg-gray-50 text-gray-700'
                   }`}
@@ -324,61 +305,3 @@ export default function HomePage() {
     </div>
   )
 }
-
-function FilterDropdown({ name, options, value, onChange, activeFilter, onClick }: { name: string; options: string[]; value: string; onChange: (value: string) => void, activeFilter: string, onClick: () => void }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    if (name != activeFilter)
-      setIsOpen(false);
-  }, [name, activeFilter])
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth <= 1024);
-    };
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-  
-  return (
-    <div className="relative">
-      <Button
-        variant="ghost" 
-        onClick={() => (setIsOpen(!isOpen), onClick())}
-        className={`${isMobile 
-          ? 'h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700' 
-          : 'h-auto py-2 px-2 flex items-center gap-1 justify-between bg-transparent border-0 hover:bg-transparent transition-all duration-200 font-normal text-gray-700 text-sm w-full'
-        }`}
-      >
-        <span className={`${isMobile ? 'text-sm' : 'text-sm'} whitespace-nowrap truncate`}>{value}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 text-gray-400 ml-1 ${isOpen ? 'rotate-180' : ''}`} />
-      </Button>
-      
-      {isOpen && (
-        <div className={`absolute top-full mt-2 bg-white rounded-2xl shadow-xl z-50 min-w-[200px] overflow-hidden border border-gray-100`}>
-          {options.map((option, index) => (
-            <button
-              key={option}
-              onClick={() => {
-                onChange(option)
-                setIsOpen(false)
-              }}
-              className={`w-full text-left px-4 ${isMobile ? 'py-3 text-sm font-medium' : 'py-2 text-sm'} hover:bg-gray-50 transition-colors duration-150 ${
-                index === 0 ? '' : ''
-              } ${
-                index === options.length - 1 ? '' : ''
-              } text-gray-700 whitespace-nowrap ${value === option ? 'bg-gray-50 text-gray-900 font-medium' : ''}`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-

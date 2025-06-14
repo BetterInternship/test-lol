@@ -13,12 +13,6 @@ import {
   SelectValue 
 } from "@/components/ui/select"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -39,10 +33,8 @@ import {
 import Link from "next/link"
 import ApplicantModal from "@/components/hire/applicant-modal"
 import CalendarModal from "@/components/hire/calendar-modal"
-import ProductTour from "@/components/ProductTour"
-import TourButton from "@/components/TourButton"
-import { useTourIntegration } from "@/components/useTourIntegration"
 import ProfileButton from "@/components/hire/profile-button"
+import { GroupableMultiselectDropdown, DropdownGroup } from '../../../components/student/dropdown';
 
 // Placeholder data for applicants
 const applicantsData = [
@@ -91,9 +83,6 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const router = useRouter()
-
-  // Tour integration
-  const { showTour, startTour, closeTour } = useTourIntegration('dashboard')
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("")
@@ -341,10 +330,6 @@ export default function Dashboard() {
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">Application Dashboard</h1>
           <div className="flex items-center gap-3">
-            <TourButton
-              onClick={startTour}
-              pageName="dashboard"
-            />
             <ProfileButton />
           </div>
         </div>
@@ -561,13 +546,6 @@ export default function Dashboard() {
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         applicantName={selectedApplicant?.name}
-      />
-
-      {/* Product Tour */}
-      <ProductTour
-        isOpen={showTour}
-        onClose={closeTour}
-        pageName="dashboard"
       />
     </div>
   )

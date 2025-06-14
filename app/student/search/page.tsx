@@ -27,7 +27,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import ProfileButton from "@/components/student/profile-button"
 import { useJobs, useSavedJobs, useProfile, useApplications } from "@/hooks/use-api"
@@ -36,6 +35,8 @@ import { Application, Job } from "@/lib/db/db.types"
 import Markdown from 'react-markdown'
 import { Paginator } from "@/components/ui/paginator"
 import { useRefs, RefsAPI } from "@/lib/db/use-refs"
+import { DropdownGroup, GroupableRadioDropdown } from "@/components/student/dropdown"
+import { useFilter } from "@/lib/filter"
 
 export default function SearchPage() {
   const router = useRouter();
@@ -44,14 +45,12 @@ export default function SearchPage() {
   const { is_authenticated } = useAuthContext()
   const [selectedJob, setSelectedJob] = useState<Job | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
-  const [activeFilter, setActiveFilter] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
-  const [jobTypeFilter, setJobTypeFilter] = useState("All types")
-  const [locationFilter, setLocationFilter] = useState("Any location")
-  const [industryFilter, setIndustryFilter] = useState("All industries")
-  const [tempJobTypeFilter, setTempJobTypeFilter] = useState("All types")
-  const [tempLocationFilter, setTempLocationFilter] = useState("Any location")
-  const [tempIndustryFilter, setTempIndustryFilter] = useState("All industries")
+  const { filters, set_filter, filter_setter } = useFilter<{
+    job_type: string,
+    location: string,
+    industry: string,
+    category: string,
+  }>();
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
@@ -103,10 +102,10 @@ export default function SearchPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const { getJobsPage, jobs: allJobs, loading: jobs_loading, error: jobs_error, refetch } = useJobs({
     search: searchTerm.trim() || undefined,
-    category: selectedCategory || undefined,
-    type: jobTypeFilter !== "All types" ? jobTypeFilter : undefined,
-    mode: locationFilter !== "Any location" ? locationFilter : undefined,
-    industry: industryFilter !== "All industries" ? industryFilter : undefined,
+    category: filters.category || undefined,
+    type: filters.job_type !== "All types" ? filters.job_type : undefined,
+    mode: filters.location !== "Any location" ? filters.location : undefined,
+    industry: filters.industry !== "All industries" ? filters.industry : undefined,
   })
 
   useEffect(() => {
@@ -139,15 +138,9 @@ export default function SearchPage() {
     const category = searchParams.get('category')
     const jobType = searchParams.get('jobType')
     const location = searchParams.get('location')
-    setSelectedCategory(category)
-    
-    // Set filters from URL params only if not already set
-    if (jobType && jobTypeFilter === "All types") {
-      setJobTypeFilter(jobType)
-    }
-    if (location && locationFilter === "Any location") {
-      setLocationFilter(location)
-    }
+    set_filter("category", category ?? "")
+    set_filter("job_type", jobType ?? "")
+    set_filter("location", location ?? "")
   }, [searchParams, jobs])
 
   // Set first job as selected when jobs load
@@ -157,30 +150,12 @@ export default function SearchPage() {
     }
   }, [jobs, selectedJob])
 
-  // Initialize temp filters when modal opens
-  useEffect(() => {
-    if (showFilterModal) {
-      setTempJobTypeFilter(jobTypeFilter)
-      setTempLocationFilter(locationFilter)
-      setTempIndustryFilter(industryFilter)
-    }
-  }, [showFilterModal, jobTypeFilter, locationFilter, industryFilter])
-
   // Reset progress when modal closes
   useEffect(() => {
     if (!showSuccessModal) {
       setAutoCloseProgress(100)
     }
   }, [showSuccessModal])
-
-  const handleSearch = () => {
-    // Apply temp filters to actual filters
-    setJobTypeFilter(tempJobTypeFilter)
-    setLocationFilter(tempLocationFilter)
-    setIndustryFilter(tempIndustryFilter)
-    
-    // No need to refetch - filtering happens automatically via useJobs hook
-  }
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
@@ -678,7 +653,6 @@ export default function SearchPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={() => setActiveFilter("")}
           >
             <motion.div 
               className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl"
@@ -701,110 +675,43 @@ export default function SearchPage() {
               </div>
 
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Job Type</label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setActiveFilter(activeFilter === "jobType" ? "" : "jobType")}
-                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
-                    >
-                      {tempJobTypeFilter}
-                    </button>
-                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "jobType" ? "rotate-180" : ""}`} />
-                    
-                    {activeFilter === "jobType" && (
-                      <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
-                        {["All types", "Internships", "Full-time", "Part-time"].map((option) => (
-                          <button
-                            key={option}
-                            onClick={() => {
-                              setTempJobTypeFilter(option)
-                              setActiveFilter("")
-                            }}
-                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
-                              tempJobTypeFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                <DropdownGroup>
+                  <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
+                    <GroupableRadioDropdown
+                      name="jobType"
+                      options={["All types", "Internships", "Full-time", "Part-time"]}
+                      on_change={filter_setter("job_type")}
+                      default_value={filters.job_type}
+                    />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Work Mode</label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setActiveFilter(activeFilter === "workMode" ? "" : "workMode")}
-                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
-                    >
-                      {tempLocationFilter}
-                    </button>
-                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "workMode" ? "rotate-180" : ""}`} />
-                    
-                    {activeFilter === "workMode" && (
-                      <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
-                        {["Any location", "In-Person", "Remote", "Hybrid"].map((option) => (
-                          <button
-                            key={option}
-                            onClick={() => {
-                              setTempLocationFilter(option)
-                              setActiveFilter("")
-                            }}
-                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
-                              tempLocationFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
+                    <GroupableRadioDropdown
+                      name="location"
+                      options={["Any location", "In-Person", "Remote", "Hybrid"]}
+                      on_change={filter_setter("location")}
+                      default_value={filters.location}
+                    />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Industry</label>
-                  <div className="relative">
-                    <button
-                      onClick={() => setActiveFilter(activeFilter === "industry" ? "" : "industry")}
-                      className="w-full h-14 px-4 pr-10 border-2 border-gray-200 rounded-xl bg-white text-left text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-gray-300"
-                    >
-                      {tempIndustryFilter}
-                    </button>
-                    <ChevronDown className={`absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 transition-transform duration-200 ${activeFilter === "industry" ? "rotate-180" : ""}`} />
-                    
-                    {activeFilter === "industry" && (
-                      <div className="absolute top-full mt-1 w-full bg-white border-2 border-gray-200 rounded-xl shadow-lg z-10 overflow-hidden">
-                        {["All industries", "Technology", "Creative Services", "Consumer Goods"].map((option) => (
-                          <button
-                            key={option}
-                            onClick={() => {
-                              setTempIndustryFilter(option)
-                              setActiveFilter("")
-                            }}
-                            className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors duration-150 ${
-                              tempIndustryFilter === option ? "bg-blue-50 text-blue-600 font-semibold" : "text-gray-700"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
+                    <GroupableRadioDropdown
+                      name="category"
+                      options={["All industries", "Technology", "Creative Services", "Consumer Goods"]}
+                      on_change={filter_setter("industry")}
+                      default_value={filters.industry}
+                    />
                   </div>
-                </div>
+                </DropdownGroup>
 
                 <div className="flex gap-3 pt-6">
                   <Button 
                     variant="outline"
                     onClick={() => {
                       // Clear temp filters but keep search term
-                      setTempJobTypeFilter("All types")
-                      setTempLocationFilter("Any location")
-                      setTempIndustryFilter("All industries")
+                      set_filter("job_type", "All types")
+                      set_filter("job_type", "Any location")
+                      set_filter("job_type", "All industries")
                     }}
                     className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
                   >
@@ -812,10 +719,6 @@ export default function SearchPage() {
                   </Button>
                   <Button 
                     onClick={() => {
-                      // Apply filters along with current search term
-                      setJobTypeFilter(tempJobTypeFilter)
-                      setLocationFilter(tempLocationFilter)
-                      setIndustryFilter(tempIndustryFilter)
                       setShowFilterModal(false)
                       // Search term is already active in the useJobs hook
                     }}
@@ -832,47 +735,6 @@ export default function SearchPage() {
     </div>
   )
 }
-
-function FilterDropdown({ name, options, value, onChange, activeFilter, onClick }: { name: string; options: string[]; value: string; onChange: (value: string) => void, activeFilter: string, onClick: () => void }) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (name != activeFilter)
-      setIsOpen(false);
-  }, [name, activeFilter])
-  
-  return (
-    <div className="relative">
-      <Button
-        variant="outline" 
-        onClick={() => (setIsOpen(!isOpen), onClick())}
-        className="h-12 px-4 flex items-center gap-2"
-      >
-        {value}
-        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </Button>
-      
-      {isOpen && (
-        <div className="absolute top-full mt-1 bg-white border rounded-lg shadow-lg z-50 min-w-full">
-          {options.map((option) => (
-            <button
-              key={option}
-              onClick={() => {
-                onChange(option)
-                setIsOpen(false)
-              }}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 first:rounded-t-lg last:rounded-b-lg"
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-
 
 function getModeIcon(mode: number | null | undefined) {
   if (!mode && mode !== 0) return <Briefcase className="w-3 h-3 mr-1" />
@@ -1106,7 +968,7 @@ function JobDetails({
             <div>
               <p className="text-sm">
                 <span className="font-medium">Employment Type: </span>
-                <span className="opacity-80">{get_job_type(job.type)?.name ?? "Not specified"}</span>
+                <span className="opacity-80">{(job.type || job.type === 0) ? get_job_type(job.type)?.name : "Not specified"}</span>
               </p>
             </div>
           </div>

@@ -37,9 +37,6 @@ import {
   X
 } from "lucide-react"
 import Link from "next/link"
-import ProductTour from "@/components/ProductTour"
-import TourButton from "@/components/TourButton"
-import { useTourIntegration } from "@/components/useTourIntegration"
 import { useOwnedJobs } from "@/hooks/use-employer-api"
 import { Job } from "@/lib/db/db.types"
 import ProfileButton from "@/components/hire/profile-button"
@@ -62,8 +59,6 @@ export default function MyListings() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const router = useRouter()
 
-  // Tour integration
-  const { showTour, startTour, closeTour } = useTourIntegration('listings')
   const [editFormData, setEditFormData] = useState({
     id: "",
     title: "",
@@ -169,10 +164,6 @@ export default function MyListings() {
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">Your Listings</h1>
           <div className="flex items-center gap-3">
-            <TourButton
-              onClick={startTour}
-              pageName="listings"
-            />
             <ProfileButton></ProfileButton>
           </div>
         </div>
@@ -452,13 +443,6 @@ export default function MyListings() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Product Tour */}
-      <ProductTour
-        isOpen={showTour}
-        onClose={closeTour}
-        pageName="listings"
-      />
     </div>
   )
 }
