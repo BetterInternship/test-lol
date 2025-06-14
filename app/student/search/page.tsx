@@ -297,89 +297,99 @@ export default function SearchPage() {
     <div className="h-screen bg-white overflow-hidden">
       <div className="flex flex-col h-full">
         {/* Top bar with logo and Profile button */}
-        <div className="flex justify-between items-center p-4 bg-white border-b">
+        <div className="flex justify-between items-center px-6 py-4 bg-white border-b">
           <Link href="/" className="block">
             <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">BetterInternship</h1>
           </Link>
           <ProfileButton />
         </div>
 
-          {/* Desktop Layout */}
-          <div className="flex-1 flex overflow-hidden">
-            {jobs_loading ? (
-              /* Loading State */
-              <div className="w-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading jobs...</p>
-                </div>
+        {/* Desktop Layout */}
+        <div className="flex-1 flex overflow-hidden">
+          {jobs_loading ? (
+            /* Loading State */
+            <div className="w-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading jobs...</p>
               </div>
-            ) : (
-              <>
-                {/* Job List */}
-                <div className="w-1/2 border-r overflow-y-auto p-4">
-                    {/* Compact Search Bar */}
-                    <div className="flex gap-2 mb-4">
+            </div>
+          ) : (
+            <>
+              {/* Job List */}
+              <div className="w-1/2 border-r overflow-y-auto p-6">
+                {/* Enhanced Desktop Search Bar */}
+                <div className="w-full max-w-4xl mx-auto mb-6">
+                  <div className="bg-white rounded-2xl shadow-lg p-2 border border-gray-200">
+                    <div className="flex items-center gap-2">
+                      {/* Search Input Field */}
                       <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                        <input
                           type="text"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          placeholder="Search listings..."
-                          className="pl-10 w-full h-10 bg-white border border-gray-300 rounded-lg"
+                          placeholder="Search for internships, jobs, and opportunities..."
+                          className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                         />
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setShowFilterModal(true)}
-                        className="h-10 px-3 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
-                      >
-                        <Filter className="h-4 w-4" />
-                      </Button>
+                      
+                      {/* Filter Button - Integrated */}
+                      <div className="flex items-center border-l border-gray-200 pl-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowFilterModal(true)}
+                          className="h-10 px-3 flex items-center gap-1 min-w-[120px] justify-between bg-transparent border-0 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium text-gray-700 text-sm"
+                        >
+                          <span className="flex items-center gap-1">
+                            <Filter className="h-4 w-4 text-gray-500" />
+                            <span>Filters</span>
+                          </span>
+                          <ChevronDown className="w-4 h-4 transition-transform flex-shrink-0 text-gray-400" />
+                        </Button>
+                      </div>
                     </div>
-                    {jobs.length ? (
-                      <div className="space-y-4">
-                        {jobs.map((job) => (
-                          <JobCard
-                            key={job.id}
-                            job={job}
-                            isSelected={selectedJob?.id === job.id}
-                            onClick={() => handleJobCardClick(job)}
-                            refs={refs}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="p-4">No jobs found.</p>  
-                      </div>
-                    )}
-
-                    {/* Paginator */}
-                    <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
                   </div>
-
-                  {/* Job Details */}
-                  <div className="w-1/2 flex flex-col overflow-hidden">
-                    {selectedJob && (
-                      <JobDetails 
-                        job={selectedJob} 
-                        saving={saving}
-                        onApply={handleApply} 
-                        onSave={handleSave}
-                        isSaved={is_saved(selectedJob.id ?? '')}
-                        applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                </div>
+                {jobs.length ? (
+                  <div className="space-y-4">
+                    {jobs.map((job) => (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        isSelected={selectedJob?.id === job.id}
+                        onClick={() => handleJobCardClick(job)}
                         refs={refs}
                       />
-                    )}
+                    ))}
                   </div>
-                </>
-              )}
-            </div>
-          </div>
+                ) : (
+                  <div>
+                    <p className="p-4">No jobs found.</p>  
+                  </div>
+                )}
+
+                {/* Paginator */}
+                <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
+              </div>
+
+              {/* Job Details */}
+              <div className="w-1/2 flex flex-col overflow-hidden">
+                {selectedJob && (
+                  <JobDetails 
+                    job={selectedJob} 
+                    saving={saving}
+                    onApply={handleApply} 
+                    onSave={handleSave}
+                    isSaved={is_saved(selectedJob.id ?? '')}
+                    applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                    refs={refs}
+                  />
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
