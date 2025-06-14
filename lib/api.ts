@@ -6,6 +6,14 @@ import {
   PublicEmployerUser,
 } from "@/lib/db/db.types";
 import { APIClient } from "./api-client";
+import {
+  isMockMode,
+  createMockAuthService,
+  createMockUserService,
+  createMockJobService,
+  createMockApplicationService,
+  createMockFileService,
+} from "./mock";
 
 // API configuration and helper funcs
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -212,10 +220,7 @@ export const user_service = {
   },
 
   async update_profile(data: Partial<PublicUser>) {
-    return APIClient.put<UserResponse>(
-      APIRoute("users").r("me").build(),
-      data
-    );
+    return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
   },
 
   async save_job(job_id: string) {
@@ -316,14 +321,13 @@ export const application_service = {
   },
 
   async create_application(data: {
-    jobId: string;
-    coverLetter?: string;
-    githubLink?: string;
-    portfolioLink?: string;
-    resumeFilename?: string;
+    job_id: string;
+    github_link?: string;
+    portfolio_link?: string;
+    resume?: string;
   }) {
     return APIClient.post<CreateApplicationResponse>(
-      APIRoute("applications").build(),
+      APIRoute("applications").r("create").build(),
       data
     );
   },

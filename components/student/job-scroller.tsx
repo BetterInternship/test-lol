@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { job_service } from "@/lib/api"
+import { job_service } from "@/lib/api-wrapper"
 import { Job } from "@/lib/db/db.types"
 import { useCache } from "@/hooks/use-cache"
 import { useJobs } from "@/hooks/use-api"
@@ -24,11 +24,13 @@ export default function JobScroller() {
     const calculateDuration = () => {
       if (!contentRef.current || !scrollerRef.current) return
       const contentWidth = contentRef.current.offsetWidth
-      const duration = contentWidth / 50 // Adjust speed here
+      const duration = Math.max(contentWidth / 200, 5) // Faster speed and minimum 5s duration
       scrollerRef.current.style.animationDuration = `${duration}s`
+      console.log('Animation duration set to:', duration, 'seconds')
     }
 
-    calculateDuration()
+    // Set initial duration
+    setTimeout(calculateDuration, 100)
     window.addEventListener("resize", calculateDuration)
 
     // Pause animation on hover
@@ -87,7 +89,7 @@ export default function JobScroller() {
 
   // Generate job listing titles for the scroller
   const jobListings = jobs.map(job => 
-    `${job.title} at ${job.employer?.name}${job.type === 'Internship' ? ' Intern' : job.type === 'Full-time' ? ' Full-time' : job.type === 'Part-time' ? ' Part-time' : ''}`
+    `${job.title}${job.type === 'Internship' ? ' Internship' : job.type === 'Full-time' ? ' (Full-time)' : job.type === 'Part-time' ? ' (Part-time)' : ''}`
   )
 
   return (
@@ -99,6 +101,8 @@ export default function JobScroller() {
           animationName: "scroll",
           animationTimingFunction: "linear",
           animationIterationCount: "infinite",
+          animationDuration: "10s", // Faster default duration
+          animationPlayState: "running"
         }}
       >
         <div ref={contentRef} className="flex gap-3 py-3">
@@ -129,6 +133,9 @@ export default function JobScroller() {
         }
         .animate-scroll {
           animation-name: scroll;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+          animation-play-state: running;
         }
       `}</style>
     </div>

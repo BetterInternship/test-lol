@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "mock:on": "node toggle-mock.js on",
+    "mock:off": "node toggle-mock.js off",
+    "mock:status": "node toggle-mock.js status",
+    "mock:toggle": "node toggle-mock.js toggle"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

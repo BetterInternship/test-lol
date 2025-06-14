@@ -54,6 +54,7 @@ export default function LoginPage() {
       await emailStatus(email).then(response => {
         if (!response?.existing_user || !response?.verified_user) {
           if (!response?.existing_user) {
+            // New user - redirect directly to registration
             router.push(`/register?email=${encodeURIComponent(email)}`)
           } else {
             router.push(`/login?verified=pending`)

@@ -4,7 +4,7 @@ import {
   user_service,
   application_service,
   handle_api_error,
-} from "@/lib/api";
+} from "@/lib/api-wrapper";
 import { Job, PublicUser, Application } from "@/lib/db/db.types";
 import { useAuthContext } from "@/app/student/authctx";
 import { useCache } from "./use-cache";
@@ -179,7 +179,6 @@ export function useProfile() {
       setLoading(true);
       setError(null);
       const userData = await user_service.get_profile();
-      console.log("profile", userData);
       setProfile(userData as PublicUser);
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -310,87 +309,75 @@ export function useSavedJobs() {
   };
 }
 
-// Applications Hook
-export function useApplications(
-  params: {
-    page?: number;
-    limit?: number;
-    status?: string;
-  } = {}
-) {
-  const { is_authenticated } = useAuthContext();
+// Saved Jobs Hook
+export function useApplications() {
+  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const { get_cache_item, set_cache_item } = useCache();
   const [applications, setApplications] = useState<Application[]>([]);
+  const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   const [loading, setLoading] = useState(true);
+  const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pagination, setPagination] = useState({
-    totalPages: 0,
-    currentPage: 1,
-    total: 0,
-  });
+
+  useEffect(() => {
+    setAppliedJobs(
+      applications.map((application) => ({ id: application.job_id ?? "" }))
+    );
+  }, [applications]);
 
   const fetchApplications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await application_service.get_applications(params);
-      setApplications(response.applications);
-      setPagination({
-        totalPages: response.totalPages,
-        currentPage: response.currentPage,
-        total: response.total,
-      });
+
+      // Check cache first
+      const cached_applications = get_cache_item(
+        "_applications_list"
+      ) as Application[];
+      if (cached_applications) {
+        await setTimeout(() => {}, 500);
+        setApplications(cached_applications);
+        return;
+      }
+
+      // Otherwise, pull from server
+      const response = await application_service.get_applications();
+      if (response.success) {
+        setApplications(response.applications ?? []);
+        set_cache_item("_applications_list", response.applications ?? []);
+      }
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(params)]);
+  }, []);
 
-  useEffect(() => {
-    if (is_authenticated()) {
-      fetchApplications();
-    } else {
-      setLoading(false);
-    }
-  }, [fetchApplications]);
-
-  return {
-    applications,
-    loading,
-    error,
-    pagination,
-    refetch: fetchApplications,
-  };
-}
-
-// Job Save/Unsave Hook
-export function useJobActions() {
-  const { is_authenticated } = useAuthContext();
-  const [appliedJobs, setAppliedJobs] = useState<Map<string, any>>(new Map());
-
-  const applyToJob = async (
-    jobId: string,
+  const apply = async (
+    job_id: string,
     data: {
-      coverLetter?: string;
-      githubLink?: string;
-      portfolioLink?: string;
-      resumeFilename?: string;
+      github_link?: string;
+      portfolio_link?: string;
+      resume?: string;
     }
   ) => {
     try {
       const response = await application_service.create_application({
-        jobId,
+        job_id,
         ...data,
       });
 
-      setAppliedJobs((prev) =>
-        new Map(prev).set(jobId, {
-          applicationId: response.application.id,
-          status: response.application.status,
-          appliedAt: response.application.applied_at,
-        })
-      );
+      if (response.application) {
+        if (!get_cache_item("_applications_list"))
+          set_cache_item("_applications_list", []);
+        const new_applications = [
+          ...(get_cache_item("_applications_list") as Application[]),
+          { ...response.application },
+        ] as Application[];
+        set_cache_item("_applications_list", new_applications);
+        setApplications(new_applications);
+      }
 
       return response;
     } catch (error) {
@@ -399,10 +386,80 @@ export function useJobActions() {
     }
   };
 
-  const getApplicationStatus = (jobId: string) => appliedJobs.get(jobId);
+  useEffect(() => {
+    recheck_authentication().then((r) =>
+      r ? fetchApplications() : setLoading(false)
+    );
+  }, [fetchApplications]);
+
+  const is_applied = (job_id: string): boolean => {
+    return applications.some((application) => application.id === job_id);
+  };
 
   return {
-    applyToJob,
-    getApplicationStatus,
+    apply,
+    applications,
+    loading,
+    applying,
+    error,
+    is_applied,
+    appliedJobs,
+    appliedJob: (job_id: string) =>
+      appliedJobs.map((aj) => aj.id).includes(job_id),
+    refetch: fetchApplications,
   };
 }
+
+// Applications Hook
+// export function useApplications(
+//   params: {
+//     page?: number;
+//     limit?: number;
+//     status?: string;
+//   } = {}
+// ) {
+//   const { is_authenticated } = useAuthContext();
+//   const [applications, setApplications] = useState<Application[]>([]);
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState<string | null>(null);
+//   const [pagination, setPagination] = useState({
+//     totalPages: 0,
+//     currentPage: 1,
+//     total: 0,
+//   });
+
+//   const fetchApplications = useCallback(async () => {
+//     try {
+//       setLoading(true);
+//       setError(null);
+//       const response = await application_service.get_applications(params);
+//       setApplications(response.applications);
+//       setPagination({
+//         totalPages: response.totalPages,
+//         currentPage: response.currentPage,
+//         total: response.total,
+//       });
+//     } catch (err) {
+//       const errorMessage = handle_api_error(err);
+//       setError(errorMessage);
+//     } finally {
+//       setLoading(false);
+//     }
+//   }, [JSON.stringify(params)]);
+
+//   useEffect(() => {
+//     if (is_authenticated()) {
+//       fetchApplications();
+//     } else {
+//       setLoading(false);
+//     }
+//   }, [fetchApplications]);
+
+//   return {
+//     applications,
+//     loading,
+//     error,
+//     pagination,
+//     refetch: fetchApplications,
+//   };
+// }
