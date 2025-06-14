@@ -1,24 +1,25 @@
 /**
  * @ Author: BetterInternship
- * @ Create Time: 2025-06-10 04:31:46
- * @ Modified time: 2025-06-12 23:04:43
+ * @ Create Time: 2025-06-15 03:09:57
+ * @ Modified time: 2025-06-15 03:16:44
  * @ Description:
  *
- * Accesses refs directly from the database.
+ * The actual backend connection to provide the refs data
  */
 
-import { useCallback, useEffect, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useState, useEffect, useCallback } from "react";
 import {
-  College,
-  JobAllowance,
-  JobMode,
-  JobPayFreq,
-  JobType,
   Level,
+  College,
   University,
-} from "@/lib/db/db.types";
+  JobType,
+  JobMode,
+  JobAllowance,
+  JobPayFreq,
+} from "./db.types";
+import { createClient } from "@supabase/supabase-js";
 
+// Environment setup
 const db_url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const db_anon_key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -26,7 +27,8 @@ if (!db_url || !db_anon_key)
   throw new Error("[ERROR:ENV] Missing supabase configuration.");
 const db = createClient(db_url ?? "", db_anon_key ?? "");
 
-export interface RefsAPI {
+// Setup the context
+export interface IRefsContext {
   ref_loading: boolean;
 
   levels: Level[];
@@ -61,7 +63,7 @@ export interface RefsAPI {
  * @param table
  * @returns
  */
-const createRefHook = <
+const createRefInternalHook = <
   ID extends string | number,
   T extends { id: ID; name: string }
 >(
@@ -124,61 +126,56 @@ const createRefHook = <
   };
 };
 
-/**
- * Allows using the refs table we have in supabase as a hook.
- *
- * @returns
- */
-export const useRefs = (): RefsAPI => {
+export const useRefsContext = () => {
   const [loading, setLoading] = useState(true);
   const {
     data: levels,
     get: get_level,
     get_by_name: get_level_by_name,
     loading: l1,
-  } = createRefHook<number, Level>("ref_levels");
+  } = createRefInternalHook<number, Level>("ref_levels");
 
   const {
     data: colleges,
     get: get_college,
     get_by_name: get_college_by_name,
     loading: l2,
-  } = createRefHook<string, College>("ref_colleges");
+  } = createRefInternalHook<string, College>("ref_colleges");
 
   const {
     data: universities,
     get: get_university,
     get_by_name: get_university_by_name,
     loading: l3,
-  } = createRefHook<string, University>("ref_universities");
+  } = createRefInternalHook<string, University>("ref_universities");
 
   const {
     data: job_types,
     get: get_job_type,
     get_by_name: get_job_type_by_name,
     loading: l4,
-  } = createRefHook<number, JobType>("ref_job_types");
+  } = createRefInternalHook<number, JobType>("ref_job_types");
 
   const {
     data: job_modes,
     get: get_job_mode,
     get_by_name: get_job_mode_by_name,
     loading: l5,
-  } = createRefHook<number, JobMode>("ref_job_modes");
+  } = createRefInternalHook<number, JobMode>("ref_job_modes");
 
   const {
     data: job_allowances,
     get: get_job_allowance,
     get_by_name: get_job_allowance_by_name,
     loading: l6,
-  } = createRefHook<number, JobAllowance>("ref_job_allowances");
+  } = createRefInternalHook<number, JobAllowance>("ref_job_allowances");
 
   const {
     data: job_pay_freq,
     get: get_job_pay_freq,
     get_by_name: get_job_pay_freq_by_name,
     loading: l7,
-  } = createRefHook<number, JobPayFreq>("ref_job_pay_freq");
+  } = createRefInternalHook<number, JobPayFreq>("ref_job_pay_freq");
 
   useEffect(() => {
     setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7);
@@ -198,7 +195,8 @@ export const useRefs = (): RefsAPI => {
     return f[0];
   }
 
-  return {
+  // The API to provide to the app
+  const refs_context = {
     ref_loading: loading,
 
     levels,
@@ -226,4 +224,6 @@ export const useRefs = (): RefsAPI => {
     get_job_allowance_by_name,
     get_job_pay_freq_by_name,
   };
+
+  return refs_context;
 };
