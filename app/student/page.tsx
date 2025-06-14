@@ -127,7 +127,7 @@ export default function HomePage() {
           </div>
 
           {/* Search Bar */}
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-5xl">
             {isMobile ? (
               /* Mobile Search Layout - Clean Apple Style */
               <div className="space-y-4">
@@ -199,58 +199,69 @@ export default function HomePage() {
                 </Button>
               </div>
             ) : (
-              /* Desktop Search Layout - Clean and Properly Spaced */
+              /* Desktop Search Layout - Clean Single Line */
               <div className="w-full max-w-4xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-lg p-2 border border-gray-200">
-                  <div className="flex items-center gap-2">
-                    {/* Search Input Field */}
-                    <div className="relative flex-1">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-2 py-2">
+                  <div className="flex items-center h-14">
+                    {/* Search Input */}
+                    <div className="flex items-center flex-1 pl-4 pr-2">
+                      <Search className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0" />
                       <input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Job Title, keywords, Company..."
-                        className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
+                        placeholder="Job title, keywords, or company"
+                        className="w-full py-3 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                       />
                     </div>
                     
-                    {/* Filter Dropdowns */}
-                    <div className="flex items-center gap-2 border-l border-gray-200 pl-2">
-                      <FilterDropdown
-                        name="jobType"
-                        options={["Internships", "Full-time", "Part-time", "All types"]}
-                        value={jobTypeFilter}
-                        activeFilter={activeFilter}
-                        onChange={setJobTypeFilter}
-                        onClick={() => { setActiveFilter("jobType") }}
-                      />
-                      <FilterDropdown
-                        name="location"
-                        options={["Face to Face", "Remote", "Hybrid", "Any location"]}
-                        value={locationFilter}
-                        activeFilter={activeFilter}
-                        onChange={setLocationFilter}
-                        onClick={() => { setActiveFilter("location") }}
-                      />
-                      <FilterDropdown
-                        name="category"
-                        options={["Tech", "Non-Tech", "Engineering", "Research", "Education", "Others", "All categories"]}
-                        value={categoryFilter}
-                        activeFilter={activeFilter}
-                        onChange={setCategoryFilter}
-                        onClick={() => { setActiveFilter("category") }}
-                      />
+                    {/* Filter Dropdowns with Dividers */}
+                    <div className="flex items-center">
+                      <div className="h-8 w-px bg-gray-300 mx-1" />
+                      <div className="w-24">
+                        <FilterDropdown
+                          name="jobType"
+                          options={["All types", "Internships", "Full-time", "Part-time"]}
+                          value={jobTypeFilter}
+                          activeFilter={activeFilter}
+                          onChange={setJobTypeFilter}
+                          onClick={() => { setActiveFilter("jobType") }}
+                        />
+                      </div>
+                      <div className="h-8 w-px bg-gray-300 mx-1" />
+                      <div className="w-28">
+                        <FilterDropdown
+                          name="location"
+                          options={["Any location", "Face to Face", "Remote", "Hybrid"]}
+                          value={locationFilter}
+                          activeFilter={activeFilter}
+                          onChange={setLocationFilter}
+                          onClick={() => { setActiveFilter("location") }}
+                        />
+                      </div>
+                      <div className="h-8 w-px bg-gray-300 mx-1" />
+                      <div className="w-32">
+                        <FilterDropdown
+                          name="category"
+                          options={["All categories", "Tech", "Non-Tech", "Engineering", "Research", "Education", "Others"]}
+                          value={categoryFilter}
+                          activeFilter={activeFilter}
+                          onChange={setCategoryFilter}
+                          onClick={() => { setActiveFilter("category") }}
+                        />
+                      </div>
                     </div>
                     
                     {/* Search Button */}
-                    <Button 
-                      onClick={handleSearch} 
-                      className="h-10 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-all duration-200 whitespace-nowrap"
-                    >
-                      Find Jobs
-                    </Button>
+                    <div className="pl-4 pr-2">
+                      <Button 
+                        onClick={handleSearch} 
+                        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 whitespace-nowrap text-base shadow-none border-0"
+                      >
+                        Find jobs
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -335,19 +346,19 @@ function FilterDropdown({ name, options, value, onChange, activeFilter, onClick 
   return (
     <div className="relative">
       <Button
-        variant="outline" 
+        variant="ghost" 
         onClick={() => (setIsOpen(!isOpen), onClick())}
         className={`${isMobile 
           ? 'h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700' 
-          : 'h-10 px-3 flex items-center gap-1 min-w-[120px] justify-between bg-transparent border-0 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium text-gray-700 text-sm'
+          : 'h-auto py-2 px-2 flex items-center gap-1 justify-between bg-transparent border-0 hover:bg-transparent transition-all duration-200 font-normal text-gray-700 text-sm w-full'
         }`}
       >
-        <span className={`truncate ${isMobile ? 'text-sm' : 'text-sm'}`}>{value}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 text-gray-400 ${isOpen ? 'rotate-180' : ''}`} />
+        <span className={`${isMobile ? 'text-sm' : 'text-sm'} whitespace-nowrap truncate`}>{value}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 text-gray-400 ml-1 ${isOpen ? 'rotate-180' : ''}`} />
       </Button>
       
       {isOpen && (
-        <div className={`absolute top-full mt-2 bg-white rounded-xl shadow-xl z-50 min-w-full w-max overflow-hidden border border-gray-100 ${isMobile ? '' : 'shadow-2xl'}`}>
+        <div className={`absolute top-full mt-2 bg-white rounded-2xl shadow-xl z-50 min-w-[200px] overflow-hidden border border-gray-100`}>
           {options.map((option, index) => (
             <button
               key={option}
@@ -355,11 +366,11 @@ function FilterDropdown({ name, options, value, onChange, activeFilter, onClick 
                 onChange(option)
                 setIsOpen(false)
               }}
-              className={`w-full text-left px-4 ${isMobile ? 'py-3 text-sm font-medium' : 'py-3 text-sm font-medium'} hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 ${
-                index === 0 ? `rounded-t-xl` : ''
+              className={`w-full text-left px-4 ${isMobile ? 'py-3 text-sm font-medium' : 'py-2 text-sm'} hover:bg-gray-50 transition-colors duration-150 ${
+                index === 0 ? '' : ''
               } ${
-                index === options.length - 1 ? `rounded-b-xl` : ''
-              } text-gray-700 whitespace-nowrap ${value === option ? 'bg-blue-50 text-blue-600' : ''}`}
+                index === options.length - 1 ? '' : ''
+              } text-gray-700 whitespace-nowrap ${value === option ? 'bg-gray-50 text-gray-900 font-medium' : ''}`}
             >
               {option}
             </button>

@@ -36,12 +36,22 @@ export default function ApplicationsPage() {
   const { is_authenticated } = useAuthContext()
   const { applications, loading, error, refetch } = useApplications()
   const router = useRouter()
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     if (!is_authenticated()) {
       router.push('/login')
     }
   }, [is_authenticated(), router])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -185,7 +195,7 @@ export default function ApplicationsPage() {
               ) : (
                 <div className="space-y-4">
                   {applications.map((application) => (
-                    <div key={application.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">{/* rest of application content */}
+                    <div key={application.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <div className={`flex items-start justify-between ${isMobile ? 'mb-3' : 'mb-3'}`}>
@@ -269,7 +279,6 @@ export default function ApplicationsPage() {
           </div>
         </div>
       </div>
-    </div>
   )
 }
 

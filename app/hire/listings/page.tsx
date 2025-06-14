@@ -33,7 +33,7 @@ import {
   UserPlus,
   LogOut,
   FileEdit,
-  Plus,
+  Filter,
   X
 } from "lucide-react"
 import Link from "next/link"
@@ -181,24 +181,24 @@ export default function MyListings() {
         <div className="flex-1 p-6 flex gap-6 overflow-hidden">
           {/* Left Panel - Job List */}
           <div className="w-96 flex flex-col h-full">
-            {/* Search Bar and Add Button - Fixed */}
+            {/* Search Bar and Filter Button - Fixed */}
             <div className="flex gap-3 mb-4 flex-shrink-0" data-tour="job-filters">
-              <div className="relative flex-1 w-5/6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search listings..."
-                  className="pl-10"
+                  className="pl-12 pr-4 h-12 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 />
               </div>
               <Button 
-                className="w-1/6 flex-shrink-0"
+                className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
                 size="icon"
-                data-tour="add-job-btn"
+                data-tour="filter-btn"
               >
-                <Plus className="h-4 w-4" />
+                <Filter className="h-4 w-4" />
               </Button>
             </div>
 
