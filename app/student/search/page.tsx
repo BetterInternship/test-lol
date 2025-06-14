@@ -115,6 +115,7 @@ export default function SearchPage() {
 
   const { is_saved, saving, save_job } = useSavedJobs();
   const { applications, appliedJob, apply } = useApplications();
+  const getApplicationStatus = (jobId: string) => appliedJob(jobId);
 
   useEffect(() => {
     const query = searchParams.get('q') || ""
