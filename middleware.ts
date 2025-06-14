@@ -1,6 +1,6 @@
 // middleware.ts
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest } from "next/server";
 
 // Pull this from db next time
 const REGISTERED_SCHOOLS = ["dlsu"];
@@ -31,7 +31,8 @@ export function middleware(request: NextRequest) {
     subdomain_is(hostname, school)
   );
 
-  console.log("[LOG]", hostname, pathname, subdomain_is(hostname, "hire"));
+  // Lol
+  if (process.env.DEVELOPMENT) return NextResponse.next();
 
   // There's a matching school
   if (school.length) {
