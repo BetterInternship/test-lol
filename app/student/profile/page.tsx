@@ -36,7 +36,7 @@ import {
 import ProfileButton from "@/components/student/profile-button"
 import { useProfile } from "@/hooks/use-api"
 import { useRouter } from "next/navigation"
-import { file_service } from "@/lib/api-wrapper"
+import { file_service } from "@/lib/api"
 import { useAuthContext } from "../authctx"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRefs } from "@/lib/db/use-refs"

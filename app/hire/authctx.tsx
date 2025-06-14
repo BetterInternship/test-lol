@@ -1,7 +1,7 @@
 'use client'
 
 import { PublicEmployerUser } from '@/lib/db/db.types';
-import { auth_service } from '@/lib/api-wrapper';
+import { auth_service } from '@/lib/api';
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 interface IAuthContext {

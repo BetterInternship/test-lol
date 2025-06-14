@@ -2,3 +2,5 @@ Make all api responses extend a common response object with "success" and "messa
 Make sure that no matter where you go, loggedin() is called FIRST (try landing on a private page randomly instead of navigating the site EVEN IF you're session is still valid)
 Add githubRequired, portfolioRequired, and resumeRequired fields to job listing
 Make sure default "pending" status is replaced for job applications on clien side ui
+Remove all data-tour attributes
+Remove mock (it's clutering the codebase)

@@ -2,9 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { job_service } from "@/lib/api-wrapper"
-import { Job } from "@/lib/db/db.types"
-import { useCache } from "@/hooks/use-cache"
 import { useJobs } from "@/hooks/use-api"
 
 export default function JobScroller() {
