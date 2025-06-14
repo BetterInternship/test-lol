@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useDetectClickOutside } from "react-detect-click-outside";
 import type React from "react";
 import { Search, ChevronDown, X } from "lucide-react";
 import Link from "next/link";
