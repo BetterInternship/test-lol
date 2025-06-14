@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import { 
   X, 
   Edit2, 
@@ -29,7 +30,8 @@ import {
   Trash2,
   Download,
   Eye,
-  Calendar
+  Calendar,
+  Award
 } from "lucide-react"
 import ProfileButton from "@/components/student/profile-button"
 import { useProfile } from "@/hooks/use-api"
@@ -202,6 +204,7 @@ export default function ProfilePage() {
         linkedin_link: profile.linkedin_link || '',
         calendly_link: profile.calendly_link || '',
         bio: profile.bio || '',
+        taking_for_credit: profile.taking_for_credit || false,
       })
     }
   }, [profile])
@@ -220,6 +223,7 @@ export default function ProfilePage() {
         linkedin_link: editedData.linkedin_link,
         calendly_link: editedData.calendly_link,
         bio: editedData.bio,
+        taking_for_credit: editedData.taking_for_credit,
       }
       await updateProfile(dataToSend)
       setIsEditing(false)
@@ -243,6 +247,7 @@ export default function ProfilePage() {
         linkedin_link: profile.linkedin_link || '',
         calendly_link: profile.calendly_link || '',
         bio: profile.bio || '',
+        taking_for_credit: profile.taking_for_credit || false,
       })
     }
     setIsEditing(false)
@@ -473,7 +478,7 @@ export default function ProfilePage() {
                         )}
                       </div>
 
-                      {/* Year Level */}
+                      {/* Year Level and Internship for Credit */}
                       <div className="space-y-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700">
                           <Badge className="w-4 h-4 mr-2 text-gray-500" />
@@ -491,6 +496,39 @@ export default function ProfilePage() {
                           />
                         ) : (
                           <p className="text-gray-900 font-medium font-mono text-sm">{get_level(profile.year_level)?.name || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
+                        )}
+                      </div>
+
+                      {/* Taking for Credit */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Award className="w-4 h-4 mr-2 text-gray-500" />
+                          Internship for Credit
+                        </label>
+                        {isEditing ? (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={editedData.taking_for_credit || false}
+                              onCheckedChange={(checked) => 
+                                setEditedData({ ...editedData, taking_for_credit: checked as boolean })
+                              }
+                              className="border-gray-300"
+                            />
+                            <span className="text-sm text-gray-700">
+                              Taking for credit
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-gray-900 font-medium text-sm">
+                            {profile.taking_for_credit ? (
+                              <span className="inline-flex items-center gap-2 text-green-700">
+                                <Award className="w-4 h-4" />
+                                Taking for credit
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 italic">Not taking for credit</span>
+                            )}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -820,7 +858,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Year Level */}
-                      <div className="space-y-2 md:col-span-2">
+                      <div className="space-y-2">
                         <label className="flex items-center text-sm font-semibold text-gray-700">
                           <Badge className="w-4 h-4 mr-2 text-gray-500" />
                           Year Level
@@ -837,6 +875,39 @@ export default function ProfilePage() {
                           />
                         ) : (
                           <p className="text-gray-900 font-medium font-mono text-sm">{get_level(profile.year_level)?.name || <span className="text-gray-400 italic font-sans">Not provided</span>}</p>
+                        )}
+                      </div>
+
+                      {/* Taking for Credit */}
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <Award className="w-4 h-4 mr-2 text-gray-500" />
+                          Internship for Credit
+                        </label>
+                        {isEditing ? (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={editedData.taking_for_credit || false}
+                              onCheckedChange={(checked) => 
+                                setEditedData({ ...editedData, taking_for_credit: checked as boolean })
+                              }
+                              className="border-gray-300"
+                            />
+                            <span className="text-sm text-gray-700">
+                              Taking for credit
+                            </span>
+                          </div>
+                        ) : (
+                          <p className="text-gray-900 font-medium text-sm">
+                            {profile.taking_for_credit ? (
+                              <span className="inline-flex items-center gap-2 text-green-700">
+                                <Award className="w-4 h-4" />
+                                Taking for credit
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 italic">Not taking for credit</span>
+                            )}
+                          </p>
                         )}
                       </div>
                     </div>

@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Upload } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ChevronDown, Upload, ExternalLink } from "lucide-react"
 import { useAuthContext } from "../authctx"
 import { useRefs } from "@/lib/db/use-refs"
 import { University } from "@/lib/db/db.types"
@@ -23,6 +24,7 @@ export default function RegisterPage() {
     githubLink: "",
     phoneNumber: "",
     linkedinProfile: "",
+    acceptTerms: false,
   })
   const { register } = useAuthContext()
   const [email, setEmail] = useState("")
@@ -35,20 +37,11 @@ export default function RegisterPage() {
   const searchParams = useSearchParams()
   const resumeInputRef = useRef<HTMLInputElement>(null)
 
-  // Pre-fill email if coming from login redirect and check T&C/Privacy acceptance
+  // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get('email')
     if (!emailParam) {
       return router.push('/login')
-    }
-    
-    // Check if user has completed T&C and Privacy Policy steps
-    const termsAccepted = sessionStorage.getItem('termsAccepted')
-    const privacyAccepted = sessionStorage.getItem('privacyAccepted')
-    
-    if (!termsAccepted || !privacyAccepted) {
-      // Redirect to terms if they haven't completed the flow
-      return router.push(`/register/terms?email=${encodeURIComponent(emailParam)}`)
     }
     
     setEmail(emailParam)
@@ -78,6 +71,11 @@ export default function RegisterPage() {
 
     if (!formData.fullName || !formData.yearLevel || !formData.phoneNumber) {
       setError("Please fill in all required fields")
+      return
+    }
+
+    if (!formData.acceptTerms) {
+      setError("Please accept the Terms & Conditions and Privacy Policy to continue")
       return
     }
 
@@ -115,9 +113,6 @@ export default function RegisterPage() {
       await register(user_form_data)
         .then(r => { 
           if (r && r.success) {
-            // Clear the T&C and Privacy acceptance flags
-            sessionStorage.removeItem('termsAccepted')
-            sessionStorage.removeItem('privacyAccepted')
             router.push('/verify')
           } else {
             setError("Ensure that your inputs are correct.")
@@ -140,32 +135,6 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-4xl">
-        {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                ✓
-              </div>
-              <span className="text-sm font-medium text-green-600">Terms & Conditions</span>
-            </div>
-            <div className="w-12 h-0.5 bg-green-600"></div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                ✓
-              </div>
-              <span className="text-sm font-medium text-green-600">Privacy Policy</span>
-            </div>
-            <div className="w-12 h-0.5 bg-green-600"></div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
-                3
-              </div>
-              <span className="text-sm font-medium text-blue-600">Registration</span>
-            </div>
-          </div>
-        </div>
-
         {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Let's Create your Profile</h2>
@@ -335,11 +304,51 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {/* Terms & Conditions Acceptance */}
+          <div className="mb-8">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="accept-terms"
+                  checked={formData.acceptTerms}
+                  onCheckedChange={(checked) => 
+                    handleInputChange('acceptTerms', checked as boolean)
+                  }
+                  className="mt-1"
+                />
+                <label 
+                  htmlFor="accept-terms" 
+                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+                >
+                  I have read and agree to the{" "}
+                  <a 
+                    href="/TermsConditions.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Terms & Conditions
+                  </a>
+                  {" "}and{" "}
+                  <a 
+                    href="/PrivacyPolicy.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </label>
+              </div>
+            </div>
+          </div>
+
           {/* Continue Button */}
           <div className="flex justify-center">
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !formData.acceptTerms}
               className="w-80 h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating Profile..." : "Continue"}
