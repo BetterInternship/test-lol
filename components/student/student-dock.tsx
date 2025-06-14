@@ -17,7 +17,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { 
   Home, 
   Search, 
@@ -165,9 +165,16 @@ export default function StudentDock({
   baseItemSize = 50,
 }: StudentDockProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const mouseX = useMotionValue(Infinity);
   const isHovered = useMotionValue(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Check if current page is an authentication page
+  const isAuthPage = useMemo(() => {
+    const authPaths = ['/login', '/register', '/verify'];
+    return authPaths.some(path => pathname.startsWith(path));
+  }, [pathname]);
 
   // Check if screen width is <= 1024px
   useEffect(() => {
@@ -219,8 +226,8 @@ export default function StudentDock({
   const heightRow = useTransform(isHovered, [0, 1], [panelHeight, maxHeight]);
   const height = useSpring(heightRow, spring);
 
-  // Don't render if screen is larger than 1024px
-  if (!isMobile) {
+  // Don't render if screen is larger than 1024px or if on auth pages
+  if (!isMobile || isAuthPage) {
     return null;
   }
 
