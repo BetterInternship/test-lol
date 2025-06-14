@@ -219,22 +219,22 @@ export default function ApplicationsPage() {
                         </div>
 
                         <div className={`flex flex-wrap gap-2 ${isMobile ? 'mb-4' : 'mb-4'}`}>
-                          {application.job?.type && (
+                          {(application.job?.type || application.job?.type === 0) && (
                             <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
                               {getEmploymentTypeIcon(get_job_type(application.job.type)?.name ?? "")}
-                              {application.job.type}
+                              {get_job_type(application.job.type)?.name ?? ""}
                             </Badge>
                           )}
-                          {application.job?.mode && (
+                          {(application.job?.mode || application.job?.mode === 0) && (
                             <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
                               {getModeIcon(get_job_mode(application.job.mode)?.name ?? "")}
-                              {application.job.mode}
+                              {get_job_mode(application.job.mode)?.name ?? ""}
                             </Badge>
                           )}
-                          {application.job?.allowance && get_job_allowance(application.job?.allowance)?.name && (
+                          {(application.job?.allowance || application.job?.allowance === 0) && (
                             <Badge variant="outline" className={`text-xs flex items-center ${isMobile ? 'px-3 py-1' : ''}`}>
                               <Clipboard className="w-3 h-3 mr-1" />
-                              {application.job.allowance}
+                              {get_job_allowance(application.job?.allowance)?.name ?? ""}
                             </Badge>
                           )}
                           {application.job?.salary && (
