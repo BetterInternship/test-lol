@@ -39,12 +39,22 @@ export default function ApplicationsPage() {
   const { get_job_mode, get_job_type, get_job_allowance } = useRefs();
   const isMobile = false;
   const router = useRouter()
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     if (!is_authenticated()) {
       router.push('/login')
     }
   }, [is_authenticated(), router])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -181,34 +191,37 @@ export default function ApplicationsPage() {
                 <div className="text-gray-400 text-sm mb-6">
                   Click on the apply button on any open job to start an application.
                 </div>
-                <Link href="/search">
-                  <Button>Browse Jobs</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {applications.map((application) => (
-                  <div key={application.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">{/* rest of application content */}
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className={`flex items-start justify-between ${isMobile ? 'mb-3' : 'mb-3'}`}>
-                          <div className="flex-1">
-                            <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-3'} mb-2`}>
-                              <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-semibold text-gray-900 leading-tight`}>
-                                {application.job?.title}
-                              </h3>
-                              <Badge variant={getStatusBadgeVariant(application.status ?? "")} className={`text-xs w-fit ${isMobile ? 'px-3 py-1' : ''}`}>
-                                {getStatusDisplayText(application.status ?? "")}
-                              </Badge>
-                            </div>
-                            <div className={`flex items-center gap-2 text-gray-600 ${isMobile ? 'mb-3' : 'mb-2'}`}>
-                              <Building className={`${isMobile ? 'w-5 h-5' : 'w-4 h-4'}`} />
-                              <span className={`font-medium ${isMobile ? 'text-base' : ''}`}>{application.employer?.name}</span>
-                            </div>
-                            <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center gap-4'} text-sm text-gray-500 ${isMobile ? 'mb-4' : 'mb-3'}`}>
-                              <div className="flex items-center gap-1">
-                                <MapPin className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
-                                <span className={isMobile ? 'text-sm' : ''}>{application.job?.location}</span>
+              ) : error ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600 mb-4">Failed to load applications: {error}</p>
+                  <Button onClick={refetch}>Try Again</Button>
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="text-center py-12">
+                  <BookA className="w-16 h-16 text-gray-300 mx-auto mb-6" />
+                  <div className="text-gray-500 text-lg mb-4 font-medium">No applications yet</div>
+                  <div className="text-gray-400 text-sm mb-6">
+                    Click on the apply button on any open job to start an application.
+                  </div>
+                  <Link href="/search">
+                    <Button>Browse Jobs</Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {applications.map((application) => (
+                    <div key={application.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className={`flex items-start justify-between ${isMobile ? 'mb-3' : 'mb-3'}`}>
+                            <div className="flex-1">
+                              <div className={`flex ${isMobile ? 'flex-col gap-3' : 'items-center gap-3'} mb-2`}>
+                                <h3 className={`${isMobile ? 'text-xl' : 'text-xl'} font-semibold text-gray-900 leading-tight`}>
+                                  {application.job?.title}
+                                </h3>
+                                <Badge variant={getStatusBadgeVariant(application.status)} className={`text-xs w-fit ${isMobile ? 'px-3 py-1' : ''}`}>
+                                  {getStatusDisplayText(application.status)}
+                                </Badge>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Calendar className={`${isMobile ? 'w-4 h-4' : 'w-4 h-4'}`} />
@@ -271,7 +284,6 @@ export default function ApplicationsPage() {
           </div>
         </div>
       </div>
-    </div>
   )
 }
 

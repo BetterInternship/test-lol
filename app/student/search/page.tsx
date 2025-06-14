@@ -55,10 +55,26 @@ export default function SearchPage() {
   const [showApplicationModal, setShowApplicationModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showJobModal, setShowJobModal] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [lastApplication, setLastApplication] = useState<Partial<Application>>({})
   const [autoCloseProgress, setAutoCloseProgress] = useState(100)
   const { profile } = useProfile();
   const { get_college, get_level } = useRefs();
+
+  // Check if screen width is <= 1024px
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+
+    // Check on mount
+    checkScreenSize();
+
+    // Add resize listener
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -258,6 +274,9 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job)
+    if (isMobile) {
+      setShowJobModal(true)
+    }
   }
 
   if (jobs_error) {
@@ -275,89 +294,190 @@ export default function SearchPage() {
     <div className="h-screen bg-white overflow-hidden">
       <div className="flex flex-col h-full">
         {/* Top bar with logo and Profile button */}
-        <div className="flex justify-between items-center p-4 bg-white border-b">
+        <div className="flex justify-between items-center px-6 py-4 bg-white border-b">
           <Link href="/" className="block">
             <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">BetterInternship</h1>
           </Link>
           <ProfileButton />
         </div>
 
-          {/* Desktop Layout */}
-          <div className="flex-1 flex overflow-hidden">
-            {jobs_loading ? (
-              /* Loading State */
-              <div className="w-full flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading jobs...</p>
+        {/* Desktop and Mobile Layout */}
+        <div className="flex-1 flex overflow-hidden">
+          {jobs_loading ? (
+            /* Loading State */
+            <div className="w-full flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading jobs...</p>
+              </div>
+            </div>
+          ) : isMobile ? (
+            /* Mobile Layout - Only Job Cards */
+            <div className="w-full overflow-y-auto p-6">
+              {/* Mobile Search Bar */}
+              <div className="w-full mb-6">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        placeholder="Search Job Listings"
+                        className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
+                      />
+                    </div>
+                    <Button 
+                      onClick={() => setShowFilterModal(true)}
+                      className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+                      size="icon"
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <>
-                {/* Job List */}
-                <div className="w-1/2 border-r overflow-y-auto p-4">
-                    {/* Compact Search Bar */}
-                    <div className="flex gap-2 mb-4">
+
+              {jobs.length ? (
+                <div className="space-y-4">
+                  {jobs.map((job) => (
+                    <MobileJobCard
+                      key={job.id}
+                      job={job}
+                      onClick={() => handleJobCardClick(job)}
+                      refs={refs}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <p className="p-4">No jobs found.</p>  
+                </div>
+              )}
+
+              {/* Mobile Paginator */}
+              <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
+            </div>
+          ) : (
+            /* Desktop Layout - Split View */
+            <>
+              {/* Job List */}
+              <div className="w-1/3 border-r overflow-y-auto p-6">
+                {/* Desktop Search Bar */}
+                <div className="w-full max-w-4xl mx-auto mb-6">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+                    <div className="flex items-center gap-3">
                       <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                        <input
                           type="text"
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           onKeyPress={handleKeyPress}
-                          placeholder="Search listings..."
-                          className="pl-10 w-full h-10 bg-white border border-gray-300 rounded-lg"
+                          placeholder="Search Job Listings"
+                          className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                         />
                       </div>
                       <Button 
-                        variant="outline" 
-                        size="sm"
                         onClick={() => setShowFilterModal(true)}
-                        className="h-10 px-3 bg-blue-600 hover:bg-blue-700 border-blue-600 text-white"
+                        className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+                        size="icon"
                       >
                         <Filter className="h-4 w-4" />
                       </Button>
                     </div>
-                    {jobs.length ? (
-                      <div className="space-y-4">
-                        {jobs.map((job) => (
-                          <JobCard
-                            key={job.id}
-                            job={job}
-                            isSelected={selectedJob?.id === job.id}
-                            onClick={() => handleJobCardClick(job)}
-                            refs={refs}
-                          />
-                        ))}
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="p-4">No jobs found.</p>  
-                      </div>
-                    )}
-
-                    {/* Paginator */}
-                    <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
                   </div>
+                </div>
 
-                  {/* Job Details */}
-                  <div className="w-1/2 flex flex-col overflow-hidden">
-                    {selectedJob && (
-                      <JobDetails 
-                        job={selectedJob} 
-                        saving={saving}
-                        onApply={handleApply} 
-                        onSave={handleSave}
-                        isSaved={is_saved(selectedJob.id ?? '')}
-                        applicationStatus={appliedJob(selectedJob.id ?? "")}
+                {jobs.length ? (
+                  <div className="space-y-4">
+                    {jobs.map((job) => (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        isSelected={selectedJob?.id === job.id}
+                        onClick={() => handleJobCardClick(job)}
                         refs={refs}
                       />
-                    )}
+                    ))}
                   </div>
-                </>
-              )}
-          </div>
-    </div>
+                ) : (
+                  <div>
+                    <p className="p-4">No jobs found.</p>  
+                  </div>
+                )}
+
+                {/* Desktop Paginator */}
+                <Paginator totalItems={allJobs.length} itemsPerPage={jobs_page_size} onPageChange={(page) => setJobsPage(page)} />
+              </div>
+
+              {/* Job Details */}
+              <div className="w-2/3 flex flex-col overflow-hidden">
+                {selectedJob && (
+                  <JobDetails 
+                    job={selectedJob} 
+                    saving={saving}
+                    onApply={handleApply} 
+                    onSave={handleSave}
+                    isSaved={is_saved(selectedJob.id ?? '')}
+                    applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                    refs={refs}
+                  />
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Job Details Modal */}
+      <AnimatePresence>
+        {showJobModal && selectedJob && isMobile && (
+          <motion.div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div 
+              className="bg-white rounded-t-2xl w-full h-[90vh] shadow-2xl overflow-hidden flex flex-col"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              {/* Modal Header */}
+              <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
+                <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowJobModal(false)}
+                  className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </Button>
+              </div>
+
+              {/* Modal Content - Job Details */}
+              <div className="flex-1 overflow-y-auto">
+                <JobDetails 
+                  job={selectedJob} 
+                  saving={saving}
+                  onApply={handleApply} 
+                  onSave={handleSave}
+                  isSaved={is_saved(selectedJob.id ?? '')}
+                  applicationStatus={getApplicationStatus(selectedJob.id ?? '')}
+                  refs={refs}
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Application Modal - Only for Missing Job Requirements */}
       <AnimatePresence>

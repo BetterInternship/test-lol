@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import '../globals.css'
 import { AuthContextProvider } from './authctx'
-import StudentDock from '@/components/student/student-dock'
 
 export const metadata: Metadata = {
   title: 'BetterInternship',
@@ -18,7 +17,6 @@ export default function RootLayout({
       <html lang="en">
         <body>
           {children}
-          <StudentDock />
         </body>
       </html>
     </AuthContextProvider>
