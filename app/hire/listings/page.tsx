@@ -296,7 +296,8 @@ export default function MyListings() {
                     <p className="text-sm">
                       <span className="font-medium">Mode: </span>
                       <span className="opacity-80">
-                        {selectedJob.mode || "Not specified"}
+                        {get_job_mode(selectedJob.mode ?? -1)?.name ??
+                          "Not specified"}
                       </span>
                     </p>
                   </div>
@@ -308,7 +309,8 @@ export default function MyListings() {
                     <p className="text-sm">
                       <span className="font-medium">Salary: </span>
                       <span className="opacity-80">
-                        {selectedJob.salary || "Not specified"}
+                        {selectedJob.salary || "Not specified"}{" "}
+                        {get_job_pay_freq(selectedJob.salary_freq ?? -1)?.name}
                       </span>
                     </p>
                   </div>
@@ -320,7 +322,8 @@ export default function MyListings() {
                     <p className="text-sm">
                       <span className="font-medium">Employment Type: </span>
                       <span className="opacity-80">
-                        {selectedJob.type || "Not specified"}
+                        {get_job_type(selectedJob.type ?? -1)?.name ??
+                          "Not specified"}
                       </span>
                     </p>
                   </div>
