@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-15 03:16:44
+ * @ Modified time: 2025-06-15 18:14:22
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -179,7 +179,7 @@ export const useRefsContext = () => {
 
   useEffect(() => {
     setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7);
-  });
+  }, [l1, l2, l3, l4, l5, l6, l7]);
 
   /**
    * An additional helper for grabbing uni from email
