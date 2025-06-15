@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useJobs } from "@/hooks/use-api";
+import { BasicRectangularTag } from "../../../components/ui/tags";
 
 export default function JobScroller() {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +25,6 @@ export default function JobScroller() {
       const contentWidth = contentRef.current.offsetWidth;
       const duration = Math.max(contentWidth / 200, 5); // Faster speed and minimum 5s duration
       scrollerRef.current.style.animationDuration = `${duration}s`;
-      console.log("Animation duration set to:", duration, "seconds");
     };
 
     // Set initial duration
@@ -61,12 +61,9 @@ export default function JobScroller() {
       <div className="overflow-hidden rounded-lg">
         <div className="flex gap-3 py-3">
           {Array.from({ length: 8 }).map((_, index) => (
-            <div
-              key={index}
-              className="flex-shrink-0 border rounded-md px-3 py-2 bg-gray-100 animate-pulse whitespace-nowrap shadow-sm text-sm"
-            >
-              <div className="h-4 w-32 bg-gray-200 rounded"></div>
-            </div>
+            <BasicRectangularTag key={index}>
+              <div className="h-4 w-32 bg-gray-200"></div>
+            </BasicRectangularTag>
           ))}
         </div>
       </div>
@@ -76,28 +73,14 @@ export default function JobScroller() {
   if (jobs.length === 0) {
     return (
       <div className="overflow-hidden rounded-lg">
-        <div className="flex gap-3 py-3">
-          <div className="flex-shrink-0 border rounded-md px-3 py-2 bg-white text-gray-500 text-sm">
+        <div className="flex justify-center">
+          <div className="flex-shrink-0 rounded-md text-gray-500 text-sm">
             No jobs available at the moment
           </div>
         </div>
       </div>
     );
   }
-
-  // Generate job listing titles for the scroller
-  const jobListings = jobs.map(
-    (job) =>
-      `${job.title}${
-        job.type === "Internship"
-          ? " Internship"
-          : job.type === "Full-time"
-          ? " (Full-time)"
-          : job.type === "Part-time"
-          ? " (Part-time)"
-          : ""
-      }`
-  );
 
   return (
     <div className="overflow-hidden rounded-lg">
@@ -113,19 +96,17 @@ export default function JobScroller() {
         }}
       >
         <div ref={contentRef} className="flex gap-3 py-3">
-          {jobListings.map((jobListing, index) => {
-            const job = jobs[index];
-            return (
-              <Link
-                key={index}
-                href={`/search?q=${encodeURIComponent(jobListing)}`}
-                className="flex-shrink-0 border rounded-md px-3 py-2 bg-white hover:bg-gray-50 transition-colors whitespace-nowrap shadow-sm text-sm"
-                title={`${job.title} - ${job.employer?.name} (${job.location})`}
-              >
-                {jobListing}
-              </Link>
-            );
-          })}
+          {jobs.map((job, index) => (
+            <Link
+              key={index}
+              href={`/search?q=${encodeURIComponent(job.title ?? "")}`}
+              title={`${job.title} - ${job.employer?.name} (${job.location})`}
+            >
+              <BasicRectangularTag className="hover:bg-gray-100">
+                {job.title}
+              </BasicRectangularTag>
+            </Link>
+          ))}
         </div>
       </div>
 

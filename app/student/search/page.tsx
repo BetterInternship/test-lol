@@ -7,14 +7,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   MapPin,
-  Clock,
   PhilippinePeso,
   Briefcase,
-  ChevronDown,
   X,
   Building,
   Calendar,
-  Users,
   Heart,
   CheckCircle,
   Clipboard,
@@ -28,14 +25,13 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ProfileButton from "@/components/student/profile-button";
 import {
   useJobs,
   useSavedJobs,
   useProfile,
   useApplications,
 } from "@/hooks/use-api";
-import { useAuthContext } from "../authctx";
+import { useAuthContext } from "../../../lib/ctx-auth";
 import { Application, Job } from "@/lib/db/db.types";
 import Markdown from "react-markdown";
 import { Paginator } from "@/components/ui/paginator";
@@ -43,8 +39,9 @@ import { useRefs, RefsAPI } from "@/lib/db/use-refs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
-} from "@/components/student/dropdown";
+} from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
+import { useAppContext } from "@/lib/ctx-app";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -63,27 +60,13 @@ export default function SearchPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const { is_mobile } = useAppContext();
   const [lastApplication, setLastApplication] = useState<Partial<Application>>(
     {}
   );
   const [autoCloseProgress, setAutoCloseProgress] = useState(100);
   const { profile } = useProfile();
   const { get_college, get_level } = useRefs();
-
-  // Check if screen width is <= 1024px
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth <= 1024);
-    };
-
-    // Check on mount
-    checkScreenSize();
-
-    // Add resize listener
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -123,11 +106,10 @@ export default function SearchPage() {
     refetch,
   } = useJobs({
     search: searchTerm.trim() || undefined,
-    category: filters.category || undefined,
-    type: filters.job_type !== "All types" ? filters.job_type : undefined,
-    mode: filters.location !== "Any location" ? filters.location : undefined,
-    industry:
-      filters.industry !== "All industries" ? filters.industry : undefined,
+    category: filters.category,
+    type: filters.job_type,
+    mode: filters.location,
+    industry: filters.industry,
   });
 
   useEffect(() => {
@@ -160,9 +142,9 @@ export default function SearchPage() {
     const category = searchParams.get("category");
     const jobType = searchParams.get("jobType");
     const location = searchParams.get("location");
-    set_filter("category", category ?? "");
-    set_filter("job_type", jobType ?? "");
-    set_filter("location", location ?? "");
+    set_filter("category", category ?? "All industries");
+    set_filter("job_type", jobType ?? "All types");
+    set_filter("location", location ?? "Any location");
   }, [searchParams, jobs]);
 
   // Set first job as selected when jobs load
@@ -197,10 +179,6 @@ export default function SearchPage() {
       window.location.href = "/login";
       return;
     }
-
-    console.log(applications.map((a) => a.job_id));
-    console.log("id", selectedJob?.id);
-    console.log(appliedJob(selectedJob?.id ?? ""));
 
     // Check if already applied
     const applicationStatus = appliedJob(selectedJob?.id ?? "");
@@ -271,7 +249,7 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
-    if (isMobile) {
+    if (is_mobile) {
       setShowJobModal(true);
     }
   };
@@ -288,33 +266,77 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="h-screen bg-white overflow-hidden">
-      <div className="flex flex-col h-full">
-        {/* Top bar with logo and Profile button */}
-        <div className="flex justify-between items-center px-6 py-4 bg-white border-b">
-          <Link href="/" className="block">
-            <h1 className="text-xl font-bold text-gray-800 hover:text-gray-600 transition-colors">
-              BetterInternship
-            </h1>
-          </Link>
-          <ProfileButton />
-        </div>
-
-        {/* Desktop and Mobile Layout */}
-        <div className="flex-1 flex overflow-hidden">
-          {jobs_loading ? (
-            /* Loading State */
-            <div className="w-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading jobs...</p>
+    <>
+      {/* Desktop and Mobile Layout */}
+      <div className="flex-1 flex overflow-hidden max-h-full">
+        {jobs_loading ? (
+          /* Loading State */
+          <div className="w-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading jobs...</p>
+            </div>
+          </div>
+        ) : is_mobile ? (
+          /* Mobile Layout - Only Job Cards */
+          <div className="w-full overflow-y-auto p-6">
+            {/* Mobile Search Bar */}
+            <div className="w-full mb-6">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Search Job Listings"
+                      className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => setShowFilterModal(true)}
+                    className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+                    size="icon"
+                  >
+                    <Filter className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-          ) : isMobile ? (
-            /* Mobile Layout - Only Job Cards */
-            <div className="w-full overflow-y-auto p-6">
-              {/* Mobile Search Bar */}
-              <div className="w-full mb-6">
+
+            {jobs.length ? (
+              <div className="space-y-4">
+                {jobs.map((job) => (
+                  <MobileJobCard
+                    key={job.id}
+                    job={job}
+                    onClick={() => handleJobCardClick(job)}
+                    refs={refs}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div>
+                <p className="p-4">No jobs found.</p>
+              </div>
+            )}
+
+            {/* Mobile Paginator */}
+            <Paginator
+              totalItems={allJobs.length}
+              itemsPerPage={jobs_page_size}
+              onPageChange={(page) => setJobsPage(page)}
+            />
+          </div>
+        ) : (
+          /* Desktop Layout - Split View */
+          <>
+            {/* Job List */}
+            <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
+              {/* Desktop Search Bar */}
+              <div className="w-full max-w-4xl mx-auto mb-6">
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1">
@@ -342,9 +364,10 @@ export default function SearchPage() {
               {jobs.length ? (
                 <div className="space-y-4">
                   {jobs.map((job) => (
-                    <MobileJobCard
+                    <JobCard
                       key={job.id}
                       job={job}
+                      isSelected={selectedJob?.id === job.id}
                       onClick={() => handleJobCardClick(job)}
                       refs={refs}
                     />
@@ -356,94 +379,35 @@ export default function SearchPage() {
                 </div>
               )}
 
-              {/* Mobile Paginator */}
+              {/* Desktop Paginator */}
               <Paginator
                 totalItems={allJobs.length}
                 itemsPerPage={jobs_page_size}
                 onPageChange={(page) => setJobsPage(page)}
               />
             </div>
-          ) : (
-            /* Desktop Layout - Split View */
-            <>
-              {/* Job List */}
-              <div className="w-1/3 border-r overflow-y-auto p-6">
-                {/* Desktop Search Bar */}
-                <div className="w-full max-w-4xl mx-auto mb-6">
-                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
-                    <div className="flex items-center gap-3">
-                      <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
-                        <input
-                          type="text"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                          placeholder="Search Job Listings"
-                          className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
-                        />
-                      </div>
-                      <Button
-                        onClick={() => setShowFilterModal(true)}
-                        className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
-                        size="icon"
-                      >
-                        <Filter className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
 
-                {jobs.length ? (
-                  <div className="space-y-4">
-                    {jobs.map((job) => (
-                      <JobCard
-                        key={job.id}
-                        job={job}
-                        isSelected={selectedJob?.id === job.id}
-                        onClick={() => handleJobCardClick(job)}
-                        refs={refs}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div>
-                    <p className="p-4">No jobs found.</p>
-                  </div>
-                )}
-
-                {/* Desktop Paginator */}
-                <Paginator
-                  totalItems={allJobs.length}
-                  itemsPerPage={jobs_page_size}
-                  onPageChange={(page) => setJobsPage(page)}
+            {/* Job Details */}
+            <div className="w-2/3 flex flex-col overflow-hidden">
+              {selectedJob && (
+                <JobDetails
+                  job={selectedJob}
+                  saving={saving}
+                  onApply={handleApply}
+                  onSave={handleSave}
+                  isSaved={is_saved(selectedJob.id ?? "")}
+                  applicationStatus={getApplicationStatus(selectedJob.id ?? "")}
+                  refs={refs}
                 />
-              </div>
-
-              {/* Job Details */}
-              <div className="w-2/3 flex flex-col overflow-hidden">
-                {selectedJob && (
-                  <JobDetails
-                    job={selectedJob}
-                    saving={saving}
-                    onApply={handleApply}
-                    onSave={handleSave}
-                    isSaved={is_saved(selectedJob.id ?? "")}
-                    applicationStatus={getApplicationStatus(
-                      selectedJob.id ?? ""
-                    )}
-                    refs={refs}
-                  />
-                )}
-              </div>
-            </>
-          )}
-        </div>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Mobile Job Details Modal */}
       <AnimatePresence>
-        {showJobModal && selectedJob && isMobile && (
+        {showJobModal && selectedJob && is_mobile && (
           <motion.div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
             initial={{ opacity: 0 }}
@@ -775,8 +739,8 @@ export default function SearchPage() {
                     onClick={() => {
                       // Clear temp filters but keep search term
                       set_filter("job_type", "All types");
-                      set_filter("job_type", "Any location");
-                      set_filter("job_type", "All industries");
+                      set_filter("location", "Any location");
+                      set_filter("industry", "All industries");
                     }}
                     className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
                   >
@@ -797,7 +761,7 @@ export default function SearchPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
 

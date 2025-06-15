@@ -6,7 +6,7 @@ import {
   handle_api_error,
 } from "@/lib/api";
 import { Job, PublicUser, Application } from "@/lib/db/db.types";
-import { useAuthContext } from "@/app/student/authctx";
+import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "./use-cache";
 
 // Jobs Hook with Client-Side Filtering

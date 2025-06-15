@@ -1,21 +1,29 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { ChevronDown, Upload, ExternalLink, Award } from "lucide-react"
-import { useAuthContext } from "../authctx"
-import { useRefs } from "@/lib/db/use-refs"
-import { University } from "@/lib/db/db.types"
-import { RefDropdown } from "@/components/ui/ref-dropdown"
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ChevronDown, Upload, ExternalLink, Award } from "lucide-react";
+import { useAuthContext } from "../../../lib/ctx-auth";
+import { useRefs } from "@/lib/db/use-refs";
+import { University } from "@/lib/db/db.types";
+import { RefDropdown } from "@/components/ui/ref-dropdown";
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
   const defaultCollege = "Select College";
   const validFieldClassName = "border-green-600 border-opacity-50";
-  const { refs_ready, levels, colleges, universities, get_level_by_name, get_college_by_name, get_university_by_domain } = useRefs();
+  const {
+    refs_ready,
+    levels,
+    colleges,
+    universities,
+    get_level_by_name,
+    get_college_by_name,
+    get_university_by_domain,
+  } = useRefs();
   const [formData, setFormData] = useState({
     fullName: "",
     yearLevel: defaultYearLevel,
@@ -27,90 +35,104 @@ export default function RegisterPage() {
     acceptTerms: false,
     takingForCredit: false,
     linkageOfficer: "",
-  })
-  const { register } = useAuthContext()
-  const [email, setEmail] = useState("")
+  });
+  const { register } = useAuthContext();
+  const [email, setEmail] = useState("");
   const [university, setUniversity] = useState<University>();
   const [activeDropdown, setActiveDropdown] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const resumeInputRef = useRef<HTMLInputElement>(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const resumeInputRef = useRef<HTMLInputElement>(null);
 
   // Pre-fill email if coming from login redirect
   useEffect(() => {
-    const emailParam = searchParams.get('email')
+    const emailParam = searchParams.get("email");
     if (!emailParam) {
-      return router.push('/login')
+      return router.push("/login");
     }
-    
-    setEmail(emailParam)
+
+    setEmail(emailParam);
 
     if (!universities.length) {
-      return
+      return;
     }
-    
-    const domain = emailParam.split("@")[1]
-    const uni = get_university_by_domain(domain)
+
+    const domain = emailParam.split("@")[1];
+    const uni = get_university_by_domain(domain);
     if (!uni) {
-      return router.push('/login')
+      return router.push("/login");
     }
-    setUniversity(uni)
-  }, [searchParams, universities, router])
+    setUniversity(uni);
+  }, [searchParams, universities, router]);
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const domain = email.split("@")[1]
+    const domain = email.split("@")[1];
 
     if (!formData.fullName || !formData.yearLevel || !formData.phoneNumber) {
-      setError("Please fill in all required fields")
-      return
+      setError("Please fill in all required fields");
+      return;
     }
 
     if (formData.takingForCredit && !formData.linkageOfficer.trim()) {
-      setError("Please provide your linkage officer information")
-      return
+      setError("Please provide your linkage officer information");
+      return;
     }
 
     if (!formData.acceptTerms) {
-      setError("Please accept the Terms & Conditions and Privacy Policy to continue")
-      return
+      setError(
+        "Please accept the Terms & Conditions and Privacy Policy to continue"
+      );
+      return;
     }
 
     if (!get_university_by_domain(domain)) {
-      setError("Please use your university email address (e.g. @dlsu.edu.ph)")
-      return
+      setError("Please use your university email address (e.g. @dlsu.edu.ph)");
+      return;
     }
 
-    if (formData.college === defaultCollege || formData.yearLevel === defaultYearLevel) {
+    if (
+      formData.college === defaultCollege ||
+      formData.yearLevel === defaultYearLevel
+    ) {
       setError("Please fill in the dropdown fields too.");
       return;
     }
 
     try {
-      setLoading(true)
-      setError("")
+      setLoading(true);
+      setError("");
 
       // User form
       const user_form_data = new FormData();
       user_form_data.append("email", email);
       user_form_data.append("full_name", formData.fullName);
       user_form_data.append("phone_number", formData.phoneNumber);
-      user_form_data.append("year_level", (get_level_by_name(formData.yearLevel)?.id ?? "") + "");
-      user_form_data.append("college", (get_college_by_name(formData.college)?.id ?? "") + "");
+      user_form_data.append(
+        "year_level",
+        (get_level_by_name(formData.yearLevel)?.id ?? "") + ""
+      );
+      user_form_data.append(
+        "college",
+        (get_college_by_name(formData.college)?.id ?? "") + ""
+      );
       user_form_data.append("portfolio_link", formData.portfolioLink);
       user_form_data.append("github_link", formData.githubLink);
       user_form_data.append("linkedin_link", formData.linkedinProfile);
-      user_form_data.append("taking_for_credit", formData.takingForCredit.toString());
+      user_form_data.append(
+        "taking_for_credit",
+        formData.takingForCredit.toString()
+      );
       user_form_data.append("linkage_officer", formData.linkageOfficer);
       // @ts-ignore
       user_form_data.append("resume", resumeFile);
@@ -120,25 +142,25 @@ export default function RegisterPage() {
       }
       // @ts-ignore
       await register(user_form_data)
-        .then(r => { 
+        .then((r) => {
           if (r && r.success) {
-            router.push('/verify')
+            router.push("/verify");
           } else {
-            setError("Ensure that your inputs are correct.")
+            setError("Ensure that your inputs are correct.");
           }
         })
-        .catch((e) => { 
-          setError(e.message || "Registration failed. Please try again.")
-        })
+        .catch((e) => {
+          setError(e.message || "Registration failed. Please try again.");
+        });
     } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again.")
+      setError(err.message || "Registration failed. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   if (!email) {
-    return null // Will redirect in useEffect
+    return null; // Will redirect in useEffect
   }
 
   return (
@@ -146,7 +168,9 @@ export default function RegisterPage() {
       <div className="w-full max-w-4xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Let's Create your Profile</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Let's Create your Profile
+          </h2>
         </div>
 
         {/* Error Message */}
@@ -167,11 +191,14 @@ export default function RegisterPage() {
               <Input
                 type="text"
                 value={formData.fullName}
-                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                onChange={(e) => handleInputChange("fullName", e.target.value)}
                 placeholder="Enter Full Name"
                 className={
-                  (formData.fullName === "" ? "border-gray-300" : validFieldClassName) + 
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"}
+                  (formData.fullName === ""
+                    ? "border-gray-300"
+                    : validFieldClassName) +
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                }
                 disabled={loading}
                 required
               />
@@ -185,11 +212,16 @@ export default function RegisterPage() {
               <Input
                 type="tel"
                 value={formData.phoneNumber}
-                onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("phoneNumber", e.target.value)
+                }
                 placeholder="Enter Phone Number"
                 className={
-                  (formData.phoneNumber === "" ? "border-gray-300" : validFieldClassName) + 
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"}
+                  (formData.phoneNumber === ""
+                    ? "border-gray-300"
+                    : validFieldClassName) +
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                }
                 disabled={loading}
                 required
               />
@@ -200,18 +232,19 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 College <span className="text-red-500">*</span>
               </label>
-              <RefDropdown 
-                name="college" 
+              <RefDropdown
+                name="college"
                 defaultValue={defaultCollege}
-                value={formData.college} 
+                value={formData.college}
                 options={colleges
                   .filter((c) => c.university_id === university?.id)
-                  .sort((a, b) => a.name.localeCompare(b.name)).map(college => college.name)} 
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((college) => college.name)}
                 activeDropdown={activeDropdown}
                 validFieldClassName={validFieldClassName}
                 onChange={(value) => handleInputChange("college", value)}
-                onClick={() => setActiveDropdown("college")}>
-              </RefDropdown>
+                onClick={() => setActiveDropdown("college")}
+              ></RefDropdown>
             </div>
 
             {/* School Year */}
@@ -219,32 +252,41 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year Level <span className="text-red-500">*</span>
               </label>
-              <RefDropdown 
-                name="yearLevel" 
+              <RefDropdown
+                name="yearLevel"
                 defaultValue={defaultYearLevel}
-                value={formData.yearLevel} 
-                options={levels.sort((a, b) => 
-                  (a.order - b.order) || a.name.localeCompare(b.name)).map(level => level.name)} 
+                value={formData.yearLevel}
+                options={levels
+                  .sort(
+                    (a, b) => a.order - b.order || a.name.localeCompare(b.name)
+                  )
+                  .map((level) => level.name)}
                 activeDropdown={activeDropdown}
                 validFieldClassName={validFieldClassName}
                 onChange={(value) => handleInputChange("yearLevel", value)}
-                onClick={() => setActiveDropdown("yearLevel")}>
-              </RefDropdown>
+                onClick={() => setActiveDropdown("yearLevel")}
+              ></RefDropdown>
             </div>
 
             {/* Portfolio Link */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Portfolio Link <span className="text-gray-500 italic">(Optional)</span>
+                Portfolio Link{" "}
+                <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <Input
                 type="url"
                 value={formData.portfolioLink}
-                onChange={(e) => handleInputChange('portfolioLink', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("portfolioLink", e.target.value)
+                }
                 placeholder="Enter Portfolio Link"
                 className={
-                  (formData.portfolioLink === "" ? "border-gray-300" : validFieldClassName) + 
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"}
+                  (formData.portfolioLink === ""
+                    ? "border-gray-300"
+                    : validFieldClassName) +
+                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                }
                 disabled={loading}
               />
             </div>
@@ -252,15 +294,20 @@ export default function RegisterPage() {
             {/* LinkedIn Profile */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                LinkedIn Profile <span className="text-gray-500 italic">(Optional)</span>
+                LinkedIn Profile{" "}
+                <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <Input
                 type="url"
                 value={formData.linkedinProfile}
-                onChange={(e) => handleInputChange('linkedinProfile', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("linkedinProfile", e.target.value)
+                }
                 placeholder="Enter LinkedIn Profile Link"
                 className={
-                  (formData.linkedinProfile === "" ? "border-gray-300" : validFieldClassName) + 
+                  (formData.linkedinProfile === ""
+                    ? "border-gray-300"
+                    : validFieldClassName) +
                   " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
                 }
                 disabled={loading}
@@ -270,15 +317,20 @@ export default function RegisterPage() {
             {/* Github Link */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Github Link <span className="text-gray-500 italic">(Optional)</span>
+                Github Link{" "}
+                <span className="text-gray-500 italic">(Optional)</span>
               </label>
               <Input
                 type="url"
                 value={formData.githubLink}
-                onChange={(e) => handleInputChange('githubLink', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("githubLink", e.target.value)
+                }
                 placeholder="Enter Github Link"
                 className={
-                  (formData.githubLink === "" ? "border-gray-300" : validFieldClassName) + 
+                  (formData.githubLink === ""
+                    ? "border-gray-300"
+                    : validFieldClassName) +
                   " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
                 }
                 disabled={loading}
@@ -293,19 +345,29 @@ export default function RegisterPage() {
               <input
                 type="file"
                 ref={resumeInputRef}
-                onChange={(r) => setResumeFile((r.target?.files ?? [])[0] ?? null)}
+                onChange={(r) =>
+                  setResumeFile((r.target?.files ?? [])[0] ?? null)
+                }
                 accept=".pdf,.doc,.docx"
                 disabled={loading}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               />
               <div
                 onClick={() => resumeInputRef.current?.click()}
                 className={
-                  (!resumeFile || !resumeFile.name ? "border-gray-300" : validFieldClassName) + 
+                  (!resumeFile || !resumeFile.name
+                    ? "border-gray-300"
+                    : validFieldClassName) +
                   " w-full h-12 px-4 border-2 rounded-lg cursor-pointer hover:border-gray-400 transition-colors flex items-center justify-between"
                 }
               >
-                <span className={resumeFile ? " line-clamp-1 text-gray-900 text-ellipsis" : "line-clamp-1 text-gray-500 text-ellipsis"}>
+                <span
+                  className={
+                    resumeFile
+                      ? " line-clamp-1 text-gray-900 text-ellipsis"
+                      : "line-clamp-1 text-gray-500 text-ellipsis"
+                  }
+                >
                   {resumeFile ? resumeFile.name : "Upload File Here"}
                 </span>
                 <Upload className="h-4 w-4 text-gray-400" />
@@ -321,10 +383,10 @@ export default function RegisterPage() {
                 <Checkbox
                   checked={formData.takingForCredit}
                   onCheckedChange={(checked) => {
-                    handleInputChange('takingForCredit', checked as boolean)
+                    handleInputChange("takingForCredit", checked as boolean);
                     // Clear linkage officer if unchecked
                     if (!checked) {
-                      handleInputChange('linkageOfficer', '')
+                      handleInputChange("linkageOfficer", "");
                     }
                   }}
                   className="border-gray-300"
@@ -347,17 +409,22 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={formData.linkageOfficer}
-                  onChange={(e) => handleInputChange('linkageOfficer', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("linkageOfficer", e.target.value)
+                  }
                   placeholder="Enter your linkage officer's name"
                   className={
-                    (formData.linkageOfficer === "" ? "border-gray-300" : validFieldClassName) + 
+                    (formData.linkageOfficer === ""
+                      ? "border-gray-300"
+                      : validFieldClassName) +
                     " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
                   required={formData.takingForCredit}
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  Please provide the name of your assigned linkage officer from your college.
+                  Please provide the name of your assigned linkage officer from
+                  your college.
                 </p>
               </div>
             )}
@@ -370,28 +437,28 @@ export default function RegisterPage() {
                 <Checkbox
                   id="accept-terms"
                   checked={formData.acceptTerms}
-                  onCheckedChange={(checked) => 
-                    handleInputChange('acceptTerms', checked as boolean)
+                  onCheckedChange={(checked) =>
+                    handleInputChange("acceptTerms", checked as boolean)
                   }
                   className="mt-1"
                 />
-                <label 
-                  htmlFor="accept-terms" 
+                <label
+                  htmlFor="accept-terms"
                   className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
                 >
                   I have read and agree to the{" "}
-                  <a 
-                    href="/TermsConditions.pdf" 
-                    target="_blank" 
+                  <a
+                    href="/TermsConditions.pdf"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 underline font-medium"
                   >
                     Terms & Conditions
-                  </a>
-                  {" "}and{" "}
-                  <a 
-                    href="/PrivacyPolicy.pdf" 
-                    target="_blank" 
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/PrivacyPolicy.pdf"
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:text-blue-800 underline font-medium"
                   >
@@ -419,12 +486,15 @@ export default function RegisterPage() {
         <div className="text-center text-sm text-gray-600 mt-8">
           <p>
             Need help? Contact us at{" "}
-            <a href="mailto:hello@betterinternship.com" className="text-blue-600 hover:underline">
+            <a
+              href="mailto:hello@betterinternship.com"
+              className="text-blue-600 hover:underline"
+            >
               hello@betterinternship.com
             </a>
           </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

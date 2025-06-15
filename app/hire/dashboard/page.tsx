@@ -1,188 +1,307 @@
-"use client"
+"use client";
 
-import { useState, useMemo, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select"
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { 
-  Calendar, 
-  FileText, 
-  User, 
-  BarChart3, 
+} from "@/components/ui/popover";
+import {
+  Calendar,
+  FileText,
+  User,
+  BarChart3,
   ChevronDown,
   Building2,
   UserPlus,
   LogOut,
   FileEdit,
   Search,
-  HelpCircle
-} from "lucide-react"
-import Link from "next/link"
-import ApplicantModal from "@/components/hire/applicant-modal"
-import CalendarModal from "@/components/hire/calendar-modal"
-import ProfileButton from "@/components/hire/profile-button"
-import { GroupableMultiselectDropdown, DropdownGroup } from '../../../components/student/dropdown';
+  HelpCircle,
+} from "lucide-react";
+import Link from "next/link";
+import ApplicantModal from "@/components/hire/applicant-modal";
+import CalendarModal from "@/components/hire/calendar-modal";
+import ProfileButton from "@/components/hire/profile-button";
+import {
+  GroupableMultiselectDropdown,
+  DropdownGroup,
+} from "../../../components/ui/dropdown";
 
 // Placeholder data for applicants
 const applicantsData = [
-  { id: 1, name: "John Doe", school: "DLSU", program: "IT", job: "DevOps", mode: "Full-Time", status: "New" },
-  { id: 2, name: "Jane Smith", school: "DLSU", program: "CS", job: "Frontend Dev", mode: "Part-Time", status: "Rejected" },
-  { id: 3, name: "Mike Johnson", school: "DLSU", program: "IT", job: "Backend Dev", mode: "Full-Time", status: "To Interview" },
-  { id: 4, name: "Sarah Wilson", school: "DLSU", program: "CS", job: "Full Stack", mode: "Full-Time", status: "Offer Sent" },
-  { id: 5, name: "Chris Brown", school: "DLSU", program: "IT", job: "Mobile Dev", mode: "Part-Time", status: "Shortlisted" },
-  { id: 6, name: "Emily Davis", school: "DLSU", program: "CS", job: "UI/UX", mode: "OJT", status: "Hired" },
-  { id: 7, name: "Alex Garcia", school: "DLSU", program: "IT", job: "DevOps", mode: "Full-Time", status: "Interviewing" },
-  { id: 8, name: "Lisa Martinez", school: "DLSU", program: "CS", job: "Data Science", mode: "Part-Time", status: "Offer Declined" },
-  { id: 9, name: "Tom Anderson", school: "DLSU", program: "IT", job: "QA Engineer", mode: "Full-Time", status: "Shortlisted" },
-  { id: 10, name: "Maria Rodriguez", school: "DLSU", program: "CS", job: "DevOps", mode: "OJT", status: "Hired" },
-  { id: 11, name: "Kevin Lee", school: "DLSU", program: "IT", job: "Frontend Dev", mode: "Part-Time", status: "Interviewing" },
-  { id: 12, name: "Anna Taylor", school: "DLSU", program: "CS", job: "Backend Dev", mode: "Full-Time", status: "Offer Declined" },
-]
+  {
+    id: 1,
+    name: "John Doe",
+    school: "DLSU",
+    program: "IT",
+    job: "DevOps",
+    mode: "Full-Time",
+    status: "New",
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    school: "DLSU",
+    program: "CS",
+    job: "Frontend Dev",
+    mode: "Part-Time",
+    status: "Rejected",
+  },
+  {
+    id: 3,
+    name: "Mike Johnson",
+    school: "DLSU",
+    program: "IT",
+    job: "Backend Dev",
+    mode: "Full-Time",
+    status: "To Interview",
+  },
+  {
+    id: 4,
+    name: "Sarah Wilson",
+    school: "DLSU",
+    program: "CS",
+    job: "Full Stack",
+    mode: "Full-Time",
+    status: "Offer Sent",
+  },
+  {
+    id: 5,
+    name: "Chris Brown",
+    school: "DLSU",
+    program: "IT",
+    job: "Mobile Dev",
+    mode: "Part-Time",
+    status: "Shortlisted",
+  },
+  {
+    id: 6,
+    name: "Emily Davis",
+    school: "DLSU",
+    program: "CS",
+    job: "UI/UX",
+    mode: "OJT",
+    status: "Hired",
+  },
+  {
+    id: 7,
+    name: "Alex Garcia",
+    school: "DLSU",
+    program: "IT",
+    job: "DevOps",
+    mode: "Full-Time",
+    status: "Interviewing",
+  },
+  {
+    id: 8,
+    name: "Lisa Martinez",
+    school: "DLSU",
+    program: "CS",
+    job: "Data Science",
+    mode: "Part-Time",
+    status: "Offer Declined",
+  },
+  {
+    id: 9,
+    name: "Tom Anderson",
+    school: "DLSU",
+    program: "IT",
+    job: "QA Engineer",
+    mode: "Full-Time",
+    status: "Shortlisted",
+  },
+  {
+    id: 10,
+    name: "Maria Rodriguez",
+    school: "DLSU",
+    program: "CS",
+    job: "DevOps",
+    mode: "OJT",
+    status: "Hired",
+  },
+  {
+    id: 11,
+    name: "Kevin Lee",
+    school: "DLSU",
+    program: "IT",
+    job: "Frontend Dev",
+    mode: "Part-Time",
+    status: "Interviewing",
+  },
+  {
+    id: 12,
+    name: "Anna Taylor",
+    school: "DLSU",
+    program: "CS",
+    job: "Backend Dev",
+    mode: "Full-Time",
+    status: "Offer Declined",
+  },
+];
 
 const statusOptions = [
   "New",
-  "Interviewing", 
+  "Interviewing",
   "Shortlisted",
   "Offer Sent",
   "Offer Accepted",
   "Offer Declined",
   "Hired",
-  "Rejected"
-]
+  "Rejected",
+];
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "New": return "bg-blue-100 text-blue-800"
-    case "Interviewing": return "bg-yellow-100 text-yellow-800" 
-    case "Shortlisted": return "bg-purple-100 text-purple-800"
-    case "Offer Sent": return "bg-orange-100 text-orange-800"
-    case "Offer Accepted": return "bg-green-100 text-green-800"
-    case "Offer Declined": return "bg-red-100 text-red-800"
-    case "Hired": return "bg-emerald-100 text-emerald-800"
-    case "Rejected": return "bg-gray-100 text-gray-800"
-    default: return "bg-gray-100 text-gray-800"
+    case "New":
+      return "bg-blue-100 text-blue-800";
+    case "Interviewing":
+      return "bg-yellow-100 text-yellow-800";
+    case "Shortlisted":
+      return "bg-purple-100 text-purple-800";
+    case "Offer Sent":
+      return "bg-orange-100 text-orange-800";
+    case "Offer Accepted":
+      return "bg-green-100 text-green-800";
+    case "Offer Declined":
+      return "bg-red-100 text-red-800";
+    case "Hired":
+      return "bg-emerald-100 text-emerald-800";
+    case "Rejected":
+      return "bg-gray-100 text-gray-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
-}
+};
 
 export default function Dashboard() {
-  const [applicants, setApplicants] = useState(applicantsData)
-  const [selectedApplicant, setSelectedApplicant] = useState<typeof applicantsData[0] | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
-  const router = useRouter()
+  const [applicants, setApplicants] = useState(applicantsData);
+  const [selectedApplicant, setSelectedApplicant] = useState<
+    (typeof applicantsData)[0] | null
+  >(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const router = useRouter();
 
   // Sorting and filtering states
-  const [sortField, setSortField] = useState<string>("")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [selectedJobs, setSelectedJobs] = useState<string[]>([])
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([])
-  const [jobSearch, setJobSearch] = useState("")
-  const [statusSearch, setStatusSearch] = useState("")
+  const [sortField, setSortField] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [jobSearch, setJobSearch] = useState("");
+  const [statusSearch, setStatusSearch] = useState("");
 
   // Get unique values for filters
-  const uniqueJobs = useMemo(() => [...new Set(applicantsData.map(a => a.job))].sort(), [])
-  const uniqueStatuses = useMemo(() => [...new Set(applicantsData.map(a => a.status))].sort(), [])
+  const uniqueJobs = useMemo(
+    () => [...new Set(applicantsData.map((a) => a.job))].sort(),
+    []
+  );
+  const uniqueStatuses = useMemo(
+    () => [...new Set(applicantsData.map((a) => a.status))].sort(),
+    []
+  );
 
   // Filter and sort applicants
   const filteredAndSortedApplicants = useMemo(() => {
-    let filtered = applicantsData.filter(applicant => {
-      const jobMatch = selectedJobs.length === 0 || selectedJobs.includes(applicant.job)
-      const statusMatch = selectedStatuses.length === 0 || selectedStatuses.includes(applicant.status)
-      return jobMatch && statusMatch
-    })
+    let filtered = applicantsData.filter((applicant) => {
+      const jobMatch =
+        selectedJobs.length === 0 || selectedJobs.includes(applicant.job);
+      const statusMatch =
+        selectedStatuses.length === 0 ||
+        selectedStatuses.includes(applicant.status);
+      return jobMatch && statusMatch;
+    });
 
     if (sortField) {
       filtered.sort((a, b) => {
-        let aValue = a[sortField as keyof typeof a]
-        let bValue = b[sortField as keyof typeof b]
-        
-        if (typeof aValue === 'string') aValue = aValue.toLowerCase()
-        if (typeof bValue === 'string') bValue = bValue.toLowerCase()
-        
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1
-        return 0
-      })
+        let aValue = a[sortField as keyof typeof a];
+        let bValue = b[sortField as keyof typeof b];
+
+        if (typeof aValue === "string") aValue = aValue.toLowerCase();
+        if (typeof bValue === "string") bValue = bValue.toLowerCase();
+
+        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
     }
 
-    return filtered
-  }, [selectedJobs, selectedStatuses, sortField, sortDirection])
+    return filtered;
+  }, [selectedJobs, selectedStatuses, sortField, sortDirection]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortField(field)
-      setSortDirection("asc")
+      setSortField(field);
+      setSortDirection("asc");
     }
-  }
+  };
 
   const handleJobToggle = (job: string) => {
-    setSelectedJobs(prev => 
-      prev.includes(job) 
-        ? prev.filter(j => j !== job)
-        : [...prev, job]
-    )
-  }
+    setSelectedJobs((prev) =>
+      prev.includes(job) ? prev.filter((j) => j !== job) : [...prev, job]
+    );
+  };
 
   const handleStatusToggle = (status: string) => {
-    setSelectedStatuses(prev => 
-      prev.includes(status) 
-        ? prev.filter(s => s !== status)
+    setSelectedStatuses((prev) =>
+      prev.includes(status)
+        ? prev.filter((s) => s !== status)
         : [...prev, status]
-    )
-  }
+    );
+  };
 
   const updateStatus = (id: number, newStatus: string) => {
-    setApplicants(prev => prev.map(applicant => 
-      applicant.id === id ? { ...applicant, status: newStatus } : applicant
-    ))
+    setApplicants((prev) =>
+      prev.map((applicant) =>
+        applicant.id === id ? { ...applicant, status: newStatus } : applicant
+      )
+    );
     // Also update the main data source if needed
-    const applicantIndex = applicantsData.findIndex(a => a.id === id)
+    const applicantIndex = applicantsData.findIndex((a) => a.id === id);
     if (applicantIndex !== -1) {
-      applicantsData[applicantIndex].status = newStatus
+      applicantsData[applicantIndex].status = newStatus;
     }
-  }
+  };
 
-  const openApplicantModal = (applicant: typeof applicantsData[0]) => {
-    setSelectedApplicant(applicant)
-    setIsModalOpen(true)
-  }
+  const openApplicantModal = (applicant: (typeof applicantsData)[0]) => {
+    setSelectedApplicant(applicant);
+    setIsModalOpen(true);
+  };
 
   // Filter components
-  const MultiSelectFilter = ({ 
-    title, 
-    options, 
-    selected, 
-    onToggle, 
-    searchValue, 
+  const MultiSelectFilter = ({
+    title,
+    options,
+    selected,
+    onToggle,
+    searchValue,
     onSearchChange,
-    fieldName 
+    fieldName,
   }: {
-    title: string
-    options: string[]
-    selected: string[]
-    onToggle: (value: string) => void
-    searchValue: string
-    onSearchChange: (value: string) => void
-    fieldName: string
+    title: string;
+    options: string[];
+    selected: string[];
+    onToggle: (value: string) => void;
+    searchValue: string;
+    onSearchChange: (value: string) => void;
+    fieldName: string;
   }) => {
-    const filteredOptions = options.filter(option => 
+    const filteredOptions = options.filter((option) =>
       option.toLowerCase().includes(searchValue.toLowerCase())
-    )
+    );
 
     return (
       <Popover>
@@ -204,7 +323,7 @@ export default function Dashboard() {
                 className="pl-8"
               />
             </div>
-            
+
             <div className="flex items-center gap-2 flex-wrap">
               <Button
                 variant="outline"
@@ -220,11 +339,11 @@ export default function Dashboard() {
                 size="sm"
                 onClick={() => {
                   // Select all filtered options
-                  filteredOptions.forEach(option => {
+                  filteredOptions.forEach((option) => {
                     if (!selected.includes(option)) {
-                      onToggle(option)
+                      onToggle(option);
                     }
-                  })
+                  });
                 }}
                 className="text-xs"
               >
@@ -235,7 +354,7 @@ export default function Dashboard() {
                 size="sm"
                 onClick={() => {
                   // Clear all selections
-                  selected.forEach(option => onToggle(option))
+                  selected.forEach((option) => onToggle(option));
                 }}
                 className="text-xs"
               >
@@ -260,7 +379,7 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
-            
+
             {selected.length > 0 && (
               <div className="text-xs text-gray-500 pt-2 border-t">
                 {selected.length} selected
@@ -269,10 +388,16 @@ export default function Dashboard() {
           </div>
         </PopoverContent>
       </Popover>
-    )
-  }
+    );
+  };
 
-  const SortableFilter = ({ field, title }: { field: string; title: string }) => (
+  const SortableFilter = ({
+    field,
+    title,
+  }: {
+    field: string;
+    title: string;
+  }) => (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="h-auto p-0 font-semibold">
@@ -295,16 +420,19 @@ export default function Dashboard() {
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 
   return (
     <div className="h-screen bg-white flex">
       {/* Sidebar */}
-      <div className="w-64 border-r bg-gray-50 flex flex-col" data-tour="sidebar">
+      <div
+        className="w-64 border-r bg-gray-50 flex flex-col"
+        data-tour="sidebar"
+      >
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
-        
+
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
@@ -312,11 +440,17 @@ export default function Dashboard() {
               <BarChart3 className="h-5 w-5" />
               Dashboard
             </div>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/listings"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
-            <Link href="/forms-automation" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/forms-automation"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileEdit className="h-5 w-5" />
               Forms Automation
             </Link>
@@ -328,7 +462,9 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">Application Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Application Dashboard
+          </h1>
           <div className="flex items-center gap-3">
             <ProfileButton />
           </div>
@@ -341,21 +477,25 @@ export default function Dashboard() {
             <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-blue-600">Total Applications</p>
-                  <p className="text-2xl font-bold text-blue-900">{applicantsData.length}</p>
+                  <p className="text-sm font-medium text-blue-600">
+                    Total Applications
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900">
+                    {applicantsData.length}
+                  </p>
                 </div>
                 <div className="p-3 bg-blue-200 rounded-lg">
                   <User className="h-6 w-6 text-blue-700" />
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-green-600">Hired</p>
                   <p className="text-2xl font-bold text-green-900">
-                    {applicantsData.filter(a => a.status === "Hired").length}
+                    {applicantsData.filter((a) => a.status === "Hired").length}
                   </p>
                 </div>
                 <div className="p-3 bg-green-200 rounded-lg">
@@ -363,13 +503,18 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-yellow-600">Interviewing</p>
+                  <p className="text-sm font-medium text-yellow-600">
+                    Interviewing
+                  </p>
                   <p className="text-2xl font-bold text-yellow-900">
-                    {applicantsData.filter(a => a.status === "Interviewing").length}
+                    {
+                      applicantsData.filter((a) => a.status === "Interviewing")
+                        .length
+                    }
                   </p>
                 </div>
                 <div className="p-3 bg-yellow-200 rounded-lg">
@@ -377,13 +522,15 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-purple-600">New Applications</p>
+                  <p className="text-sm font-medium text-purple-600">
+                    New Applications
+                  </p>
                   <p className="text-2xl font-bold text-purple-900">
-                    {applicantsData.filter(a => a.status === "New").length}
+                    {applicantsData.filter((a) => a.status === "New").length}
                   </p>
                 </div>
                 <div className="p-3 bg-purple-200 rounded-lg">
@@ -398,10 +545,13 @@ export default function Dashboard() {
             {/* Table Header with Filters */}
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Applicants</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Applicants
+                </h3>
                 <div className="flex items-center gap-3">
                   <div className="text-sm text-gray-500">
-                    Showing {filteredAndSortedApplicants.length} of {applicantsData.length} applicants
+                    Showing {filteredAndSortedApplicants.length} of{" "}
+                    {applicantsData.length} applicants
                   </div>
                 </div>
               </div>
@@ -462,34 +612,45 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {filteredAndSortedApplicants.map((applicant, index) => (
-                    <tr 
-                      key={applicant.id} 
+                    <tr
+                      key={applicant.id}
                       className={`border-b border-gray-50 hover:bg-gray-25 transition-colors ${
-                        index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                        index % 2 === 0 ? "bg-white" : "bg-gray-25"
                       }`}
                     >
                       <td className="px-6 py-4 w-[300px]">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {applicant.name.split(' ').map(n => n[0]).join('')}
+                            {applicant.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{applicant.name}</p>
-                            <p className="text-sm text-gray-500">{applicant.school} • {applicant.program}</p>
+                            <p className="font-medium text-gray-900">
+                              {applicant.name}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              {applicant.school} • {applicant.program}
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 w-[250px]">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                          <span className="font-medium text-gray-900">{applicant.job}</span>
+                          <span className="font-medium text-gray-900">
+                            {applicant.job}
+                          </span>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">{applicant.mode}</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {applicant.mode}
+                        </p>
                       </td>
                       <td className="px-6 py-4 w-[120px] text-center">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="w-10 h-10 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
                           onClick={() => openApplicantModal(applicant)}
                         >
@@ -497,9 +658,9 @@ export default function Dashboard() {
                         </Button>
                       </td>
                       <td className="px-6 py-4 w-[120px] text-center">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           className="w-10 h-10 p-0 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
                           onClick={() => setIsCalendarOpen(true)}
                         >
@@ -507,11 +668,17 @@ export default function Dashboard() {
                         </Button>
                       </td>
                       <td className="px-6 py-4 w-[200px]">
-                        <Select 
-                          value={applicant.status} 
-                          onValueChange={(value) => updateStatus(applicant.id, value)}
+                        <Select
+                          value={applicant.status}
+                          onValueChange={(value) =>
+                            updateStatus(applicant.id, value)
+                          }
                         >
-                          <SelectTrigger className={`w-full h-9 ${getStatusColor(applicant.status)} border-0 rounded-full font-medium text-sm`}>
+                          <SelectTrigger
+                            className={`w-full h-9 ${getStatusColor(
+                              applicant.status
+                            )} border-0 rounded-full font-medium text-sm`}
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -548,5 +715,5 @@ export default function Dashboard() {
         applicantName={selectedApplicant?.name}
       />
     </div>
-  )
+  );
 }

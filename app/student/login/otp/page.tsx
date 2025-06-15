@@ -1,141 +1,135 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
-import { useAuthContext } from "@/app/student/authctx"
+import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 export default function OTPPage() {
   const { send_otp_request, verify_otp } = useAuthContext();
-  const [email, setEmail] = useState("")
-  const [otp, setOtp] = useState(["", "", "", "", "", ""])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [resending, setResending] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([])
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [resending, setResending] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    const emailParam = searchParams.get('email')
+    const emailParam = searchParams.get("email");
     if (emailParam) {
       setEmail(emailParam);
 
-      if (typeof window !== 'undefined')
-        send_otp_request(emailParam).then(r => !r.success && setError(r.message ?? ""));
+      if (typeof window !== "undefined")
+        send_otp_request(emailParam).then(
+          (r) => !r.success && setError(r.message ?? "")
+        );
     } else {
       // If no email, redirect back to login
-      router.push('/login')
+      router.push("/login");
     }
-  }, [searchParams, router, send_otp_request])
+  }, [searchParams, router, send_otp_request]);
 
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return // Only allow single digit
-    
+    if (value.length > 1) return; // Only allow single digit
+
     // Clear error when user starts typing
     if (error) {
-      setError("")
+      setError("");
     }
-    
-    const newOtp = [...otp]
-    newOtp[index] = value.replace(/\D/g, '') // Only numbers
-    setOtp(newOtp)
+
+    const newOtp = [...otp];
+    newOtp[index] = value.replace(/\D/g, ""); // Only numbers
+    setOtp(newOtp);
 
     // Auto-focus next input
     if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus()
+      otpRefs.current[index + 1]?.focus();
     }
-  }
+  };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
     // Handle backspace
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus()
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
     }
-  }
+  };
 
   const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const pastedData = e.clipboardData.getData('text')
-    const digits = pastedData.replace(/\D/g, '').slice(0, 6).split('')
-    
-    const newOtp = [...otp]
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    const digits = pastedData.replace(/\D/g, "").slice(0, 6).split("");
+
+    const newOtp = [...otp];
     digits.forEach((digit, index) => {
       if (index < 6) {
-        newOtp[index] = digit
+        newOtp[index] = digit;
       }
-    })
-    setOtp(newOtp)
-    
+    });
+    setOtp(newOtp);
+
     // Focus the next empty input or the last one
-    const nextEmptyIndex = newOtp.findIndex(digit => digit === '')
-    const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex
-    otpRefs.current[focusIndex]?.focus()
-  }
+    const nextEmptyIndex = newOtp.findIndex((digit) => digit === "");
+    const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex;
+    otpRefs.current[focusIndex]?.focus();
+  };
 
   const handleVerifyOTP = async () => {
-    const otpString = otp.join("")
-    
+    const otpString = otp.join("");
+
     if (otpString.length !== 6) {
-      setError("Please enter all 6 digits")
-      return
+      setError("Please enter all 6 digits");
+      return;
     }
 
     try {
-      setLoading(true)
-      setError("")
+      setLoading(true);
+      setError("");
       await verify_otp(email, otpString)
-        .then(r => r?.success ? router.push("/"): setError('Invalid OTP.'))
-        .catch((e) => setError(e.message ?? ""))
-
+        .then((r) => (r?.success ? router.push("/") : setError("Invalid OTP.")))
+        .catch((e) => setError(e.message ?? ""));
     } catch (err: any) {
-      setError(err.message || 'Verification failed. Please try again.')
+      setError(err.message || "Verification failed. Please try again.");
       // Clear the OTP inputs so user can try again
-      setOtp(["", "", "", "", "", ""])
+      setOtp(["", "", "", "", "", ""]);
       // Focus back to first input
-      setTimeout(() => otpRefs.current[0]?.focus(), 100)
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleResendOTP = async () => {
     try {
-      setResending(true)
-      setError("")
-      
-
+      setResending(true);
+      setError("");
     } catch (err: any) {
-      setError(err.message || 'Failed to resend OTP')
+      setError(err.message || "Failed to resend OTP");
     } finally {
-      setResending(false)
+      setResending(false);
     }
-  }
+  };
 
   const handleBackToEmail = () => {
-    router.push('/login')
-  }
+    router.push("/login");
+  };
 
   // Auto-submit when all 6 digits are entered
   useEffect(() => {
-    const otpString = otp.join("")
+    const otpString = otp.join("");
     if (otpString.length === 6 && !loading && !error) {
-      handleVerifyOTP()
+      handleVerifyOTP();
     }
-  }, [otp, loading, error])
+  }, [otp, loading, error]);
 
   if (!email) {
-    return null // Will redirect in useEffect
+    return null; // Will redirect in useEffect
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
-      </div>
-
+    <>
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-md">
@@ -195,7 +189,7 @@ export default function OTPPage() {
           {/* Resend OTP */}
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-2">
-              Didn't receive the code? 
+              Didn't receive the code?
               <button
                 onClick={handleResendOTP}
                 disabled={resending || loading}
@@ -207,6 +201,6 @@ export default function OTPPage() {
           </div>
         </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }
