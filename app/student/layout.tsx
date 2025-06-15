@@ -15,7 +15,9 @@ export default function RootLayout({
   return (
     <AuthContextProvider>
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          {children}
+        </body>
       </html>
     </AuthContextProvider>
   )

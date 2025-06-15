@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Upload } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { ChevronDown, Upload, ExternalLink, Award } from "lucide-react"
 import { useAuthContext } from "../authctx"
 import { useRefs } from "@/lib/db/use-refs"
 import { University } from "@/lib/db/db.types"
@@ -23,6 +24,9 @@ export default function RegisterPage() {
     githubLink: "",
     phoneNumber: "",
     linkedinProfile: "",
+    acceptTerms: false,
+    takingForCredit: false,
+    linkageOfficer: "",
   })
   const { register } = useAuthContext()
   const [email, setEmail] = useState("")
@@ -38,17 +42,22 @@ export default function RegisterPage() {
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get('email')
-    if (!emailParam)
+    if (!emailParam) {
       return router.push('/login')
+    }
+    
     setEmail(emailParam)
 
-    if (!universities.length)
-      return;
+    if (!universities.length) {
+      return
+    }
+    
     const domain = emailParam.split("@")[1]
     const uni = get_university_by_domain(domain)
-    if (!uni)
+    if (!uni) {
       return router.push('/login')
-    setUniversity(uni);
+    }
+    setUniversity(uni)
   }, [searchParams, universities, router])
 
   const handleInputChange = (field: string, value: string) => {
@@ -64,6 +73,16 @@ export default function RegisterPage() {
 
     if (!formData.fullName || !formData.yearLevel || !formData.phoneNumber) {
       setError("Please fill in all required fields")
+      return
+    }
+
+    if (formData.takingForCredit && !formData.linkageOfficer.trim()) {
+      setError("Please provide your linkage officer information")
+      return
+    }
+
+    if (!formData.acceptTerms) {
+      setError("Please accept the Terms & Conditions and Privacy Policy to continue")
       return
     }
 
@@ -91,6 +110,8 @@ export default function RegisterPage() {
       user_form_data.append("portfolio_link", formData.portfolioLink);
       user_form_data.append("github_link", formData.githubLink);
       user_form_data.append("linkedin_link", formData.linkedinProfile);
+      user_form_data.append("taking_for_credit", formData.takingForCredit.toString());
+      user_form_data.append("linkage_officer", formData.linkageOfficer);
       // @ts-ignore
       user_form_data.append("resume", resumeFile);
 
@@ -100,7 +121,11 @@ export default function RegisterPage() {
       // @ts-ignore
       await register(user_form_data)
         .then(r => { 
-          r && r.success ? router.push('/verify') : setError("Ensure that your inputs are correct.");
+          if (r && r.success) {
+            router.push('/verify')
+          } else {
+            setError("Ensure that your inputs are correct.")
+          }
         })
         .catch((e) => { 
           setError(e.message || "Registration failed. Please try again.")
@@ -286,13 +311,103 @@ export default function RegisterPage() {
                 <Upload className="h-4 w-4 text-gray-400" />
               </div>
             </div>
+
+            {/* Taking for Credit */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Academic Credit
+              </label>
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  checked={formData.takingForCredit}
+                  onCheckedChange={(checked) => {
+                    handleInputChange('takingForCredit', checked as boolean)
+                    // Clear linkage officer if unchecked
+                    if (!checked) {
+                      handleInputChange('linkageOfficer', '')
+                    }
+                  }}
+                  className="border-gray-300"
+                />
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm text-gray-700 font-medium">
+                    I am taking this internship for academic credit
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Linkage Officer - Conditional */}
+            {formData.takingForCredit && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Linkage Officer <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="text"
+                  value={formData.linkageOfficer}
+                  onChange={(e) => handleInputChange('linkageOfficer', e.target.value)}
+                  placeholder="Enter your linkage officer's name"
+                  className={
+                    (formData.linkageOfficer === "" ? "border-gray-300" : validFieldClassName) + 
+                    " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                  }
+                  disabled={loading}
+                  required={formData.takingForCredit}
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Please provide the name of your assigned linkage officer from your college.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Terms & Conditions Acceptance */}
+          <div className="mb-8">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="accept-terms"
+                  checked={formData.acceptTerms}
+                  onCheckedChange={(checked) => 
+                    handleInputChange('acceptTerms', checked as boolean)
+                  }
+                  className="mt-1"
+                />
+                <label 
+                  htmlFor="accept-terms" 
+                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+                >
+                  I have read and agree to the{" "}
+                  <a 
+                    href="/TermsConditions.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Terms & Conditions
+                  </a>
+                  {" "}and{" "}
+                  <a 
+                    href="/PrivacyPolicy.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Continue Button */}
           <div className="flex justify-center">
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !formData.acceptTerms}
               className="w-80 h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating Profile..." : "Continue"}
