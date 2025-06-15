@@ -436,7 +436,10 @@ export default function MyListings() {
                         name="type"
                         defaultValue={defaultDropdownValue}
                         value={form_data.type_name}
-                        options={job_types.map((jt) => jt.name)}
+                        options={[
+                          "Not specified",
+                          ...job_types.map((jt) => jt.name),
+                        ]}
                         activeDropdown={activeDropdown}
                         validFieldClassName={""}
                         onChange={(value) => set_field("type_name", value)}
@@ -455,7 +458,10 @@ export default function MyListings() {
                         name="mode"
                         defaultValue={defaultDropdownValue}
                         value={form_data.mode_name}
-                        options={job_modes.map((jm) => jm.name)}
+                        options={[
+                          "Not specified",
+                          ...job_modes.map((jm) => jm.name),
+                        ]}
                         activeDropdown={activeDropdown}
                         validFieldClassName={""}
                         onChange={(value) => set_field("mode_name", value)}
@@ -493,7 +499,10 @@ export default function MyListings() {
                       name="pay_freq"
                       defaultValue={defaultDropdownValue}
                       value={form_data.salary_freq_name}
-                      options={job_pay_freq.map((jpf) => jpf.name)}
+                      options={[
+                        "Not specified",
+                        ...job_pay_freq.map((jpf) => jpf.name),
+                      ]}
                       activeDropdown={activeDropdown}
                       validFieldClassName={""}
                       onChange={(value) => set_field("salary_freq_name", value)}
