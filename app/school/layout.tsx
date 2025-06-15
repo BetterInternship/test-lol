@@ -3,6 +3,7 @@ import { DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import RootProviders from "@/components/school/providers";
+import { AppContextProvider } from "@/lib/ctx-app";
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
@@ -25,17 +26,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen w-full font-sans antialiased",
-          "relative bg-background",
-          dmSans.variable,
-          dmMono.variable,
-        )}
-      >
-        <RootProviders>{children}</RootProviders>
-      </body>
-    </html>
+    <AppContextProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={cn(
+            "min-h-screen w-full font-sans antialiased",
+            "relative bg-background",
+            dmSans.variable,
+            dmMono.variable
+          )}
+        >
+          <RootProviders>{children}</RootProviders>
+        </body>
+      </html>
+    </AppContextProvider>
   );
 }

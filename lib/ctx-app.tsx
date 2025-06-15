@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-04 14:10:41
- * @ Modified time: 2025-06-16 01:24:27
+ * @ Modified time: 2025-06-16 06:11:03
  * @ Description:
  *
  * Centralized app state
@@ -44,5 +44,7 @@ export const AppContextProvider = ({
     return () => window.removeEventListener("resize", check_screen_size);
   }, []);
 
-  return { is_mobile };
+  return (
+    <AppContext.Provider value={{ is_mobile }}>{children}</AppContext.Provider>
+  );
 };

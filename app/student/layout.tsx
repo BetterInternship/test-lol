@@ -3,6 +3,7 @@ import "../globals.css";
 import { AuthContextInitter, AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import Header from "@/components/student/header";
+import { AppContextProvider } from "@/lib/ctx-app";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -20,13 +21,15 @@ export const RootLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <AuthContextProvider>
-      <RefsContextProvider>
-        <AuthContextInitter>
-          <HTMLContent>{children}</HTMLContent>
-        </AuthContextInitter>
-      </RefsContextProvider>
-    </AuthContextProvider>
+    <AppContextProvider>
+      <AuthContextProvider>
+        <RefsContextProvider>
+          <AuthContextInitter>
+            <HTMLContent>{children}</HTMLContent>
+          </AuthContextInitter>
+        </RefsContextProvider>
+      </AuthContextProvider>
+    </AppContextProvider>
   );
 };
 
