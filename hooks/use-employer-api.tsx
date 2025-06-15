@@ -116,7 +116,6 @@ export function useOwnedJobs(
           job.location,
           ...(job.keywords || []),
           ...(job.requirements || []),
-          ...(job.responsibilities || []),
         ]
           .join(" ")
           .toLowerCase();

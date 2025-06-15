@@ -1,14 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
 import {
-  User,
   BarChart3,
   Search,
   FileText,
@@ -16,12 +14,8 @@ import {
   Clock,
   PhilippinePeso,
   Monitor,
-  Building2,
-  UserPlus,
-  LogOut,
   FileEdit,
   Filter,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
@@ -33,105 +27,21 @@ import ReactMarkdown from "react-markdown";
 import { RefDropdown } from "@/components/ui/ref-dropdown";
 import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useModal } from "@/hooks/use-modal";
+import { JobCard } from "@/components/shared/jobs";
+import { formatDate } from "@/lib/utils";
 
 export default function MyListings() {
-  const defaultDropdownValue = "Not specified";
   const { ownedJobs, update_job } = useOwnedJobs();
-  const [updating, setUpdating] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState("");
-  const {
-    ref_loading,
-    get_job_mode,
-    get_job_type,
-    get_job_pay_freq,
-    get_job_mode_by_name,
-    get_job_type_by_name,
-    get_job_pay_freq_by_name,
-    job_types,
-    job_modes,
-    job_pay_freq,
-  } = useRefs();
+  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
+    useRefs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const { form_data, set_field, set_fields, field_setter } = useFormData<{
-    id: string;
-    title: string;
-    location: string;
-    salary: string;
-    salary_freq_name: string;
-    mode_name: string;
-    type_name: string;
-    description: string;
-    requirements: string;
-    require_github: boolean;
-    require_portfolio: boolean;
-  }>();
-
-  const handleEditJob = (job_id: string) => {
-    // Find the job and populate form data
-    const job = ownedJobs.find((j) => j.id === job_id);
-    if (job) {
-      set_fields({
-        ...job,
-        location: job.location ?? "",
-        salary:
-          ((job.salary || job.salary === 0) && job.salary + "") || undefined,
-        salary_freq_name:
-          get_job_pay_freq(job.salary_freq ?? -1)?.name ?? undefined,
-        mode_name: get_job_mode(job.mode ?? -1)?.name ?? undefined,
-        type_name: get_job_type(job.type ?? -1)?.name ?? undefined,
-        requirements: job.requirements ?? "",
-        require_github: job.require_github ?? false,
-        require_portfolio: job.require_portfolio ?? false,
-      });
-      setIsEditModalOpen(true);
-    }
-  };
-
-  const clean_int = (s: string | undefined): number | undefined =>
-    s && s.trim().length ? parseInt(s.trim()) : undefined;
-  const clean_num = (s: string | undefined): number | undefined =>
-    s && s.trim().length ? parseInt(s.trim()) : undefined;
-  const handleSaveEdit = async () => {
-    const job: Partial<Job> = {
-      id: form_data.id,
-      title: form_data.title,
-      description: form_data.description,
-      requirements: form_data.requirements,
-      location: form_data.location,
-      mode: clean_int(`${get_job_mode_by_name(form_data.mode_name)?.id}`),
-      type: clean_int(`${get_job_type_by_name(form_data.type_name)?.id}`),
-      salary: clean_num(form_data.salary),
-      salary_freq: clean_int(
-        `${get_job_pay_freq_by_name(form_data.salary_freq_name)?.id}`
-      ),
-      require_github: form_data.require_github,
-      require_portfolio: form_data.require_portfolio,
-    };
-
-    setUpdating(true);
-    // @ts-ignore
-    const { job: updated_job, success } = await update_job(job.id ?? "", job);
-    if (success) setSelectedJob(updated_job as Job);
-    setUpdating(false);
-    setIsEditModalOpen(false);
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return (
-      date.toLocaleDateString("en-PH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      }) +
-      ", " +
-      String(date.getHours()).padStart(2, "0") +
-      ":" +
-      String(date.getMinutes()).padStart(2, "0")
-    );
-  };
+  const {
+    open: open_edit_modal,
+    close: close_edit_modal,
+    Modal: EditModal,
+  } = useModal("edit-modal");
 
   return (
     <div className="h-screen bg-white flex">
@@ -217,37 +127,12 @@ export default function MyListings() {
                   );
                 })
                 .map((job) => (
-                  <div
+                  <JobCard
                     key={job.id}
-                    onClick={() => setSelectedJob(job)}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                      selectedJob.id === job.id
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <h3 className="font-semibold text-gray-900">{job.title}</h3>
-                    <p className="text-sm text-gray-600">{job.location}</p>
-                    <p className="text-sm text-gray-600">
-                      {job.employer?.name ?? "Not known"}
-                    </p>
-                    <p className="text-sm text-gray-500 mb-3">
-                      Last updated on {formatDate(job.updated_at ?? "")}
-                    </p>
-
-                    <div className="flex gap-2 flex-wrap">
-                      {!ref_loading && !!job.mode && (
-                        <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {get_job_mode(job.mode)?.name ?? ""}
-                        </span>
-                      )}
-                      {!ref_loading && !!job.type && (
-                        <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                          {get_job_type(job.type)?.name ?? ""}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    job={job}
+                    on_click={() => setSelectedJob(job)}
+                    selected={job.id === selectedJob.id}
+                  ></JobCard>
                 ))}
             </div>
           </div>
@@ -266,7 +151,7 @@ export default function MyListings() {
               <div className="flex gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => handleEditJob(selectedJob.id ?? "")}
+                  onClick={() => open_edit_modal()}
                   data-tour="bulk-actions"
                 >
                   Edit
@@ -296,8 +181,7 @@ export default function MyListings() {
                     <p className="text-sm">
                       <span className="font-medium">Mode: </span>
                       <span className="opacity-80">
-                        {get_job_mode(selectedJob.mode ?? -1)?.name ??
-                          "Not specified"}
+                        {to_job_mode_name(selectedJob.mode)}
                       </span>
                     </p>
                   </div>
@@ -310,7 +194,7 @@ export default function MyListings() {
                       <span className="font-medium">Salary: </span>
                       <span className="opacity-80">
                         {selectedJob.salary || "Not specified"}{" "}
-                        {get_job_pay_freq(selectedJob.salary_freq ?? -1)?.name}
+                        {to_job_pay_freq_name(selectedJob.salary_freq)}
                       </span>
                     </p>
                   </div>
@@ -322,8 +206,7 @@ export default function MyListings() {
                     <p className="text-sm">
                       <span className="font-medium">Employment Type: </span>
                       <span className="opacity-80">
-                        {get_job_type(selectedJob.type ?? -1)?.name ??
-                          "Not specified"}
+                        {to_job_type_name(selectedJob.type)}
                       </span>
                     </p>
                   </div>
@@ -351,230 +234,308 @@ export default function MyListings() {
       </div>
 
       {/* Edit Job Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden bg-white rounded-xl border-0 shadow-2xl [&>button]:hidden">
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 bg-white">
-            <div className="flex justify-between items-center">
-              <DialogTitle className="text-2xl font-normal text-gray-600">
-                Editing Job Listing -{" "}
-                <span className="font-bold text-gray-900">
-                  {form_data.title}
-                </span>
-              </DialogTitle>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  disabled={updating}
-                  onClick={handleSaveEdit}
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-                >
-                  {updating ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)] min-h-[60vh]">
-            <div className="grid grid-cols-1">
-              {/* Left Column - Basic Information */}
-              <div className="">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  General Listing Details
-                </h3>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <div>
-                      <Label
-                        htmlFor="edit-job-title"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Listing Title
-                      </Label>
-                      <Input
-                        id="edit-job-title"
-                        value={form_data.title}
-                        onChange={(e) => set_field("title", e.target.value)}
-                        placeholder="Enter job title"
-                        className="mt-1 h-10"
-                      />
-                    </div>
-
-                    <div>
-                      <Label
-                        htmlFor="edit-location"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Location
-                      </Label>
-                      <Input
-                        id="edit-location"
-                        value={form_data.location}
-                        onChange={(e) => set_field("location", e.target.value)}
-                        placeholder="Enter location"
-                        className="mt-1 h-10"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-x-4">
-                    <div>
-                      <Label
-                        htmlFor="edit-job-title"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Type
-                      </Label>
-                      <RefDropdown
-                        name="type"
-                        defaultValue={defaultDropdownValue}
-                        value={form_data.type_name}
-                        options={[
-                          "Not specified",
-                          ...job_types.map((jt) => jt.name),
-                        ]}
-                        activeDropdown={activeDropdown}
-                        validFieldClassName={""}
-                        onChange={(value) => set_field("type_name", value)}
-                        onClick={() => setActiveDropdown("type")}
-                      ></RefDropdown>
-                    </div>
-
-                    <div className="z-[90]">
-                      <Label
-                        htmlFor="edit-location"
-                        className="text-sm font-medium text-gray-700"
-                      >
-                        Mode
-                      </Label>
-                      <RefDropdown
-                        name="mode"
-                        defaultValue={defaultDropdownValue}
-                        value={form_data.mode_name}
-                        options={[
-                          "Not specified",
-                          ...job_modes.map((jm) => jm.name),
-                        ]}
-                        activeDropdown={activeDropdown}
-                        validFieldClassName={""}
-                        onChange={(value) => set_field("mode_name", value)}
-                        onClick={() => setActiveDropdown("mode")}
-                      ></RefDropdown>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-x-4 mt-2">
-                  <div>
-                    <Label
-                      htmlFor="edit-job-title"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Salary
-                    </Label>
-                    <Input
-                      id="edit-salary"
-                      value={form_data.salary}
-                      onChange={(e) => set_field("salary", e.target.value)}
-                      placeholder="Enter salary"
-                      className="mt-1 h-10"
-                    />
-                  </div>
-
-                  <div>
-                    <Label
-                      htmlFor="edit-location"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Frequency
-                    </Label>
-                    <RefDropdown
-                      name="pay_freq"
-                      defaultValue={defaultDropdownValue}
-                      value={form_data.salary_freq_name}
-                      options={[
-                        "Not specified",
-                        ...job_pay_freq.map((jpf) => jpf.name),
-                      ]}
-                      activeDropdown={activeDropdown}
-                      validFieldClassName={""}
-                      onChange={(value) => set_field("salary_freq_name", value)}
-                      onClick={() => setActiveDropdown("pay_freq")}
-                    ></RefDropdown>
-                  </div>
-                </div>
-                <br />
-
-                <div className="grid grid-rows-2 gap-y-4 mt-2 w-1/2 pr-2">
-                  <div className="flex flex-row justify-between border-2 rounded-md">
-                    <Label
-                      htmlFor="edit-job-title"
-                      className="text-sm font-medium text-gray-700 p-2"
-                    >
-                      Require Github?
-                    </Label>
-                    <Checkbox
-                      checked={form_data.require_github}
-                      className="inline-block p-3 m-1"
-                      onCheckedChange={(value) =>
-                        set_field("require_github", value)
-                      }
-                    ></Checkbox>
-                  </div>
-
-                  <div className="flex flex-row justify-between border-2 rounded-md">
-                    <Label
-                      htmlFor="edit-location"
-                      className="text-sm font-medium text-gray-700 p-2"
-                    >
-                      Require Portfolio?
-                    </Label>
-                    <Checkbox
-                      checked={form_data.require_portfolio}
-                      className="inline-block p-3 m-1"
-                      onCheckedChange={(value) =>
-                        set_field("require_portfolio", value)
-                      }
-                    ></Checkbox>
-                  </div>
-                </div>
-                <br />
-
-                <div className="grid grid-cols-2 space-x-4">
-                  <div className="relative z-50 w-full">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 w-full">
-                      Listing Description Editor
-                    </h3>
-                    <MDXEditor
-                      className="[&_span]:relative mb-10"
-                      markdown={form_data.description}
-                      onChange={(value) => set_field("description", value)}
-                    ></MDXEditor>
-                  </div>
-
-                  <div className="relative z-50 w-full">
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 w-full">
-                      Listing Requirements Editor
-                    </h3>
-                    <MDXEditor
-                      className="[&_span]:relative mb-10"
-                      markdown={form_data.requirements}
-                      onChange={(value) => set_field("requirements", value)}
-                    ></MDXEditor>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <EditModal>
+        <EditModalForm
+          job={selectedJob}
+          set_selected_job={setSelectedJob}
+          update_job={update_job}
+          close={() => close_edit_modal()}
+        ></EditModalForm>
+      </EditModal>
     </div>
   );
 }
+
+const EditModalForm = ({
+  job,
+  set_selected_job,
+  update_job,
+  close,
+}: {
+  job: Job;
+  set_selected_job: (job: Job) => void;
+  update_job: (id: string, job: Job) => Promise<any>;
+  close: () => void;
+}) => {
+  const defaultDropdownValue = "Not specified";
+  const [updating, setUpdating] = useState(false);
+  const { form_data, set_field, set_fields } = useFormData<
+    Job & { salary_freq_name: string; mode_name: string; type_name: string }
+  >();
+  const [activeDropdown, setActiveDropdown] = useState("");
+  const {
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+    get_job_mode_by_name,
+    get_job_type_by_name,
+    get_job_pay_freq_by_name,
+    job_types,
+    job_modes,
+    job_pay_freq,
+  } = useRefs();
+
+  useEffect(() => {
+    if (job) {
+      set_fields({
+        ...job,
+        location: job.location ?? "",
+        salary: job.salary,
+        salary_freq_name: to_job_pay_freq_name(job.salary_freq) ?? undefined,
+        mode_name: to_job_mode_name(job.mode) ?? undefined,
+        type_name: to_job_type_name(job.type) ?? undefined,
+        requirements: job.requirements ?? "",
+        require_github: job.require_github ?? false,
+        require_portfolio: job.require_portfolio ?? false,
+      });
+    }
+  }, []);
+
+  const clean_int = (s: string | undefined): number | undefined =>
+    s && s.trim().length ? parseInt(s.trim()) : undefined;
+  const handleSaveEdit = async () => {
+    const job: Partial<Job> = {
+      id: form_data.id,
+      title: form_data.title,
+      description: form_data.description,
+      requirements: form_data.requirements,
+      location: form_data.location,
+      mode: clean_int(`${get_job_mode_by_name(form_data.mode_name)?.id}`),
+      type: clean_int(`${get_job_type_by_name(form_data.type_name)?.id}`),
+      salary: form_data.salary,
+      salary_freq: clean_int(
+        `${get_job_pay_freq_by_name(form_data.salary_freq_name)?.id}`
+      ),
+      require_github: form_data.require_github,
+      require_portfolio: form_data.require_portfolio,
+    };
+
+    setUpdating(true);
+    const { job: updated_job, success } = await update_job(job.id ?? "", job);
+    if (updated_job) set_selected_job(updated_job);
+    setUpdating(false);
+    close();
+  };
+
+  return (
+    <>
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-white">
+        <div className="flex justify-between items-center">
+          <div className="text-2xl font-normal text-gray-600">
+            Editing Job Listing -{" "}
+            <span className="font-bold text-gray-900">{form_data.title}</span>
+          </div>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => close()}
+              className="px-4 py-2 text-sm font-medium"
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={updating}
+              onClick={handleSaveEdit}
+              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+            >
+              {updating ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)] min-h-[60vh]">
+        <div className="grid grid-cols-1">
+          <div className="">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              General Listing Details
+            </h3>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-x-4">
+                <div>
+                  <Label
+                    htmlFor="edit-job-title"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Listing Title
+                  </Label>
+                  <Input
+                    id="edit-job-title"
+                    value={form_data.title}
+                    onChange={(e) => set_field("title", e.target.value)}
+                    placeholder="Enter job title"
+                    className="mt-1 h-10"
+                  />
+                </div>
+
+                <div>
+                  <Label
+                    htmlFor="edit-location"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Location
+                  </Label>
+                  <Input
+                    id="edit-location"
+                    value={form_data.location ?? ""}
+                    onChange={(e) => set_field("location", e.target.value)}
+                    placeholder="Enter location"
+                    className="mt-1 h-10"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-4">
+                <div>
+                  <Label
+                    htmlFor="edit-job-title"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Type
+                  </Label>
+                  <RefDropdown
+                    name="type"
+                    defaultValue={defaultDropdownValue}
+                    value={form_data.type_name}
+                    options={[
+                      "Not specified",
+                      ...job_types.map((jt) => jt.name),
+                    ]}
+                    activeDropdown={activeDropdown}
+                    validFieldClassName={""}
+                    onChange={(value) => set_field("type_name", value)}
+                    onClick={() => setActiveDropdown("type")}
+                  ></RefDropdown>
+                </div>
+
+                <div className="z-[90]">
+                  <Label
+                    htmlFor="edit-location"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Mode
+                  </Label>
+                  <RefDropdown
+                    name="mode"
+                    defaultValue={defaultDropdownValue}
+                    value={form_data.mode_name}
+                    options={[
+                      "Not specified",
+                      ...job_modes.map((jm) => jm.name),
+                    ]}
+                    activeDropdown={activeDropdown}
+                    validFieldClassName={""}
+                    onChange={(value) => set_field("mode_name", value)}
+                    onClick={() => setActiveDropdown("mode")}
+                  ></RefDropdown>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-4 mt-2">
+              <div>
+                <Label
+                  htmlFor="edit-job-title"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Salary
+                </Label>
+                <Input
+                  id="edit-salary"
+                  value={form_data.salary ?? ""}
+                  onChange={(e) => set_field("salary", e.target.value)}
+                  placeholder="Enter salary"
+                  className="mt-1 h-10"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="edit-location"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Frequency
+                </Label>
+                <RefDropdown
+                  name="pay_freq"
+                  defaultValue={defaultDropdownValue}
+                  value={form_data.salary_freq_name}
+                  options={[
+                    "Not specified",
+                    ...job_pay_freq.map((jpf) => jpf.name),
+                  ]}
+                  activeDropdown={activeDropdown}
+                  validFieldClassName={""}
+                  onChange={(value) => set_field("salary_freq_name", value)}
+                  onClick={() => setActiveDropdown("pay_freq")}
+                ></RefDropdown>
+              </div>
+            </div>
+            <br />
+
+            <div className="grid grid-rows-2 gap-y-4 mt-2 w-1/2 pr-2">
+              <div className="flex flex-row justify-between border-2 rounded-md">
+                <Label
+                  htmlFor="edit-job-title"
+                  className="text-sm font-medium text-gray-700 p-2"
+                >
+                  Require Github?
+                </Label>
+                <Checkbox
+                  checked={form_data.require_github ?? false}
+                  className="inline-block p-3 m-1"
+                  onCheckedChange={(value) =>
+                    set_field("require_github", value)
+                  }
+                ></Checkbox>
+              </div>
+
+              <div className="flex flex-row justify-between border-2 rounded-md">
+                <Label
+                  htmlFor="edit-location"
+                  className="text-sm font-medium text-gray-700 p-2"
+                >
+                  Require Portfolio?
+                </Label>
+                <Checkbox
+                  checked={form_data.require_portfolio ?? false}
+                  className="inline-block p-3 m-1"
+                  onCheckedChange={(value) =>
+                    set_field("require_portfolio", value)
+                  }
+                ></Checkbox>
+              </div>
+            </div>
+            <br />
+
+            <div className="grid grid-cols-2 space-x-4">
+              <div className="relative z-50 w-full">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 w-full">
+                  Listing Description Editor
+                </h3>
+                <MDXEditor
+                  className="[&_span]:relative mb-10"
+                  markdown={form_data.description ?? ""}
+                  onChange={(value) => set_field("description", value)}
+                ></MDXEditor>
+              </div>
+
+              <div className="relative z-50 w-full">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 w-full">
+                  Listing Requirements Editor
+                </h3>
+                <MDXEditor
+                  className="[&_span]:relative mb-10"
+                  markdown={form_data.requirements ?? ""}
+                  onChange={(value) => set_field("requirements", value)}
+                ></MDXEditor>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
