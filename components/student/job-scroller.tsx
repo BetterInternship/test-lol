@@ -1,62 +1,60 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import Link from "next/link"
-import { job_service } from "@/lib/api-wrapper"
-import { Job } from "@/lib/db/db.types"
-import { useCache } from "@/hooks/use-cache"
-import { useJobs } from "@/hooks/use-api"
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useJobs } from "@/hooks/use-api";
 
 export default function JobScroller() {
-  const scrollerRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const { jobs, loading } = useJobs();
 
   useEffect(() => {
-    if (!scrollerRef.current || !contentRef.current || jobs.length === 0) return
+    if (!scrollerRef.current || !contentRef.current || jobs.length === 0)
+      return;
 
     // Clone the content to create a seamless loop
-    const content = contentRef.current
-    const clone = content.cloneNode(true) as HTMLDivElement
-    scrollerRef.current.appendChild(clone)
+    const content = contentRef.current;
+    const clone = content.cloneNode(true) as HTMLDivElement;
+    scrollerRef.current.appendChild(clone);
 
     // Calculate animation duration based on content width
     const calculateDuration = () => {
-      if (!contentRef.current || !scrollerRef.current) return
-      const contentWidth = contentRef.current.offsetWidth
-      const duration = Math.max(contentWidth / 200, 5) // Faster speed and minimum 5s duration
-      scrollerRef.current.style.animationDuration = `${duration}s`
-      console.log('Animation duration set to:', duration, 'seconds')
-    }
+      if (!contentRef.current || !scrollerRef.current) return;
+      const contentWidth = contentRef.current.offsetWidth;
+      const duration = Math.max(contentWidth / 200, 5); // Faster speed and minimum 5s duration
+      scrollerRef.current.style.animationDuration = `${duration}s`;
+      console.log("Animation duration set to:", duration, "seconds");
+    };
 
     // Set initial duration
-    setTimeout(calculateDuration, 100)
-    window.addEventListener("resize", calculateDuration)
+    setTimeout(calculateDuration, 100);
+    window.addEventListener("resize", calculateDuration);
 
     // Pause animation on hover
     const handleMouseEnter = () => {
       if (scrollerRef.current) {
-        scrollerRef.current.style.animationPlayState = "paused"
+        scrollerRef.current.style.animationPlayState = "paused";
       }
-    }
+    };
 
     const handleMouseLeave = () => {
       if (scrollerRef.current) {
-        scrollerRef.current.style.animationPlayState = "running"
+        scrollerRef.current.style.animationPlayState = "running";
       }
-    }
+    };
 
-    scrollerRef.current.addEventListener("mouseenter", handleMouseEnter)
-    scrollerRef.current.addEventListener("mouseleave", handleMouseLeave)
+    scrollerRef.current.addEventListener("mouseenter", handleMouseEnter);
+    scrollerRef.current.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      window.removeEventListener("resize", calculateDuration)
+      window.removeEventListener("resize", calculateDuration);
       if (scrollerRef.current) {
-        scrollerRef.current.removeEventListener("mouseenter", handleMouseEnter)
-        scrollerRef.current.removeEventListener("mouseleave", handleMouseLeave)
+        scrollerRef.current.removeEventListener("mouseenter", handleMouseEnter);
+        scrollerRef.current.removeEventListener("mouseleave", handleMouseLeave);
       }
-    }
-  }, [jobs])
+    };
+  }, [jobs]);
 
   if (loading) {
     return (
@@ -72,7 +70,7 @@ export default function JobScroller() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   if (jobs.length === 0) {
@@ -84,13 +82,22 @@ export default function JobScroller() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Generate job listing titles for the scroller
-  const jobListings = jobs.map(job => 
-    `${job.title}${job.type === 'Internship' ? ' Internship' : job.type === 'Full-time' ? ' (Full-time)' : job.type === 'Part-time' ? ' (Part-time)' : ''}`
-  )
+  const jobListings = jobs.map(
+    (job) =>
+      `${job.title}${
+        job.type === "Internship"
+          ? " Internship"
+          : job.type === "Full-time"
+          ? " (Full-time)"
+          : job.type === "Part-time"
+          ? " (Part-time)"
+          : ""
+      }`
+  );
 
   return (
     <div className="overflow-hidden rounded-lg">
@@ -102,12 +109,12 @@ export default function JobScroller() {
           animationTimingFunction: "linear",
           animationIterationCount: "infinite",
           animationDuration: "10s", // Faster default duration
-          animationPlayState: "running"
+          animationPlayState: "running",
         }}
       >
         <div ref={contentRef} className="flex gap-3 py-3">
           {jobListings.map((jobListing, index) => {
-            const job = jobs[index]
+            const job = jobs[index];
             return (
               <Link
                 key={index}
@@ -117,11 +124,11 @@ export default function JobScroller() {
               >
                 {jobListing}
               </Link>
-            )
+            );
           })}
         </div>
       </div>
-      
+
       <style jsx>{`
         @keyframes scroll {
           0% {
@@ -139,5 +146,5 @@ export default function JobScroller() {
         }
       `}</style>
     </div>
-  )
+  );
 }

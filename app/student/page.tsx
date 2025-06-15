@@ -1,28 +1,30 @@
-"use client"
+"use client";
 
-import { useRef, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import type React from "react"
+import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import type React from "react";
+import { Search, ChevronDown, X } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import JobScroller from "@/components/student/job-scroller";
+import ProfileButton from "@/components/student/profile-button";
 import {
-  Search,
-  ChevronDown,
-  X,
-} from "lucide-react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import JobScroller from "@/components/student/job-scroller"
-import ProfileButton from "@/components/student/profile-button"
+  DropdownGroup,
+  GroupableRadioDropdown,
+} from "@/components/student/dropdown";
+import { useFilter } from "@/lib/filter";
 
 export default function HomePage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [jobTypeFilter, setJobTypeFilter] = useState("All types")
-  const [locationFilter, setLocationFilter] = useState("Any location")
-  const [categoryFilter, setCategoryFilter] = useState("All categories")
-  const [showCategoryModal, setShowCategoryModal] = useState(false)
-  const [activeFilter, setActiveFilter] = useState("");
-  const [isMobile, setIsMobile] = useState(false)
-  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("");
+  const { filters, set_filter, filter_setter } = useFilter<{
+    job_type: string;
+    location: string;
+    category: string;
+  }>();
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
   const justBetterRef = useRef<HTMLSpanElement>(null);
 
   // Check if screen width is <= 1024px
@@ -35,84 +37,99 @@ export default function HomePage() {
     checkScreenSize();
 
     // Add resize listener
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
-  // Close filter dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setActiveFilter("");
-    };
-
-    if (activeFilter) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [activeFilter]);
-
   const handleSearch = () => {
-    const params = new URLSearchParams()
+    const params = new URLSearchParams();
+    const { job_type, location, category } = filters;
+
     if (searchTerm.trim()) {
-      params.set('q', searchTerm)
+      params.set("q", searchTerm);
     }
-    if (jobTypeFilter !== "All types") {
-      params.set('jobType', jobTypeFilter)
+    if (job_type !== "All types") {
+      params.set("jobType", job_type);
     }
-    if (locationFilter !== "Any location") {
-      params.set('location', locationFilter)
+    if (location !== "Any location") {
+      params.set("location", location);
     }
-    if (categoryFilter !== "All categories") {
-      params.set('category', categoryFilter)
+    if (category !== "All categories") {
+      params.set("category", category);
     }
-    router.push(`/search?${params.toString()}`)
-  }
+    router.push(`/search?${params.toString()}`);
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSearch()
+      handleSearch();
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-hidden">
       <div className="flex flex-col min-h-screen">
         {/* Top bar with logo and Profile button */}
-        <div className={`flex justify-between items-center ${isMobile ? 'px-6 py-4' : 'p-4'} bg-white/80 backdrop-blur-md border-b border-gray-100`}>
+        <div
+          className={`flex justify-between items-center ${
+            isMobile ? "px-6 py-4" : "p-4"
+          } bg-white/80 backdrop-blur-md border-b border-gray-100`}
+        >
           <Link href="/" className="block">
-            <h1 className={`font-bold text-gray-900 ${isMobile ? 'text-lg' : 'text-xl'}`}>BetterInternship</h1>
+            <h1
+              className={`font-bold text-gray-900 ${
+                isMobile ? "text-lg" : "text-xl"
+              }`}
+            >
+              BetterInternship
+            </h1>
           </Link>
           <ProfileButton />
         </div>
-          
-        <div className={`flex-1 flex flex-col justify-center items-center ${isMobile ? 'px-6 py-8 pb-32' : 'px-6 lg:px-12 py-8'}`}>
+
+        <div
+          className={`flex-1 flex flex-col justify-center items-center ${
+            isMobile ? "px-6 py-8 pb-32" : "px-6 lg:px-12 py-8"
+          }`}
+        >
           {/* Hero Text */}
           <div className="text-center mb-8">
-            <h1 className={`font-bold text-gray-900 leading-tight mb-3 ${isMobile ? 'text-4xl tracking-tight' : 'text-3xl sm:text-4xl lg:text-6xl'}`}>
+            <h1
+              className={`font-bold text-gray-900 leading-tight mb-3 ${
+                isMobile
+                  ? "text-4xl tracking-tight"
+                  : "text-3xl sm:text-4xl lg:text-6xl"
+              }`}
+            >
               Better Internships Start Here.
             </h1>
             {!isMobile && (
-              <div onMouseOver={() => {
-                console.log(justBetterRef.current?.style.scale)
-                if (justBetterRef.current) {
-                  justBetterRef.current.style.transform = 'scale(1, 1)';
-                  justBetterRef.current.style.width = '100px';
-                }
-              }} onMouseLeave={() => {
-                if (justBetterRef.current) {
-                  justBetterRef.current.style.transform = 'scale(0, 1)';
-                  justBetterRef.current.style.width = '0px';
-                }
-              }}>
+              <div
+                onMouseOver={() => {
+                  console.log(justBetterRef.current?.style.scale);
+                  if (justBetterRef.current) {
+                    justBetterRef.current.style.transform = "scale(1, 1)";
+                    justBetterRef.current.style.width = "100px";
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (justBetterRef.current) {
+                    justBetterRef.current.style.transform = "scale(0, 1)";
+                    justBetterRef.current.style.width = "0px";
+                  }
+                }}
+              >
                 <div className="group flex flex-row justify-center">
                   <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
-                    By DLSU students, for DLSU students. Not official. 
+                    By DLSU students, for DLSU students. Not official.
                   </div>
                   <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 overflow-hidden ">
                     <span className="invisible m-0">Just Better...</span>
-                    <div className="absolute top-0 left-0 text-base sm:text-lg lg:text-xl h-full w-full flex items-center justify-center opacity-0
+                    <div
+                      className="absolute top-0 left-0 text-base sm:text-lg lg:text-xl h-full w-full flex items-center justify-center opacity-0
                                     transform -translate-x-full transition-all duration-300 ease-in-out
-                                    group-hover:translate-x-0 group-hover:opacity-100">
+                                    group-hover:translate-x-0 group-hover:opacity-100"
+                    >
                       Just Better.
                     </div>
                   </div>
@@ -143,56 +160,67 @@ export default function HomePage() {
                     className="pl-12 pr-4 w-full h-14 bg-white border-0 rounded-2xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base font-medium focus:ring-2 focus:ring-blue-500 focus:shadow-lg transition-all duration-200"
                   />
                 </div>
-                
+
                 {/* Filter Row */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="relative">
-                    <FilterDropdown
-                      name="jobType"
-                      options={["Internships", "Full-time", "Part-time", "All types"]}
-                      value={jobTypeFilter}
-                      activeFilter={activeFilter}
-                      onChange={setJobTypeFilter}
-                      onClick={() => { setActiveFilter("jobType") }}
-                    />
+                <DropdownGroup>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <GroupableRadioDropdown
+                        name="jobType"
+                        options={[
+                          "Internships",
+                          "Full-time",
+                          "Part-time",
+                          "All types",
+                        ]}
+                        on_change={filter_setter("job_type")}
+                      />
+                    </div>
+                    <div className="relative">
+                      <GroupableRadioDropdown
+                        name="location"
+                        options={[
+                          "Face to Face",
+                          "Remote",
+                          "Hybrid",
+                          "Any location",
+                        ]}
+                        on_change={filter_setter("location")}
+                      />
+                    </div>
                   </div>
+
+                  {/* Category Filter Row */}
                   <div className="relative">
-                    <FilterDropdown
-                      name="location"
-                      options={["Face to Face", "Remote", "Hybrid", "Any location"]}
-                      value={locationFilter}
-                      activeFilter={activeFilter}
-                      onChange={setLocationFilter}
-                      onClick={() => { setActiveFilter("location") }}
-                    />
+                    {isMobile ? (
+                      <Button
+                        onClick={() => setShowCategoryModal(true)}
+                        className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      >
+                        <span className="truncate">{filters.category}</span>
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      </Button>
+                    ) : (
+                      <GroupableRadioDropdown
+                        name="category"
+                        options={[
+                          "Tech",
+                          "Non-Tech",
+                          "Engineering",
+                          "Research",
+                          "Education",
+                          "Others",
+                          "All categories",
+                        ]}
+                        on_change={filter_setter("category")}
+                      />
+                    )}
                   </div>
-                </div>
-                
-                {/* Category Filter Row */}
-                <div className="relative">
-                  {isMobile ? (
-                    <Button
-                      onClick={() => setShowCategoryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
-                    >
-                      <span className="truncate">{categoryFilter}</span>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    </Button>
-                  ) : (
-                    <FilterDropdown
-                      name="category"
-                      options={["Tech", "Non-Tech", "Engineering", "Research", "Education", "Others", "All categories"]}
-                      value={categoryFilter}
-                      activeFilter={activeFilter}
-                      onChange={setCategoryFilter}
-                      onClick={() => { setActiveFilter("category") }}
-                    />
-                  )}
-                </div>
-                
+                </DropdownGroup>
+
                 {/* Search Button */}
-                <Button 
-                  onClick={handleSearch} 
+                <Button
+                  onClick={handleSearch}
                   className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Find Jobs
@@ -215,48 +243,59 @@ export default function HomePage() {
                         className="w-full py-3 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                       />
                     </div>
-                    
+
                     {/* Filter Dropdowns with Dividers */}
                     <div className="flex items-center">
                       <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-24">
-                        <FilterDropdown
-                          name="jobType"
-                          options={["All types", "Internships", "Full-time", "Part-time"]}
-                          value={jobTypeFilter}
-                          activeFilter={activeFilter}
-                          onChange={setJobTypeFilter}
-                          onClick={() => { setActiveFilter("jobType") }}
-                        />
-                      </div>
-                      <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-28">
-                        <FilterDropdown
-                          name="location"
-                          options={["Any location", "Face to Face", "Remote", "Hybrid"]}
-                          value={locationFilter}
-                          activeFilter={activeFilter}
-                          onChange={setLocationFilter}
-                          onClick={() => { setActiveFilter("location") }}
-                        />
-                      </div>
-                      <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-32">
-                        <FilterDropdown
-                          name="category"
-                          options={["All categories", "Tech", "Non-Tech", "Engineering", "Research", "Education", "Others"]}
-                          value={categoryFilter}
-                          activeFilter={activeFilter}
-                          onChange={setCategoryFilter}
-                          onClick={() => { setActiveFilter("category") }}
-                        />
-                      </div>
+                      <DropdownGroup>
+                        <div className="w-24">
+                          <GroupableRadioDropdown
+                            name="jobType"
+                            options={[
+                              "All types",
+                              "Internships",
+                              "Full-time",
+                              "Part-time",
+                            ]}
+                            on_change={filter_setter("job_type")}
+                          />
+                        </div>
+                        <div className="h-8 w-px bg-gray-300 mx-1" />
+                        <div className="w-28">
+                          <GroupableRadioDropdown
+                            name="location"
+                            options={[
+                              "Any location",
+                              "Face to Face",
+                              "Remote",
+                              "Hybrid",
+                            ]}
+                            on_change={filter_setter("location")}
+                          />
+                        </div>
+                        <div className="h-8 w-px bg-gray-300 mx-1" />
+                        <div className="w-32">
+                          <GroupableRadioDropdown
+                            name="category"
+                            options={[
+                              "All categories",
+                              "Tech",
+                              "Non-Tech",
+                              "Engineering",
+                              "Research",
+                              "Education",
+                              "Others",
+                            ]}
+                            on_change={filter_setter("category")}
+                          />
+                        </div>
+                      </DropdownGroup>
                     </div>
-                    
+
                     {/* Search Button */}
                     <div className="pl-4 pr-2">
-                      <Button 
-                        onClick={handleSearch} 
+                      <Button
+                        onClick={handleSearch}
                         className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 whitespace-nowrap text-base shadow-none border-0"
                       >
                         Find jobs
@@ -280,7 +319,10 @@ export default function HomePage() {
         {!isMobile && (
           <div className="p-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
             Are you an Employer? Send us an Email:{" "}
-            <a href="mailto:hello@betterinternship.com" className="text-blue-600 hover:underline">
+            <a
+              href="mailto:hello@betterinternship.com"
+              className="text-blue-600 hover:underline"
+            >
               hello@betterinternship.com
             </a>
           </div>
@@ -292,7 +334,9 @@ export default function HomePage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-base font-semibold text-gray-900">Job Categories</h3>
+              <h3 className="text-base font-semibold text-gray-900">
+                Job Categories
+              </h3>
               <button
                 onClick={() => setShowCategoryModal(false)}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
@@ -301,17 +345,25 @@ export default function HomePage() {
               </button>
             </div>
             <div className="space-y-2">
-              {["All categories", "Tech", "Non-Tech", "Engineering", "Research", "Education", "Others"].map((option) => (
+              {[
+                "All categories",
+                "Tech",
+                "Non-Tech",
+                "Engineering",
+                "Research",
+                "Education",
+                "Others",
+              ].map((option) => (
                 <button
                   key={option}
                   onClick={() => {
-                    setCategoryFilter(option)
-                    setShowCategoryModal(false)
+                    set_filter("category", option);
+                    setShowCategoryModal(false);
                   }}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                    categoryFilter === option 
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200' 
-                      : 'hover:bg-gray-50 text-gray-700'
+                    filters.category === option
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "hover:bg-gray-50 text-gray-700"
                   }`}
                 >
                   {option}
@@ -322,63 +374,5 @@ export default function HomePage() {
         </div>
       )}
     </div>
-  )
+  );
 }
-
-function FilterDropdown({ name, options, value, onChange, activeFilter, onClick }: { name: string; options: string[]; value: string; onChange: (value: string) => void, activeFilter: string, onClick: () => void }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    if (name != activeFilter)
-      setIsOpen(false);
-  }, [name, activeFilter])
-
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth <= 1024);
-    };
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
-  
-  return (
-    <div className="relative">
-      <Button
-        variant="ghost" 
-        onClick={() => (setIsOpen(!isOpen), onClick())}
-        className={`${isMobile 
-          ? 'h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700' 
-          : 'h-auto py-2 px-2 flex items-center gap-1 justify-between bg-transparent border-0 hover:bg-transparent transition-all duration-200 font-normal text-gray-700 text-sm w-full'
-        }`}
-      >
-        <span className={`${isMobile ? 'text-sm' : 'text-sm'} whitespace-nowrap truncate`}>{value}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 text-gray-400 ml-1 ${isOpen ? 'rotate-180' : ''}`} />
-      </Button>
-      
-      {isOpen && (
-        <div className={`absolute top-full mt-2 bg-white rounded-2xl shadow-xl z-50 min-w-[200px] overflow-hidden border border-gray-100`}>
-          {options.map((option, index) => (
-            <button
-              key={option}
-              onClick={() => {
-                onChange(option)
-                setIsOpen(false)
-              }}
-              className={`w-full text-left px-4 ${isMobile ? 'py-3 text-sm font-medium' : 'py-2 text-sm'} hover:bg-gray-50 transition-colors duration-150 ${
-                index === 0 ? '' : ''
-              } ${
-                index === options.length - 1 ? '' : ''
-              } text-gray-700 whitespace-nowrap ${value === option ? 'bg-gray-50 text-gray-900 font-medium' : ''}`}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-

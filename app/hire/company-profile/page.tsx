@@ -27,13 +27,9 @@ import {
   FileEdit
 } from "lucide-react"
 import Link from "next/link"
-import { usePageTour } from "@/components/PageTourWrapper"
 
 export default function CompanyProfile() {
   const router = useRouter()
-  
-  // Tour integration
-  const { TourButton, ProductTour } = usePageTour('company-profile')
   
   const [companyData, setCompanyData] = useState({
     name: "Google",
@@ -122,7 +118,6 @@ export default function CompanyProfile() {
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">Company Profile</h1>
           <div className="flex items-center gap-3">
-            <TourButton />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -323,9 +318,6 @@ export default function CompanyProfile() {
           </div>
         </div>
       </div>
-
-      {/* Product Tour */}
-      <ProductTour />
     </div>
   )
 }
