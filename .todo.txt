@@ -1,15 +1,13 @@
 Make all api responses extend a common response object with "success" and "message" fields
-Make sure that no matter where you go, loggedin() is called FIRST (try landing on a private page randomly instead of navigating the site EVEN IF you're session is still valid)
 Add githubRequired, portfolioRequired, and resumeRequired fields to job listing
 Make sure default "pending" status is replaced for job applications on clien side ui
-Remove all data-tour attributes
 Remove mock (it's clutering the codebase)
-Make sure isMobile is under app-wide context
 Create a ref table for categories and industries!
 Factor out all the CSS anims and create group classes for each component!
 Fix filtering and place the "Internships, Full-time", etc. as part of the useJobs hook
 USE keyof !!!!
 
+render out markdown in student side
 Make sure login/reg/otp pages are inaccessible when logged in
 
 

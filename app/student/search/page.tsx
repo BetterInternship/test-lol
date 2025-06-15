@@ -3,21 +3,16 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Search,
   MapPin,
   PhilippinePeso,
-  Briefcase,
-  X,
   Building,
   Calendar,
   Heart,
   CheckCircle,
   Clipboard,
-  Wifi,
-  Globe,
-  Users2,
   AlertTriangle,
   User,
   Filter,
@@ -35,18 +30,19 @@ import { useAuthContext } from "../../../lib/ctx-auth";
 import { Application, Job } from "@/lib/db/db.types";
 import Markdown from "react-markdown";
 import { Paginator } from "@/components/ui/paginator";
-import { useRefs, RefsAPI } from "@/lib/db/use-refs";
+import { useRefs } from "@/lib/db/use-refs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
+import { useModal } from "@/hooks/use-modal";
+import { JobModeIcon } from "@/components/ui/icons";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const refs = useRefs();
   const { is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,17 +52,29 @@ export default function SearchPage() {
     industry: string;
     category: string;
   }>();
-  const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [showJobModal, setShowJobModal] = useState(false);
+  const {
+    open: open_application_modal,
+    close: close_application_modal,
+    Modal: ApplicationModal,
+  } = useModal("application-modal");
+  const {
+    open: open_success_modal,
+    close: close_success_modal,
+    Modal: SuccessModal,
+  } = useModal("success-modal");
+  const {
+    open: open_filter_modal,
+    close: close_filter_modal,
+    Modal: FilterModal,
+  } = useModal("filter-modal");
+  const {
+    open: open_job_modal,
+    close: close_job_modal,
+    Modal: JobModal,
+  } = useModal("job-modal");
   const { is_mobile } = useAppContext();
-  const [lastApplication, setLastApplication] = useState<Partial<Application>>(
-    {}
-  );
-  const [autoCloseProgress, setAutoCloseProgress] = useState(100);
   const { profile } = useProfile();
-  const { get_college, get_level } = useRefs();
+  const { ref_is_not_null } = useRefs();
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -74,8 +82,8 @@ export default function SearchPage() {
     return !!(
       profile.full_name &&
       profile.phone_number &&
-      get_college(profile.college)?.name &&
-      get_level(profile.year_level)?.name
+      ref_is_not_null(profile.college) &&
+      ref_is_not_null(profile.year_level)
     );
   };
 
@@ -88,10 +96,6 @@ export default function SearchPage() {
   const getMissingJobRequirements = () => {
     if (!selectedJob || !profile) return [];
     return [];
-  };
-
-  const isFullyReadyToApply = () => {
-    return isProfileComplete() && areJobRequirementsMet();
   };
 
   // API hooks
@@ -117,7 +121,7 @@ export default function SearchPage() {
   }, [jobs_page, jobs_loading]);
 
   const { is_saved, saving, save_job } = useSavedJobs();
-  const { applications, appliedJob, apply } = useApplications();
+  const { appliedJob, apply } = useApplications();
   const getApplicationStatus = (jobId: string) => appliedJob(jobId);
 
   useEffect(() => {
@@ -154,13 +158,6 @@ export default function SearchPage() {
     }
   }, [jobs, selectedJob]);
 
-  // Reset progress when modal closes
-  useEffect(() => {
-    if (!showSuccessModal) {
-      setAutoCloseProgress(100);
-    }
-  }, [showSuccessModal]);
-
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
       window.location.href = "/login";
@@ -196,7 +193,7 @@ export default function SearchPage() {
 
     // Check if job requirements are met
     if (!areJobRequirementsMet()) {
-      setShowApplicationModal(true);
+      open_application_modal();
       return;
     }
 
@@ -208,27 +205,11 @@ export default function SearchPage() {
     if (!selectedJob) return;
 
     try {
-      const application = await apply(selectedJob.id ?? "", {
+      await apply(selectedJob.id ?? "", {
         github_link: profile?.github_link || undefined,
         portfolio_link: profile?.portfolio_link || undefined,
       });
-
-      // Store application details and show success modal
-      setLastApplication(application.application || {});
-      setShowSuccessModal(true);
-      setAutoCloseProgress(100);
-
-      // Progress countdown animation
-      const interval = setInterval(() => {
-        setAutoCloseProgress((prev) => {
-          if (prev <= 0) {
-            clearInterval(interval);
-            setShowSuccessModal(false);
-            return 0;
-          }
-          return prev - 2; // Decrease by 2% every 100ms (5 seconds total)
-        });
-      }, 100);
+      open_success_modal();
     } catch (error) {
       console.error("Failed to submit application:", error);
       alert("Failed to submit application. Please try again.");
@@ -249,9 +230,7 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
-    if (is_mobile) {
-      setShowJobModal(true);
-    }
+    if (is_mobile) open_job_modal();
   };
 
   if (jobs_error) {
@@ -296,7 +275,7 @@ export default function SearchPage() {
                     />
                   </div>
                   <Button
-                    onClick={() => setShowFilterModal(true)}
+                    onClick={() => open_filter_modal()}
                     className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
                     size="icon"
                   >
@@ -313,7 +292,6 @@ export default function SearchPage() {
                     key={job.id}
                     job={job}
                     onClick={() => handleJobCardClick(job)}
-                    refs={refs}
                   />
                 ))}
               </div>
@@ -351,7 +329,7 @@ export default function SearchPage() {
                       />
                     </div>
                     <Button
-                      onClick={() => setShowFilterModal(true)}
+                      onClick={() => open_filter_modal()}
                       className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
                       size="icon"
                     >
@@ -369,7 +347,6 @@ export default function SearchPage() {
                       job={job}
                       isSelected={selectedJob?.id === job.id}
                       onClick={() => handleJobCardClick(job)}
-                      refs={refs}
                     />
                   ))}
                 </div>
@@ -397,7 +374,6 @@ export default function SearchPage() {
                   onSave={handleSave}
                   isSaved={is_saved(selectedJob.id ?? "")}
                   applicationStatus={getApplicationStatus(selectedJob.id ?? "")}
-                  refs={refs}
                 />
               )}
             </div>
@@ -406,390 +382,220 @@ export default function SearchPage() {
       </div>
 
       {/* Mobile Job Details Modal */}
-      <AnimatePresence>
-        {showJobModal && selectedJob && is_mobile && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              className="bg-white rounded-t-2xl w-full h-[90vh] shadow-2xl overflow-hidden flex flex-col"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              {/* Modal Header */}
-              <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
-                <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowJobModal(false)}
-                  className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </Button>
-              </div>
-
-              {/* Modal Content - Job Details */}
-              <div className="flex-1 overflow-y-auto">
-                <JobDetails
-                  job={selectedJob}
-                  saving={saving}
-                  onApply={handleApply}
-                  onSave={handleSave}
-                  isSaved={is_saved(selectedJob.id ?? "")}
-                  applicationStatus={getApplicationStatus(selectedJob.id ?? "")}
-                  refs={refs}
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <JobModal>
+        <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
+          <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <JobDetails
+            job={selectedJob ?? {}}
+            saving={saving}
+            onApply={handleApply}
+            onSave={handleSave}
+            isSaved={is_saved(selectedJob?.id ?? "")}
+            applicationStatus={getApplicationStatus(selectedJob?.id ?? "")}
+          />
+        </div>
+      </JobModal>
 
       {/* Application Modal - Only for Missing Job Requirements */}
-      <AnimatePresence>
-        {showApplicationModal && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              className="bg-white rounded-lg w-11/12 max-w-md p-6"
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">
-                  Apply to {selectedJob?.title}
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowApplicationModal(false)}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
+      <ApplicationModal>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold">Apply to {selectedJob?.title}</h2>
+        </div>
 
-              {/* Missing Job Requirements Warning */}
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <h3 className="font-medium text-orange-800 mb-2">
-                      Missing Job Requirements
-                    </h3>
-                    <p className="text-sm text-orange-700 mb-3">
-                      This job requires additional profile information:
-                    </p>
-                    <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
-                      {getMissingJobRequirements().map((field, index) => (
-                        <li key={index}>{field}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
+        {/* Missing Job Requirements Warning */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="font-medium text-orange-800 mb-2">
+                Missing Job Requirements
+              </h3>
+              <p className="text-sm text-orange-700 mb-3">
+                This job requires additional profile information:
+              </p>
+              <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
+                {getMissingJobRequirements().map((field, index) => (
+                  <li key={index}>{field}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
 
-              {/* Update Profile Button */}
-              <Button
-                onClick={() => {
-                  setShowApplicationModal(false);
-                  router.push("/profile");
-                }}
-                className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Update Profile
-              </Button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Update Profile Button */}
+        <Button
+          onClick={() => {
+            close_application_modal();
+            router.push("/profile");
+          }}
+          className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
+        >
+          <User className="w-4 h-4 mr-2" />
+          Update Profile
+        </Button>
+      </ApplicationModal>
 
       {/* Success Modal */}
-      <AnimatePresence>
-        {showSuccessModal && (
+      <SuccessModal>
+        {/* Header with close button */}
+        <div className="flex justify-between items-center p-6 pb-0"></div>
+
+        {/* Content */}
+        <div className="px-6 pb-8 text-center">
+          {/* Success Animation */}
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            className="mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
             <motion.div
-              className="bg-white rounded-2xl w-11/12 max-w-md mx-4 shadow-2xl overflow-hidden"
-              initial={{ scale: 0.5, opacity: 0, y: 50 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.5, opacity: 0, y: 50 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
+              className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{
+                delay: 0.3,
+                duration: 0.6,
+                type: "spring",
+                bounce: 0.5,
+              }}
             >
-              {/* Header with close button */}
-              <div className="flex justify-between items-center p-6 pb-0">
-                <div></div>
-                <motion.button
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  onClick={() => setShowSuccessModal(false)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <X className="h-5 w-5 text-gray-400" />
-                </motion.button>
-              </div>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8, duration: 0.3 }}
+              >
+                <CheckCircle className="w-10 h-10 text-green-600" />
+              </motion.div>
+            </motion.div>
 
-              {/* Content */}
-              <div className="px-6 pb-8 text-center">
-                {/* Success Animation */}
-                <motion.div
-                  className="mb-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                >
-                  <motion.div
-                    className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center"
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{
-                      delay: 0.3,
-                      duration: 0.6,
-                      type: "spring",
-                      bounce: 0.5,
-                    }}
-                  >
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.8, duration: 0.3 }}
-                    >
-                      <CheckCircle className="w-10 h-10 text-green-600" />
-                    </motion.div>
-                  </motion.div>
+            <motion.h2
+              className="text-2xl font-bold text-gray-800 mb-2"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
+              Application Sent!
+            </motion.h2>
 
-                  <motion.h2
-                    className="text-2xl font-bold text-gray-800 mb-2"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.4 }}
-                  >
-                    Application Sent!
-                  </motion.h2>
+            <motion.p
+              className="text-gray-600 mb-6 leading-relaxed"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+            >
+              Your application for{" "}
+              <span className="font-semibold max-w-prose text-gray-800">
+                {selectedJob?.title}
+              </span>{" "}
+              has been successfully submitted.
+            </motion.p>
 
-                  <motion.p
-                    className="text-gray-600 mb-6 leading-relaxed"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.4 }}
-                  >
-                    Your application for{" "}
-                    <span className="font-semibold text-gray-800">
-                      {selectedJob?.title}
-                    </span>{" "}
-                    has been successfully submitted.
-                  </motion.p>
-
-                  <motion.div
-                    className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.4 }}
-                  >
-                    <p className="text-sm text-blue-800">
-                      💼 Check{" "}
-                      <span className="font-semibold">My Applications</span> to
-                      keep track of all your submissions and updates.
-                    </p>
-                  </motion.div>
-                </motion.div>
-
-                {/* Action Buttons */}
-                <motion.div
-                  className="space-y-3"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7, duration: 0.4 }}
-                >
-                  <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
-                    onClick={() => {
-                      setShowSuccessModal(false);
-                      router.push("/applications");
-                    }}
-                  >
-                    <Clipboard className="w-4 h-4 mr-2" />
-                    View My Applications
-                  </Button>
-                </motion.div>
-
-                {/* Auto-dismiss indicator with progress bar */}
-                <motion.div
-                  className="mt-6"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1, duration: 0.3 }}
-                >
-                  <div className="text-xs text-gray-400 mb-2">
-                    Auto-closing in {Math.ceil(autoCloseProgress / 20)} seconds
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1">
-                    <motion.div
-                      className="bg-blue-600 h-1 rounded-full transition-all duration-100 ease-linear"
-                      style={{ width: `${autoCloseProgress}%` }}
-                    />
-                  </div>
-                </motion.div>
-              </div>
+            <motion.div
+              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+            >
+              <p className="text-sm text-blue-800 max-w-prose">
+                💼 Check <span className="font-semibold">My Applications</span>{" "}
+                to keep track of all your submissions and updates.
+              </p>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+
+          {/* Action Buttons */}
+          <motion.div
+            className="space-y-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.4 }}
+          >
+            <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+              onClick={() => {
+                close_success_modal();
+                router.push("/applications");
+              }}
+            >
+              <Clipboard className="w-4 h-4 mr-2" />
+              View My Applications
+            </Button>
+          </motion.div>
+        </div>
+      </SuccessModal>
 
       {/* Filter Modal */}
-      <AnimatePresence>
-        {showFilterModal && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <motion.div
-              className="bg-white rounded-2xl w-full max-w-lg p-8 shadow-2xl"
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
+      <FilterModal>
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
+        </div>
+
+        <div className="space-y-6">
+          <DropdownGroup>
+            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
+              <GroupableRadioDropdown
+                name="jobType"
+                options={["All types", "Internships", "Full-time", "Part-time"]}
+                on_change={filter_setter("job_type")}
+                default_value={filters.job_type}
+              />
+            </div>
+
+            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
+              <GroupableRadioDropdown
+                name="location"
+                options={["Any location", "In-Person", "Remote", "Hybrid"]}
+                on_change={filter_setter("location")}
+                default_value={filters.location}
+              />
+            </div>
+
+            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
+              <GroupableRadioDropdown
+                name="category"
+                options={[
+                  "All industries",
+                  "Technology",
+                  "Creative Services",
+                  "Consumer Goods",
+                ]}
+                on_change={filter_setter("industry")}
+                default_value={filters.industry}
+              />
+            </div>
+          </DropdownGroup>
+
+          <div className="flex gap-3 pt-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Clear temp filters but keep search term
+                set_filter("job_type", "All types");
+                set_filter("location", "Any location");
+                set_filter("industry", "All industries");
+              }}
+              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
             >
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Filter Jobs
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowFilterModal(false)}
-                  className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </Button>
-              </div>
-
-              <div className="space-y-6">
-                <DropdownGroup>
-                  <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-                    <GroupableRadioDropdown
-                      name="jobType"
-                      options={[
-                        "All types",
-                        "Internships",
-                        "Full-time",
-                        "Part-time",
-                      ]}
-                      on_change={filter_setter("job_type")}
-                      default_value={filters.job_type}
-                    />
-                  </div>
-
-                  <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-                    <GroupableRadioDropdown
-                      name="location"
-                      options={[
-                        "Any location",
-                        "In-Person",
-                        "Remote",
-                        "Hybrid",
-                      ]}
-                      on_change={filter_setter("location")}
-                      default_value={filters.location}
-                    />
-                  </div>
-
-                  <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-                    <GroupableRadioDropdown
-                      name="category"
-                      options={[
-                        "All industries",
-                        "Technology",
-                        "Creative Services",
-                        "Consumer Goods",
-                      ]}
-                      on_change={filter_setter("industry")}
-                      default_value={filters.industry}
-                    />
-                  </div>
-                </DropdownGroup>
-
-                <div className="flex gap-3 pt-6">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      // Clear temp filters but keep search term
-                      set_filter("job_type", "All types");
-                      set_filter("location", "Any location");
-                      set_filter("industry", "All industries");
-                    }}
-                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
-                  >
-                    Clear Filters
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setShowFilterModal(false);
-                      // Search term is already active in the useJobs hook
-                    }}
-                    className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-                  >
-                    Apply Filters
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              Clear Filters
+            </Button>
+            <Button
+              onClick={() => close_filter_modal()}
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Apply Filters
+            </Button>
+          </div>
+        </div>
+      </FilterModal>
     </>
   );
 }
 
-function getModeIcon(mode: number | null | undefined) {
-  if (!mode && mode !== 0) return <Briefcase className="w-3 h-3 mr-1" />;
-
-  switch (mode) {
-    case 0:
-      return <Users2 className="w-3 h-3 mr-1" />;
-    case 1:
-      return <Globe className="w-3 h-3 mr-1" />;
-    case 2:
-      return <Wifi className="w-3 h-3 mr-1" />;
-  }
-
-  return <Briefcase className="w-3 h-3 mr-1" />;
-}
-
-function MobileJobCard({
-  job,
-  onClick,
-  refs,
-}: {
-  job: Job;
-  onClick: () => void;
-  refs: RefsAPI;
-}) {
-  const { ref_loading, get_job_mode, get_job_type } = refs;
+function MobileJobCard({ job, onClick }: { job: Job; onClick: () => void }) {
+  const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -821,21 +627,21 @@ function MobileJobCard({
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-3">
-        {!ref_loading && job.type !== null && job.type !== undefined && (
+        {ref_is_not_null(job.type) && (
           <Badge variant="outline" className="text-xs">
-            {get_job_type(job.type)?.name}
+            {to_job_type_name(job.type)}
           </Badge>
         )}
-        {!ref_loading && job.salary && (
+        {job.salary && (
           <Badge variant="outline" className="text-xs">
             <PhilippinePeso className="w-3 h-3 mr-1" />
             {job.salary}
           </Badge>
         )}
-        {!ref_loading && job.mode !== null && job.mode !== undefined && (
+        {ref_is_not_null(job.mode) && (
           <Badge variant="outline" className="text-xs">
-            {getModeIcon(job.mode)}
-            {get_job_mode(job.mode)?.name}
+            <JobModeIcon mode={job.mode} />
+            {to_job_mode_name(job.mode)}
           </Badge>
         )}
       </div>
@@ -858,14 +664,12 @@ function JobCard({
   job,
   isSelected,
   onClick,
-  refs,
 }: {
   job: Job;
   isSelected: boolean;
   onClick: () => void;
-  refs: RefsAPI;
 }) {
-  const { ref_loading, get_job_mode, get_job_type } = refs;
+  const { ref_loading, to_job_mode_name, to_job_type_name } = useRefs();
   return (
     <div
       className={`border rounded-lg p-4 cursor-pointer transition-colors ${
@@ -882,7 +686,7 @@ function JobCard({
         {!ref_loading ? (
           job.type && (
             <Badge variant="outline" className="text-xs">
-              {get_job_type(job.type)?.name}
+              {to_job_type_name(job.type)}
             </Badge>
           )
         ) : (
@@ -899,29 +703,12 @@ function JobCard({
         )}
         {!ref_loading && job.mode !== null && job.mode !== undefined && (
           <Badge variant="outline" className="text-xs">
-            {getModeIcon(job.mode)}
-            {get_job_mode(job.mode)?.name}
+            <JobModeIcon mode={job.mode} /> {to_job_mode_name(job.mode)}
           </Badge>
         )}
       </div>
     </div>
   );
-}
-
-function getModeIconForDetails(mode: number | null | undefined) {
-  if (!mode && mode !== 0)
-    return <Briefcase className="w-4 h-4 text-gray-500" />;
-
-  switch (mode) {
-    case 0:
-      return <Users2 className="w-3 h-3 mr-1" />;
-    case 1:
-      return <Globe className="w-3 h-3 mr-1" />;
-    case 2:
-      return <Wifi className="w-3 h-3 mr-1" />;
-  }
-
-  return <Briefcase className="w-4 h-4 text-gray-500" />;
 }
 
 function JobDetails({
@@ -931,7 +718,6 @@ function JobDetails({
   isSaved,
   saving,
   applicationStatus,
-  refs,
 }: {
   job: Job;
   onApply: () => void;
@@ -939,9 +725,8 @@ function JobDetails({
   saving: boolean;
   isSaved: boolean;
   applicationStatus?: any;
-  refs: RefsAPI;
 }) {
-  const { get_job_type } = refs;
+  const { to_job_type_name, to_job_mode_name } = useRefs();
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -1009,13 +794,11 @@ function JobDetails({
           </div>
 
           <div className="flex items-center gap-2">
-            {getModeIconForDetails(job.mode)}
+            <JobModeIcon mode={job.mode} />{" "}
             <div>
               <p className="text-sm">
                 <span className="font-medium">Mode: </span>
-                <span className="opacity-80">
-                  {job.mode || "Not specified"}
-                </span>
+                <span className="opacity-80">{to_job_mode_name(job.mode)}</span>
               </p>
             </div>
           </div>
@@ -1037,11 +820,7 @@ function JobDetails({
             <div>
               <p className="text-sm">
                 <span className="font-medium">Employment Type: </span>
-                <span className="opacity-80">
-                  {job.type || job.type === 0
-                    ? get_job_type(job.type)?.name
-                    : "Not specified"}
-                </span>
+                <span className="opacity-80">{to_job_type_name(job.type)}</span>
               </p>
             </div>
           </div>
@@ -1050,24 +829,11 @@ function JobDetails({
         <h3 className="text-lg font-semibold mb-3">Job Description</h3>
         <Markdown>{job.description}</Markdown>
 
-        {(job.requirements?.length ?? 0) > 0 && (
+        {job.requirements?.length && (
           <>
             <h3 className="text-lg font-semibold mb-3">Requirements</h3>
             <ul className="list-disc list-inside text-gray-700 mb-6 space-y-1">
-              {job.requirements?.map((req: string, index: number) => (
-                <li key={index}>{req}</li>
-              ))}
-            </ul>
-          </>
-        )}
-
-        {(job.responsibilities?.length ?? 0) > 0 && (
-          <>
-            <h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
-            <ul className="list-disc list-inside text-gray-700 space-y-1">
-              {job.responsibilities?.map((resp: string, index: number) => (
-                <li key={index}>{resp}</li>
-              ))}
+              {job.requirements}
             </ul>
           </>
         )}

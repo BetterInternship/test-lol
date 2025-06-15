@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-15 18:14:22
+ * @ Modified time: 2025-06-16 05:30:24
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -39,22 +39,38 @@ export interface IRefsContext {
   job_allowances: JobAllowance[];
   job_pay_freq: JobPayFreq[];
 
-  get_level: (id: number) => Level | null;
-  get_college: (id: string) => College | null;
-  get_university: (id: string) => University | null;
-  get_job_type: (id: number) => JobType | null;
-  get_job_mode: (id: number) => JobMode | null;
-  get_job_allowance: (id: number) => JobAllowance | null;
-  get_job_pay_freq: (id: number) => JobPayFreq | null;
+  to_level_name: (id: number | null | undefined) => string | null;
+  to_college_name: (id: string | null | undefined) => string | null;
+  to_university_name: (id: string | null | undefined) => string | null;
+  to_job_type_name: (id: number | null | undefined) => string | null;
+  to_job_mode_name: (id: number | null | undefined) => string | null;
+  to_job_allowance_name: (id: number | null | undefined) => string | null;
+  to_job_pay_freq_name: (id: number | null | undefined) => string | null;
 
-  get_level_by_name: (name: string) => Level | null;
-  get_college_by_name: (name: string) => College | null;
-  get_university_by_name: (name: string) => University | null;
+  get_level: (id: number | null | undefined) => Level | null;
+  get_college: (id: string | null | undefined) => College | null;
+  get_university: (id: string | null | undefined) => University | null;
+  get_job_type: (id: number | null | undefined) => JobType | null;
+  get_job_mode: (id: number | null | undefined) => JobMode | null;
+  get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
+  get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
+
+  get_level_by_name: (name: string | null | undefined) => Level | null;
+  get_college_by_name: (name: string | null | undefined) => College | null;
+  get_university_by_name: (
+    name: string | null | undefined
+  ) => University | null;
   get_university_by_domain: (name: string) => University | null;
-  get_job_type_by_name: (name: string) => JobType | null;
-  get_job_mode_by_name: (name: string) => JobMode | null;
-  get_job_allowance_by_name: (name: string) => JobAllowance | null;
-  get_job_pay_freq_by_name: (name: string) => JobPayFreq | null;
+  get_job_type_by_name: (name: string | null | undefined) => JobType | null;
+  get_job_mode_by_name: (name: string | null | undefined) => JobMode | null;
+  get_job_allowance_by_name: (
+    name: string | null | undefined
+  ) => JobAllowance | null;
+  get_job_pay_freq_by_name: (
+    name: string | null | undefined
+  ) => JobPayFreq | null;
+
+  ref_is_not_null: (ref: any) => boolean;
 }
 
 /**
@@ -84,13 +100,30 @@ const createRefInternalHook = <
   }
 
   /**
+   * Converts an id to it's name.
+   *
+   * @param id
+   * @returns
+   */
+  const to_name = useCallback(
+    (id: ID | null | undefined): string => {
+      if (!id && id !== 0) return "Not specified";
+      const f = data?.filter((d) => d.id === id);
+      if (!f.length) return "Not specified";
+      return f[0].name;
+    },
+    [data]
+  );
+
+  /**
    * Gets a ref by id
    *
    * @param id
    * @returns
    */
   const get = useCallback(
-    (id: ID): T | null => {
+    (id: ID | null | undefined): T | null => {
+      if (!id && id !== 0) return null;
       const f = data?.filter((d) => d.id === id);
       if (!f.length) return null;
       return f[0];
@@ -105,7 +138,8 @@ const createRefInternalHook = <
    * @returns
    */
   const get_by_name = useCallback(
-    (name: string): T | null => {
+    (name: string | null | undefined): T | null => {
+      if (!name) return null;
       const f = data?.filter((d) => d.name === name);
       if (!f.length) return null;
       return f[0];
@@ -121,6 +155,7 @@ const createRefInternalHook = <
   return {
     data,
     get,
+    to_name,
     get_by_name,
     loading,
   };
@@ -131,6 +166,7 @@ export const useRefsContext = () => {
   const {
     data: levels,
     get: get_level,
+    to_name: to_level_name,
     get_by_name: get_level_by_name,
     loading: l1,
   } = createRefInternalHook<number, Level>("ref_levels");
@@ -138,6 +174,7 @@ export const useRefsContext = () => {
   const {
     data: colleges,
     get: get_college,
+    to_name: to_college_name,
     get_by_name: get_college_by_name,
     loading: l2,
   } = createRefInternalHook<string, College>("ref_colleges");
@@ -145,6 +182,7 @@ export const useRefsContext = () => {
   const {
     data: universities,
     get: get_university,
+    to_name: to_university_name,
     get_by_name: get_university_by_name,
     loading: l3,
   } = createRefInternalHook<string, University>("ref_universities");
@@ -152,6 +190,7 @@ export const useRefsContext = () => {
   const {
     data: job_types,
     get: get_job_type,
+    to_name: to_job_type_name,
     get_by_name: get_job_type_by_name,
     loading: l4,
   } = createRefInternalHook<number, JobType>("ref_job_types");
@@ -159,6 +198,7 @@ export const useRefsContext = () => {
   const {
     data: job_modes,
     get: get_job_mode,
+    to_name: to_job_mode_name,
     get_by_name: get_job_mode_by_name,
     loading: l5,
   } = createRefInternalHook<number, JobMode>("ref_job_modes");
@@ -166,6 +206,7 @@ export const useRefsContext = () => {
   const {
     data: job_allowances,
     get: get_job_allowance,
+    to_name: to_job_allowance_name,
     get_by_name: get_job_allowance_by_name,
     loading: l6,
   } = createRefInternalHook<number, JobAllowance>("ref_job_allowances");
@@ -173,6 +214,7 @@ export const useRefsContext = () => {
   const {
     data: job_pay_freq,
     get: get_job_pay_freq,
+    to_name: to_job_pay_freq_name,
     get_by_name: get_job_pay_freq_by_name,
     loading: l7,
   } = createRefInternalHook<number, JobPayFreq>("ref_job_pay_freq");
@@ -207,6 +249,14 @@ export const useRefsContext = () => {
     job_allowances,
     job_pay_freq,
 
+    to_level_name,
+    to_college_name,
+    to_university_name,
+    to_job_type_name,
+    to_job_mode_name,
+    to_job_allowance_name,
+    to_job_pay_freq_name,
+
     get_level,
     get_college,
     get_university,
@@ -223,6 +273,8 @@ export const useRefsContext = () => {
     get_job_mode_by_name,
     get_job_allowance_by_name,
     get_job_pay_freq_by_name,
+
+    ref_is_not_null: (ref: any) => ref || ref === 0,
   };
 
   return refs_context;

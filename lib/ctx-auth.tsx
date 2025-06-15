@@ -3,6 +3,7 @@
 import { PublicEmployerUser, PublicUser } from "@/lib/db/db.types";
 import { auth_service } from "@/lib/api";
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface IAuthContext {
   user: Partial<PublicUser> | null;
@@ -20,6 +21,8 @@ interface IAuthContext {
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
+  redirect_if_not_loggedin: () => void;
+  redirect_if_logged_in: () => void;
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
@@ -36,12 +39,14 @@ export const AuthContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+  const router = useRouter();
+  const [should_redirect, set_should_redirect] = useState(false);
+  const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("isAuthenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
-  const [user, setUser] = useState<Partial<PublicUser> | null>(() => {
+  const [user, set_user] = useState<Partial<PublicUser> | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
     return user ? JSON.parse(user) : null;
@@ -52,17 +57,17 @@ export const AuthContextProvider = ({
     if (user) sessionStorage.setItem("user", JSON.stringify(user));
     else sessionStorage.removeItem("user");
 
-    if (isAuthenticated)
+    if (is_authenticated)
       sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
     else sessionStorage.removeItem("isAuthenticated");
-  }, [user, isAuthenticated]);
+  }, [user, is_authenticated]);
 
   const recheck_authentication = async () => {
     const response = await auth_service.loggedin();
     if (!response.success) return null;
 
-    setUser(response.user as PublicUser);
-    setIsAuthenticated(true);
+    set_user(response.user as PublicUser);
+    set_is_authenticated(true);
     return response.user;
   };
 
@@ -70,8 +75,8 @@ export const AuthContextProvider = ({
     const response = await auth_service.register(user);
     if (!response.success) return null;
 
-    setUser(response.user as PublicUser);
-    setIsAuthenticated(true);
+    set_user(response.user as PublicUser);
+    set_is_authenticated(true);
     return response;
   };
 
@@ -79,8 +84,8 @@ export const AuthContextProvider = ({
     const response = await auth_service.verify(user_id, key);
     if (!response.success) return null;
 
-    setUser(response.user as PublicUser);
-    setIsAuthenticated(true);
+    set_user(response.user as PublicUser);
+    set_is_authenticated(true);
     return response;
   };
 
@@ -98,8 +103,8 @@ export const AuthContextProvider = ({
     const response = await auth_service.verify_otp(email, otp);
     if (!response.success) return null;
 
-    setUser(response.user as PublicUser);
-    setIsAuthenticated(true);
+    set_user(response.user as PublicUser);
+    set_is_authenticated(true);
     return response;
   };
 
@@ -110,13 +115,24 @@ export const AuthContextProvider = ({
 
   const logout = async () => {
     auth_service.logout();
-    setUser(null);
-    setIsAuthenticated(false);
+    set_user(null);
+    set_is_authenticated(false);
   };
 
-  const is_authenticated = () => {
-    return isAuthenticated;
+  const redirect_if_not_loggedin = () => {
+    if (!is_authenticated) set_should_redirect(true);
   };
+
+  const redirect_if_logged_in = () => {
+    if (is_authenticated) set_should_redirect(true);
+  };
+
+  useEffect(() => {
+    if (should_redirect) {
+      if (!is_authenticated) router.push("/login");
+      else router.push("/");
+    }
+  }, [should_redirect]);
 
   return (
     <AuthContext.Provider
@@ -134,7 +150,9 @@ export const AuthContextProvider = ({
         verify_otp,
         email_status,
         logout,
-        is_authenticated,
+        is_authenticated: () => is_authenticated,
+        redirect_if_not_loggedin,
+        redirect_if_logged_in,
       }}
     >
       {children}

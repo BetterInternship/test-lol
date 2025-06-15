@@ -7,9 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  X,
   Edit2,
-  Save,
   Upload,
   Home,
   Monitor,
@@ -26,7 +24,6 @@ import {
   Github,
   ExternalLink,
   FileText,
-  Camera,
   Trash2,
   Download,
   Eye,
@@ -37,7 +34,7 @@ import { useProfile } from "@/hooks/use-api";
 import { useRouter } from "next/navigation";
 import { file_service } from "@/lib/api";
 import { useAuthContext } from "../../../lib/ctx-auth";
-import { motion, AnimatePresence } from "framer-motion";
+import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
 
@@ -53,7 +50,11 @@ export default function ProfilePage() {
     resume: boolean;
     profilePicture: boolean;
   }>({ resume: false, profilePicture: false });
-  const [showEmployerPreview, setShowEmployerPreview] = useState(false);
+  const {
+    open: open_employer_modal,
+    close: close_employer_modal,
+    Modal: EmployerModal,
+  } = useModal("employer-modal");
   const { is_mobile } = useAppContext();
   const router = useRouter();
 
@@ -434,7 +435,7 @@ export default function ProfilePage() {
 
                     <Button
                       variant="outline"
-                      onClick={() => setShowEmployerPreview(true)}
+                      onClick={() => open_employer_modal()}
                       className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                     >
                       <Eye className="w-4 h-4 mr-2" />
@@ -1374,7 +1375,7 @@ export default function ProfilePage() {
 
                       <Button
                         variant="outline"
-                        onClick={() => setShowEmployerPreview(true)}
+                        onClick={() => open_employer_modal()}
                         className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
                       >
                         <Eye className="w-4 h-4 mr-2" />
@@ -1535,33 +1536,13 @@ export default function ProfilePage() {
       </div>
 
       {/* Employer Preview Modal */}
-      <AnimatePresence>
-        {showEmployerPreview && (
-          <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setShowEmployerPreview(false)}
-          >
-            <motion.div
-              className="bg-white rounded-2xl w-[95vw] max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden shadow-2xl"
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <EmployerPreviewModal
-                profile={profile}
-                filesInfo={filesInfo}
-                onClose={() => setShowEmployerPreview(false)}
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <EmployerModal>
+        <EmployerPreviewModal
+          profile={profile}
+          filesInfo={filesInfo}
+          onClose={() => close_employer_modal()}
+        />
+      </EmployerModal>
     </>
   );
 }
@@ -1575,39 +1556,9 @@ function EmployerPreviewModal({
   filesInfo: any;
   onClose: () => void;
 }) {
-  // Helper function to get year level text
-  const getYearLevelText = (yearLevel: number | undefined) => {
-    if (!yearLevel) return "Not specified";
-    switch (yearLevel) {
-      case 1:
-        return "1st Year Student";
-      case 2:
-        return "2nd Year Student";
-      case 3:
-        return "3rd Year Student";
-      case 4:
-        return "4th Year Student";
-      case 5:
-        return "5th Year Student";
-      default:
-        return `${yearLevel}th Year Student`;
-    }
-  };
-
+  const { get_level, get_college } = useRefs();
   return (
     <div className="flex flex-col h-full">
-      {/* Header with close button */}
-      <div className="flex justify-end p-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-        >
-          <X className="h-5 w-5 text-gray-500" />
-        </Button>
-      </div>
-
       {/* Main Content - Scrollable */}
       <div className="flex-1 overflow-y-auto px-6 md:px-8 pb-6">
         {/* Header */}
@@ -1657,7 +1608,7 @@ function EmployerPreviewModal({
             <div>
               <p className="text-sm text-gray-500">Program</p>
               <p className="font-medium">
-                {profile?.college || profile?.currentProgram || "Not specified"}
+                {get_college(profile?.college)?.name ?? "Not specified"}
               </p>
             </div>
             <div>
@@ -1667,7 +1618,7 @@ function EmployerPreviewModal({
             <div>
               <p className="text-sm text-gray-500">Year Level</p>
               <p className="font-medium">
-                {getYearLevelText(profile?.year_level || profile?.yearLevel)}
+                {get_level(profile?.year_level)?.name ?? "Not specified"}
               </p>
             </div>
             <div>

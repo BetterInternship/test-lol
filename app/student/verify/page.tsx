@@ -9,7 +9,9 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { verify } = useAuthContext();
+  const { verify, redirect_if_logged_in } = useAuthContext();
+
+  redirect_if_logged_in();
 
   // Redirect to home page when verified
   useEffect(() => {

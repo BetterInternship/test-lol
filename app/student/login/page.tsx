@@ -7,13 +7,15 @@ import { Input } from "@/components/ui/input";
 import { useAuthContext } from "@/lib/ctx-auth";
 
 export default function LoginPage() {
-  const { email_status } = useAuthContext();
+  const { email_status, redirect_if_logged_in } = useAuthContext();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  redirect_if_logged_in();
 
   // Check if user just registered
   useEffect(() => {

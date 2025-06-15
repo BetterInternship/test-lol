@@ -7,7 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
 
 export default function OTPPage() {
-  const { send_otp_request, verify_otp } = useAuthContext();
+  const { send_otp_request, verify_otp, redirect_if_logged_in } =
+    useAuthContext();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -16,6 +17,8 @@ export default function OTPPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  redirect_if_logged_in();
 
   useEffect(() => {
     const emailParam = searchParams.get("email");

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, Upload, ExternalLink, Award } from "lucide-react";
+import { Upload, Award } from "lucide-react";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
 import { University } from "@/lib/db/db.types";
@@ -16,7 +16,6 @@ export default function RegisterPage() {
   const defaultCollege = "Select College";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
-    refs_ready,
     levels,
     colleges,
     universities,
@@ -36,7 +35,7 @@ export default function RegisterPage() {
     takingForCredit: false,
     linkageOfficer: "",
   });
-  const { register } = useAuthContext();
+  const { register, redirect_if_logged_in } = useAuthContext();
   const [email, setEmail] = useState("");
   const [university, setUniversity] = useState<University>();
   const [activeDropdown, setActiveDropdown] = useState("");
@@ -47,24 +46,18 @@ export default function RegisterPage() {
   const searchParams = useSearchParams();
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
+  redirect_if_logged_in();
+
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get("email");
-    if (!emailParam) {
-      return router.push("/login");
-    }
-
+    if (!emailParam) return router.push("/login");
     setEmail(emailParam);
-
-    if (!universities.length) {
-      return;
-    }
+    if (!universities.length) return;
 
     const domain = emailParam.split("@")[1];
     const uni = get_university_by_domain(domain);
-    if (!uni) {
-      return router.push("/login");
-    }
+    if (!uni) return router.push("/login");
     setUniversity(uni);
   }, [searchParams, universities, router]);
 
