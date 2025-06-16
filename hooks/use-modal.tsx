@@ -8,8 +8,10 @@ import { useState } from "react";
  *
  * @hook
  */
-export const useModal = (name: string) => {
+export const useModal = (name: string, options?: { showCloseButton?: boolean }) => {
   const [is_open, set_is_open] = useState(false);
+  const { showCloseButton = true } = options || {};
+  
   return {
     state: is_open,
     open: () => set_is_open(true),
@@ -33,16 +35,18 @@ export const useModal = (name: string) => {
               transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="p-4 flex flex-row w-full justify-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => set_is_open(false)}
-                  className="absolute h-8 w-8 p-4 t-0 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </Button>
-              </div>
+              {showCloseButton && (
+                <div className="p-4 flex flex-row w-full justify-end">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => set_is_open(false)}
+                    className="absolute h-8 w-8 p-4 t-0 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </Button>
+                </div>
+              )}
               {children}
             </motion.div>
           </motion.div>
