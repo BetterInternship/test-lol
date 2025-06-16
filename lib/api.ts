@@ -172,6 +172,12 @@ export const user_service = {
 // Job Services
 interface JobResponse extends Job {}
 
+interface CreateJobResponse {
+  job?: Job;
+  success: boolean;
+  message: string;
+}
+
 interface JobsResponse {
   jobs?: Job[];
   success?: boolean;
@@ -210,6 +216,13 @@ export const job_service = {
   async get_owned_jobs() {
     return APIClient.get<OwnedJobsResponse>(
       APIRoute("jobs").r("owned").build()
+    );
+  },
+
+  async create_job(job: Partial<Job>) {
+    return APIClient.post<CreateJobResponse>(
+      APIRoute("jobs").r("create").build(),
+      job
     );
   },
 

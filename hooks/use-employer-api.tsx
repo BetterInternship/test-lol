@@ -65,6 +65,28 @@ export function useOwnedJobs(
     return response;
   };
 
+  const create_job = async (job: Partial<Job>) => {
+    try {
+      const response = await job_service.create_job(job);
+      if (response.success && response.job) {
+        const new_job = response.job;
+        set_cache_item("_jobs_owned_list", [
+          new_job,
+          ...ownedJobs,
+        ]);
+        setOwnedJobs(get_cache_item("_jobs_owned_list") as Job[]);
+      }
+      return response;
+    } catch (error) {
+      const errorMessage = handle_api_error(error);
+      return {
+        success: false,
+        message: errorMessage || "Failed to create job",
+        job: undefined
+      };
+    }
+  };
+
   useEffect(() => {
     recheck_authentication().then((r) =>
       r ? fetchOwnedJobs() : setLoading(false)
@@ -137,6 +159,7 @@ export function useOwnedJobs(
   return {
     ownedJobs: filteredJobs,
     update_job,
+    create_job,
     loading,
     error,
     refetch: fetchOwnedJobs,

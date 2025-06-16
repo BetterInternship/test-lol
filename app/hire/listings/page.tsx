@@ -20,7 +20,7 @@ import { JobCard } from "@/components/shared/jobs";
 import { JobDetails } from "@/components/shared/jobs";
 
 export default function MyListings() {
-  const { ownedJobs, update_job } = useOwnedJobs();
+  const { ownedJobs, update_job, create_job } = useOwnedJobs();
   const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
     useRefs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
@@ -156,6 +156,7 @@ export default function MyListings() {
       {/* Add Job Modal */}
       <AddModal>
         <AddModalForm
+          create_job={create_job}
           close={() => close_add_modal()}
         ></AddModalForm>
       </AddModal>
@@ -164,8 +165,10 @@ export default function MyListings() {
 }
 
 const AddModalForm = ({
+  create_job,
   close,
 }: {
+  create_job: (job: Partial<Job>) => Promise<any>;
   close: () => void;
 }) => {
   const defaultDropdownValue = "Not specified";
@@ -218,16 +221,23 @@ const AddModalForm = ({
     };
 
     setCreating(true);
-    // TODO: Add create_job API call here when backend is ready
-    // const { job: created_job, success } = await create_job(newJob);
-    console.log("Creating job:", newJob);
-    
-    // Simulate API call delay
-    setTimeout(() => {
+    try {
+      const response = await create_job(newJob);
+      if (response.success && response.job) {
+        close();
+        // Job automatically added to list via cache update in hook
+      } else {
+        // Handle API failure gracefully
+        console.log("API response:", response);
+        alert("Failed to create job. Backend endpoint may not be implemented yet.");
+      }
+    } catch (error) {
+      // Handle network/API errors gracefully 
+      console.log("Network error creating job:", error);
+      alert("Unable to create job. Please check if the backend server is running.");
+    } finally {
       setCreating(false);
-      close();
-      // TODO: Refresh job list or add new job to state
-    }, 1000);
+    }
   };
 
   return (
