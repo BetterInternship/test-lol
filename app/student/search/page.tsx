@@ -6,10 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Search,
-  MapPin,
-  PhilippinePeso,
-  Building,
-  Calendar,
   Heart,
   CheckCircle,
   Clipboard,
@@ -17,9 +13,7 @@ import {
   User,
   Filter,
 } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   useJobs,
   useSavedJobs,

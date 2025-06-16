@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-16 05:30:24
+ * @ Modified time: 2025-06-16 08:21:04
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -76,8 +76,8 @@ export interface IRefsContext {
 /**
  * A utility that allows us to create ref hooks from our reference tables.
  *
- * @param table
- * @returns
+ * @hook
+ * @internal
  */
 const createRefInternalHook = <
   ID extends string | number,
@@ -85,18 +85,18 @@ const createRefInternalHook = <
 >(
   table: string
 ) => {
-  const [data, setData] = useState<T[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, set_data] = useState<T[]>([]);
+  const [loading, set_loading] = useState(true);
 
   /**
    * Fetches the data from the backend.
    */
-  async function fetchData() {
-    setLoading(true);
+  async function fetch_data() {
+    set_loading(true);
     const { data, error } = await db.from(table).select("*");
     if (error) console.error(error);
-    else setData(data);
-    setLoading(false);
+    else set_data(data);
+    set_loading(false);
   }
 
   /**
@@ -149,7 +149,7 @@ const createRefInternalHook = <
 
   // Fetch the data at the start
   useEffect(() => {
-    fetchData();
+    fetch_data();
   }, []);
 
   return {

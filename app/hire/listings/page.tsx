@@ -1,36 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import {
-  BarChart3,
-  Search,
-  FileText,
-  MapPin,
-  Clock,
-  PhilippinePeso,
-  Monitor,
-  FileEdit,
-  Filter,
-} from "lucide-react";
+import { BarChart3, Search, FileText, FileEdit, Filter } from "lucide-react";
 import Link from "next/link";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
 import ProfileButton from "@/components/hire/profile-button";
 import { useRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
-import ReactMarkdown from "react-markdown";
 import { RefDropdown } from "@/components/ui/ref-dropdown";
 import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard } from "@/components/shared/jobs";
-import { formatDate } from "@/lib/utils";
-import { JobDetails } from "../../../components/shared/jobs";
+import { JobDetails } from "@/components/shared/jobs";
 
 export default function MyListings() {
   const { ownedJobs, update_job } = useOwnedJobs();
