@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard } from "@/components/shared/jobs";
 import { JobDetails } from "@/components/shared/jobs";
+import { Paginator } from "@/components/ui/paginator";
 
 export default function MyListings() {
   const { ownedJobs, update_job, create_job } = useOwnedJobs();
@@ -25,6 +26,47 @@ export default function MyListings() {
     useRefs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Pagination state - following student portal pattern
+  const jobs_page_size = 10;
+  const [jobs_page, setJobsPage] = useState(1);
+
+  // Client-side filtering for search - mirrors student portal pattern
+  const filteredJobs = useMemo(() => {
+    if (!searchTerm.trim()) return ownedJobs;
+    
+    const searchLower = searchTerm.toLowerCase().trim();
+    return ownedJobs.filter((job) => {
+      const searchableText = [
+        job.title,
+        job.description,
+        job.location,
+        job.requirements,
+      ]
+        .join(" ")
+        .toLowerCase();
+      
+      return searchableText.includes(searchLower);
+    });
+  }, [ownedJobs, searchTerm]);
+
+  // Pagination logic - direct computation like student portal
+  const getJobsPage = useCallback(({ page = 1, limit = jobs_page_size }) => {
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    return filteredJobs.slice(startIndex, endIndex);
+  }, [filteredJobs]);
+
+  // Current page jobs - computed directly
+  const currentPageJobs = useMemo(() => {
+    return getJobsPage({ page: jobs_page, limit: jobs_page_size });
+  }, [getJobsPage, jobs_page]);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setJobsPage(1);
+  }, [searchTerm]);
+
   const {
     open: open_edit_modal,
     close: close_edit_modal,
@@ -35,6 +77,14 @@ export default function MyListings() {
     close: close_add_modal,
     Modal: AddModal,
   } = useModal("add-modal", { showCloseButton: false });
+
+  // Handle search on Enter key - mirrors student portal pattern
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      // Reset to first page when searching
+      setJobsPage(1);
+    }
+  };
 
   return (
     <div className="h-screen bg-white flex">
@@ -94,6 +144,7 @@ export default function MyListings() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleKeyPress}
                   placeholder="Search listings..."
                   className="pl-12 pr-4 h-12 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 />
@@ -113,7 +164,7 @@ export default function MyListings() {
               className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0"
               data-tour="job-cards"
             >
-              {ownedJobs
+              {currentPageJobs
                 .sort((a, b) => {
                   return (
                     new Date(b.updated_at ?? "").getTime() -
@@ -128,6 +179,15 @@ export default function MyListings() {
                     selected={job.id === selectedJob.id}
                   ></JobCard>
                 ))}
+            </div>
+
+            {/* Paginator - following student portal pattern */}
+            <div className="mt-4 flex-shrink-0">
+              <Paginator
+                totalItems={filteredJobs.length}
+                itemsPerPage={jobs_page_size}
+                onPageChange={(page) => setJobsPage(page)}
+              />
             </div>
           </div>
 
