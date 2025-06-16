@@ -23,7 +23,6 @@ import {
   FileCheck
 } from "lucide-react"
 import Link from "next/link"
-import { usePageTour } from "@/components/PageTourWrapper"
 
 export default function Page() {
   return (<Suspense>
@@ -35,9 +34,6 @@ function FormGenerator() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const formType = searchParams.get('form')
-  
-  // Tour integration
-  const { TourButton, ProductTour } = usePageTour('form-generator')
   
   const [isGenerating, setIsGenerating] = useState(false)
   const [selectedStudents, setSelectedStudents] = useState({
@@ -228,7 +224,6 @@ function FormGenerator() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <TourButton />
                 <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className="rounded-full">
@@ -348,9 +343,6 @@ function FormGenerator() {
           </div>
         </div>
       </div>
-
-      {/* Product Tour */}
-      <ProductTour />
     </div>
   )
 }

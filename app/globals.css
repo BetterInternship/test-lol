@@ -84,23 +84,6 @@
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f1f1;
   }
-
-  /* High z-index values for tour */
-  .z-10000 {
-    z-index: 10000;
-  }
-  .z-10001 {
-    z-index: 10001;
-  }
-  .z-10002 {
-    z-index: 10002;
-  }
-  .z-10003 {
-    z-index: 10003;
-  }
-  .z-10004 {
-    z-index: 10004;
-  }
 }
 
 @keyframes scroll {

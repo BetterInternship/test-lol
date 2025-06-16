@@ -94,12 +94,13 @@ export default function LoginPage() {
     
     const otpString = otp.join("")
     await verify_otp(email, otpString).then(r => {
-      setIsLoading(false);
       if (r.success) {
         router.push("/dashboard");
       } else {
         setError("Invalid OTP.");
       }
+      
+      setIsLoading(false);
     });
   }
 
@@ -115,7 +116,7 @@ export default function LoginPage() {
     if (otpString.length === 6 && !isLoading && !error) {
       handleOtpSubmit({ preventDefault: () => {} } as React.FormEvent)
     }
-  }, [otp, isLoading, error])
+  }, [otp])
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

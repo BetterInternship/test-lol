@@ -3,7 +3,7 @@ import { AcademicYear } from "@/types";
 
 export function dateWithinRange(
   date: string | undefined | null,
-  range: "7days" | "14days" | "30days" | "90days" | "1year",
+  range: "7days" | "14days" | "30days" | "90days" | "1year"
 ) {
   if (!date) return false;
   const parsedDate = DateTime.fromISO(date).setZone("Asia/Manila");
@@ -27,7 +27,7 @@ export function dateWithinRange(
 }
 
 export function validateDate(
-  date: string | undefined | null | Date | number,
+  date: string | undefined | null | Date | number
 ): boolean {
   if (!date) return false;
   if (typeof date === "number") {
@@ -77,27 +77,37 @@ export function formatTimeAgo(date: string | undefined | null): string {
   }
 
   if (diff.minutes <= 60 && diff.hours < 1) {
-    return `${Math.round(diff.minutes)} minute${Math.round(diff.minutes) !== 1 ? "s" : ""} ago`;
+    return `${Math.round(diff.minutes)} minute${
+      Math.round(diff.minutes) !== 1 ? "s" : ""
+    } ago`;
   }
 
   if (diff.hours <= 24 && diff.days < 1) {
-    return `${Math.round(diff.hours)} hour${Math.round(diff.hours) !== 1 ? "s" : ""} ago`;
+    return `${Math.round(diff.hours)} hour${
+      Math.round(diff.hours) !== 1 ? "s" : ""
+    } ago`;
   }
 
   if (diff.days <= 30 && diff.months < 1) {
-    return `${Math.round(diff.days)} day${Math.round(diff.days) !== 1 ? "s" : ""} ago`;
+    return `${Math.round(diff.days)} day${
+      Math.round(diff.days) !== 1 ? "s" : ""
+    } ago`;
   }
 
   if (diff.months <= 12 && diff.years < 1) {
-    return `${Math.ceil(diff.months)} month${Math.ceil(diff.months) !== 1 ? "s" : ""} ago`;
+    return `${Math.ceil(diff.months)} month${
+      Math.ceil(diff.months) !== 1 ? "s" : ""
+    } ago`;
   }
 
-  return `${Math.ceil(diff.years)} year${Math.ceil(diff.years) !== 1 ? "s" : ""} ago`;
+  return `${Math.ceil(diff.years)} year${
+    Math.ceil(diff.years) !== 1 ? "s" : ""
+  } ago`;
 }
 
 export function parseDate(
   date: string | null | undefined | Date,
-  format?: string,
+  format?: string
 ): string {
   if (!date) return "N/A";
   let newDate = date;
@@ -118,7 +128,7 @@ export function parseDate(
 
 export function isDateSame(
   date1: string | Date | number | null | undefined,
-  date2: string | Date | number | null | undefined,
+  date2: string | Date | number | null | undefined
 ) {
   if (!date1 || !date2) return false;
   let newDate1 = date1;
@@ -132,10 +142,10 @@ export function isDateSame(
   }
 
   const parsedDate1 = DateTime.fromISO(newDate1.toString()).setZone(
-    "Asia/Manila",
+    "Asia/Manila"
   );
   const parsedDate2 = DateTime.fromISO(newDate2.toString()).setZone(
-    "Asia/Manila",
+    "Asia/Manila"
   );
 
   return parsedDate1.hasSame(parsedDate2, "day");
@@ -143,7 +153,7 @@ export function isDateSame(
 
 export const checkAcademicYearMatch = (
   itemDateStr: string | undefined,
-  academicYearFilter: AcademicYear | "all" | undefined,
+  academicYearFilter: AcademicYear | "all" | undefined
 ): boolean => {
   if (academicYearFilter === "all" || !academicYearFilter) {
     return true;
@@ -169,14 +179,29 @@ export const checkAcademicYearMatch = (
     const academicYearStartDate = DateTime.local(
       startAcademicYear,
       6,
-      1,
+      1
     ).startOf("day");
     const academicYearEndDate = DateTime.local(endAcademicYear, 5, 31).endOf(
-      "day",
+      "day"
     );
 
     return itemDate >= academicYearStartDate && itemDate <= academicYearEndDate;
   } catch (e) {
     return false;
   }
+};
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return (
+    date.toLocaleDateString("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }) +
+    ", " +
+    String(date.getHours()).padStart(2, "0") +
+    ":" +
+    String(date.getMinutes()).padStart(2, "0")
+  );
 };

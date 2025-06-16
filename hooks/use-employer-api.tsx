@@ -55,8 +55,9 @@ export function useOwnedJobs(
     const response = await job_service.update_job(job_id, job);
     if (response.success) {
       const job = response.job;
+      const old_job = ownedJobs.filter((oj) => oj.id === job.id)[0] ?? {};
       set_cache_item("_jobs_owned_list", [
-        job,
+        { ...old_job, ...job },
         ...ownedJobs.filter((oj) => oj.id !== job.id),
       ]);
       setOwnedJobs(get_cache_item("_jobs_owned_list") as Job[]);
@@ -115,7 +116,6 @@ export function useOwnedJobs(
           job.location,
           ...(job.keywords || []),
           ...(job.requirements || []),
-          ...(job.responsibilities || []),
         ]
           .join(" ")
           .toLowerCase();

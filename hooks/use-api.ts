@@ -4,9 +4,9 @@ import {
   user_service,
   application_service,
   handle_api_error,
-} from "@/lib/api-wrapper";
+} from "@/lib/api";
 import { Job, PublicUser, Application } from "@/lib/db/db.types";
-import { useAuthContext } from "@/app/student/authctx";
+import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "./use-cache";
 
 // Jobs Hook with Client-Side Filtering
@@ -409,57 +409,3 @@ export function useApplications() {
     refetch: fetchApplications,
   };
 }
-
-// Applications Hook
-// export function useApplications(
-//   params: {
-//     page?: number;
-//     limit?: number;
-//     status?: string;
-//   } = {}
-// ) {
-//   const { is_authenticated } = useAuthContext();
-//   const [applications, setApplications] = useState<Application[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-//   const [pagination, setPagination] = useState({
-//     totalPages: 0,
-//     currentPage: 1,
-//     total: 0,
-//   });
-
-//   const fetchApplications = useCallback(async () => {
-//     try {
-//       setLoading(true);
-//       setError(null);
-//       const response = await application_service.get_applications(params);
-//       setApplications(response.applications);
-//       setPagination({
-//         totalPages: response.totalPages,
-//         currentPage: response.currentPage,
-//         total: response.total,
-//       });
-//     } catch (err) {
-//       const errorMessage = handle_api_error(err);
-//       setError(errorMessage);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, [JSON.stringify(params)]);
-
-//   useEffect(() => {
-//     if (is_authenticated()) {
-//       fetchApplications();
-//     } else {
-//       setLoading(false);
-//     }
-//   }, [fetchApplications]);
-
-//   return {
-//     applications,
-//     loading,
-//     error,
-//     pagination,
-//     refetch: fetchApplications,
-//   };
-// }

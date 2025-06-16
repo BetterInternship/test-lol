@@ -19,15 +19,9 @@ import {
   FileEdit
 } from "lucide-react"
 import Link from "next/link"
-import ProductTour from "@/components/ProductTour"
-import TourButton from "@/components/TourButton"
-import { useTourIntegration } from "@/components/useTourIntegration"
 
 export default function FormsAutomation() {
   const router = useRouter()
-
-  // Tour integration
-  const { showTour, startTour, closeTour } = useTourIntegration('forms-automation')
 
   const handleTemplateDownload = (templateName: string) => {
     // Create a link element and trigger download
@@ -114,10 +108,6 @@ export default function FormsAutomation() {
         <div className="flex justify-between items-center p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-800">School Forms Automation</h1>
           <div className="flex items-center gap-3">
-            <TourButton
-              onClick={startTour}
-              pageName="forms-automation"
-            />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -288,13 +278,6 @@ export default function FormsAutomation() {
           </div>
         </div>
       </div>
-
-      {/* Product Tour */}
-      <ProductTour
-        isOpen={showTour}
-        onClose={closeTour}
-        pageName="forms-automation"
-      />
     </div>
   )
 }
