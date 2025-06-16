@@ -2,9 +2,10 @@ import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
-import { Building, PhilippinePeso, MapPin } from "lucide-react";
+import { Building, PhilippinePeso, MapPin, Monitor, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JobModeIcon } from "@/components/ui/icons";
+import ReactMarkdown from "react-markdown";
 
 /**
  * The scrollable job card component.
@@ -123,6 +124,102 @@ export const MobileJobCard = ({
       <div className="flex items-center gap-1 text-xs text-gray-500">
         <MapPin className="w-3 h-3" />
         <span>{job.location}</span>
+      </div>
+    </div>
+  );
+};
+
+/**
+ * The right panel that describes job details.
+ *
+ * @component
+ */
+export const JobDetails = ({
+  job,
+  actions = [],
+}: {
+  job: Job;
+  actions?: React.ReactNode[];
+}) => {
+  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
+    useRefs();
+
+  return (
+    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{job.title}</h2>
+        <p className="text-gray-600 mb-1">{job.employer?.name}</p>
+        <p className="text-sm text-gray-500 mb-4">
+          Listed on {formatDate(job.created_at ?? "")}
+        </p>
+        <div className="flex gap-3">{actions}</div>
+      </div>
+
+      {/* Job Details Grid */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">Job Details</h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="flex items-start gap-3">
+            <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm">
+                <span className="font-medium">Location: </span>
+                <span className="opacity-80">
+                  {job.location || "Not specified"}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm">
+                <span className="font-medium">Mode: </span>
+                <span className="opacity-80">{to_job_mode_name(job.mode)}</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm">
+                <span className="font-medium">Salary: </span>
+                <span className="opacity-80">
+                  {job.salary || "Not specified"}{" "}
+                  {to_job_pay_freq_name(job.salary_freq)}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+            <div>
+              <p className="text-sm">
+                <span className="font-medium">Employment Type: </span>
+                <span className="opacity-80">{to_job_type_name(job.type)}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Job Description */}
+      <hr />
+      <div className="mb-6">
+        <div className="markdown">
+          <ReactMarkdown>{job.description}</ReactMarkdown>
+        </div>
+      </div>
+
+      {/* Job Requirements */}
+      <hr />
+      <div className="mb-6">
+        <div className="markdown">
+          <ReactMarkdown>{job.requirements}</ReactMarkdown>
+        </div>
       </div>
     </div>
   );

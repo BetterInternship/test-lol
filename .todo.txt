@@ -10,6 +10,7 @@ USE keyof !!!!
 change authctx in hire to ctx-auth
 render out markdown in student side
 Make sure login/reg/otp pages are inaccessible when logged in
+change appliedJob()
 
 
 Check components:

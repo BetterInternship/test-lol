@@ -30,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard } from "@/components/shared/jobs";
 import { formatDate } from "@/lib/utils";
+import { JobDetails } from "../../../components/shared/jobs";
 
 export default function MyListings() {
   const { ownedJobs, update_job } = useOwnedJobs();
@@ -138,98 +139,14 @@ export default function MyListings() {
           </div>
 
           {/* Right Panel - Job Details */}
-          <div className="flex-1 border-2 border-gray-200 rounded-lg p-6 overflow-y-auto">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {selectedJob.title}
-              </h2>
-              <p className="text-gray-600 mb-1">{selectedJob.employer?.name}</p>
-              <p className="text-sm text-gray-500 mb-4">
-                Listed on {formatDate(selectedJob.created_at ?? "")}
-              </p>
-
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => open_edit_modal()}
-                  data-tour="bulk-actions"
-                >
-                  Edit
-                </Button>
-              </div>
-            </div>
-
-            {/* Job Details Grid */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm">
-                      <span className="font-medium">Location: </span>
-                      <span className="opacity-80">
-                        {selectedJob.location || "Not specified"}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm">
-                      <span className="font-medium">Mode: </span>
-                      <span className="opacity-80">
-                        {to_job_mode_name(selectedJob.mode)}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm">
-                      <span className="font-medium">Salary: </span>
-                      <span className="opacity-80">
-                        {selectedJob.salary || "Not specified"}{" "}
-                        {to_job_pay_freq_name(selectedJob.salary_freq)}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm">
-                      <span className="font-medium">Employment Type: </span>
-                      <span className="opacity-80">
-                        {to_job_type_name(selectedJob.type)}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Job Description */}
-            <hr />
-            <div className="mb-6">
-              <div className="markdown">
-                <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
-              </div>
-            </div>
-
-            {/* Job Requirements */}
-            <hr />
-            <div className="mb-6">
-              <div className="markdown">
-                <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
-              </div>
-            </div>
-          </div>
+          <JobDetails
+            job={selectedJob}
+            actions={[
+              <Button variant="outline" onClick={() => open_edit_modal()}>
+                Edit
+              </Button>,
+            ]}
+          />
         </div>
       </div>
 

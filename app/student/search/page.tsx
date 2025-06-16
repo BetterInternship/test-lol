@@ -37,9 +37,8 @@ import {
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
-import { JobModeIcon } from "@/components/ui/icons";
-import { JobCard, MobileJobCard } from "@/components/shared/jobs";
-import ReactMarkdown from "react-markdown";
+import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
+import { cn } from "@/lib/utils";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -123,7 +122,6 @@ export default function SearchPage() {
 
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
-  const getApplicationStatus = (jobId: string) => appliedJob(jobId);
 
   useEffect(() => {
     const query = searchParams.get("q") || "";
@@ -371,11 +369,40 @@ export default function SearchPage() {
               {selectedJob && (
                 <JobDetails
                   job={selectedJob}
-                  saving={saving}
-                  onApply={handleApply}
-                  onSave={handleSave}
-                  isSaved={is_saved(selectedJob.id ?? "")}
-                  applicationStatus={getApplicationStatus(selectedJob.id ?? "")}
+                  actions={[
+                    <Button
+                      disabled={appliedJob(selectedJob.id ?? "")}
+                      onClick={() =>
+                        !appliedJob(selectedJob.id ?? "") && handleApply()
+                      }
+                      className={cn(
+                        appliedJob(selectedJob.id ?? "")
+                          ? "bg-green-600 text-white"
+                          : "bg-blue-600 hover:bg-blue-700"
+                      )}
+                    >
+                      {appliedJob(selectedJob.id ?? "") && (
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                      )}
+                      {appliedJob(selectedJob.id ?? "") ? "Applied" : "Apply"}
+                    </Button>,
+                    <Button
+                      variant="outline"
+                      onClick={() => handleSave(selectedJob)}
+                      className={cn(
+                        is_saved(selectedJob.id ?? "")
+                          ? "bg-red-50 border-red-200 text-red-600"
+                          : ""
+                      )}
+                    >
+                      {is_saved(selectedJob.id ?? "") && <Heart />}
+                      {is_saved(selectedJob.id ?? "")
+                        ? "Saved"
+                        : saving
+                        ? "Saving..."
+                        : "Save"}
+                    </Button>,
+                  ]}
                 />
               )}
             </div>
@@ -389,14 +416,7 @@ export default function SearchPage() {
           <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <JobDetails
-            job={selectedJob ?? {}}
-            saving={saving}
-            onApply={handleApply}
-            onSave={handleSave}
-            isSaved={is_saved(selectedJob?.id ?? "")}
-            applicationStatus={getApplicationStatus(selectedJob?.id ?? "")}
-          />
+          <JobDetails job={selectedJob ?? {}} />
         </div>
       </JobModal>
 
@@ -593,144 +613,5 @@ export default function SearchPage() {
         </div>
       </FilterModal>
     </>
-  );
-}
-
-function JobDetails({
-  job,
-  onApply,
-  onSave,
-  isSaved,
-  saving,
-  applicationStatus,
-}: {
-  job: Job;
-  onApply: () => void;
-  onSave: (job: Job) => void;
-  saving: boolean;
-  isSaved: boolean;
-  applicationStatus?: any;
-}) {
-  const { to_job_type_name, to_job_mode_name } = useRefs();
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">{job.title}</h1>
-        <div className="flex items-center gap-2 mb-2">
-          <Building className="w-4 h-4 text-gray-500" />
-          <p className="text-gray-600">{job.employer?.name}</p>
-        </div>
-        <div className="flex items-center gap-2 mb-4">
-          <Calendar className="w-4 h-4 text-gray-500" />
-          <p className="text-sm text-gray-500">
-            Listed on {formatDate(job.created_at ?? "")}
-          </p>
-        </div>
-
-        <div className="flex gap-3">
-          {applicationStatus ? (
-            <Button disabled className="bg-green-600 text-white">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Applied ({applicationStatus.status})
-            </Button>
-          ) : (
-            <Button className="bg-blue-600 hover:bg-blue-700" onClick={onApply}>
-              Apply
-            </Button>
-          )}
-
-          <Button
-            variant="outline"
-            onClick={() => onSave(job)}
-            className={isSaved ? "bg-red-50 border-red-200 text-red-600" : ""}
-          >
-            {isSaved ? (
-              <>
-                <Heart></Heart>
-                <span>Saved</span>
-              </>
-            ) : saving ? (
-              "Saving..."
-            ) : (
-              "Save"
-            )}
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4">
-        <h2 className="text-lg font-semibold mb-4">Job Details</h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-500" />
-            <div>
-              <p className="font-medium text-sm">Location: {job.location}</p>
-              <p className="text-sm text-gray-600">{job.location}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <JobModeIcon mode={job.mode} />{" "}
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Mode: </span>
-                <span className="opacity-80">{to_job_mode_name(job.mode)}</span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <PhilippinePeso className="w-4 h-4 text-gray-500" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Salary: </span>
-                <span className="opacity-80">
-                  {job.salary || "Not specified"}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Clipboard className="w-4 h-4 text-gray-500" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Employment Type: </span>
-                <span className="opacity-80">{to_job_type_name(job.type)}</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <hr />
-        <div className="markdown">
-          <ReactMarkdown>{job.description}</ReactMarkdown>
-        </div>
-        <hr />
-        <div className="markdown">
-          <ReactMarkdown>{job.requirements}</ReactMarkdown>
-        </div>
-
-        {job.employer?.description && (
-          <>
-            <h3 className="text-lg font-semibold mb-3 mt-6">
-              About the Company
-            </h3>
-            <p className="text-gray-700 leading-relaxed">
-              {job.employer.description}
-            </p>
-          </>
-        )}
-      </div>
-    </div>
   );
 }
