@@ -1,96 +1,96 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useAuthContext } from "../authctx"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 export default function LoginPage() {
-  const { email_status: emailStatus } = useAuthContext();
-  const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [showVerificationMessage, setShowVerificationMessage] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const { email_status, redirect_if_logged_in } = useAuthContext();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  redirect_if_logged_in();
 
   // Check if user just registered
   useEffect(() => {
-    const verified = searchParams.get('verified')
-    if (verified === 'pending' && error.trim() === "") {
-      setShowVerificationMessage(true)
+    const verified = searchParams.get("verified");
+    if (verified === "pending" && error.trim() === "") {
+      setShowVerificationMessage(true);
     }
-  }, [searchParams, error])
+  }, [searchParams, error]);
 
   const validateDLSUEmail = (email: string): boolean => {
     const dlsuDomains = [
-      '@dlsu.edu.ph',
-      '@students.dlsu.edu.ph',
-      '@staff.dlsu.edu.ph',
-      '@faculty.dlsu.edu.ph'
-    ]
-    return dlsuDomains.some(domain => email.toLowerCase().endsWith(domain))
-  }
+      "@dlsu.edu.ph",
+      "@students.dlsu.edu.ph",
+      "@staff.dlsu.edu.ph",
+      "@faculty.dlsu.edu.ph",
+    ];
+    return dlsuDomains.some((domain) => email.toLowerCase().endsWith(domain));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!email.trim()) {
-      setError("Please enter your email address")
-      return
+      setError("Please enter your email address");
+      return;
     }
 
     if (!validateDLSUEmail(email)) {
-      setError("Please use your DLSU email address (@dlsu.edu.ph, @students.dlsu.edu.ph, etc.)")
-      return
+      setError(
+        "Please use your DLSU email address (@dlsu.edu.ph, @students.dlsu.edu.ph, etc.)"
+      );
+      return;
     }
 
     try {
-      setLoading(true)
-      setError("")
-      
+      setLoading(true);
+      setError("");
+
       // Production flow with OTP
-      await emailStatus(email).then(response => {
+      await email_status(email).then((response) => {
         if (!response?.existing_user || !response?.verified_user) {
           if (!response?.existing_user) {
             // New user - redirect directly to registration
-            router.push(`/register?email=${encodeURIComponent(email)}`)
+            router.push(`/register?email=${encodeURIComponent(email)}`);
           } else {
-            router.push(`/login?verified=pending`)
+            router.push(`/login?verified=pending`);
           }
         } else {
-          router.push(`/login/otp?email=${encodeURIComponent(email)}`) 
+          router.push(`/login/otp?email=${encodeURIComponent(email)}`);
         }
       });
-      
     } catch (err: any) {
-      console.error('Login error:', err)
-      setError(err.message || "An error occurred. Please try again.")
+      console.error("Login error:", err);
+      setError(err.message || "An error occurred. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      handleSubmit(e as any)
+      handleSubmit(e as any);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
-      </div>
-
+    <>
       {/* Main Content - Centered */}
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-md">
           {/* Welcome Message */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome Back!
+            </h2>
           </div>
 
           {/* Verification Message - Only show if coming from registration */}
@@ -117,9 +117,9 @@ export default function LoginPage() {
                 placeholder="School Email Address"
                 value={email}
                 onChange={(e) => {
-                  setEmail(e.target.value)
+                  setEmail(e.target.value);
                   // Clear any existing errors when user types
-                  if (error) setError("")
+                  if (error) setError("");
                 }}
                 onKeyPress={handleKeyPress}
                 required
@@ -135,9 +135,8 @@ export default function LoginPage() {
               {loading ? "Checking..." : "Continue"}
             </Button>
           </form>
-
         </div>
       </div>
-    </div>
-  )
+    </>
+  );
 }

@@ -1,5 +1,65 @@
+// API configuration and helper funcs
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) console.warn("[WARNING]: Base API URL is not set.");
+
+// Helper function for api routes
+export const APIRoute = (() => {
+  interface Params {
+    [key: string]: any;
+  }
+
+  // Generates a parameter string for query urls
+  const search_params = (params: Params) => {
+    const search_params = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "")
+        search_params.append(key, value.toString());
+    });
+    return search_params.toString();
+  };
+
+  class APIRouteClass {
+    routes: string[];
+    params: Params | null;
+
+    constructor(base: string) {
+      this.routes = [base];
+      this.params = null;
+    }
+
+    // Adds a subroute
+    r(...route: string[]) {
+      route.map((r) => this.routes.push(r));
+      return this;
+    }
+
+    // Adds a list of params
+    p(params: Params) {
+      this.params = params;
+      return this;
+    }
+
+    build() {
+      if (!this.params) return `${API_BASE_URL}/${this.routes.join("/")}`;
+      return `${API_BASE_URL}/${this.routes.join("/")}?${search_params(
+        this.params
+      )}`;
+    }
+  }
+
+  return (route: string) => new APIRouteClass(route);
+})();
+
 // HTTP client with auth handling
 class FetchClient {
+  /**
+   * Request utility we can reuse
+   *
+   * @param url
+   * @param options
+   * @param type
+   * @returns
+   */
   private async request<T>(
     url: string,
     options: RequestInit = {},
@@ -29,10 +89,8 @@ class FetchClient {
       }
 
       const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
+      if (contentType && contentType.includes("application/json"))
         return await response.json();
-      }
-
       return (await response.text()) as unknown as T;
     } catch (error) {
       console.error("API request failed:", error);

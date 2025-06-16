@@ -4,16 +4,16 @@ import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type React from "react";
 import { Search, ChevronDown, X } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import JobScroller from "@/components/student/job-scroller";
-import ProfileButton from "@/components/student/profile-button";
+import JobScroller from "@/app/student/landing/job-scroller";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
-} from "@/components/student/dropdown";
+} from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
+import { Header } from "@/components/student/header";
+import { useAppContext } from "@/lib/ctx-app";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,23 +23,9 @@ export default function HomePage() {
     category: string;
   }>();
   const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const { is_mobile } = useAppContext();
   const router = useRouter();
   const justBetterRef = useRef<HTMLSpanElement>(null);
-
-  // Check if screen width is <= 1024px
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobile(window.innerWidth <= 1024);
-    };
-
-    // Check on mount
-    checkScreenSize();
-
-    // Add resize listener
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
@@ -48,13 +34,13 @@ export default function HomePage() {
     if (searchTerm.trim()) {
       params.set("q", searchTerm);
     }
-    if (job_type !== "All types") {
+    if (job_type && job_type !== "All types") {
       params.set("jobType", job_type);
     }
-    if (location !== "Any location") {
+    if (location && location !== "Any location") {
       params.set("location", location);
     }
-    if (category !== "All categories") {
+    if (category && category !== "All categories") {
       params.set("category", category);
     }
     router.push(`/search?${params.toString()}`);
@@ -67,270 +53,250 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-hidden">
-      <div className="flex flex-col min-h-screen">
-        {/* Top bar with logo and Profile button */}
-        <div
-          className={`flex justify-between items-center ${
-            isMobile ? "px-6 py-4" : "p-4"
-          } bg-white/80 backdrop-blur-md border-b border-gray-100`}
-        >
-          <Link href="/" className="block">
-            <h1
-              className={`font-bold text-gray-900 ${
-                isMobile ? "text-lg" : "text-xl"
-              }`}
+    <>
+      <div
+        className={`flex-1 flex flex-col justify-center items-center ${
+          is_mobile ? "px-6 py-8 pb-32" : "px-6 lg:px-12 py-8"
+        }`}
+      >
+        {/* Hero Text */}
+        <div className="text-center mb-8">
+          <h1
+            className={`font-bold text-gray-900 leading-tight mb-3 ${
+              is_mobile
+                ? "text-4xl tracking-tight"
+                : "text-3xl sm:text-4xl lg:text-6xl"
+            }`}
+          >
+            Better Internships Start Here.
+          </h1>
+          {!is_mobile && (
+            <div
+              onMouseOver={() => {
+                console.log(justBetterRef.current?.style.scale);
+                if (justBetterRef.current) {
+                  justBetterRef.current.style.transform = "scale(1, 1)";
+                  justBetterRef.current.style.width = "100px";
+                }
+              }}
+              onMouseLeave={() => {
+                if (justBetterRef.current) {
+                  justBetterRef.current.style.transform = "scale(0, 1)";
+                  justBetterRef.current.style.width = "0px";
+                }
+              }}
             >
-              BetterInternship
-            </h1>
-          </Link>
-          <ProfileButton />
-        </div>
-
-        <div
-          className={`flex-1 flex flex-col justify-center items-center ${
-            isMobile ? "px-6 py-8 pb-32" : "px-6 lg:px-12 py-8"
-          }`}
-        >
-          {/* Hero Text */}
-          <div className="text-center mb-8">
-            <h1
-              className={`font-bold text-gray-900 leading-tight mb-3 ${
-                isMobile
-                  ? "text-4xl tracking-tight"
-                  : "text-3xl sm:text-4xl lg:text-6xl"
-              }`}
-            >
-              Better Internships Start Here.
-            </h1>
-            {!isMobile && (
-              <div
-                onMouseOver={() => {
-                  console.log(justBetterRef.current?.style.scale);
-                  if (justBetterRef.current) {
-                    justBetterRef.current.style.transform = "scale(1, 1)";
-                    justBetterRef.current.style.width = "100px";
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (justBetterRef.current) {
-                    justBetterRef.current.style.transform = "scale(0, 1)";
-                    justBetterRef.current.style.width = "0px";
-                  }
-                }}
-              >
-                <div className="group flex flex-row justify-center">
-                  <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
-                    By DLSU students, for DLSU students. Not official.
-                  </div>
-                  <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 overflow-hidden ">
-                    <span className="invisible m-0">Just Better...</span>
-                    <div
-                      className="absolute top-0 left-0 text-base sm:text-lg lg:text-xl h-full w-full flex items-center justify-center opacity-0
+              <div className="group flex flex-row justify-center">
+                <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
+                  By DLSU students, for DLSU students. Not official.
+                </div>
+                <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 overflow-hidden ">
+                  <span className="invisible m-0">Just Better...</span>
+                  <div
+                    className="absolute top-0 left-0 text-base sm:text-lg lg:text-xl h-full w-full flex items-center justify-center opacity-0
                                     transform -translate-x-full transition-all duration-300 ease-in-out
                                     group-hover:translate-x-0 group-hover:opacity-100"
-                    >
-                      Just Better.
-                    </div>
+                  >
+                    Just Better.
                   </div>
                 </div>
               </div>
-            )}
-            {isMobile && (
-              <p className="text-lg text-gray-500 font-medium">
-                By DLSU students, for DLSU students. Not official. Just Better.
-              </p>
-            )}
-          </div>
+            </div>
+          )}
+          {is_mobile && (
+            <p className="text-lg text-gray-500 font-medium">
+              By DLSU students, for DLSU students. Not official. Just Better.
+            </p>
+          )}
+        </div>
 
-          {/* Search Bar */}
-          <div className="w-full max-w-5xl">
-            {isMobile ? (
-              /* Mobile Search Layout - Clean Apple Style */
-              <div className="space-y-4">
-                {/* Search Input */}
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <Input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Job Title, keywords, Company"
-                    className="pl-12 pr-4 w-full h-14 bg-white border-0 rounded-2xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base font-medium focus:ring-2 focus:ring-blue-500 focus:shadow-lg transition-all duration-200"
-                  />
-                </div>
+        {/* Search Bar */}
+        <div className="w-full max-w-5xl">
+          {is_mobile ? (
+            /* Mobile Search Layout - Clean Apple Style */
+            <div className="space-y-4">
+              {/* Search Input */}
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Job Title, keywords, Company"
+                  className="pl-12 pr-4 w-full h-14 bg-white border-0 rounded-2xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base font-medium focus:ring-2 focus:ring-blue-500 focus:shadow-lg transition-all duration-200"
+                />
+              </div>
 
-                {/* Filter Row */}
-                <DropdownGroup>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="relative">
-                      <GroupableRadioDropdown
-                        name="jobType"
-                        options={[
-                          "Internships",
-                          "Full-time",
-                          "Part-time",
-                          "All types",
-                        ]}
-                        on_change={filter_setter("job_type")}
-                      />
-                    </div>
-                    <div className="relative">
-                      <GroupableRadioDropdown
-                        name="location"
-                        options={[
-                          "Face to Face",
-                          "Remote",
-                          "Hybrid",
-                          "Any location",
-                        ]}
-                        on_change={filter_setter("location")}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Category Filter Row */}
+              {/* Filter Row */}
+              <DropdownGroup>
+                <div className="grid grid-cols-2 gap-3">
                   <div className="relative">
-                    {isMobile ? (
-                      <Button
-                        onClick={() => setShowCategoryModal(true)}
-                        className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
-                      >
-                        <span className="truncate">{filters.category}</span>
-                        <ChevronDown className="w-4 h-4 text-gray-400" />
-                      </Button>
-                    ) : (
-                      <GroupableRadioDropdown
-                        name="category"
-                        options={[
-                          "Tech",
-                          "Non-Tech",
-                          "Engineering",
-                          "Research",
-                          "Education",
-                          "Others",
-                          "All categories",
-                        ]}
-                        on_change={filter_setter("category")}
-                      />
-                    )}
+                    <GroupableRadioDropdown
+                      name="jobType"
+                      options={[
+                        "Internships",
+                        "Full-time",
+                        "Part-time",
+                        "All types",
+                      ]}
+                      on_change={filter_setter("job_type")}
+                    />
                   </div>
-                </DropdownGroup>
+                  <div className="relative">
+                    <GroupableRadioDropdown
+                      name="location"
+                      options={[
+                        "Face to Face",
+                        "Remote",
+                        "Hybrid",
+                        "Any location",
+                      ]}
+                      on_change={filter_setter("location")}
+                    />
+                  </div>
+                </div>
 
-                {/* Search Button */}
-                <Button
-                  onClick={handleSearch}
-                  className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  Find Jobs
-                </Button>
-              </div>
-            ) : (
-              /* Desktop Search Layout - Clean Single Line */
-              <div className="w-full max-w-4xl mx-auto">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-2 py-2">
-                  <div className="flex items-center h-14">
-                    {/* Search Input */}
-                    <div className="flex items-center flex-1 pl-4 pr-2">
-                      <Search className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0" />
-                      <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Job title, keywords, or company"
-                        className="w-full py-3 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
-                      />
-                    </div>
+                {/* Category Filter Row */}
+                <div className="relative">
+                  {is_mobile ? (
+                    <Button
+                      onClick={() => setShowCategoryModal(true)}
+                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                    >
+                      <span className="truncate">{filters.category}</span>
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    </Button>
+                  ) : (
+                    <GroupableRadioDropdown
+                      name="category"
+                      options={[
+                        "Tech",
+                        "Non-Tech",
+                        "Engineering",
+                        "Research",
+                        "Education",
+                        "Others",
+                        "All categories",
+                      ]}
+                      on_change={filter_setter("category")}
+                    />
+                  )}
+                </div>
+              </DropdownGroup>
 
-                    {/* Filter Dropdowns with Dividers */}
-                    <div className="flex items-center">
+              {/* Search Button */}
+              <Button
+                onClick={handleSearch}
+                className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+              >
+                Find Jobs
+              </Button>
+            </div>
+          ) : (
+            /* Desktop Search Layout - Clean Single Line */
+            <div className="w-full max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-2 py-2">
+                <div className="flex items-center h-14">
+                  {/* Search Input */}
+                  <div className="flex items-center flex-1 pl-4 pr-2">
+                    <Search className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0" />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Job title, keywords, or company"
+                      className="w-full py-3 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
+                    />
+                  </div>
+
+                  {/* Filter Dropdowns with Dividers */}
+                  <div className="flex items-center">
+                    <div className="h-8 w-px bg-gray-300 mx-1" />
+                    <DropdownGroup>
+                      <div className="w-24">
+                        <GroupableRadioDropdown
+                          name="jobType"
+                          options={[
+                            "All types",
+                            "Internships",
+                            "Full-time",
+                            "Part-time",
+                          ]}
+                          on_change={filter_setter("job_type")}
+                        />
+                      </div>
                       <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <DropdownGroup>
-                        <div className="w-24">
-                          <GroupableRadioDropdown
-                            name="jobType"
-                            options={[
-                              "All types",
-                              "Internships",
-                              "Full-time",
-                              "Part-time",
-                            ]}
-                            on_change={filter_setter("job_type")}
-                          />
-                        </div>
-                        <div className="h-8 w-px bg-gray-300 mx-1" />
-                        <div className="w-28">
-                          <GroupableRadioDropdown
-                            name="location"
-                            options={[
-                              "Any location",
-                              "Face to Face",
-                              "Remote",
-                              "Hybrid",
-                            ]}
-                            on_change={filter_setter("location")}
-                          />
-                        </div>
-                        <div className="h-8 w-px bg-gray-300 mx-1" />
-                        <div className="w-32">
-                          <GroupableRadioDropdown
-                            name="category"
-                            options={[
-                              "All categories",
-                              "Tech",
-                              "Non-Tech",
-                              "Engineering",
-                              "Research",
-                              "Education",
-                              "Others",
-                            ]}
-                            on_change={filter_setter("category")}
-                          />
-                        </div>
-                      </DropdownGroup>
-                    </div>
+                      <div className="w-28">
+                        <GroupableRadioDropdown
+                          name="location"
+                          options={[
+                            "Any location",
+                            "Face to Face",
+                            "Remote",
+                            "Hybrid",
+                          ]}
+                          on_change={filter_setter("location")}
+                        />
+                      </div>
+                      <div className="h-8 w-px bg-gray-300 mx-1" />
+                      <div className="w-32">
+                        <GroupableRadioDropdown
+                          name="category"
+                          options={[
+                            "All categories",
+                            "Tech",
+                            "Non-Tech",
+                            "Engineering",
+                            "Research",
+                            "Education",
+                            "Others",
+                          ]}
+                          on_change={filter_setter("category")}
+                        />
+                      </div>
+                    </DropdownGroup>
+                  </div>
 
-                    {/* Search Button */}
-                    <div className="pl-4 pr-2">
-                      <Button
-                        onClick={handleSearch}
-                        className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 whitespace-nowrap text-base shadow-none border-0"
-                      >
-                        Find jobs
-                      </Button>
-                    </div>
+                  {/* Search Button */}
+                  <div className="pl-4 pr-2">
+                    <Button
+                      onClick={handleSearch}
+                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 whitespace-nowrap text-base shadow-none border-0"
+                    >
+                      Find jobs
+                    </Button>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* Job Suggestions - Only show on desktop */}
-          {!isMobile && (
-            <div className="w-full max-w-4xl mt-8">
-              <JobScroller />
             </div>
           )}
         </div>
 
-        {/* Footer - Hide on mobile */}
-        {!isMobile && (
-          <div className="p-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
-            Are you an Employer? Send us an Email:{" "}
-            <a
-              href="mailto:hello@betterinternship.com"
-              className="text-blue-600 hover:underline"
-            >
-              hello@betterinternship.com
-            </a>
+        {/* Job Suggestions - Only show on desktop */}
+        {!is_mobile && (
+          <div className="w-full max-w-4xl mt-8">
+            <JobScroller />
           </div>
         )}
       </div>
 
+      {/* Footer - Hide on mobile */}
+      {!is_mobile && (
+        <div className="p-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
+          Are you an Employer? Send us an Email:{" "}
+          <a
+            href="mailto:hello@betterinternship.com"
+            className="text-blue-600 hover:underline"
+          >
+            hello@betterinternship.com
+          </a>
+        </div>
+      )}
+
       {/* Category Modal - Mobile Only */}
-      {isMobile && showCategoryModal && (
+      {is_mobile && showCategoryModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-6">
@@ -373,6 +339,6 @@ export default function HomePage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
