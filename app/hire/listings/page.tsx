@@ -223,218 +223,227 @@ const EditModalForm = ({
 
   return (
     <>
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-white">
+      {/* Header with improved styling */}
+      <div className="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex justify-between items-center">
-          <div className="text-2xl font-normal text-gray-600">
-            Editing Job Listing -{" "}
-            <span className="font-bold text-gray-900">{form_data.title}</span>
+          <div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-1">
+              Edit Job Listing
+            </h2>
+            <p className="text-sm text-gray-600">
+              {form_data.title || "Untitled Job"}
+            </p>
           </div>
           <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={() => close()}
-              className="px-4 py-2 text-sm font-medium"
+              className="px-5 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50"
+              disabled={updating}
             >
               Cancel
             </Button>
             <Button
               disabled={updating}
               onClick={handleSaveEdit}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-sm"
             >
-              {updating ? "Saving..." : "Save Changes"}
+              {updating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)] min-h-[60vh]">
-        <div className="grid grid-cols-1">
-          <div className="">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              General Listing Details
+      {/* Main Content with improved layout */}
+      <div className="p-8 overflow-y-auto max-h-[calc(90vh-120px)] min-h-[60vh] bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          {/* Basic Information Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                <FileText className="w-4 h-4 text-blue-600" />
+              </div>
+              Basic Information
             </h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-x-4">
-                <div>
-                  <Label
-                    htmlFor="edit-job-title"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Listing Title
-                  </Label>
-                  <Input
-                    id="edit-job-title"
-                    value={form_data.title}
-                    onChange={(e) => set_field("title", e.target.value)}
-                    placeholder="Enter job title"
-                    className="mt-1 h-10"
-                  />
-                </div>
-
-                <div>
-                  <Label
-                    htmlFor="edit-location"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Location
-                  </Label>
-                  <Input
-                    id="edit-location"
-                    value={form_data.location ?? ""}
-                    onChange={(e) => set_field("location", e.target.value)}
-                    placeholder="Enter location"
-                    className="mt-1 h-10"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-4">
-                <div>
-                  <Label
-                    htmlFor="edit-job-title"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Type
-                  </Label>
-                  <RefDropdown
-                    name="type"
-                    defaultValue={defaultDropdownValue}
-                    value={form_data.type_name}
-                    options={[
-                      "Not specified",
-                      ...job_types.map((jt) => jt.name),
-                    ]}
-                    activeDropdown={activeDropdown}
-                    validFieldClassName={""}
-                    onChange={(value) => set_field("type_name", value)}
-                    onClick={() => setActiveDropdown("type")}
-                  ></RefDropdown>
-                </div>
-
-                <div className="z-[90]">
-                  <Label
-                    htmlFor="edit-location"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Mode
-                  </Label>
-                  <RefDropdown
-                    name="mode"
-                    defaultValue={defaultDropdownValue}
-                    value={form_data.mode_name}
-                    options={[
-                      "Not specified",
-                      ...job_modes.map((jm) => jm.name),
-                    ]}
-                    activeDropdown={activeDropdown}
-                    validFieldClassName={""}
-                    onChange={(value) => set_field("mode_name", value)}
-                    onClick={() => setActiveDropdown("mode")}
-                  ></RefDropdown>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-4 mt-2">
-              <div>
-                <Label
-                  htmlFor="edit-job-title"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Salary
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Job Title
                 </Label>
                 <Input
-                  id="edit-salary"
-                  value={form_data.salary ?? ""}
-                  onChange={(e) => set_field("salary", e.target.value)}
-                  placeholder="Enter salary"
-                  className="mt-1 h-10"
+                  value={form_data.title || ""}
+                  onChange={(e) => set_field("title", e.target.value)}
+                  placeholder="Enter job title"
+                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
 
-              <div>
-                <Label
-                  htmlFor="edit-location"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Frequency
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Location
+                </Label>
+                <Input
+                  value={form_data.location ?? ""}
+                  onChange={(e) => set_field("location", e.target.value)}
+                  placeholder="Enter location"
+                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Employment Type
+                </Label>
+                <RefDropdown
+                  name="type"
+                  defaultValue={defaultDropdownValue}
+                  value={form_data.type_name || defaultDropdownValue}
+                  options={[
+                    defaultDropdownValue,
+                    ...job_types.map((jt) => jt.name),
+                  ]}
+                  activeDropdown={activeDropdown}
+                  validFieldClassName=""
+                  onChange={(value) => set_field("type_name", value)}
+                  onClick={() => setActiveDropdown("type")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Work Mode
+                </Label>
+                <RefDropdown
+                  name="mode"
+                  defaultValue={defaultDropdownValue}
+                  value={form_data.mode_name || defaultDropdownValue}
+                  options={[
+                    defaultDropdownValue,
+                    ...job_modes.map((jm) => jm.name),
+                  ]}
+                  activeDropdown={activeDropdown}
+                  validFieldClassName=""
+                  onChange={(value) => set_field("mode_name", value)}
+                  onClick={() => setActiveDropdown("mode")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Salary
+                </Label>
+                <Input
+                  value={form_data.salary ?? ""}
+                  onChange={(e) => set_field("salary", e.target.value)}
+                  placeholder="Enter salary amount"
+                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Pay Frequency
                 </Label>
                 <RefDropdown
                   name="pay_freq"
                   defaultValue={defaultDropdownValue}
-                  value={form_data.salary_freq_name}
+                  value={form_data.salary_freq_name || defaultDropdownValue}
                   options={[
-                    "Not specified",
+                    defaultDropdownValue,
                     ...job_pay_freq.map((jpf) => jpf.name),
                   ]}
                   activeDropdown={activeDropdown}
-                  validFieldClassName={""}
+                  validFieldClassName=""
                   onChange={(value) => set_field("salary_freq_name", value)}
                   onClick={() => setActiveDropdown("pay_freq")}
-                ></RefDropdown>
+                />
               </div>
             </div>
-            <br />
+          </div>
 
-            <div className="grid grid-rows-2 gap-y-4 mt-2 w-1/2 pr-2">
-              <div className="flex flex-row justify-between border-2 rounded-md">
-                <Label
-                  htmlFor="edit-job-title"
-                  className="text-sm font-medium text-gray-700 p-2"
-                >
-                  Require Github?
-                </Label>
+          {/* Requirements Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                <Checkbox className="w-4 h-4 text-green-600" />
+              </div>
+              Application Requirements
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">
+                    GitHub Repository Required
+                  </Label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Applicants must provide a GitHub link
+                  </p>
+                </div>
                 <Checkbox
                   checked={form_data.require_github ?? false}
-                  className="inline-block p-3 m-1"
-                  onCheckedChange={(value) =>
-                    set_field("require_github", value)
-                  }
-                ></Checkbox>
+                  onCheckedChange={(value) => set_field("require_github", value)}
+                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                />
               </div>
 
-              <div className="flex flex-row justify-between border-2 rounded-md">
-                <Label
-                  htmlFor="edit-location"
-                  className="text-sm font-medium text-gray-700 p-2"
-                >
-                  Require Portfolio?
-                </Label>
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">
+                    Portfolio Required
+                  </Label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Applicants must provide a portfolio link
+                  </p>
+                </div>
                 <Checkbox
                   checked={form_data.require_portfolio ?? false}
-                  className="inline-block p-3 m-1"
-                  onCheckedChange={(value) =>
-                    set_field("require_portfolio", value)
-                  }
-                ></Checkbox>
+                  onCheckedChange={(value) => set_field("require_portfolio", value)}
+                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                />
               </div>
             </div>
-            <br />
+          </div>
 
-            <div className="grid grid-cols-2 space-x-4">
-              <div className="relative z-50 w-full">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 w-full">
-                  Listing Description Editor
-                </h3>
+          {/* Content Editors */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <FileEdit className="w-4 h-4 text-purple-600" />
+                </div>
+                Job Description
+              </h3>
+              <div className="relative">
                 <MDXEditor
-                  className="[&_span]:relative mb-10"
+                  className="min-h-[300px] border border-gray-200 rounded-lg"
                   markdown={form_data.description ?? ""}
                   onChange={(value) => set_field("description", value)}
-                ></MDXEditor>
+                />
               </div>
+            </div>
 
-              <div className="relative z-50 w-full">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 w-full">
-                  Listing Requirements Editor
-                </h3>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                  <FileText className="w-4 h-4 text-orange-600" />
+                </div>
+                Requirements
+              </h3>
+              <div className="relative">
                 <MDXEditor
-                  className="[&_span]:relative mb-10"
+                  className="min-h-[300px] border border-gray-200 rounded-lg"
                   markdown={form_data.requirements ?? ""}
                   onChange={(value) => set_field("requirements", value)}
-                ></MDXEditor>
+                />
               </div>
             </div>
           </div>
