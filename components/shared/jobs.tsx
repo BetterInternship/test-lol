@@ -209,6 +209,7 @@ export const JobDetails = ({
       {/* Job Description */}
       <hr />
       <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">Description</h3>
         <div className="markdown">
           <ReactMarkdown>{job.description}</ReactMarkdown>
         </div>
@@ -217,6 +218,7 @@ export const JobDetails = ({
       {/* Job Requirements */}
       <hr />
       <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">Requirements</h3>
         <div className="markdown">
           <ReactMarkdown>{job.requirements}</ReactMarkdown>
         </div>
