@@ -224,6 +224,7 @@ export default function HomePage() {
                             "Full-time",
                             "Part-time",
                           ]}
+                          button_class="!border-0"
                           on_change={filter_setter("job_type")}
                         />
                       </div>
@@ -237,6 +238,7 @@ export default function HomePage() {
                             "Remote",
                             "Hybrid",
                           ]}
+                          button_class="!border-0"
                           on_change={filter_setter("location")}
                         />
                       </div>
@@ -253,6 +255,7 @@ export default function HomePage() {
                             "Education",
                             "Others",
                           ]}
+                          button_class="!border-0"
                           on_change={filter_setter("category")}
                         />
                       </div>

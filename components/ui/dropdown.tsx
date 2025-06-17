@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-17 23:55:30
+ * @ Modified time: 2025-06-18 00:33:16
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -13,6 +13,7 @@ import { useDetectClickOutside } from "react-detect-click-outside";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 /**
  * The group context interface.
@@ -55,12 +56,15 @@ const DropdownOptionButton = ({
   children: React.ReactElement<IDropdownOptionProps>;
   set_is_open: (is_open: boolean) => void;
 }) => {
+  const router = useRouter();
+
   return (
     <button
       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
       onClick={() => {
         set_is_open(false);
         children.props.on_click && children.props.on_click();
+        children.props.href && router.push(children.props.href);
       }}
     >
       <div
@@ -107,11 +111,13 @@ export const GroupableRadioDropdown = ({
   options,
   on_change,
   default_value = options[0],
+  button_class,
 }: {
   name: string;
   options: string[];
   on_change: (option: string) => void;
   default_value?: string;
+  button_class?: string;
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const { is_mobile } = useAppContext();
@@ -157,10 +163,11 @@ export const GroupableRadioDropdown = ({
         variant="ghost"
         onClick={handle_click}
         className={cn(
-          "flex items-center input-box justify-between transition-all",
+          "flex items-center input-box justify-between",
           is_mobile
             ? "h-12 px-4 gap-2 w-full text-left bg-white rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 font-medium"
-            : "h-auto py-3 px-3 gap-1 bg-transparent font-normal text-sm w-full"
+            : "h-auto py-3 px-3 gap-1 bg-transparent font-normal text-sm w-full",
+          button_class
         )}
       >
         <span
