@@ -152,7 +152,9 @@ export const auth_service = {
 };
 
 // User Services
-interface UserResponse extends Partial<PublicUser>, FetchResponse {}
+interface UserResponse extends FetchResponse {
+  user: Partial<PublicUser>;
+}
 
 interface SaveJobResponse extends FetchResponse {
   job?: Job;
