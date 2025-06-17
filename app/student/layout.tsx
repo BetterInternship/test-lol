@@ -44,9 +44,9 @@ const HTMLContent = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <html lang="en" className="overflow-hidden">
+    <html lang="en">
       <body>
-        <div className="min-h-screen bg-gray-50 overflow-hidden">
+        <div className="min-h-screen bg-gray-50">
           <div className="flex flex-col h-screen min-h-screen max-h-screen">
             <Header />
             <div className="flex-grow overflow-auto flex flex-col">

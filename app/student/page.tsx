@@ -7,6 +7,7 @@ import { Search, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JobScroller from "@/app/student/landing/job-scroller";
+import MobileJobScroller from "@/app/student/landing/mobile-job-scroller";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
@@ -18,10 +19,19 @@ import { useAppContext } from "@/lib/ctx-app";
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { filters, set_filter, filter_setter } = useFilter<{
-    job_type: string;
     location: string;
     category: string;
   }>();
+
+  // Set default values on mount if not already set
+  useEffect(() => {
+    if (!filters.location) {
+      set_filter("location", "All Modes");
+    }
+    if (!filters.category) {
+      set_filter("category", "All categories");
+    }
+  }, [filters.location, filters.category, set_filter]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { is_mobile } = useAppContext();
   const router = useRouter();
@@ -29,15 +39,12 @@ export default function HomePage() {
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    const { job_type, location, category } = filters;
+    const { location, category } = filters;
 
     if (searchTerm.trim()) {
       params.set("q", searchTerm);
     }
-    if (job_type && job_type !== "All types") {
-      params.set("jobType", job_type);
-    }
-    if (location && location !== "Any location") {
+    if (location && location !== "All Modes") {
       params.set("location", location);
     }
     if (category && category !== "All categories") {
@@ -133,55 +140,43 @@ export default function HomePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="relative">
                     <GroupableRadioDropdown
-                      name="jobType"
-                      options={[
-                        "Internships",
-                        "Full-time",
-                        "Part-time",
-                        "All types",
-                      ]}
-                      on_change={filter_setter("job_type")}
-                    />
-                  </div>
-                  <div className="relative">
-                    <GroupableRadioDropdown
                       name="location"
                       options={[
+                        "All Modes",
                         "Face to Face",
                         "Remote",
                         "Hybrid",
-                        "Any location",
                       ]}
+                      default_value="All Modes"
                       on_change={filter_setter("location")}
                     />
                   </div>
-                </div>
-
-                {/* Category Filter Row */}
-                <div className="relative">
-                  {is_mobile ? (
-                    <Button
-                      onClick={() => setShowCategoryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
-                    >
-                      <span className="truncate">{filters.category}</span>
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    </Button>
-                  ) : (
-                    <GroupableRadioDropdown
-                      name="category"
-                      options={[
-                        "Tech",
-                        "Non-Tech",
-                        "Engineering",
-                        "Research",
-                        "Education",
-                        "Others",
-                        "All categories",
-                      ]}
-                      on_change={filter_setter("category")}
-                    />
-                  )}
+                  <div className="relative">
+                    {is_mobile ? (
+                      <Button
+                        onClick={() => setShowCategoryModal(true)}
+                        className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      >
+                        <span className="truncate">{filters.category || "All categories"}</span>
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      </Button>
+                    ) : (
+                      <GroupableRadioDropdown
+                        name="category"
+                        options={[
+                          "All categories",
+                          "Tech",
+                          "Non-Tech",
+                          "Engineering",
+                          "Research",
+                          "Education",
+                          "Others",
+                        ]}
+                        default_value="All categories"
+                        on_change={filter_setter("category")}
+                      />
+                    )}
+                  </div>
                 </div>
               </DropdownGroup>
 
@@ -215,28 +210,16 @@ export default function HomePage() {
                   <div className="flex items-center">
                     <div className="h-8 w-px bg-gray-300 mx-1" />
                     <DropdownGroup>
-                      <div className="w-24">
-                        <GroupableRadioDropdown
-                          name="jobType"
-                          options={[
-                            "All types",
-                            "Internships",
-                            "Full-time",
-                            "Part-time",
-                          ]}
-                          on_change={filter_setter("job_type")}
-                        />
-                      </div>
-                      <div className="h-8 w-px bg-gray-300 mx-1" />
                       <div className="w-28">
                         <GroupableRadioDropdown
                           name="location"
                           options={[
-                            "Any location",
+                            "All Modes",
                             "Face to Face",
                             "Remote",
                             "Hybrid",
                           ]}
+                          default_value="All Modes"
                           on_change={filter_setter("location")}
                         />
                       </div>
@@ -253,6 +236,7 @@ export default function HomePage() {
                             "Education",
                             "Others",
                           ]}
+                          default_value="All categories"
                           on_change={filter_setter("category")}
                         />
                       </div>
@@ -274,7 +258,22 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Job Suggestions - Only show on desktop */}
+        {/* Mobile Job Suggestions - Mobile specific layout */}
+        {is_mobile && (
+          <div className="w-full mt-8 px-2">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 text-center">
+                Popular Jobs
+              </h3>
+              <p className="text-sm text-gray-500 text-center mt-1">
+                Tap to search
+              </p>
+            </div>
+            <MobileJobScroller />
+          </div>
+        )}
+
+        {/* Desktop Job Suggestions - Only show on desktop */}
         {!is_mobile && (
           <div className="w-full max-w-4xl mt-8">
             <JobScroller />

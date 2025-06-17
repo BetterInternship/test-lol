@@ -178,7 +178,7 @@ export const GroupableRadioDropdown = ({
       </Button>
 
       {is_open && (
-        <div className="absolute top-full mt-2 bg-white rounded-md shadow-xl z-50 min-w-[200px] overflow-hidden border border-gray-100">
+        <div className="absolute top-full mt-2 bg-white rounded-md shadow-xl z-[9999] min-w-[200px] overflow-hidden border border-gray-100">
           {options.map((option, index) => (
             <DropdownOptionButton key={index} set_is_open={set_is_open}>
               <DropdownOption
@@ -204,18 +204,20 @@ export const GroupableNavDropdown = ({
   display,
   content,
   children,
+  show_arrow = true, // New optional prop to control arrow visibility
 }: {
   display?: React.ReactNode;
   content?: React.ReactNode;
   children?:
     | React.ReactElement<IDropdownOptionProps>
     | React.ReactElement<IDropdownOptionProps>[];
+  show_arrow?: boolean; // Optional prop - defaults to true for backward compatibility
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const [is_open, set_is_open] = useState(false);
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ zIndex: 'inherit' }}>
       <Button
         ref={ref}
         variant="outline"
@@ -223,16 +225,30 @@ export const GroupableNavDropdown = ({
         onClick={() => set_is_open(!is_open)}
       >
         {display}
-        <ChevronDown
-          className={cn(
-            "w-4 h-4 text-gray-600 transition-transform",
-            is_open ? "rotate-180" : ""
-          )}
-        />
+        {/* Conditionally render the chevron arrow */}
+        {show_arrow && (
+          <ChevronDown
+            className={cn(
+              "w-4 h-4 text-gray-600 transition-transform",
+              is_open ? "rotate-180" : ""
+            )}
+          />
+        )}
       </Button>
 
       {is_open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+        <div 
+          className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-[9999]"
+          style={{
+            // Ensure dropdown appears above all content
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            zIndex: 9999,
+            // Add shadow for better visibility
+            boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+          }}
+        >
           <div className="py-1">
             {content}
 

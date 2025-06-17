@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useAppContext } from "@/lib/ctx-app";
 
 /**
  * Creates a reusable modal component.
@@ -11,6 +12,7 @@ import { useState } from "react";
 export const useModal = (name: string, options?: { showCloseButton?: boolean }) => {
   const [is_open, set_is_open] = useState(false);
   const { showCloseButton = true } = options || {};
+  const { is_mobile } = useAppContext();
   
   return {
     state: is_open,
@@ -26,14 +28,26 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => set_is_open(false)}
+            style={{
+              // Account for page header on mobile
+              paddingTop: is_mobile ? '80px' : '16px'
+            }}
           >
             <motion.div
-              className="bg-white rounded-2xl overflow-hidden shadow-2xl"
+              className={`bg-white overflow-hidden shadow-2xl ${
+                is_mobile 
+                  ? "w-full h-full rounded-2xl" // Fully rounded corners on mobile
+                  : "rounded-2xl max-w-4xl max-h-[90vh]" // Fully rounded on desktop
+              }`}
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
+              style={{
+                // Ensure modal doesn't exceed available height
+                maxHeight: is_mobile ? 'calc(100vh - 80px)' : '90vh'
+              }}
             >
               {showCloseButton && (
                 <div className="p-4 flex flex-row w-full justify-end">

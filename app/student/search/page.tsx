@@ -12,6 +12,12 @@ import {
   AlertTriangle,
   User,
   Filter,
+  X,
+  Building,
+  MapPin,
+  Monitor,
+  PhilippinePeso,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +39,8 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -46,6 +54,14 @@ export default function SearchPage() {
     industry: string;
     category: string;
   }>();
+  
+  // Initialize default filter values
+  useEffect(() => {
+    if (!filters.job_type) set_filter("job_type", "All types");
+    if (!filters.location) set_filter("location", "Any location");  
+    if (!filters.industry) set_filter("industry", "All industries");
+    if (!filters.category) set_filter("category", "All categories");
+  }, []);
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -65,10 +81,10 @@ export default function SearchPage() {
     open: open_job_modal,
     close: close_job_modal,
     Modal: JobModal,
-  } = useModal("job-modal");
+  } = useModal("job-modal", { showCloseButton: false });
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { ref_is_not_null } = useRefs();
+  const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } = useRefs();
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -139,9 +155,13 @@ export default function SearchPage() {
     const category = searchParams.get("category");
     const jobType = searchParams.get("jobType");
     const location = searchParams.get("location");
-    set_filter("category", category ?? "All industries");
+    
+    // Initialize filters with proper defaults
+    set_filter("category", category ?? "All categories");
     set_filter("job_type", jobType ?? "All types");
     set_filter("location", location ?? "Any location");
+    set_filter("industry", "All industries");
+    
     setSelectedJob(jobs.filter((job) => job.id === jobId)[0] ?? {});
   }, [searchParams, jobs]);
 
@@ -222,6 +242,20 @@ export default function SearchPage() {
     }
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    
+    // If search is cleared (empty), refresh results by clearing all filters
+    if (value.trim() === "") {
+      set_filter("job_type", "All types");
+      set_filter("location", "Any location");
+      set_filter("industry", "All industries");
+      set_filter("category", "All categories");
+      setJobsPage(1);
+      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }));
+    }
+  };
+
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
     if (is_mobile) open_job_modal();
@@ -251,10 +285,10 @@ export default function SearchPage() {
             </div>
           </div>
         ) : is_mobile ? (
-          /* Mobile Layout - Only Job Cards */
-          <div className="w-full overflow-y-auto p-6">
-            {/* Mobile Search Bar */}
-            <div className="w-full mb-6">
+          /* Mobile Layout - Fixed Search Bar with Scrollable Job Cards */
+          <div className="w-full flex flex-col h-full">
+            {/* Fixed Mobile Search Bar */}
+            <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
@@ -262,7 +296,7 @@ export default function SearchPage() {
                     <input
                       type="text"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Search Job Listings"
                       className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
@@ -279,28 +313,33 @@ export default function SearchPage() {
               </div>
             </div>
 
-            {jobs.length ? (
-              <div className="space-y-4">
-                {jobs.map((job) => (
-                  <MobileJobCard
-                    key={job.id}
-                    job={job}
-                    on_click={() => handleJobCardClick(job)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div>
-                <p className="p-4">No jobs found.</p>
-              </div>
-            )}
+            {/* Scrollable Job Cards Area */}
+            <div className="flex-1 overflow-y-auto p-6 pt-4">
+              {jobs.length ? (
+                <div className="space-y-4">
+                  {jobs.map((job) => (
+                    <MobileJobCard
+                      key={job.id}
+                      job={job}
+                      on_click={() => handleJobCardClick(job)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div>
+                  <p className="p-4">No jobs found.</p>
+                </div>
+              )}
 
-            {/* Mobile Paginator */}
-            <Paginator
-              totalItems={allJobs.length}
-              itemsPerPage={jobs_page_size}
-              onPageChange={(page) => setJobsPage(page)}
-            />
+              {/* Mobile Paginator */}
+              <div className="mt-6">
+                <Paginator
+                  totalItems={allJobs.length}
+                  itemsPerPage={jobs_page_size}
+                  onPageChange={(page) => setJobsPage(page)}
+                />
+              </div>
+            </div>
           </div>
         ) : (
           /* Desktop Layout - Split View */
@@ -316,7 +355,7 @@ export default function SearchPage() {
                       <input
                         type="text"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         onKeyPress={handleKeyPress}
                         placeholder="Search Job Listings"
                         className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
@@ -406,11 +445,155 @@ export default function SearchPage() {
 
       {/* Mobile Job Details Modal */}
       <JobModal>
-        <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <JobDetails job={selectedJob ?? {}} />
+        <div className="h-full max-h-full flex flex-col bg-white">
+          {/* Fixed Header with Close Button */}
+          <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
+            <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => close_job_modal()}
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+            >
+              <X className="h-5 w-5 text-gray-500" />
+            </Button>
+          </div>
+
+          {/* Fixed Job Header - Non-scrollable */}
+          {selectedJob && (
+            <div className="p-4 bg-white flex-shrink-0 border-b">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                {selectedJob.title}
+              </h1>
+              <div className="flex items-center gap-2 text-gray-600 mb-1">
+                <Building className="w-4 h-4" />
+                <span>{selectedJob.employer?.name}</span>
+              </div>
+              <p className="text-sm text-gray-500">
+                Listed on {formatDate(selectedJob.created_at ?? "")}
+              </p>
+            </div>
+          )}
+
+          {/* Scrollable Content - Only job details and below */}
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {selectedJob && (
+              <div className="p-4">
+                {/* Mobile Job Details Grid */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-4">Job Details</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm">
+                          <span className="font-medium">Location: </span>
+                          <span className="opacity-80">
+                            {selectedJob.location || "Not specified"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Monitor className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm">
+                          <span className="font-medium">Mode: </span>
+                          <span className="opacity-80">
+                            {to_job_mode_name(selectedJob.mode)}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm">
+                          <span className="font-medium">Salary: </span>
+                          <span className="opacity-80">
+                            {selectedJob.salary || "Not specified"}{" "}
+                            {to_job_pay_freq_name(selectedJob.salary_freq)}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm">
+                          <span className="font-medium">Employment Type: </span>
+                          <span className="opacity-80">
+                            {to_job_type_name(selectedJob.type)}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Job Description */}
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold mb-4">Description</h2>
+                  <div className="prose prose-sm max-w-none text-gray-700">
+                    <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
+                  </div>
+                </div>
+
+                {/* Job Requirements */}
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold mb-4">Requirements</h2>
+                  <div className="prose prose-sm max-w-none text-gray-700">
+                    <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
+                  </div>
+                </div>
+
+                {/* Bottom spacing for action buttons */}
+                <div className="pb-20"></div>
+              </div>
+            )}
+          </div>
+
+          {/* Fixed Action Buttons at Bottom */}
+          <div className="bg-white border-t p-4 flex-shrink-0">
+            <div className="flex gap-3">
+              <Button
+                disabled={appliedJob(selectedJob?.id ?? "")}
+                onClick={() => !appliedJob(selectedJob?.id ?? "") && handleApply()}
+                className={cn(
+                  "flex-1 h-12 font-semibold rounded-xl transition-all duration-200",
+                  appliedJob(selectedJob?.id ?? "")
+                    ? "bg-green-600 text-white"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                )}
+              >
+                {appliedJob(selectedJob?.id ?? "") && (
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                )}
+                {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => selectedJob && handleSave(selectedJob)}
+                className={cn(
+                  "h-12 w-12 rounded-xl border-2 transition-all duration-200",
+                  is_saved(selectedJob?.id ?? "")
+                    ? "bg-red-50 border-red-200 text-red-600"
+                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                )}
+              >
+                <Heart
+                  className={cn(
+                    "w-5 h-5",
+                    is_saved(selectedJob?.id ?? "") ? "fill-current" : ""
+                  )}
+                />
+              </Button>
+            </div>
+          </div>
         </div>
       </JobModal>
 
@@ -545,64 +728,97 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
-        </div>
+        <div className={`${is_mobile ? 'h-full flex flex-col' : ''}`}>
+          {/* Header */}
+          <div className={`${is_mobile ? 'p-4 pb-3' : 'p-6 pb-4'} flex-shrink-0`}>
+            <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
+          </div>
 
-        <div className="space-y-6">
-          <DropdownGroup>
-            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-              <GroupableRadioDropdown
-                name="jobType"
-                options={["All types", "Internships", "Full-time", "Part-time"]}
-                on_change={filter_setter("job_type")}
-                default_value={filters.job_type}
-              />
+          {/* Content - No flex-1 to prevent excessive stretching */}
+          <div className={`${is_mobile ? 'px-4' : 'px-6 pb-4'}`}>
+            <div className={`${is_mobile ? 'space-y-5' : 'space-y-6'}`}>
+              <DropdownGroup>
+                {/* Job Categories Dropdown */}
+                <div className="space-y-2">
+                  <label className="text-lg font-semibold text-gray-900 block">Job Categories</label>
+                  <div className="relative border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-150">
+                    <GroupableRadioDropdown
+                      name="category"
+                      options={[
+                        "All categories",
+                        "Tech",
+                        "Non-Tech", 
+                        "Engineering",
+                        "Research",
+                        "Education",
+                        "Others",
+                      ]}
+                      on_change={filter_setter("category")}
+                      default_value={filters.category || "All categories"}
+                    />
+                  </div>
+                </div>
+
+                {/* Location Dropdown */}
+                <div className="space-y-2">
+                  <label className="text-lg font-semibold text-gray-900 block">Any location</label>
+                  <div className="relative border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-150">
+                    <GroupableRadioDropdown
+                      name="location"
+                      options={["Any location", "In-Person", "Remote", "Hybrid"]}
+                      on_change={filter_setter("location")}
+                      default_value={filters.location || "Any location"}
+                    />
+                  </div>
+                </div>
+
+                {/* Industries Dropdown */}
+                <div className="space-y-2">
+                  <label className="text-lg font-semibold text-gray-900 block">All industries</label>
+                  <div className="relative border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-150">
+                    <GroupableRadioDropdown
+                      name="industry"
+                      options={[
+                        "All industries",
+                        "Technology",
+                        "Creative Services", 
+                        "Consumer Goods",
+                      ]}
+                      on_change={filter_setter("industry")}
+                      default_value={filters.industry || "All industries"}
+                    />
+                  </div>
+                </div>
+              </DropdownGroup>
             </div>
+          </div>
 
-            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-              <GroupableRadioDropdown
-                name="location"
-                options={["Any location", "In-Person", "Remote", "Hybrid"]}
-                on_change={filter_setter("location")}
-                default_value={filters.location}
-              />
+          {/* Flexible spacer to push buttons down on mobile */}
+          {is_mobile && <div className="flex-1"></div>}
+
+          {/* Fixed Action Buttons at Bottom */}
+          <div className={`${is_mobile ? 'p-4 pb-12 flex-shrink-0 border-t border-gray-100' : 'p-6 pt-4'}`}>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  // Clear all filters including category
+                  set_filter("job_type", "All types");
+                  set_filter("location", "Any location");
+                  set_filter("industry", "All industries");
+                  set_filter("category", "All categories");
+                }}
+                className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+              >
+                Clear Filters
+              </Button>
+              <Button
+                onClick={() => close_filter_modal()}
+                className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Apply Filters
+              </Button>
             </div>
-
-            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-              <GroupableRadioDropdown
-                name="category"
-                options={[
-                  "All industries",
-                  "Technology",
-                  "Creative Services",
-                  "Consumer Goods",
-                ]}
-                on_change={filter_setter("industry")}
-                default_value={filters.industry}
-              />
-            </div>
-          </DropdownGroup>
-
-          <div className="flex gap-3 pt-6">
-            <Button
-              variant="outline"
-              onClick={() => {
-                // Clear temp filters but keep search term
-                set_filter("job_type", "All types");
-                set_filter("location", "Any location");
-                set_filter("industry", "All industries");
-              }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
-            >
-              Clear Filters
-            </Button>
-            <Button
-              onClick={() => close_filter_modal()}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Apply Filters
-            </Button>
           </div>
         </div>
       </FilterModal>

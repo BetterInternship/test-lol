@@ -21,9 +21,15 @@ export const Header = () => {
   return (
     <div
       className={cn(
-        "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100",
+        "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 relative z-[100]",
         is_mobile ? "px-6 py-4" : "py-4 px-8"
       )}
+      style={{ 
+        // Ensure dropdown can escape overflow constraints
+        overflow: 'visible',
+        position: 'relative',
+        zIndex: 100
+      }}
     >
       <HeaderTitle />
       {!authroutes.some((route) => pathname.startsWith(route)) ? (
@@ -75,17 +81,15 @@ export const ProfileButton = () => {
   };
 
   return (
-    <GroupableNavDropdown
-      display={
-        <>
-          <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
-            <User className="w-4 h-4 text-gray-600" />
+    <div className="relative z-[101]">
+      <GroupableNavDropdown
+        show_arrow={false} // Remove the dropdown arrow for cleaner icon-only design
+        display={
+          // Simplified to just the user icon - maintaining existing functionality
+          <div className="w-8 h-8 rounded-full border-2 border-gray-400 flex items-center justify-center hover:border-gray-600 transition-colors">
+            <User className="w-5 h-5 text-gray-600" />
           </div>
-          <span className="text-gray-700 font-medium">
-            {is_authenticated() ? get_display_name() : "Account"}
-          </span>
-        </>
-      }
+        }
       content={
         is_authenticated() ? (
           <div className="px-4 py-3 border-b border-gray-200">
@@ -128,6 +132,7 @@ export const ProfileButton = () => {
         </DropdownOption>
       )}
     </GroupableNavDropdown>
+    </div>
   );
 };
 
