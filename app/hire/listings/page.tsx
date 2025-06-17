@@ -127,14 +127,37 @@ export default function MyListings() {
           </div>
 
           {/* Right Panel - Job Details */}
-          <JobDetails
-            job={selectedJob}
-            actions={[
-              <Button variant="outline" onClick={() => open_edit_modal()}>
-                Edit
-              </Button>,
-            ]}
-          />
+          {selectedJob?.id ? (
+            <JobDetails
+              job={selectedJob}
+              actions={[
+                <Button variant="outline" onClick={() => open_edit_modal()}>
+                  Edit
+                </Button>,
+              ]}
+            />
+          ) : (
+            <div className="h-full m-auto">
+              <div className="flex flex-col items-center pt-[25vh] h-screen">
+                <div className="opacity-35 mb-10">
+                  <div className="flex flex-row justify-center w-full">
+                    <h1 className="block text-6xl font-bold ">
+                      BetterInternship
+                    </h1>
+                  </div>
+                  <br />
+                  <div className="flex flex-row justify-center w-full">
+                    <p className="block text-2xl">
+                      Better Internships Start Here
+                    </p>
+                  </div>
+                </div>
+                <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
+                  Click on a job listing to view more details!
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

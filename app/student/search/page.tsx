@@ -33,6 +33,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -360,7 +361,7 @@ export default function SearchPage() {
 
             {/* Job Details */}
             <div className="w-2/3 flex flex-col overflow-hidden">
-              {selectedJob && (
+              {selectedJob?.id ? (
                 <JobDetails
                   job={selectedJob}
                   actions={[
@@ -398,6 +399,27 @@ export default function SearchPage() {
                     </Button>,
                   ]}
                 />
+              ) : (
+                <div className="h-full m-auto">
+                  <div className="flex flex-col items-center pt-[25vh] h-screen">
+                    <div className="opacity-35 mb-10">
+                      <div className="flex flex-row justify-center w-full">
+                        <h1 className="block text-6xl font-bold ">
+                          BetterInternship
+                        </h1>
+                      </div>
+                      <br />
+                      <div className="flex flex-row justify-center w-full">
+                        <p className="block text-2xl">
+                          Better Internships Start Here
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
+                      Click on a job listing to view more details!
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </>
