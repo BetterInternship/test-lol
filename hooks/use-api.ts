@@ -100,7 +100,6 @@ export function useJobs(
           job.location,
           ...(job.keywords || []),
           ...(job.requirements || []),
-          ...(job.responsibilities || []),
         ]
           .join(" ")
           .toLowerCase();
@@ -178,8 +177,8 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      const userData = await user_service.get_profile();
-      setProfile(userData as PublicUser);
+      const { user } = await user_service.get_profile();
+      if (user) setProfile(user as PublicUser);
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -199,9 +198,9 @@ export function useProfile() {
   const updateProfile = async (data: Partial<PublicUser>) => {
     try {
       setError(null);
-      const updatedProfile = await user_service.update_profile(data);
-      setProfile(updatedProfile as PublicUser);
-      return updatedProfile;
+      const { user } = await user_service.update_profile(data);
+      if (user) setProfile(user as PublicUser);
+      return user;
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);

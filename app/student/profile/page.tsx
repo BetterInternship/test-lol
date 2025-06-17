@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Edit2,
@@ -21,7 +19,6 @@ import {
   User,
   Mail,
   Phone,
-  Github,
   ExternalLink,
   FileText,
   Trash2,
@@ -29,6 +26,10 @@ import {
   Eye,
   Calendar,
   Award,
+  Github,
+  ChartArea,
+  PoundSterling,
+  Hash,
 } from "lucide-react";
 import { useProfile } from "@/hooks/use-api";
 import { useRouter } from "next/navigation";
@@ -37,13 +38,42 @@ import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
+import { PublicUser } from "@/lib/db/db.types";
+import { useFormData } from "@/lib/form-data";
+import {
+  EditableGroupableRadioDropdown,
+  EditableInput,
+} from "@/components/ui/editable";
+import { UserPropertyLabel } from "@/components/ui/labels";
+import Link from "next/link";
+import { UserLinkLabel } from "../../../components/ui/labels";
+import {
+  DropdownGroup,
+  GroupableRadioDropdown,
+} from "@/components/ui/dropdown";
 
 export default function ProfilePage() {
+  const defaultDropdownValue = "Not specified";
   const { is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
-  const { get_level, get_college } = useRefs();
+  const {
+    colleges,
+    levels,
+    get_level,
+    get_college,
+    to_college_name,
+    to_level_name,
+    get_college_by_name,
+    get_level_by_name,
+  } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState<any>({ skills: [] });
+  const [activeDropdown, setActiveDropdown] = useState("");
+  const { form_data, set_field, set_fields, field_setter } = useFormData<
+    PublicUser & {
+      college_name: string | null;
+      year_level_name: string | null;
+    }
+  >();
   const [saving, setSaving] = useState(false);
   const [filesInfo, setFilesInfo] = useState<any>(null);
   const [uploading, setUploading] = useState<{
@@ -165,22 +195,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleDeleteProfilePicture = async () => {
-    if (!confirm("Are you sure you want to delete your profile picture?"))
-      return;
-
-    try {
-      await file_service.delete_profile_picture();
-      setFilesInfo((prev: any) => ({
-        ...prev,
-        profilePicture: null,
-      }));
-      alert("Profile picture deleted successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to delete profile picture");
-    }
-  };
-
   useEffect(() => {
     if (!is_authenticated()) {
       router.push("/login");
@@ -188,21 +202,12 @@ export default function ProfilePage() {
   }, [is_authenticated(), router]);
 
   useEffect(() => {
-    if (profile) {
-      setEditedData({
-        full_name: profile.full_name || "",
-        phone_number: profile.phone_number || "",
-        college: profile.college || "",
-        year_level: profile.year_level || "",
-        portfolio_link: profile.portfolio_link || "",
-        github_link: profile.github_link || "",
-        linkedin_link: profile.linkedin_link || "",
-        calendly_link: profile.calendly_link || "",
-        bio: profile.bio || "",
-        taking_for_credit: profile.taking_for_credit || false,
-        linkage_officer: profile.linkage_officer || "",
+    if (profile)
+      set_fields({
+        ...(profile as PublicUser),
+        college_name: to_college_name(profile.college),
+        year_level_name: to_level_name(profile.year_level),
       });
-    }
   }, [profile]);
 
   const handleSave = async () => {
@@ -210,18 +215,20 @@ export default function ProfilePage() {
       setSaving(true);
       // Transform frontend field names to backend field names
       const dataToSend = {
-        full_name: editedData.full_name,
-        phone_number: editedData.phone_number,
-        college: editedData.college,
-        year_level: editedData.year_level,
-        portfolio_link: editedData.portfolio_link,
-        github_link: editedData.github_link,
-        linkedin_link: editedData.linkedin_link,
-        calendly_link: editedData.calendly_link,
-        bio: editedData.bio,
-        taking_for_credit: editedData.taking_for_credit,
-        linkage_officer: editedData.linkage_officer,
+        full_name: form_data.full_name ?? "",
+        phone_number: form_data.phone_number ?? "",
+        college: get_college_by_name(form_data.college_name)?.id ?? undefined,
+        year_level:
+          get_level_by_name(form_data.year_level_name)?.id ?? undefined,
+        portfolio_link: form_data.portfolio_link ?? "",
+        github_link: form_data.github_link ?? "",
+        linkedin_link: form_data.linkedin_link ?? "",
+        calendly_link: form_data.calendly_link ?? "",
+        bio: form_data.bio ?? "",
+        taking_for_credit: form_data.taking_for_credit,
+        linkage_officer: form_data.linkage_officer ?? "",
       };
+      console.log(dataToSend);
       await updateProfile(dataToSend);
       setIsEditing(false);
     } catch (error) {
@@ -233,40 +240,8 @@ export default function ProfilePage() {
   };
 
   const handleCancel = () => {
-    if (profile) {
-      setEditedData({
-        full_name: profile.full_name || "",
-        phone_number: profile.phone_number || "",
-        college: profile.college || "",
-        year_level: profile.year_level || "",
-        portfolio_link: profile.portfolio_link || "",
-        github_link: profile.github_link || "",
-        linkedin_link: profile.linkedin_link || "",
-        calendly_link: profile.calendly_link || "",
-        bio: profile.bio || "",
-        taking_for_credit: profile.taking_for_credit || false,
-        linkage_officer: profile.linkage_officer || "",
-      });
-    }
+    if (profile) set_fields({ ...profile });
     setIsEditing(false);
-  };
-
-  const addSkill = (skill: string) => {
-    if (skill.trim() && !editedData.skills.includes(skill.trim())) {
-      setEditedData({
-        ...editedData,
-        skills: [...editedData.skills, skill.trim()],
-      });
-    }
-  };
-
-  const removeSkill = (skillToRemove: string) => {
-    setEditedData({
-      ...editedData,
-      skills: editedData.skills.filter(
-        (skill: string) => skill !== skillToRemove
-      ),
-    });
   };
 
   if (!is_authenticated()) {
@@ -411,7 +386,14 @@ export default function ProfilePage() {
                     </>
                   ) : (
                     <Button
-                      onClick={() => setIsEditing(true)}
+                      onClick={() => (
+                        setIsEditing(true),
+                        set_fields({
+                          ...profile,
+                          college_name: to_college_name(profile.college),
+                          year_level_name: to_level_name(profile.year_level),
+                        })
+                      )}
                       size={is_mobile ? "sm" : "default"}
                     >
                       <Edit2 className="w-4 h-4 mr-2" />
@@ -462,37 +444,11 @@ export default function ProfilePage() {
                           <User className="w-4 h-4 mr-2 text-gray-500" />
                           Full Name
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.full_name || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                full_name: e.target.value,
-                              })
-                            }
-                            placeholder="Enter your full name"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {profile.full_name || "Not provided"}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Email */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Mail className="w-4 h-4 mr-2 text-gray-500" />
-                          Email
-                        </label>
-                        <p className="text-gray-900 font-medium text-sm">
-                          {profile.email}
-                        </p>
-                        <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md inline-block">
-                          Email cannot be changed
-                        </p>
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.full_name}
+                          setter={field_setter("full_name")}
+                        ></EditableInput>
                       </div>
 
                       {/* Phone Number */}
@@ -501,89 +457,56 @@ export default function ProfilePage() {
                           <Phone className="w-4 h-4 mr-2 text-gray-500" />
                           Phone Number
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.phone_number || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                phone_number: e.target.value,
-                              })
-                            }
-                            placeholder="Enter your phone number"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {profile.phone_number || (
-                              <span className="text-gray-400 italic">
-                                Not provided
-                              </span>
-                            )}
-                          </p>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.phone_number}
+                          setter={field_setter("phone_number")}
+                        >
+                          <UserPropertyLabel />
+                        </EditableInput>
                       </div>
 
-                      {/* College */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                          College
-                        </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.college || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                college: e.target.value,
-                              })
-                            }
-                            placeholder="e.g. BS Computer Science"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {get_college(profile.college)?.name || (
-                              <span className="text-gray-400 italic">
-                                Not provided
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
+                      <DropdownGroup>
+                        {/* College */}
+                        <div className="space-y-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+                            College
+                          </label>
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="college"
+                            value={form_data.college_name}
+                            setter={field_setter("college_name")}
+                            options={[
+                              "Not specified",
+                              ...colleges.map((c) => c.name),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
 
-                      {/* Year Level and Internship for Credit */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Badge className="w-4 h-4 mr-2 text-gray-500" />
-                          Year Level
-                        </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.year_level || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                year_level: e.target.value,
-                              })
-                            }
-                            placeholder="Enter your year level (1-5)"
-                            type="number"
-                            min="1"
-                            max="5"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium font-mono text-sm">
-                            {get_level(profile.year_level)?.name || (
-                              <span className="text-gray-400 italic font-sans">
-                                Not provided
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
+                        {/* Year Level and Internship for Credit */}
+                        <div className="space-y-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <Hash className="w-4 h-4 mr-2 text-gray-500" />
+                            Year Level
+                          </label>
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="year_level"
+                            value={form_data.year_level_name}
+                            setter={field_setter("year_level_name")}
+                            options={[
+                              "Not specified",
+                              ...levels.map((l) => l.name),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
+                      </DropdownGroup>
 
                       {/* Taking for Credit */}
                       <div className="space-y-2">
@@ -594,21 +517,16 @@ export default function ProfilePage() {
                         {isEditing ? (
                           <div className="flex items-center space-x-2">
                             <Checkbox
-                              checked={editedData.taking_for_credit || false}
-                              onCheckedChange={(checked) => {
-                                setEditedData({
-                                  ...editedData,
-                                  taking_for_credit: checked as boolean,
-                                });
-                                // Clear linkage officer if unchecked
-                                if (!checked) {
-                                  setEditedData((prev) => ({
-                                    ...prev,
-                                    linkage_officer: "",
-                                  }));
-                                }
-                              }}
+                              checked={form_data.taking_for_credit ?? false}
                               className="border-gray-300"
+                              onCheckedChange={(value) => {
+                                set_fields({
+                                  taking_for_credit: !!value,
+                                  linkage_officer: !!value
+                                    ? form_data.linkage_officer
+                                    : "",
+                                });
+                              }}
                             />
                             <span className="text-sm text-gray-700">
                               Taking for credit
@@ -632,34 +550,20 @@ export default function ProfilePage() {
 
                       {/* Linkage Officer - Conditional */}
                       {(isEditing
-                        ? editedData.taking_for_credit
+                        ? form_data.taking_for_credit
                         : profile.taking_for_credit) && (
                         <div className="space-y-2">
                           <label className="flex items-center text-sm font-semibold text-gray-700">
                             <User className="w-4 h-4 mr-2 text-gray-500" />
                             Linkage Officer
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.linkage_officer || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  linkage_officer: e.target.value,
-                                })
-                              }
-                              placeholder="Enter your linkage officer's name"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.linkage_officer || (
-                                <span className="text-gray-400 italic">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.linkage_officer}
+                            setter={field_setter("linkage_officer")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
                       )}
                     </div>
@@ -680,37 +584,14 @@ export default function ProfilePage() {
                           <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                           Portfolio Website
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.portfolio_link || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                portfolio_link: e.target.value,
-                              })
-                            }
-                            placeholder="https://yourportfolio.com"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.portfolio_link ? (
-                              <a
-                                href={profile.portfolio_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.portfolio_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.portfolio_link}
+                          setter={field_setter("portfolio_link")}
+                          placeholder="https://yourportfolio.com"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
 
                       {/* GitHub */}
@@ -719,37 +600,14 @@ export default function ProfilePage() {
                           <Github className="w-4 h-4 mr-2 text-gray-500" />
                           GitHub Profile
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.github_link || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                github_link: e.target.value,
-                              })
-                            }
-                            placeholder="https://github.com/yourusername"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.github_link ? (
-                              <a
-                                href={profile.github_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <Github className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.github_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.github_link}
+                          setter={field_setter("github_link")}
+                          placeholder="https://github.com/yourusername"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
 
                       {/* LinkedIn */}
@@ -758,37 +616,14 @@ export default function ProfilePage() {
                           <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                           LinkedIn Profile
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.linkedin_link || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                linkedin_link: e.target.value,
-                              })
-                            }
-                            placeholder="https://linkedin.com/in/yourusername"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.linkedin_link ? (
-                              <a
-                                href={profile.linkedin_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.linkedin_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.linkedin_link}
+                          setter={field_setter("linkedin_link")}
+                          placeholder="https://linkedin.com/in/yourusername"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
 
                       {/* Calendly */}
@@ -797,37 +632,14 @@ export default function ProfilePage() {
                           <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                           Calendly Link
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={editedData.calendly_link || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                calendly_link: e.target.value,
-                              })
-                            }
-                            placeholder="https://calendly.com/yourusername"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.calendly_link ? (
-                              <a
-                                href={profile.calendly_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.calendly_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.calendly_link}
+                          setter={field_setter("calendly_link")}
+                          placeholder="https://calendly.com/yourusername"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
                     </div>
                   </div>
@@ -843,19 +655,14 @@ export default function ProfilePage() {
                     {isEditing ? (
                       <div className="space-y-2">
                         <textarea
-                          value={editedData.bio || ""}
-                          onChange={(e) =>
-                            setEditedData({
-                              ...editedData,
-                              bio: e.target.value,
-                            })
-                          }
+                          value={form_data.bio || ""}
+                          onChange={(e) => set_field("bio", e.target.value)}
                           placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
                           className="w-full border border-gray-200 rounded-lg px-4 py-3 h-32 resize-none focus:border-blue-500 focus:ring-blue-500 text-gray-900"
                           maxLength={500}
                         />
                         <p className="text-xs text-gray-500 text-right">
-                          {(editedData.bio || "").length}/500 characters
+                          {(form_data.bio || "").length}/500 characters
                         </p>
                       </div>
                     ) : (
@@ -991,37 +798,13 @@ export default function ProfilePage() {
                             <User className="w-4 h-4 mr-2 text-gray-500" />
                             Full Name
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.full_name || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  full_name: e.target.value,
-                                })
-                              }
-                              placeholder="Enter your full name"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.full_name || "Not provided"}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Email */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Mail className="w-4 h-4 mr-2 text-gray-500" />
-                            Email
-                          </label>
-                          <p className="text-gray-900 font-medium text-sm">
-                            {profile.email}
-                          </p>
-                          <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-md inline-block">
-                            Email cannot be changed
-                          </p>
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.full_name}
+                            setter={field_setter("full_name")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
 
                         {/* Phone Number */}
@@ -1030,89 +813,56 @@ export default function ProfilePage() {
                             <Phone className="w-4 h-4 mr-2 text-gray-500" />
                             Phone Number
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.phone_number || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  phone_number: e.target.value,
-                                })
-                              }
-                              placeholder="Enter your phone number"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.phone_number || (
-                                <span className="text-gray-400 italic">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.phone_number}
+                            setter={field_setter("phone_number")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
 
-                        {/* College */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                            College
-                          </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.college || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  college: e.target.value,
-                                })
-                              }
-                              placeholder="e.g. BS Computer Science"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {get_college(profile.college)?.name || (
-                                <span className="text-gray-400 italic">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
-                        </div>
+                        <DropdownGroup>
+                          {/* College */}
+                          <div className="space-y-2">
+                            <label className="flex items-center text-sm font-semibold text-gray-700">
+                              <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+                              College
+                            </label>
+                            <EditableGroupableRadioDropdown
+                              is_editing={isEditing}
+                              name="college"
+                              value={form_data.college_name}
+                              setter={field_setter("college_name")}
+                              options={[
+                                "Not specified",
+                                ...colleges.map((c) => c.name),
+                              ]}
+                            >
+                              <UserPropertyLabel />
+                            </EditableGroupableRadioDropdown>
+                          </div>
 
-                        {/* Year Level */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Badge className="w-4 h-4 mr-2 text-gray-500" />
-                            Year Level
-                          </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.year_level || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  year_level: e.target.value,
-                                })
-                              }
-                              placeholder="Enter your year level (1-5)"
-                              type="number"
-                              min="1"
-                              max="5"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 max-w-xs text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium font-mono text-sm">
-                              {get_level(profile.year_level)?.name || (
-                                <span className="text-gray-400 italic font-sans">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
-                        </div>
+                          {/* Year Level */}
+                          <div className="space-y-2">
+                            <label className="flex items-center text-sm font-semibold text-gray-700">
+                              <Hash className="w-4 h-4 mr-2 text-gray-500"></Hash>
+                              Year Level
+                            </label>
+                            <EditableGroupableRadioDropdown
+                              is_editing={isEditing}
+                              name="year_level"
+                              value={form_data.year_level_name}
+                              setter={field_setter("year_level_name")}
+                              options={[
+                                "Not specified",
+                                ...levels.map((l) => l.name),
+                              ]}
+                            >
+                              <UserPropertyLabel />
+                            </EditableGroupableRadioDropdown>
+                          </div>
+                        </DropdownGroup>
 
                         {/* Taking for Credit */}
                         <div className="space-y-2">
@@ -1123,24 +873,19 @@ export default function ProfilePage() {
                           {isEditing ? (
                             <div className="flex items-center space-x-2">
                               <Checkbox
-                                checked={editedData.taking_for_credit || false}
-                                onCheckedChange={(checked) => {
-                                  setEditedData({
-                                    ...editedData,
-                                    taking_for_credit: checked as boolean,
+                                checked={form_data.taking_for_credit ?? false}
+                                className="inline-block p-3 m-1"
+                                onCheckedChange={(value) => {
+                                  set_fields({
+                                    taking_for_credit: !!value,
+                                    linkage_officer: !!value
+                                      ? form_data.linkage_officer
+                                      : "",
                                   });
-                                  // Clear linkage officer if unchecked
-                                  if (!checked) {
-                                    setEditedData((prev) => ({
-                                      ...prev,
-                                      linkage_officer: "",
-                                    }));
-                                  }
                                 }}
-                                className="border-gray-300"
                               />
                               <span className="text-sm text-gray-700">
-                                Taking for credit
+                                Taking for credit{" "}
                               </span>
                             </div>
                           ) : (
@@ -1161,34 +906,20 @@ export default function ProfilePage() {
 
                         {/* Linkage Officer - Conditional */}
                         {(isEditing
-                          ? editedData.taking_for_credit
+                          ? form_data.taking_for_credit
                           : profile.taking_for_credit) && (
                           <div className="space-y-2">
                             <label className="flex items-center text-sm font-semibold text-gray-700">
                               <User className="w-4 h-4 mr-2 text-gray-500" />
                               Linkage Officer
                             </label>
-                            {isEditing ? (
-                              <Input
-                                value={editedData.linkage_officer || ""}
-                                onChange={(e) =>
-                                  setEditedData({
-                                    ...editedData,
-                                    linkage_officer: e.target.value,
-                                  })
-                                }
-                                placeholder="Enter your linkage officer's name"
-                                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                              />
-                            ) : (
-                              <p className="text-gray-900 font-medium text-sm">
-                                {profile.linkage_officer || (
-                                  <span className="text-gray-400 italic">
-                                    Not provided
-                                  </span>
-                                )}
-                              </p>
-                            )}
+                            <EditableInput
+                              is_editing={isEditing}
+                              value={form_data.linkage_officer}
+                              setter={field_setter("linkage_officer")}
+                            >
+                              <UserPropertyLabel />
+                            </EditableInput>
                           </div>
                         )}
                       </div>
@@ -1209,37 +940,14 @@ export default function ProfilePage() {
                             <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                             Portfolio Website
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.portfolio_link || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  portfolio_link: e.target.value,
-                                })
-                              }
-                              placeholder="https://yourportfolio.com"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.portfolio_link ? (
-                                <a
-                                  href={profile.portfolio_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  {profile.portfolio_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.portfolio_link}
+                            setter={field_setter("portfolio_link")}
+                            placeholder="https://yourportfolio.com"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
 
                         {/* GitHub */}
@@ -1248,37 +956,14 @@ export default function ProfilePage() {
                             <Github className="w-4 h-4 mr-2 text-gray-500" />
                             GitHub Profile
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.github_link || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  github_link: e.target.value,
-                                })
-                              }
-                              placeholder="https://github.com/yourusername"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.github_link ? (
-                                <a
-                                  href={profile.github_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <Github className="w-3 h-3 mr-1" />
-                                  {profile.github_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.github_link}
+                            setter={field_setter("github_link")}
+                            placeholder="https://github.com/yourusername"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
 
                         {/* LinkedIn */}
@@ -1287,37 +972,14 @@ export default function ProfilePage() {
                             <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                             LinkedIn Profile
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.linkedin_link || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  linkedin_link: e.target.value,
-                                })
-                              }
-                              placeholder="https://linkedin.com/in/yourusername"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.linkedin_link ? (
-                                <a
-                                  href={profile.linkedin_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  {profile.linkedin_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.linkedin_link}
+                            setter={field_setter("linkedin_link")}
+                            placeholder="https://linkedin.com/in/yourusername"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
 
                         {/* Calendly */}
@@ -1326,37 +988,14 @@ export default function ProfilePage() {
                             <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                             Calendly Link
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={editedData.calendly_link || ""}
-                              onChange={(e) =>
-                                setEditedData({
-                                  ...editedData,
-                                  calendly_link: e.target.value,
-                                })
-                              }
-                              placeholder="https://calendly.com/yourusername"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.calendly_link ? (
-                                <a
-                                  href={profile.calendly_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <Calendar className="w-3 h-3 mr-1" />
-                                  {profile.calendly_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.calendly_link}
+                            setter={field_setter("calendly_link")}
+                            placeholder="https://calendly.com/yourusername"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
                       </div>
                     </div>
@@ -1499,19 +1138,14 @@ export default function ProfilePage() {
                       {isEditing ? (
                         <div className="space-y-2">
                           <textarea
-                            value={editedData.bio || ""}
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                bio: e.target.value,
-                              })
-                            }
+                            value={form_data.bio || ""}
+                            onChange={(e) => set_field("bio", e.target.value)}
                             placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
                             className="w-full border border-gray-200 rounded-lg px-4 py-3 h-32 resize-none focus:border-blue-500 focus:ring-blue-500 text-gray-900"
                             maxLength={500}
                           />
                           <p className="text-xs text-gray-500 text-right">
-                            {(editedData.bio || "").length}/500 characters
+                            {(form_data.bio || "").length}/500 characters
                           </p>
                         </div>
                       ) : (

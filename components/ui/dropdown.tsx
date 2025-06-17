@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-16 03:04:26
+ * @ Modified time: 2025-06-17 23:55:30
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -12,7 +12,6 @@ import { ChevronDown, Search } from "lucide-react";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 /**
@@ -56,15 +55,12 @@ const DropdownOptionButton = ({
   children: React.ReactElement<IDropdownOptionProps>;
   set_is_open: (is_open: boolean) => void;
 }) => {
-  const router = useRouter();
-
   return (
     <button
       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
       onClick={() => {
         set_is_open(false);
         children.props.on_click && children.props.on_click();
-        router.push(children.props.href ?? "");
       }}
     >
       <div
@@ -124,6 +120,11 @@ export const GroupableRadioDropdown = ({
   const [is_open, set_is_open] = useState(false);
   const [value, set_value] = useState(default_value);
 
+  // Just so it's not stuck at the first default when the default changes
+  useEffect(() => {
+    set_value(default_value);
+  }, [default_value]);
+
   /**
    * Activates dropdown
    * @param e
@@ -152,13 +153,14 @@ export const GroupableRadioDropdown = ({
     <div className="relative">
       <Button
         ref={ref}
+        type="button"
         variant="ghost"
         onClick={handle_click}
         className={cn(
-          "flex items-center justify-between border-0 transition-all duration-200 text-gray-700",
+          "flex items-center input-box justify-between transition-all",
           is_mobile
             ? "h-12 px-4 gap-2 w-full text-left bg-white rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 font-medium"
-            : "h-auto py-2 px-2 gap-1 bg-transparent font-normal text-sm w-full"
+            : "h-auto py-3 px-3 gap-1 bg-transparent font-normal text-sm w-full"
         )}
       >
         <span
@@ -218,6 +220,7 @@ export const GroupableNavDropdown = ({
     <div className="relative">
       <Button
         ref={ref}
+        type="button"
         variant="outline"
         className="flex items-center gap-2 h-10 px-4 bg-white border-gray-300 hover:bg-gray-50"
         onClick={() => set_is_open(!is_open)}

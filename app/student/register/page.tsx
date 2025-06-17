@@ -9,7 +9,10 @@ import { Upload, Award } from "lucide-react";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
 import { University } from "@/lib/db/db.types";
-import { RefDropdown } from "@/components/ui/ref-dropdown";
+import {
+  DropdownGroup,
+  GroupableRadioDropdown,
+} from "@/components/ui/dropdown";
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
@@ -23,7 +26,7 @@ export default function RegisterPage() {
     get_college_by_name,
     get_university_by_domain,
   } = useRefs();
-  const [formData, setFormData] = useState({
+  const [form_data, setFormData] = useState({
     fullName: "",
     yearLevel: defaultYearLevel,
     college: defaultCollege,
@@ -61,7 +64,10 @@ export default function RegisterPage() {
     setUniversity(uni);
   }, [searchParams, universities, router]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (
+    field: string,
+    value: string | boolean | number
+  ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -72,17 +78,17 @@ export default function RegisterPage() {
     e.preventDefault();
     const domain = email.split("@")[1];
 
-    if (!formData.fullName || !formData.yearLevel || !formData.phoneNumber) {
+    if (!form_data.fullName || !form_data.yearLevel || !form_data.phoneNumber) {
       setError("Please fill in all required fields");
       return;
     }
 
-    if (formData.takingForCredit && !formData.linkageOfficer.trim()) {
+    if (form_data.takingForCredit && !form_data.linkageOfficer.trim()) {
       setError("Please provide your linkage officer information");
       return;
     }
 
-    if (!formData.acceptTerms) {
+    if (!form_data.acceptTerms) {
       setError(
         "Please accept the Terms & Conditions and Privacy Policy to continue"
       );
@@ -95,8 +101,8 @@ export default function RegisterPage() {
     }
 
     if (
-      formData.college === defaultCollege ||
-      formData.yearLevel === defaultYearLevel
+      form_data.college === defaultCollege ||
+      form_data.yearLevel === defaultYearLevel
     ) {
       setError("Please fill in the dropdown fields too.");
       return;
@@ -109,24 +115,24 @@ export default function RegisterPage() {
       // User form
       const user_form_data = new FormData();
       user_form_data.append("email", email);
-      user_form_data.append("full_name", formData.fullName);
-      user_form_data.append("phone_number", formData.phoneNumber);
+      user_form_data.append("full_name", form_data.fullName);
+      user_form_data.append("phone_number", form_data.phoneNumber);
       user_form_data.append(
         "year_level",
-        (get_level_by_name(formData.yearLevel)?.id ?? "") + ""
+        (get_level_by_name(form_data.yearLevel)?.id ?? "") + ""
       );
       user_form_data.append(
         "college",
-        (get_college_by_name(formData.college)?.id ?? "") + ""
+        (get_college_by_name(form_data.college)?.id ?? "") + ""
       );
-      user_form_data.append("portfolio_link", formData.portfolioLink);
-      user_form_data.append("github_link", formData.githubLink);
-      user_form_data.append("linkedin_link", formData.linkedinProfile);
+      user_form_data.append("portfolio_link", form_data.portfolioLink);
+      user_form_data.append("github_link", form_data.githubLink);
+      user_form_data.append("linkedin_link", form_data.linkedinProfile);
       user_form_data.append(
         "taking_for_credit",
-        formData.takingForCredit.toString()
+        form_data.takingForCredit.toString()
       );
-      user_form_data.append("linkage_officer", formData.linkageOfficer);
+      user_form_data.append("linkage_officer", form_data.linkageOfficer);
       // @ts-ignore
       user_form_data.append("resume", resumeFile);
 
@@ -183,14 +189,14 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="text"
-                value={formData.fullName}
+                value={form_data.fullName}
                 onChange={(e) => handleInputChange("fullName", e.target.value)}
                 placeholder="Enter Full Name"
                 className={
-                  (formData.fullName === ""
+                  (form_data.fullName === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
                 required
@@ -204,62 +210,57 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="tel"
-                value={formData.phoneNumber}
+                value={form_data.phoneNumber}
                 onChange={(e) =>
                   handleInputChange("phoneNumber", e.target.value)
                 }
                 placeholder="Enter Phone Number"
                 className={
-                  (formData.phoneNumber === ""
+                  (form_data.phoneNumber === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
                 required
               />
             </div>
 
-            {/* College */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                College <span className="text-red-500">*</span>
-              </label>
-              <RefDropdown
-                name="college"
-                defaultValue={defaultCollege}
-                value={formData.college}
-                options={colleges
-                  .filter((c) => c.university_id === university?.id)
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map((college) => college.name)}
-                activeDropdown={activeDropdown}
-                validFieldClassName={validFieldClassName}
-                onChange={(value) => handleInputChange("college", value)}
-                onClick={() => setActiveDropdown("college")}
-              ></RefDropdown>
-            </div>
+            <DropdownGroup>
+              {/* College */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  College <span className="text-red-500">*</span>
+                </label>
+                <GroupableRadioDropdown
+                  name="college"
+                  default_value={defaultCollege}
+                  options={colleges
+                    .filter((c) => c.university_id === university?.id)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((college) => college.name)}
+                  on_change={(value) => handleInputChange("college", value)}
+                ></GroupableRadioDropdown>
+              </div>
 
-            {/* School Year */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Year Level <span className="text-red-500">*</span>
-              </label>
-              <RefDropdown
-                name="yearLevel"
-                defaultValue={defaultYearLevel}
-                value={formData.yearLevel}
-                options={levels
-                  .sort(
-                    (a, b) => a.order - b.order || a.name.localeCompare(b.name)
-                  )
-                  .map((level) => level.name)}
-                activeDropdown={activeDropdown}
-                validFieldClassName={validFieldClassName}
-                onChange={(value) => handleInputChange("yearLevel", value)}
-                onClick={() => setActiveDropdown("yearLevel")}
-              ></RefDropdown>
-            </div>
+              {/* School Year */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Year Level <span className="text-red-500">*</span>
+                </label>
+                <GroupableRadioDropdown
+                  name="yearLevel"
+                  default_value={defaultYearLevel}
+                  options={levels
+                    .sort(
+                      (a, b) =>
+                        a.order - b.order || a.name.localeCompare(b.name)
+                    )
+                    .map((level) => level.name)}
+                  on_change={(value) => handleInputChange("yearLevel", value)}
+                ></GroupableRadioDropdown>
+              </div>
+            </DropdownGroup>
 
             {/* Portfolio Link */}
             <div>
@@ -269,16 +270,16 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={formData.portfolioLink}
+                value={form_data.portfolioLink}
                 onChange={(e) =>
                   handleInputChange("portfolioLink", e.target.value)
                 }
                 placeholder="Enter Portfolio Link"
                 className={
-                  (formData.portfolioLink === ""
+                  (form_data.portfolioLink === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
               />
@@ -292,16 +293,16 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={formData.linkedinProfile}
+                value={form_data.linkedinProfile}
                 onChange={(e) =>
                   handleInputChange("linkedinProfile", e.target.value)
                 }
                 placeholder="Enter LinkedIn Profile Link"
                 className={
-                  (formData.linkedinProfile === ""
+                  (form_data.linkedinProfile === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                  " w-full h-12 px-4 text-gray-900 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
               />
@@ -315,16 +316,16 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={formData.githubLink}
+                value={form_data.githubLink}
                 onChange={(e) =>
                   handleInputChange("githubLink", e.target.value)
                 }
                 placeholder="Enter Github Link"
                 className={
-                  (formData.githubLink === ""
+                  (form_data.githubLink === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
               />
@@ -351,7 +352,7 @@ export default function RegisterPage() {
                   (!resumeFile || !resumeFile.name
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 border-2 rounded-lg cursor-pointer hover:border-gray-400 transition-colors flex items-center justify-between"
+                  " w-full h-12 px-4 input-box flex items-center justify-between"
                 }
               >
                 <span
@@ -374,7 +375,7 @@ export default function RegisterPage() {
               </label>
               <div className="flex items-center space-x-3">
                 <Checkbox
-                  checked={formData.takingForCredit}
+                  checked={form_data.takingForCredit}
                   onCheckedChange={(checked) => {
                     handleInputChange("takingForCredit", checked as boolean);
                     // Clear linkage officer if unchecked
@@ -394,26 +395,26 @@ export default function RegisterPage() {
             </div>
 
             {/* Linkage Officer - Conditional */}
-            {formData.takingForCredit && (
+            {form_data.takingForCredit && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Linkage Officer <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="text"
-                  value={formData.linkageOfficer}
+                  value={form_data.linkageOfficer}
                   onChange={(e) =>
                     handleInputChange("linkageOfficer", e.target.value)
                   }
                   placeholder="Enter your linkage officer's name"
                   className={
-                    (formData.linkageOfficer === ""
+                    (form_data.linkageOfficer === ""
                       ? "border-gray-300"
                       : validFieldClassName) +
-                    " w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 rounded-lg focus:border-gray-900 focus:ring-0"
+                    " w-full h-12 px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
-                  required={formData.takingForCredit}
+                  required={form_data.takingForCredit}
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Please provide the name of your assigned linkage officer from
@@ -429,7 +430,7 @@ export default function RegisterPage() {
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="accept-terms"
-                  checked={formData.acceptTerms}
+                  checked={form_data.acceptTerms}
                   onCheckedChange={(checked) =>
                     handleInputChange("acceptTerms", checked as boolean)
                   }
@@ -467,7 +468,7 @@ export default function RegisterPage() {
           <div className="flex justify-center">
             <Button
               type="submit"
-              disabled={loading || !formData.acceptTerms}
+              disabled={loading || !form_data.acceptTerms}
               className="w-80 h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating Profile..." : "Continue"}

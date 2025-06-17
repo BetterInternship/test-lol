@@ -157,3 +157,8 @@ div[contenteditable="true"] {
 .markdown > * {
   all: revert;
 }
+
+.input-box {
+  @apply border border-opacity-80 border-gray-300 transition-colors duration-100 rounded-md text-gray-700 placeholder-gray-500;
+  @apply hover:cursor-pointer hover:border-gray-300 hover:bg-gray-50;
+}
