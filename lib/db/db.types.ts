@@ -21,6 +21,8 @@ export type PublicUser = Omit<Tables<"users">, "verification_hash"> & {
 }; // Hidden private fields
 export type Employer = Partial<Tables<"employers">>;
 export type PublicEmployerUser = Omit<Tables<"employers">, "verification_hash">; // Employer user type
+export interface MoA extends Partial<Tables<"moa">> {}
+
 export interface Job extends Partial<Tables<"jobs">> {
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
