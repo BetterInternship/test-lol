@@ -6,32 +6,33 @@ import {
   PublicEmployerUser,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
+import { FetchResponse } from "@/hooks/use-fetch";
 
 // Generic Responses
-interface NoResponse {}
+interface NoResponse extends FetchResponse {}
 
-interface StatusResponse {
+interface StatusResponse extends FetchResponse {
   message: string;
   success: boolean;
 }
 
-interface ToggleResponse {
+interface ToggleResponse extends FetchResponse {
   message: string;
   state: boolean;
 }
 
 // Auth Services
-interface AuthResponse {
+interface AuthResponse extends FetchResponse {
   success: boolean;
   user: Partial<PublicUser> | Partial<PublicEmployerUser>;
 }
 
-interface EmailStatusResponse {
+interface EmailStatusResponse extends FetchResponse {
   existing_user: boolean;
   verified_user: boolean;
 }
 
-interface SendOTPResponse {
+interface SendOTPResponse extends FetchResponse {
   email: string;
 }
 
@@ -123,6 +124,13 @@ export const auth_service = {
     );
   },
 
+  async resend_otp_request(email: string) {
+    return APIClient.post<SendOTPResponse>(
+      APIRoute("auth").r("resend-new-otp").build(),
+      { email }
+    );
+  },
+
   async verify_otp(email: string, otp: string) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("verify-otp").build(),
@@ -144,9 +152,9 @@ export const auth_service = {
 };
 
 // User Services
-interface UserResponse extends Partial<PublicUser> {}
+interface UserResponse extends Partial<PublicUser>, FetchResponse {}
 
-interface SaveJobResponse {
+interface SaveJobResponse extends FetchResponse {
   job?: Job;
   success: boolean;
   message: string;
@@ -170,21 +178,21 @@ export const user_service = {
 };
 
 // Job Services
-interface JobResponse extends Job {}
+interface JobResponse extends Job, FetchResponse {}
 
-interface JobsResponse {
+interface JobsResponse extends FetchResponse {
   jobs?: Job[];
   success?: boolean;
   message: string;
 }
 
-interface SavedJobsResponse {
+interface SavedJobsResponse extends FetchResponse {
   jobs: SavedJob[];
   success?: boolean;
   message: string;
 }
 
-interface OwnedJobsResponse {
+interface OwnedJobsResponse extends FetchResponse {
   jobs: Job[];
   success?: boolean;
   message: string;
@@ -222,7 +230,7 @@ export const job_service = {
 };
 
 // Application Services
-interface ApplicationsResponse {
+interface ApplicationsResponse extends FetchResponse {
   success?: boolean;
   message?: string;
   applications: Application[];
@@ -231,17 +239,17 @@ interface ApplicationsResponse {
   total: number;
 }
 
-interface ApplicationResponse extends Application {
+interface ApplicationResponse extends Application, FetchResponse {
   success?: boolean;
   message?: string;
 }
 
-interface CreateApplicationResponse {
+interface CreateApplicationResponse extends FetchResponse {
   message: string;
   application: Application;
 }
 
-interface ApplicationStatsResponse {
+interface ApplicationStatsResponse extends FetchResponse {
   total_applications: number;
   pending: number;
   reviewed: number;
@@ -325,7 +333,7 @@ export const handle_api_error = (error: any) => {
 };
 
 // File Services
-interface FileUploadResponse {
+interface FileUploadResponse extends FetchResponse {
   message: string;
   file: {
     filename: string;
