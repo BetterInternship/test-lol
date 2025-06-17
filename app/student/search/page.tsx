@@ -545,43 +545,34 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
-        </div>
-
-        <div className="space-y-6">
+        <div className="space-y-6 py-4 px-8">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
+          </div>
           <DropdownGroup>
-            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-              <GroupableRadioDropdown
-                name="jobType"
-                options={["All types", "Internships", "Full-time", "Part-time"]}
-                on_change={filter_setter("job_type")}
-                default_value={filters.job_type}
-              />
-            </div>
-
-            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-              <GroupableRadioDropdown
-                name="location"
-                options={["Any location", "In-Person", "Remote", "Hybrid"]}
-                on_change={filter_setter("location")}
-                default_value={filters.location}
-              />
-            </div>
-
-            <div className="relative border-2 p-2 rounded-md hover:bg-slate-100 duration-100">
-              <GroupableRadioDropdown
-                name="category"
-                options={[
-                  "All industries",
-                  "Technology",
-                  "Creative Services",
-                  "Consumer Goods",
-                ]}
-                on_change={filter_setter("industry")}
-                default_value={filters.industry}
-              />
-            </div>
+            <GroupableRadioDropdown
+              name="jobType"
+              options={["All types", "Internships", "Full-time", "Part-time"]}
+              on_change={filter_setter("job_type")}
+              default_value={filters.job_type}
+            />
+            <GroupableRadioDropdown
+              name="location"
+              options={["Any location", "In-Person", "Remote", "Hybrid"]}
+              on_change={filter_setter("location")}
+              default_value={filters.location}
+            />
+            <GroupableRadioDropdown
+              name="category"
+              options={[
+                "All industries",
+                "Technology",
+                "Creative Services",
+                "Consumer Goods",
+              ]}
+              on_change={filter_setter("industry")}
+              default_value={filters.industry}
+            />
           </DropdownGroup>
 
           <div className="flex gap-3 pt-6">
