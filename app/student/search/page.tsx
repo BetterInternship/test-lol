@@ -289,7 +289,7 @@ export default function SearchPage() {
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+              <div className="bg-white rounded-2xl border border-gray-200 p-2">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
@@ -348,7 +348,7 @@ export default function SearchPage() {
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
               {/* Desktop Search Bar */}
               <div className="w-full max-w-4xl mx-auto mb-6">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-2">
+                <div className="bg-white rounded-2xl border border-gray-200 p-2">
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
