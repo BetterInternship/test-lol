@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -41,7 +40,17 @@ import { useRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
 import { PublicUser } from "@/lib/db/db.types";
 import { useFormData } from "@/lib/form-data";
-import { RefDropdown } from "@/components/ui/ref-dropdown";
+import {
+  EditableGroupableRadioDropdown,
+  EditableInput,
+} from "@/components/ui/editable";
+import { UserPropertyLabel } from "@/components/ui/labels";
+import Link from "next/link";
+import { UserLinkLabel } from "../../../components/ui/labels";
+import {
+  DropdownGroup,
+  GroupableRadioDropdown,
+} from "@/components/ui/dropdown";
 
 export default function ProfilePage() {
   const defaultDropdownValue = "Not specified";
@@ -59,7 +68,7 @@ export default function ProfilePage() {
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState("");
-  const { form_data, set_field, set_fields } = useFormData<
+  const { form_data, set_field, set_fields, field_setter } = useFormData<
     PublicUser & {
       college_name: string | null;
       year_level_name: string | null;
@@ -191,6 +200,15 @@ export default function ProfilePage() {
       router.push("/login");
     }
   }, [is_authenticated(), router]);
+
+  useEffect(() => {
+    if (profile)
+      set_fields({
+        ...(profile as PublicUser),
+        college_name: to_college_name(profile.college),
+        year_level_name: to_level_name(profile.year_level),
+      });
+  }, [profile]);
 
   const handleSave = async () => {
     try {
@@ -426,20 +444,11 @@ export default function ProfilePage() {
                           <User className="w-4 h-4 mr-2 text-gray-500" />
                           Full Name
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.full_name || ""}
-                            onChange={(e) =>
-                              set_field("full_name", e.target.value)
-                            }
-                            placeholder="Enter your full name"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {profile.full_name || "Not provided"}
-                          </p>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.full_name}
+                          setter={field_setter("full_name")}
+                        ></EditableInput>
                       </div>
 
                       {/* Phone Number */}
@@ -448,80 +457,56 @@ export default function ProfilePage() {
                           <Phone className="w-4 h-4 mr-2 text-gray-500" />
                           Phone Number
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.phone_number || ""}
-                            onChange={(e) =>
-                              set_field("phone_number", e.target.value)
-                            }
-                            placeholder="Enter your phone number"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {profile.phone_number || (
-                              <span className="text-gray-400 italic">
-                                Not provided
-                              </span>
-                            )}
-                          </p>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.phone_number}
+                          setter={field_setter("phone_number")}
+                        >
+                          <UserPropertyLabel />
+                        </EditableInput>
                       </div>
 
-                      {/* College */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                          College
-                        </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.college || ""}
-                            onChange={(e) =>
-                              set_field("college_name", e.target.value)
-                            }
-                            placeholder="e.g. BS Computer Science"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {get_college(profile.college)?.name || (
-                              <span className="text-gray-400 italic">
-                                Not provided
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
+                      <DropdownGroup>
+                        {/* College */}
+                        <div className="space-y-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+                            College
+                          </label>
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="college"
+                            value={form_data.college_name}
+                            setter={field_setter("college_name")}
+                            options={[
+                              "Not specified",
+                              ...colleges.map((c) => c.name),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
 
-                      {/* Year Level and Internship for Credit */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Hash className="w-4 h-4 mr-2 text-gray-500" />
-                          Year Level
-                        </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.year_level || ""}
-                            onChange={(e) =>
-                              set_field("year_level_name", e.target.value)
-                            }
-                            placeholder="Enter your year level (1-5)"
-                            type="number"
-                            min="1"
-                            max="5"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <p className="text-gray-900 font-medium text-sm">
-                            {get_level(profile.year_level)?.name || (
-                              <span className="text-gray-400 italic font-sans">
-                                Not provided
-                              </span>
-                            )}
-                          </p>
-                        )}
-                      </div>
+                        {/* Year Level and Internship for Credit */}
+                        <div className="space-y-2">
+                          <label className="flex items-center text-sm font-semibold text-gray-700">
+                            <Hash className="w-4 h-4 mr-2 text-gray-500" />
+                            Year Level
+                          </label>
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="year_level"
+                            value={form_data.year_level_name}
+                            setter={field_setter("year_level_name")}
+                            options={[
+                              "Not specified",
+                              ...levels.map((l) => l.name),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
+                      </DropdownGroup>
 
                       {/* Taking for Credit */}
                       <div className="space-y-2">
@@ -572,24 +557,13 @@ export default function ProfilePage() {
                             <User className="w-4 h-4 mr-2 text-gray-500" />
                             Linkage Officer
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.linkage_officer || ""}
-                              onChange={(e) =>
-                                set_field("linkage_officer", e.target.value)
-                              }
-                              placeholder="Enter your linkage officer's name"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.linkage_officer || (
-                                <span className="text-gray-400 italic">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.linkage_officer}
+                            setter={field_setter("linkage_officer")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
                       )}
                     </div>
@@ -610,34 +584,14 @@ export default function ProfilePage() {
                           <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                           Portfolio Website
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.portfolio_link || ""}
-                            onChange={(e) =>
-                              set_field("portfolio_link", e.target.value)
-                            }
-                            placeholder="https://yourportfolio.com"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.portfolio_link ? (
-                              <a
-                                href={profile.portfolio_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.portfolio_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.portfolio_link}
+                          setter={field_setter("portfolio_link")}
+                          placeholder="https://yourportfolio.com"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
 
                       {/* GitHub */}
@@ -646,34 +600,14 @@ export default function ProfilePage() {
                           <Github className="w-4 h-4 mr-2 text-gray-500" />
                           GitHub Profile
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.github_link || ""}
-                            onChange={(e) =>
-                              set_field("github_link", e.target.value)
-                            }
-                            placeholder="https://github.com/yourusername"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.github_link ? (
-                              <a
-                                href={profile.github_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <Github className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.github_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.github_link}
+                          setter={field_setter("github_link")}
+                          placeholder="https://github.com/yourusername"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
 
                       {/* LinkedIn */}
@@ -682,34 +616,14 @@ export default function ProfilePage() {
                           <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                           LinkedIn Profile
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.linkedin_link || ""}
-                            onChange={(e) =>
-                              set_field("linkedin_link", e.target.value)
-                            }
-                            placeholder="https://linkedin.com/in/yourusername"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.linkedin_link ? (
-                              <a
-                                href={profile.linkedin_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <ExternalLink className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.linkedin_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.linkedin_link}
+                          setter={field_setter("linkedin_link")}
+                          placeholder="https://linkedin.com/in/yourusername"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
 
                       {/* Calendly */}
@@ -718,34 +632,14 @@ export default function ProfilePage() {
                           <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                           Calendly Link
                         </label>
-                        {isEditing ? (
-                          <Input
-                            value={form_data.calendly_link || ""}
-                            onChange={(e) =>
-                              set_field("calendly_link", e.target.value)
-                            }
-                            placeholder="https://calendly.com/yourusername"
-                            className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                          />
-                        ) : (
-                          <div>
-                            {profile.calendly_link ? (
-                              <a
-                                href={profile.calendly_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm break-all"
-                              >
-                                <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
-                                {profile.calendly_link}
-                              </a>
-                            ) : (
-                              <span className="text-gray-400 italic text-sm">
-                                Not provided
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <EditableInput
+                          is_editing={isEditing}
+                          value={form_data.calendly_link}
+                          setter={field_setter("calendly_link")}
+                          placeholder="https://calendly.com/yourusername"
+                        >
+                          <UserLinkLabel />
+                        </EditableInput>
                       </div>
                     </div>
                   </div>
@@ -904,20 +798,13 @@ export default function ProfilePage() {
                             <User className="w-4 h-4 mr-2 text-gray-500" />
                             Full Name
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.full_name || ""}
-                              onChange={(e) =>
-                                set_field("full_name", e.target.value)
-                              }
-                              placeholder="Enter your full name"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.full_name || "Not provided"}
-                            </p>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.full_name}
+                            setter={field_setter("full_name")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
 
                         {/* Phone Number */}
@@ -926,91 +813,56 @@ export default function ProfilePage() {
                             <Phone className="w-4 h-4 mr-2 text-gray-500" />
                             Phone Number
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.phone_number || ""}
-                              onChange={(e) =>
-                                set_field("phone_number", e.target.value)
-                              }
-                              placeholder="Enter your phone number"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.phone_number || (
-                                <span className="text-gray-400 italic">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.phone_number}
+                            setter={field_setter("phone_number")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
 
-                        {/* College */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                            College
-                          </label>
-                          {isEditing ? (
-                            <RefDropdown
+                        <DropdownGroup>
+                          {/* College */}
+                          <div className="space-y-2">
+                            <label className="flex items-center text-sm font-semibold text-gray-700">
+                              <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
+                              College
+                            </label>
+                            <EditableGroupableRadioDropdown
+                              is_editing={isEditing}
                               name="college"
-                              defaultValue={defaultDropdownValue}
                               value={form_data.college_name}
+                              setter={field_setter("college_name")}
                               options={[
                                 "Not specified",
                                 ...colleges.map((c) => c.name),
                               ]}
-                              activeDropdown={activeDropdown}
-                              validFieldClassName={""}
-                              onChange={(value) =>
-                                set_field("college_name", value)
-                              }
-                              onClick={() => setActiveDropdown("college")}
-                            ></RefDropdown>
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {to_college_name(profile.college) || (
-                                <span className="text-gray-400 italic">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
-                        </div>
+                            >
+                              <UserPropertyLabel />
+                            </EditableGroupableRadioDropdown>
+                          </div>
 
-                        {/* Year Level */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Hash className="w-4 h-4 mr-2 text-gray-500"></Hash>
-                            Year Level
-                          </label>
-                          {isEditing ? (
-                            <RefDropdown
-                              name="level"
-                              defaultValue={defaultDropdownValue}
+                          {/* Year Level */}
+                          <div className="space-y-2">
+                            <label className="flex items-center text-sm font-semibold text-gray-700">
+                              <Hash className="w-4 h-4 mr-2 text-gray-500"></Hash>
+                              Year Level
+                            </label>
+                            <EditableGroupableRadioDropdown
+                              is_editing={isEditing}
+                              name="year_level"
                               value={form_data.year_level_name}
+                              setter={field_setter("year_level_name")}
                               options={[
                                 "Not specified",
-                                ...levels.map((c) => c.name),
+                                ...levels.map((l) => l.name),
                               ]}
-                              activeDropdown={activeDropdown}
-                              validFieldClassName={""}
-                              onChange={(value) =>
-                                set_field("year_level_name", value)
-                              }
-                              onClick={() => setActiveDropdown("level")}
-                            ></RefDropdown>
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {get_level(profile.year_level)?.name || (
-                                <span className="text-gray-400 italic font-sans">
-                                  Not provided
-                                </span>
-                              )}
-                            </p>
-                          )}
-                        </div>
+                            >
+                              <UserPropertyLabel />
+                            </EditableGroupableRadioDropdown>
+                          </div>
+                        </DropdownGroup>
 
                         {/* Taking for Credit */}
                         <div className="space-y-2">
@@ -1061,24 +913,13 @@ export default function ProfilePage() {
                               <User className="w-4 h-4 mr-2 text-gray-500" />
                               Linkage Officer
                             </label>
-                            {isEditing ? (
-                              <Input
-                                value={form_data.linkage_officer || ""}
-                                onChange={(e) =>
-                                  set_field("linkage_officer", e.target.value)
-                                }
-                                placeholder="Enter your linkage officer's name"
-                                className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                              />
-                            ) : (
-                              <p className="text-gray-900 font-medium text-sm">
-                                {profile.linkage_officer || (
-                                  <span className="text-gray-400 italic">
-                                    Not provided
-                                  </span>
-                                )}
-                              </p>
-                            )}
+                            <EditableInput
+                              is_editing={isEditing}
+                              value={form_data.linkage_officer}
+                              setter={field_setter("linkage_officer")}
+                            >
+                              <UserPropertyLabel />
+                            </EditableInput>
                           </div>
                         )}
                       </div>
@@ -1099,34 +940,14 @@ export default function ProfilePage() {
                             <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                             Portfolio Website
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.portfolio_link || ""}
-                              onChange={(e) =>
-                                set_field("portfolio_link", e.target.value)
-                              }
-                              placeholder="https://yourportfolio.com"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.portfolio_link ? (
-                                <a
-                                  href={profile.portfolio_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  {profile.portfolio_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.portfolio_link}
+                            setter={field_setter("portfolio_link")}
+                            placeholder="https://yourportfolio.com"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
 
                         {/* GitHub */}
@@ -1135,34 +956,14 @@ export default function ProfilePage() {
                             <Github className="w-4 h-4 mr-2 text-gray-500" />
                             GitHub Profile
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.github_link || ""}
-                              onChange={(e) =>
-                                set_field("github_link", e.target.value)
-                              }
-                              placeholder="https://github.com/yourusername"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.github_link ? (
-                                <a
-                                  href={profile.github_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <Github className="w-3 h-3 mr-1" />
-                                  {profile.github_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.github_link}
+                            setter={field_setter("github_link")}
+                            placeholder="https://github.com/yourusername"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
 
                         {/* LinkedIn */}
@@ -1171,34 +972,14 @@ export default function ProfilePage() {
                             <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
                             LinkedIn Profile
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.linkedin_link || ""}
-                              onChange={(e) =>
-                                set_field("linkedin_link", e.target.value)
-                              }
-                              placeholder="https://linkedin.com/in/yourusername"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.linkedin_link ? (
-                                <a
-                                  href={profile.linkedin_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <ExternalLink className="w-3 h-3 mr-1" />
-                                  {profile.linkedin_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.linkedin_link}
+                            setter={field_setter("linkedin_link")}
+                            placeholder="https://linkedin.com/in/yourusername"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
 
                         {/* Calendly */}
@@ -1207,34 +988,14 @@ export default function ProfilePage() {
                             <Calendar className="w-4 h-4 mr-2 text-gray-500" />
                             Calendly Link
                           </label>
-                          {isEditing ? (
-                            <Input
-                              value={form_data.calendly_link || ""}
-                              onChange={(e) =>
-                                set_field("calendly_link", e.target.value)
-                              }
-                              placeholder="https://calendly.com/yourusername"
-                              className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
-                            />
-                          ) : (
-                            <div>
-                              {profile.calendly_link ? (
-                                <a
-                                  href={profile.calendly_link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
-                                >
-                                  <Calendar className="w-3 h-3 mr-1" />
-                                  {profile.calendly_link}
-                                </a>
-                              ) : (
-                                <span className="text-gray-400 italic text-sm">
-                                  Not provided
-                                </span>
-                              )}
-                            </div>
-                          )}
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.calendly_link}
+                            setter={field_setter("calendly_link")}
+                            placeholder="https://calendly.com/yourusername"
+                          >
+                            <UserLinkLabel />
+                          </EditableInput>
                         </div>
                       </div>
                     </div>

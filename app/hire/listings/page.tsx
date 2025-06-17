@@ -12,17 +12,18 @@ import { Job } from "@/lib/db/db.types";
 import ProfileButton from "@/components/hire/profile-button";
 import { useRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
-import { RefDropdown } from "@/components/ui/ref-dropdown";
 import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard } from "@/components/shared/jobs";
 import { JobDetails } from "@/components/shared/jobs";
+import {
+  DropdownGroup,
+  GroupableRadioDropdown,
+} from "@/components/ui/dropdown";
 
 export default function MyListings() {
   const { ownedJobs, update_job } = useOwnedJobs();
-  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useRefs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const {
@@ -163,10 +164,9 @@ const EditModalForm = ({
 }) => {
   const defaultDropdownValue = "Not specified";
   const [updating, setUpdating] = useState(false);
-  const { form_data, set_field, set_fields } = useFormData<
+  const { form_data, set_field, set_fields, field_setter } = useFormData<
     Job & { salary_freq_name: string; mode_name: string; type_name: string }
   >();
-  const [activeDropdown, setActiveDropdown] = useState("");
   const {
     to_job_mode_name,
     to_job_type_name,
@@ -193,7 +193,7 @@ const EditModalForm = ({
         require_portfolio: job.require_portfolio ?? false,
       });
     }
-  }, []);
+  }, [job]);
 
   const clean_int = (s: string | undefined): number | undefined =>
     s && s.trim().length ? parseInt(s.trim()) : undefined;
@@ -272,7 +272,7 @@ const EditModalForm = ({
               </div>
               Basic Information
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
@@ -298,74 +298,64 @@ const EditModalForm = ({
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Employment Type
-                </Label>
-                <RefDropdown
-                  name="type"
-                  defaultValue={defaultDropdownValue}
-                  value={form_data.type_name || defaultDropdownValue}
-                  options={[
-                    defaultDropdownValue,
-                    ...job_types.map((jt) => jt.name),
-                  ]}
-                  activeDropdown={activeDropdown}
-                  validFieldClassName=""
-                  onChange={(value) => set_field("type_name", value)}
-                  onClick={() => setActiveDropdown("type")}
-                />
-              </div>
+              <DropdownGroup>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Employment Type
+                  </Label>
+                  <GroupableRadioDropdown
+                    name="type"
+                    default_value={form_data.type_name}
+                    options={[
+                      defaultDropdownValue,
+                      ...job_types.map((jt) => jt.name),
+                    ]}
+                    on_change={field_setter("type_name")}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Work Mode
-                </Label>
-                <RefDropdown
-                  name="mode"
-                  defaultValue={defaultDropdownValue}
-                  value={form_data.mode_name || defaultDropdownValue}
-                  options={[
-                    defaultDropdownValue,
-                    ...job_modes.map((jm) => jm.name),
-                  ]}
-                  activeDropdown={activeDropdown}
-                  validFieldClassName=""
-                  onChange={(value) => set_field("mode_name", value)}
-                  onClick={() => setActiveDropdown("mode")}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Work Mode
+                  </Label>
+                  <GroupableRadioDropdown
+                    name="mode"
+                    default_value={form_data.mode_name}
+                    options={[
+                      defaultDropdownValue,
+                      ...job_modes.map((jm) => jm.name),
+                    ]}
+                    on_change={field_setter("mode_name")}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Salary
-                </Label>
-                <Input
-                  value={form_data.salary ?? ""}
-                  onChange={(e) => set_field("salary", e.target.value)}
-                  placeholder="Enter salary amount"
-                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Salary
+                  </Label>
+                  <Input
+                    value={form_data.salary ?? ""}
+                    onChange={(e) => set_field("salary", e.target.value)}
+                    placeholder="Enter salary amount"
+                    className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
-                  Pay Frequency
-                </Label>
-                <RefDropdown
-                  name="pay_freq"
-                  defaultValue={defaultDropdownValue}
-                  value={form_data.salary_freq_name || defaultDropdownValue}
-                  options={[
-                    defaultDropdownValue,
-                    ...job_pay_freq.map((jpf) => jpf.name),
-                  ]}
-                  activeDropdown={activeDropdown}
-                  validFieldClassName=""
-                  onChange={(value) => set_field("salary_freq_name", value)}
-                  onClick={() => setActiveDropdown("pay_freq")}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Pay Frequency
+                  </Label>
+                  <GroupableRadioDropdown
+                    name="pay_freq"
+                    default_value={form_data.salary_freq_name}
+                    options={[
+                      defaultDropdownValue,
+                      ...job_pay_freq.map((jpf) => jpf.name),
+                    ]}
+                    on_change={field_setter("salary_freq_name")}
+                  />
+                </div>
+              </DropdownGroup>
             </div>
           </div>
 
@@ -377,7 +367,7 @@ const EditModalForm = ({
               </div>
               Application Requirements
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                 <div>
@@ -390,7 +380,9 @@ const EditModalForm = ({
                 </div>
                 <Checkbox
                   checked={form_data.require_github ?? false}
-                  onCheckedChange={(value) => set_field("require_github", value)}
+                  onCheckedChange={(value) =>
+                    set_field("require_github", value)
+                  }
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
               </div>
@@ -406,7 +398,9 @@ const EditModalForm = ({
                 </div>
                 <Checkbox
                   checked={form_data.require_portfolio ?? false}
-                  onCheckedChange={(value) => set_field("require_portfolio", value)}
+                  onCheckedChange={(value) =>
+                    set_field("require_portfolio", value)
+                  }
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
               </div>
