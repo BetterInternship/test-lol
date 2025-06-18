@@ -189,7 +189,7 @@ interface JobsResponse extends FetchResponse {
 }
 
 interface SavedJobsResponse extends FetchResponse {
-  jobs: SavedJob[];
+  jobs?: SavedJob[];
   success?: boolean;
   message: string;
 }
