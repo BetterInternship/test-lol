@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Edit2,
@@ -17,23 +16,19 @@ import {
   ChefHat,
   Building2,
   User,
-  Mail,
   Phone,
   ExternalLink,
   FileText,
   Trash2,
-  Download,
+  Fullscreen,
   Eye,
   Calendar,
   Award,
   Github,
-  ChartArea,
-  PoundSterling,
   Hash,
 } from "lucide-react";
 import { useProfile } from "@/hooks/use-api";
 import { useRouter } from "next/navigation";
-import { file_service } from "@/lib/api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
@@ -47,27 +42,23 @@ import {
 import { UserPropertyLabel } from "@/components/ui/labels";
 import Link from "next/link";
 import { UserLinkLabel } from "../../../components/ui/labels";
-import {
-  DropdownGroup,
-  GroupableRadioDropdown,
-} from "@/components/ui/dropdown";
+import { DropdownGroup } from "@/components/ui/dropdown";
+import { user_service } from "@/lib/api";
+import { useClientDimensions } from "@/hooks/use-dimensions";
 
 export default function ProfilePage() {
-  const defaultDropdownValue = "Not specified";
   const { is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
+  const { client_width, client_height } = useClientDimensions();
   const {
     colleges,
     levels,
-    get_level,
-    get_college,
     to_college_name,
     to_level_name,
     get_college_by_name,
     get_level_by_name,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState("");
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     PublicUser & {
       college_name: string | null;
@@ -75,7 +66,6 @@ export default function ProfilePage() {
     }
   >();
   const [saving, setSaving] = useState(false);
-  const [filesInfo, setFilesInfo] = useState<any>(null);
   const [uploading, setUploading] = useState<{
     resume: boolean;
     profilePicture: boolean;
@@ -85,6 +75,12 @@ export default function ProfilePage() {
     close: close_employer_modal,
     Modal: EmployerModal,
   } = useModal("employer-modal");
+  const {
+    open: open_resume_modal,
+    close: close_resume_modal,
+    Modal: ResumeModal,
+  } = useModal("resume-modal");
+
   const { is_mobile } = useAppContext();
   const router = useRouter();
 
@@ -114,16 +110,7 @@ export default function ProfilePage() {
 
     try {
       setUploading((prev) => ({ ...prev, resume: true }));
-      const result = await file_service.upload_resume(file);
-
-      // Update files info
-      setFilesInfo((prev: any) => ({
-        ...prev,
-        resume: {
-          filename: result.file.filename,
-          url: result.file.url,
-        },
-      }));
+      const result = await user_service.update_resume(file);
 
       alert("Resume uploaded successfully!");
     } catch (error: any) {
@@ -158,15 +145,7 @@ export default function ProfilePage() {
 
     try {
       setUploading((prev) => ({ ...prev, profilePicture: true }));
-      const result = await file_service.upload_profile_picture(file);
-
-      // Update files info
-      setFilesInfo((prev: any) => ({
-        ...prev,
-        profilePicture: {
-          url: result.file.url,
-        },
-      }));
+      const result = await user_service.upload_profile_picture(file);
 
       alert("Profile picture uploaded successfully!");
     } catch (error: any) {
@@ -184,11 +163,7 @@ export default function ProfilePage() {
     if (!confirm("Are you sure you want to delete your resume?")) return;
 
     try {
-      await file_service.delete_resume();
-      setFilesInfo((prev: any) => ({
-        ...prev,
-        resume: null,
-      }));
+      await user_service.delete_resume();
       alert("Resume deleted successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to delete resume");
@@ -358,11 +333,7 @@ export default function ProfilePage() {
                   is_mobile ? "flex-col gap-3" : "items-center justify-between"
                 } mb-6`}
               >
-                <h1
-                  className={`font-bold text-gray-900 ${
-                    is_mobile ? "text-xl" : "text-2xl"
-                  }`}
-                >
+                <h1 className={"font-bold font-heading text-4xl text-gray-900"}>
                   Profile Settings
                 </h1>
                 <div className="flex gap-2">
@@ -704,7 +675,7 @@ export default function ProfilePage() {
                       style={{ display: "none" }}
                     />
 
-                    {filesInfo?.resume ? (
+                    {profile.resume ? (
                       // Resume exists
                       <div className="border border-green-200 bg-green-50 rounded-md p-3">
                         <div className="flex items-center justify-between">
@@ -714,24 +685,16 @@ export default function ProfilePage() {
                               <p className="text-sm font-medium text-green-800">
                                 Resume uploaded
                               </p>
-                              <p className="text-xs text-green-600">
-                                {filesInfo.resume.filename
-                                  ?.split("/")
-                                  .pop()
-                                  ?.substring(14) || "resume.pdf"}
-                              </p>
                             </div>
                           </div>
                           <div className="flex gap-1">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() =>
-                                window.open(filesInfo.resume.url, "_blank")
-                              }
+                              onClick={open_resume_modal}
                               className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                             >
-                              <Download className="w-3 h-3" />
+                              <Fullscreen className="w-3 h-3" />
                             </Button>
                             <Button
                               variant="outline"
@@ -1051,7 +1014,7 @@ export default function ProfilePage() {
                         style={{ display: "none" }}
                       />
 
-                      {filesInfo?.resume ? (
+                      {profile.resume ? (
                         // Resume exists
                         <div className="border border-green-200 bg-green-50 rounded-md p-3">
                           <div className="flex items-center justify-between">
@@ -1059,13 +1022,7 @@ export default function ProfilePage() {
                               <FileText className="w-5 h-5 text-green-600" />
                               <div>
                                 <p className="text-sm font-medium text-green-800">
-                                  Resume uploaded
-                                </p>
-                                <p className="text-xs text-green-600">
-                                  {filesInfo.resume.filename
-                                    ?.split("/")
-                                    .pop()
-                                    ?.substring(14) || "resume.pdf"}
+                                  Uploaded
                                 </p>
                               </div>
                             </div>
@@ -1073,12 +1030,10 @@ export default function ProfilePage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() =>
-                                  window.open(filesInfo.resume.url, "_blank")
-                                }
+                                onClick={open_resume_modal}
                                 className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                               >
-                                <Download className="w-3 h-3" />
+                                <Fullscreen className="w-3 h-3" />
                               </Button>
                               <Button
                                 variant="outline"
@@ -1169,11 +1124,27 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      <ResumeModal>
+        <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-4">
+          Resume Preview
+        </h1>
+        <iframe
+          allowTransparency={true}
+          style={{
+            width: client_width * 0.5,
+            height: client_height * 0.8,
+            background: "#FFFFFF",
+          }}
+          src="http://localhost:5000/api/users/me/resume#toolbar=0&navpanes=0&scrollbar=0"
+        >
+          Resume could not be loaded.
+        </iframe>
+      </ResumeModal>
+
       {/* Employer Preview Modal */}
       <EmployerModal>
         <EmployerPreviewModal
           profile={profile}
-          filesInfo={filesInfo}
           onClose={() => close_employer_modal()}
         />
       </EmployerModal>
@@ -1183,11 +1154,9 @@ export default function ProfilePage() {
 
 function EmployerPreviewModal({
   profile,
-  filesInfo,
   onClose,
 }: {
   profile: any;
-  filesInfo: any;
   onClose: () => void;
 }) {
   const { get_level, get_college } = useRefs();
@@ -1212,10 +1181,10 @@ function EmployerPreviewModal({
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               className="bg-blue-600 hover:bg-blue-700 text-white"
-              disabled={!filesInfo?.resume}
+              disabled={!profile.resume}
             >
               <FileText className="h-4 w-4 mr-2" />
-              {filesInfo?.resume ? "View Resume" : "No Resume Uploaded"}
+              {profile.resume ? "View Resume" : "No Resume Uploaded"}
             </Button>
             <Button
               variant="outline"

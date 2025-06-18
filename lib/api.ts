@@ -171,6 +171,18 @@ export const user_service = {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
   },
 
+  async update_resume(file: Blob | null) {
+    // ! to implement
+  },
+
+  async delete_resume() {
+    // ! to implement
+  },
+
+  async upload_profile_picture(file: Blob | null) {
+    // ! to implement
+  },
+
   async save_job(job_id: string) {
     return APIClient.post<SaveJobResponse>(
       APIRoute("users").r("save-job").build(),

@@ -14,6 +14,7 @@ import {
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
 import { useFormData } from "@/lib/form-data";
+import { MultipartFormBuilder } from "@/lib/multipart-form";
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
@@ -105,7 +106,6 @@ export default function RegisterPage() {
       setLoading(true);
       setError("");
 
-      // User form
       const new_user = {
         ...form_data,
         email: email,
@@ -113,21 +113,20 @@ export default function RegisterPage() {
         college: get_college_by_name(form_data.college_name)?.id,
       };
 
-      const form = new FormData();
-      // @ts-ignore
-      for (const key in new_user) form.append(key, new_user[key]);
-      // @ts-ignore
-      form.append("resume", resumeFile);
+      // User form
+      const multipart_form = MultipartFormBuilder.new();
+      multipart_form.from(new_user);
+      multipart_form.add_file("resume", resumeFile);
 
       // @ts-ignore
-      await register(form)
+      await register(multipart_form.build())
         .then((r) => {
           if (r && r.success) router.push("/verify");
           else setError("Ensure that your inputs are correct.");
         })
-        .catch((e) => {
-          setError(e.message || "Registration failed. Please try again.");
-        });
+        .catch((e) =>
+          setError(e.message || "Registration failed. Please try again.")
+        );
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {
@@ -135,10 +134,7 @@ export default function RegisterPage() {
     }
   };
 
-  if (!email) {
-    return null; // Will redirect in useEffect
-  }
-
+  if (!email) return <></>;
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-4xl">
