@@ -8,17 +8,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Award } from "lucide-react";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
-import { University } from "@/lib/db/db.types";
+import { PublicUser, University } from "@/lib/db/db.types";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
+import { useFormData } from "@/lib/form-data";
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
   const defaultCollege = "Select College";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
+    ref_is_not_null,
     levels,
     colleges,
     universities,
@@ -26,22 +28,16 @@ export default function RegisterPage() {
     get_college_by_name,
     get_university_by_domain,
   } = useRefs();
-  const [form_data, setFormData] = useState({
-    fullName: "",
-    yearLevel: defaultYearLevel,
-    college: defaultCollege,
-    portfolioLink: "",
-    githubLink: "",
-    phoneNumber: "",
-    linkedinProfile: "",
-    acceptTerms: false,
-    takingForCredit: false,
-    linkageOfficer: "",
-  });
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const { form_data, set_fields, set_field, field_setter } = useFormData<
+    PublicUser & {
+      college_name: string;
+      year_level_name: string;
+    }
+  >();
   const { register, redirect_if_logged_in } = useAuthContext();
   const [email, setEmail] = useState("");
   const [university, setUniversity] = useState<University>();
-  const [activeDropdown, setActiveDropdown] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,31 +60,28 @@ export default function RegisterPage() {
     setUniversity(uni);
   }, [searchParams, universities, router]);
 
-  const handleInputChange = (
-    field: string,
-    value: string | boolean | number
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const domain = email.split("@")[1];
 
-    if (!form_data.fullName || !form_data.yearLevel || !form_data.phoneNumber) {
+    if (
+      !form_data.full_name ||
+      !form_data.phone_number ||
+      !form_data.year_level_name ||
+      form_data.year_level_name === defaultYearLevel ||
+      !form_data.college_name ||
+      form_data.college_name === defaultCollege
+    ) {
       setError("Please fill in all required fields");
       return;
     }
 
-    if (form_data.takingForCredit && !form_data.linkageOfficer.trim()) {
+    if (form_data.taking_for_credit && !form_data.linkage_officer?.trim()) {
       setError("Please provide your linkage officer information");
       return;
     }
 
-    if (!form_data.acceptTerms) {
+    if (!acceptTerms) {
       setError(
         "Please accept the Terms & Conditions and Privacy Policy to continue"
       );
@@ -101,8 +94,8 @@ export default function RegisterPage() {
     }
 
     if (
-      form_data.college === defaultCollege ||
-      form_data.yearLevel === defaultYearLevel
+      form_data.college_name === defaultCollege ||
+      form_data.year_level_name === defaultYearLevel
     ) {
       setError("Please fill in the dropdown fields too.");
       return;
@@ -113,40 +106,24 @@ export default function RegisterPage() {
       setError("");
 
       // User form
-      const user_form_data = new FormData();
-      user_form_data.append("email", email);
-      user_form_data.append("full_name", form_data.fullName);
-      user_form_data.append("phone_number", form_data.phoneNumber);
-      user_form_data.append(
-        "year_level",
-        (get_level_by_name(form_data.yearLevel)?.id ?? "") + ""
-      );
-      user_form_data.append(
-        "college",
-        (get_college_by_name(form_data.college)?.id ?? "") + ""
-      );
-      user_form_data.append("portfolio_link", form_data.portfolioLink);
-      user_form_data.append("github_link", form_data.githubLink);
-      user_form_data.append("linkedin_link", form_data.linkedinProfile);
-      user_form_data.append(
-        "taking_for_credit",
-        form_data.takingForCredit.toString()
-      );
-      user_form_data.append("linkage_officer", form_data.linkageOfficer);
-      // @ts-ignore
-      user_form_data.append("resume", resumeFile);
+      const new_user = {
+        ...form_data,
+        email: email,
+        year_level: get_level_by_name(form_data.year_level_name)?.id,
+        college: get_college_by_name(form_data.college_name)?.id,
+      };
 
-      for (let pair of user_form_data.entries()) {
-        console.log(pair[0], pair[1]);
-      }
+      const form = new FormData();
       // @ts-ignore
-      await register(user_form_data)
+      for (const key in new_user) form.append(key, new_user[key]);
+      // @ts-ignore
+      form.append("resume", resumeFile);
+
+      // @ts-ignore
+      await register(form)
         .then((r) => {
-          if (r && r.success) {
-            router.push("/verify");
-          } else {
-            setError("Ensure that your inputs are correct.");
-          }
+          if (r && r.success) router.push("/verify");
+          else setError("Ensure that your inputs are correct.");
         })
         .catch((e) => {
           setError(e.message || "Registration failed. Please try again.");
@@ -189,11 +166,11 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="text"
-                value={form_data.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
+                value={form_data.full_name}
+                onChange={(e) => set_field("full_name", e.target.value)}
                 placeholder="Enter Full Name"
                 className={
-                  (form_data.fullName === ""
+                  (form_data.full_name === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
                   " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
@@ -210,13 +187,11 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="tel"
-                value={form_data.phoneNumber}
-                onChange={(e) =>
-                  handleInputChange("phoneNumber", e.target.value)
-                }
+                value={form_data.phone_number}
+                onChange={(e) => set_field("phone_number", e.target.value)}
                 placeholder="Enter Phone Number"
                 className={
-                  (form_data.phoneNumber === ""
+                  (form_data.phone_number === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
                   " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
@@ -239,7 +214,7 @@ export default function RegisterPage() {
                     .filter((c) => c.university_id === university?.id)
                     .sort((a, b) => a.name.localeCompare(b.name))
                     .map((college) => college.name)}
-                  on_change={(value) => handleInputChange("college", value)}
+                  on_change={(value) => set_field("college_name", value)}
                 ></GroupableRadioDropdown>
               </div>
 
@@ -257,7 +232,7 @@ export default function RegisterPage() {
                         a.order - b.order || a.name.localeCompare(b.name)
                     )
                     .map((level) => level.name)}
-                  on_change={(value) => handleInputChange("yearLevel", value)}
+                  on_change={(value) => set_field("year_level_name", value)}
                 ></GroupableRadioDropdown>
               </div>
             </DropdownGroup>
@@ -270,13 +245,11 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={form_data.portfolioLink}
-                onChange={(e) =>
-                  handleInputChange("portfolioLink", e.target.value)
-                }
+                value={form_data.portfolio_link}
+                onChange={(e) => set_field("portfolio_link", e.target.value)}
                 placeholder="Enter Portfolio Link"
                 className={
-                  (form_data.portfolioLink === ""
+                  (form_data.portfolio_link === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
                   " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
@@ -293,13 +266,11 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={form_data.linkedinProfile}
-                onChange={(e) =>
-                  handleInputChange("linkedinProfile", e.target.value)
-                }
+                value={form_data.linkedin_link}
+                onChange={(e) => set_field("linkedin_link", e.target.value)}
                 placeholder="Enter LinkedIn Profile Link"
                 className={
-                  (form_data.linkedinProfile === ""
+                  (form_data.linkedin_link === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
                   " w-full h-12 px-4 text-gray-900 input-box hover:cursor-text focus:ring-0"
@@ -316,13 +287,11 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={form_data.githubLink}
-                onChange={(e) =>
-                  handleInputChange("githubLink", e.target.value)
-                }
+                value={form_data.github_link}
+                onChange={(e) => set_field("github_link", e.target.value)}
                 placeholder="Enter Github Link"
                 className={
-                  (form_data.githubLink === ""
+                  (form_data.github_link === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
                   " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
@@ -375,12 +344,12 @@ export default function RegisterPage() {
               </label>
               <div className="flex items-center space-x-3">
                 <Checkbox
-                  checked={form_data.takingForCredit}
+                  checked={form_data.taking_for_credit}
                   onCheckedChange={(checked) => {
-                    handleInputChange("takingForCredit", checked as boolean);
+                    set_field("taking_for_credit", checked as boolean);
                     // Clear linkage officer if unchecked
                     if (!checked) {
-                      handleInputChange("linkageOfficer", "");
+                      set_field("linkage_officer", "");
                     }
                   }}
                   className="border-gray-300"
@@ -395,26 +364,24 @@ export default function RegisterPage() {
             </div>
 
             {/* Linkage Officer - Conditional */}
-            {form_data.takingForCredit && (
+            {form_data.taking_for_credit && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Linkage Officer <span className="text-red-500">*</span>
                 </label>
                 <Input
                   type="text"
-                  value={form_data.linkageOfficer}
-                  onChange={(e) =>
-                    handleInputChange("linkageOfficer", e.target.value)
-                  }
+                  value={form_data.linkage_officer ?? ""}
+                  onChange={(e) => set_field("linkage_officer", e.target.value)}
                   placeholder="Enter your linkage officer's name"
                   className={
-                    (form_data.linkageOfficer === ""
+                    (form_data.linkage_officer === ""
                       ? "border-gray-300"
                       : validFieldClassName) +
                     " w-full h-12 px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
-                  required={form_data.takingForCredit}
+                  required={form_data.taking_for_credit}
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Please provide the name of your assigned linkage officer from
@@ -430,9 +397,9 @@ export default function RegisterPage() {
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="accept-terms"
-                  checked={form_data.acceptTerms}
+                  checked={acceptTerms}
                   onCheckedChange={(checked) =>
-                    handleInputChange("acceptTerms", checked as boolean)
+                    setAcceptTerms(checked as boolean)
                   }
                   className="mt-1"
                 />
@@ -468,7 +435,7 @@ export default function RegisterPage() {
           <div className="flex justify-center">
             <Button
               type="submit"
-              disabled={loading || !form_data.acceptTerms}
+              disabled={loading || !acceptTerms}
               className="w-80 h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating Profile..." : "Continue"}

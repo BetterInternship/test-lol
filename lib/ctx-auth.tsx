@@ -88,9 +88,6 @@ export const AuthContextProvider = ({
   const register = async (user: Partial<PublicUser>) => {
     const response = await auth_service.register(user);
     if (!response.success) return null;
-
-    set_user(response.user as PublicUser);
-    set_is_authenticated(true);
     return response;
   };
 

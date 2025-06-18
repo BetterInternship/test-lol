@@ -9,9 +9,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { verify, redirect_if_logged_in } = useAuthContext();
-
-  redirect_if_logged_in();
+  const { verify } = useAuthContext();
 
   // Redirect to home page when verified
   useEffect(() => {
@@ -27,10 +25,9 @@ export default function VerifyPage() {
     const key = searchParams.get("key");
 
     if (user && key) {
-      // Production mode with real verification
       verify(user, key)
         .then((r) => {
-          if (r.success) {
+          if (r && r.success) {
             setVerified(true);
             setTimeout(() => router.push("/"), 2000);
           }
