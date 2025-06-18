@@ -4,6 +4,7 @@ import { AuthContextInitter, AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import Header from "@/components/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
+import { Footer } from "@/components/shared/footer";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -46,13 +47,12 @@ const HTMLContent = ({
   return (
     <html lang="en" className="overflow-hidden">
       <body>
-        <div className="min-h-screen bg-gray-50 overflow-hidden">
-          <div className="flex flex-col h-screen min-h-screen max-h-screen">
-            <Header />
-            <div className="flex-grow overflow-auto flex flex-col">
-              {children}
-            </div>
+        <div className="h-screen bg-gray-50 flex flex-col">
+          <Header />
+          <div className="flex-grow overflow-auto flex flex-col">
+            {children}
           </div>
+          <Footer />
         </div>
       </body>
     </html>

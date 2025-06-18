@@ -10,6 +10,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: [
+          '"Cosima"',
+          '"SF Pro Display"',
+          '"Helvetica Neue"',
+          '"BlinkMacSystemFont"',
+          '"Arial"',
+          '"sans-serif"',
+        ],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

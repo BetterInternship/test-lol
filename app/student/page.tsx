@@ -12,7 +12,6 @@ import {
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
-import { Header } from "@/components/student/header";
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function HomePage() {
@@ -62,7 +61,7 @@ export default function HomePage() {
         {/* Hero Text */}
         <div className="text-center mb-8">
           <h1
-            className={`font-bold text-gray-900 leading-tight mb-3 ${
+            className={`font-display font-bold text-gray-900 leading-tight mb-3 ${
               is_mobile
                 ? "text-4xl tracking-tight"
                 : "text-3xl sm:text-4xl lg:text-6xl"
@@ -284,19 +283,6 @@ export default function HomePage() {
           </div>
         )}
       </div>
-
-      {/* Footer - Hide on mobile */}
-      {!is_mobile && (
-        <div className="p-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
-          Are you an Employer? Send us an Email:{" "}
-          <a
-            href="mailto:hello@betterinternship.com"
-            className="text-blue-600 hover:underline"
-          >
-            hello@betterinternship.com
-          </a>
-        </div>
-      )}
 
       {/* Category Modal - Mobile Only */}
       {is_mobile && showCategoryModal && (

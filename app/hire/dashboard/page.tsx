@@ -24,20 +24,12 @@ import {
   BarChart3,
   ChevronDown,
   Building2,
-  UserPlus,
-  LogOut,
   FileEdit,
   Search,
-  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import ApplicantModal from "@/components/hire/applicant-modal";
 import CalendarModal from "@/components/hire/calendar-modal";
-import ProfileButton from "@/components/hire/profile-button";
-import {
-  GroupableMultiselectDropdown,
-  DropdownGroup,
-} from "../../../components/ui/dropdown";
 
 // Placeholder data for applicants
 const applicantsData = [
@@ -423,17 +415,13 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="h-screen bg-white flex">
+    <>
       {/* Sidebar */}
       <div
         className="w-64 border-r bg-gray-50 flex flex-col"
         data-tour="sidebar"
       >
         <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
-        </div>
-
-        <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
             <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium cursor-default">
@@ -460,16 +448,6 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Application Dashboard
-          </h1>
-          <div className="flex items-center gap-3">
-            <ProfileButton />
-          </div>
-        </div>
-
         {/* Enhanced Dashboard */}
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
           {/* Quick Stats Cards */}
@@ -714,6 +692,6 @@ export default function Dashboard() {
         onClose={() => setIsCalendarOpen(false)}
         applicantName={selectedApplicant?.name}
       />
-    </div>
+    </>
   );
 }

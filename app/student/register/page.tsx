@@ -475,19 +475,6 @@ export default function RegisterPage() {
             </Button>
           </div>
         </form>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-600 mt-8">
-          <p>
-            Need help? Contact us at{" "}
-            <a
-              href="mailto:hello@betterinternship.com"
-              className="text-blue-600 hover:underline"
-            >
-              hello@betterinternship.com
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   );

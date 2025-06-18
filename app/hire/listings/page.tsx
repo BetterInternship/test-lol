@@ -9,7 +9,6 @@ import { BarChart3, Search, FileText, FileEdit, Filter } from "lucide-react";
 import Link from "next/link";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
-import ProfileButton from "@/components/hire/profile-button";
 import { useRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
@@ -33,14 +32,10 @@ export default function MyListings() {
   } = useModal("edit-modal");
 
   return (
-    <div className="h-screen bg-white flex">
+    <>
       {/* Sidebar */}
       <div className="w-64 border-r bg-gray-50 flex flex-col">
         <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
-        </div>
-
-        <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
             <Link
@@ -67,14 +62,6 @@ export default function MyListings() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">Your Listings</h1>
-          <div className="flex items-center gap-3">
-            <ProfileButton></ProfileButton>
-          </div>
-        </div>
-
         {/* Content Area */}
         <div className="flex-1 p-6 flex gap-6 overflow-hidden">
           {/* Left Panel - Job List */}
@@ -104,10 +91,7 @@ export default function MyListings() {
             </div>
 
             {/* Job Cards - Scrollable */}
-            <div
-              className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0"
-              data-tour="job-cards"
-            >
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0 border-r">
               {ownedJobs
                 .sort((a, b) => {
                   return (
@@ -140,12 +124,11 @@ export default function MyListings() {
             <div className="h-full m-auto">
               <div className="flex flex-col items-center pt-[25vh] h-screen">
                 <div className="opacity-35 mb-10">
-                  <div className="flex flex-row justify-center w-full">
-                    <h1 className="block text-6xl font-bold ">
+                  <div className="flex flex-row justify-center w-full mb-4">
+                    <h1 className="block text-6xl font-heading font-bold ">
                       BetterInternship
                     </h1>
                   </div>
-                  <br />
                   <div className="flex flex-row justify-center w-full">
                     <p className="block text-2xl">
                       Better Internships Start Here
@@ -170,7 +153,7 @@ export default function MyListings() {
           close={() => close_edit_modal()}
         ></EditModalForm>
       </EditModal>
-    </div>
+    </>
   );
 }
 

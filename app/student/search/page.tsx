@@ -404,7 +404,7 @@ export default function SearchPage() {
                   <div className="flex flex-col items-center pt-[25vh] h-screen">
                     <div className="opacity-35 mb-10">
                       <div className="flex flex-row justify-center w-full">
-                        <h1 className="block text-6xl font-bold ">
+                        <h1 className="block text-6xl font-heading font-bold ">
                           BetterInternship
                         </h1>
                       </div>

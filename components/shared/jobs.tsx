@@ -147,7 +147,9 @@ export const JobDetails = ({
   return (
     <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">{job.title}</h2>
+        <h2 className="text-4xl font-heading font-bold text-gray-900 mb-2">
+          {job.title}
+        </h2>
         <p className="text-gray-600 mb-1">{job.employer?.name}</p>
         <p className="text-sm text-gray-500 mb-4">
           Listed on {formatDate(job.created_at ?? "")}
@@ -209,18 +211,22 @@ export const JobDetails = ({
       {/* Job Description */}
       <hr />
       <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-bold mb-4">Description</h1>
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Description
+        </h1>
         <div className="markdown">
-          <ReactMarkdown>{job.description}</ReactMarkdown>
+          <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
         </div>
       </div>
 
       {/* Job Requirements */}
       <hr />
       <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-bold mb-4">Requirements</h1>
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Requirements
+        </h1>
         <div className="markdown">
-          <ReactMarkdown>{job.requirements}</ReactMarkdown>
+          <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
         </div>
       </div>
     </div>

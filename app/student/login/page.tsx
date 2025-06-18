@@ -84,57 +84,59 @@ export default function LoginPage() {
   return (
     <>
       {/* Main Content - Centered */}
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-md">
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full">
           {/* Welcome Message */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome Back!
+          <div className="text-center mb-10">
+            <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+              Recruiters are waiting!
             </h2>
           </div>
 
-          {/* Verification Message - Only show if coming from registration */}
-          {showVerificationMessage && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700 text-center font-medium">
-                📧 Please check your Inbox for a Verification Email!
-              </p>
-            </div>
-          )}
+          <div className="max-w-md m-auto">
+            {/* Verification Message - Only show if coming from registration */}
+            {showVerificationMessage && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700 text-center font-medium">
+                  📧 Please check your Inbox for a Verification Email!
+                </p>
+              </div>
+            )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            )}
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <Input
-                type="email"
-                placeholder="School Email Address"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  // Clear any existing errors when user types
-                  if (error) setError("");
-                }}
-                onKeyPress={handleKeyPress}
-                required
-                className="w-full h-12 px-4 text-gray-900 placeholder-gray-500 border-2 border-gray-300 rounded-lg focus:border-gray-900 focus:ring-0"
-                disabled={loading}
-              />
-            </div>
+            {/* Login Form */}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <Input
+                  type="email"
+                  placeholder="School Email Address"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    // Clear any existing errors when user types
+                    if (error) setError("");
+                  }}
+                  onKeyPress={handleKeyPress}
+                  required
+                  className="w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  disabled={loading}
+                />
+              </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
-            >
-              {loading ? "Checking..." : "Continue"}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+              >
+                {loading ? "Checking..." : "Continue"}
+              </Button>
+            </form>
+          </div>
         </div>
       </div>
     </>
