@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-06-19 04:55:02
+ * @ Modified time: 2025-06-19 05:33:08
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -11,7 +11,13 @@
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { Button } from "../ui/button";
-import { Calendar, ExternalLink, FileText, GraduationCap } from "lucide-react";
+import {
+  Award,
+  Calendar,
+  ExternalLink,
+  FileText,
+  GraduationCap,
+} from "lucide-react";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
@@ -42,6 +48,16 @@ export const ApplicantModalContent = ({
               ? `• ${to_job_type_name(job.type)}`
               : ""}
           </p>
+
+          {/* Indicate if taking for credit */}
+          {applicant.taking_for_credit && (
+            <p className="text-gray-900 font-medium text-sm mb-4">
+              <span className="inline-flex items-center gap-2 text-green-700">
+                <Award className="w-4 h-4" />
+                Taking for credit
+              </span>
+            </p>
+          )}
 
           {/* Quick Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">

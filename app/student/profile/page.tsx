@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Edit2,
@@ -46,6 +45,7 @@ import { user_service } from "@/lib/api";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { Button } from "@/components/ui/button";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
