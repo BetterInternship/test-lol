@@ -1,9 +1,10 @@
 import {
   Job,
   PublicUser,
-  Application,
+  UserApplication,
   SavedJob,
   PublicEmployerUser,
+  EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
 import { FetchResponse } from "@/hooks/use-fetch";
@@ -259,32 +260,35 @@ export const job_service = {
 };
 
 // Application Services
-interface ApplicationsResponse extends FetchResponse {
+interface UserApplicationsResponse extends FetchResponse {
   success?: boolean;
   message?: string;
-  applications: Application[];
-  totalPages: number;
-  currentPage: number;
+  applications: UserApplication[];
   total: number;
 }
 
-interface ApplicationResponse extends Application, FetchResponse {
+interface EmployerApplicationsResponse extends FetchResponse {
+  success?: boolean;
+  message?: string;
+  applications: EmployerApplication[];
+  total: number;
+}
+
+interface UserApplicationResponse extends UserApplication, FetchResponse {
+  success?: boolean;
+  message?: string;
+}
+
+interface EmployerApplicationResponse
+  extends EmployerApplication,
+    FetchResponse {
   success?: boolean;
   message?: string;
 }
 
 interface CreateApplicationResponse extends FetchResponse {
   message: string;
-  application: Application;
-}
-
-interface ApplicationStatsResponse extends FetchResponse {
-  total_applications: number;
-  pending: number;
-  reviewed: number;
-  shortlisted: number;
-  accepted: number;
-  rejected: number;
+  application: UserApplication;
 }
 
 export const application_service = {
@@ -295,7 +299,7 @@ export const application_service = {
       status?: string;
     } = {}
   ) {
-    return APIClient.get<ApplicationsResponse>(
+    return APIClient.get<UserApplicationsResponse>(
       APIRoute("applications").p(params).build()
     );
   },
@@ -312,9 +316,15 @@ export const application_service = {
     );
   },
 
-  async get_application_by_id(id: string): Promise<ApplicationResponse> {
-    return APIClient.get<ApplicationResponse>(
+  async get_application_by_id(id: string): Promise<UserApplicationResponse> {
+    return APIClient.get<UserApplicationResponse>(
       APIRoute("applications").r(id).build()
+    );
+  },
+
+  async get_employer_applications(): Promise<EmployerApplicationsResponse> {
+    return APIClient.get<EmployerApplicationsResponse>(
+      APIRoute("employer").r("applications").build()
     );
   },
 
@@ -327,7 +337,7 @@ export const application_service = {
       resumeFilename?: string;
     }
   ) {
-    return APIClient.put<ApplicationResponse>(
+    return APIClient.put<UserApplicationResponse>(
       APIRoute("applications").r(id).build(),
       data
     );
@@ -336,12 +346,6 @@ export const application_service = {
   async withdraw_application(id: string) {
     return APIClient.delete<StatusResponse>(
       APIRoute("applications").r(id).build()
-    );
-  },
-
-  async get_stats() {
-    return APIClient.get<ApplicationStatsResponse>(
-      APIRoute("applications").r("stats").build()
     );
   },
 };

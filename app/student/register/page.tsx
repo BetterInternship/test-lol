@@ -183,7 +183,7 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="tel"
-                value={form_data.phone_number}
+                value={form_data.phone_number ?? ""}
                 onChange={(e) => set_field("phone_number", e.target.value)}
                 placeholder="Enter Phone Number"
                 className={
@@ -241,7 +241,7 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={form_data.portfolio_link}
+                value={form_data.portfolio_link ?? ""}
                 onChange={(e) => set_field("portfolio_link", e.target.value)}
                 placeholder="Enter Portfolio Link"
                 className={
@@ -262,7 +262,7 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={form_data.linkedin_link}
+                value={form_data.linkedin_link ?? ""}
                 onChange={(e) => set_field("linkedin_link", e.target.value)}
                 placeholder="Enter LinkedIn Profile Link"
                 className={
@@ -283,7 +283,7 @@ export default function RegisterPage() {
               </label>
               <Input
                 type="url"
-                value={form_data.github_link}
+                value={form_data.github_link ?? ""}
                 onChange={(e) => set_field("github_link", e.target.value)}
                 placeholder="Enter Github Link"
                 className={

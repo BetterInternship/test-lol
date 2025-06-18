@@ -46,8 +46,7 @@ export const Header = () => {
  */
 export const ProfileButton = () => {
   const router = useRouter();
-  const { user, recheck_authentication, is_authenticated, logout } =
-    useAuthContext();
+  const { user, is_authenticated, logout } = useAuthContext();
 
   const handle_logout = () => {
     logout().then(() => {
@@ -56,8 +55,8 @@ export const ProfileButton = () => {
   };
 
   const get_display_name = () => {
-    if (!user?.name) return "User";
-    const names = user.name.split(" ");
+    if (!user?.full_name) return "User";
+    const names = user.full_name.split(" ");
     if (names.length > 1)
       return `${names[0]} ${names[names.length - 1].charAt(0)}.`;
     return names[0];
@@ -77,8 +76,10 @@ export const ProfileButton = () => {
       }
       content={
         <div className="px-4 py-3 border-b border-gray-200">
-          <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-          <p className="text-xs text-gray-500">{user?.email}</p>
+          <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
+          <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
+            {user?.email}
+          </p>
         </div>
       }
     >

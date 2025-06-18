@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  User, 
-  BarChart3, 
+} from "@/components/ui/dropdown-menu";
+import {
+  User,
+  BarChart3,
   FileText,
   Building2,
   UserPlus,
   LogOut,
   FileEdit,
-  Settings
-} from "lucide-react"
-import Link from "next/link"
+  Settings,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function SettingsPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleLogout = () => {
-    router.push('/login')
-  }
+    router.push("/login");
+  };
 
   return (
     <div className="h-screen bg-white flex">
@@ -35,15 +35,21 @@ export default function SettingsPage() {
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
-        
+
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
-            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              Applications
             </Link>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/listings"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
@@ -87,7 +93,7 @@ export default function SettingsPage() {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="cursor-pointer text-red-600"
                 onClick={handleLogout}
               >
@@ -104,22 +110,30 @@ export default function SettingsPage() {
             <div className="text-center">
               {/* Info for Automation Section */}
               <div className="mb-12 mt-16">
-                <h2 className="text-xl font-semibold text-gray-800 mb-8">Info for Automation</h2>
-                
+                <h2 className="text-xl font-semibold text-gray-800 mb-8">
+                  Info for Automation
+                </h2>
+
                 <div className="space-y-6">
                   {/* Company Info */}
                   <div className="cursor-pointer hover:opacity-75 transition-opacity">
-                    <h3 className="text-lg font-medium text-purple-600">Company Info</h3>
+                    <h3 className="text-lg font-medium text-purple-600">
+                      Company Info
+                    </h3>
                   </div>
-                  
+
                   {/* Signatory Info */}
                   <div className="cursor-pointer hover:opacity-75 transition-opacity">
-                    <h3 className="text-lg font-medium text-purple-600">Signatory Info</h3>
+                    <h3 className="text-lg font-medium text-purple-600">
+                      Signatory Info
+                    </h3>
                   </div>
-                  
+
                   {/* Other Info */}
                   <div className="cursor-pointer hover:opacity-75 transition-opacity">
-                    <h3 className="text-lg font-medium text-purple-600">Other Info</h3>
+                    <h3 className="text-lg font-medium text-purple-600">
+                      Other Info
+                    </h3>
                   </div>
                 </div>
               </div>
@@ -128,5 +142,5 @@ export default function SettingsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

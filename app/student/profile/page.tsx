@@ -20,7 +20,6 @@ import {
   ExternalLink,
   FileText,
   Trash2,
-  Fullscreen,
   Eye,
   Calendar,
   Award,
@@ -174,17 +173,6 @@ export default function ProfilePage() {
       if (profilePictureInputRef.current) {
         profilePictureInputRef.current.value = "";
       }
-    }
-  };
-
-  const handleDeleteResume = async () => {
-    if (!confirm("Are you sure you want to delete your resume?")) return;
-
-    try {
-      await user_service.delete_resume();
-      alert("Resume deleted successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to delete resume");
     }
   };
 
@@ -712,7 +700,7 @@ export default function ProfilePage() {
                               onClick={handlePreviewResume}
                               className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                             >
-                              <Fullscreen className="w-3 h-3" />
+                              <Eye className="w-3 h-3" />
                             </Button>
                             <Button
                               variant="outline"
@@ -722,14 +710,6 @@ export default function ProfilePage() {
                               className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
                             >
                               <Upload className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleDeleteResume}
-                              className="text-red-600 border-red-600 hover:bg-red-100 h-7 px-2"
-                            >
-                              <Trash2 className="w-3 h-3" />
                             </Button>
                           </div>
                         </div>
@@ -1049,7 +1029,7 @@ export default function ProfilePage() {
                                 onClick={handlePreviewResume}
                                 className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                               >
-                                <Fullscreen className="w-3 h-3" />
+                                <Eye className="w-3 h-3" />
                               </Button>
                               <Button
                                 variant="outline"
@@ -1059,14 +1039,6 @@ export default function ProfilePage() {
                                 className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
                               >
                                 <Upload className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleDeleteResume}
-                                className="text-red-600 border-red-600 hover:bg-red-100 h-7 px-2"
-                              >
-                                <Trash2 className="w-3 h-3" />
                               </Button>
                             </div>
                           </div>

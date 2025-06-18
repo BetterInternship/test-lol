@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  User, 
-  BarChart3, 
+} from "@/components/ui/dropdown-menu";
+import {
+  User,
+  BarChart3,
   FileText,
   Building2,
   MapPin,
@@ -24,66 +24,67 @@ import {
   X,
   UserPlus,
   LogOut,
-  FileEdit
-} from "lucide-react"
-import Link from "next/link"
+  FileEdit,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function CompanyProfile() {
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const [companyData, setCompanyData] = useState({
     name: "Google",
-    description: "Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, a search engine, cloud computing, software, and hardware.",
+    description:
+      "Google LLC is an American multinational technology company that specializes in Internet-related services and products, which include online advertising technologies, a search engine, cloud computing, software, and hardware.",
     locations: ["Legazpi Village, Makati", "BGC, Taguig", "Ortigas, Pasig"],
     hrEmail: "hr@google.com",
-    phone: "+63 2 8888 9999"
-  })
+    phone: "+63 2 8888 9999",
+  });
 
-  const [newLocation, setNewLocation] = useState("")
-  const [isEditing, setIsEditing] = useState(false)
+  const [newLocation, setNewLocation] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
-    setCompanyData(prev => ({
+    setCompanyData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
   const handleAddLocation = () => {
     if (newLocation.trim()) {
-      setCompanyData(prev => ({
+      setCompanyData((prev) => ({
         ...prev,
-        locations: [...prev.locations, newLocation.trim()]
-      }))
-      setNewLocation("")
+        locations: [...prev.locations, newLocation.trim()],
+      }));
+      setNewLocation("");
     }
-  }
+  };
 
   const handleRemoveLocation = (index: number) => {
-    setCompanyData(prev => ({
+    setCompanyData((prev) => ({
       ...prev,
-      locations: prev.locations.filter((_, i) => i !== index)
-    }))
-  }
+      locations: prev.locations.filter((_, i) => i !== index),
+    }));
+  };
 
   const handleSave = () => {
     // Here you would typically save all data to a backend
-    console.log("Saving company data:", companyData)
-    setIsEditing(false)
-  }
+    console.log("Saving company data:", companyData);
+    setIsEditing(false);
+  };
 
   const handleCancel = () => {
     // Reset to original data or fetch from backend
-    setIsEditing(false)
-  }
+    setIsEditing(false);
+  };
 
   const handleLogout = () => {
     // Clear any stored authentication data (if you add localStorage/sessionStorage later)
     // localStorage.removeItem('authToken') // Future implementation
-    
+
     // Redirect to login page
-    router.push('/login')
-  }
+    router.push("/login");
+  };
 
   return (
     <div className="h-screen bg-white flex">
@@ -92,19 +93,28 @@ export default function CompanyProfile() {
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
-        
+
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
-            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              Applications
             </Link>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/listings"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
-            <Link href="/forms-automation" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/forms-automation"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileEdit className="h-5 w-5" />
               Forms Automation
             </Link>
@@ -124,24 +134,24 @@ export default function CompanyProfile() {
                   <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer">
-                <Building2 className="mr-2 h-4 w-4" />
-                <span>Edit Company Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/add-users">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="cursor-pointer text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  <span>Edit Company Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" asChild>
+                  <Link href="/add-users">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    <span>Add Users</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer text-red-600"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -151,12 +161,20 @@ export default function CompanyProfile() {
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Company Profile Section */}
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-8" data-tour="company-details">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">Company Information</h2>
-              
+            <div
+              className="bg-white border-2 border-gray-200 rounded-lg p-8"
+              data-tour="company-details"
+            >
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                Company Information
+              </h2>
+
               {/* Company Name */}
               <div className="mb-6">
-                <Label htmlFor="company-name" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Label
+                  htmlFor="company-name"
+                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
+                >
                   <Building2 className="h-4 w-4" />
                   Company Name
                 </Label>
@@ -169,13 +187,18 @@ export default function CompanyProfile() {
                     placeholder="Enter company name"
                   />
                 ) : (
-                  <p className="text-gray-900 text-lg font-medium mt-2">{companyData.name}</p>
+                  <p className="text-gray-900 text-lg font-medium mt-2">
+                    {companyData.name}
+                  </p>
                 )}
               </div>
 
               {/* Company Description */}
               <div className="mb-6" data-tour="branding-section">
-                <Label htmlFor="company-description" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Label
+                  htmlFor="company-description"
+                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
+                >
                   <FileText className="h-4 w-4" />
                   Company Description
                 </Label>
@@ -183,12 +206,16 @@ export default function CompanyProfile() {
                   <Textarea
                     id="company-description"
                     value={companyData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("description", e.target.value)
+                    }
                     className="mt-2 min-h-[120px]"
                     placeholder="Enter company description"
                   />
                 ) : (
-                  <p className="text-gray-700 mt-2 leading-relaxed">{companyData.description}</p>
+                  <p className="text-gray-700 mt-2 leading-relaxed">
+                    {companyData.description}
+                  </p>
                 )}
               </div>
 
@@ -206,9 +233,12 @@ export default function CompanyProfile() {
                           <Input
                             value={location}
                             onChange={(e) => {
-                              const newLocations = [...companyData.locations]
-                              newLocations[index] = e.target.value
-                              setCompanyData(prev => ({ ...prev, locations: newLocations }))
+                              const newLocations = [...companyData.locations];
+                              newLocations[index] = e.target.value;
+                              setCompanyData((prev) => ({
+                                ...prev,
+                                locations: newLocations,
+                              }));
                             }}
                             className="flex-1"
                           />
@@ -232,7 +262,9 @@ export default function CompanyProfile() {
                         value={newLocation}
                         onChange={(e) => setNewLocation(e.target.value)}
                         placeholder="Add new location"
-                        onKeyPress={(e) => e.key === 'Enter' && handleAddLocation()}
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleAddLocation()
+                        }
                         className="flex-1"
                       />
                       <Button
@@ -250,7 +282,10 @@ export default function CompanyProfile() {
 
               {/* HR Email */}
               <div className="mb-6" data-tour="signatory-info">
-                <Label htmlFor="hr-email" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Label
+                  htmlFor="hr-email"
+                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
+                >
                   <Mail className="h-4 w-4" />
                   HR Email
                 </Label>
@@ -259,7 +294,9 @@ export default function CompanyProfile() {
                     id="hr-email"
                     type="email"
                     value={companyData.hrEmail}
-                    onChange={(e) => handleInputChange("hrEmail", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("hrEmail", e.target.value)
+                    }
                     className="mt-2"
                     placeholder="hr@company.com"
                   />
@@ -270,7 +307,10 @@ export default function CompanyProfile() {
 
               {/* Phone Number */}
               <div className="mb-8">
-                <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <Label
+                  htmlFor="phone"
+                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
+                >
                   <Phone className="h-4 w-4" />
                   Contact Number
                 </Label>
@@ -293,10 +333,7 @@ export default function CompanyProfile() {
             <div className="flex justify-end gap-3 pt-6">
               {isEditing ? (
                 <>
-                  <Button
-                    variant="outline"
-                    onClick={handleCancel}
-                  >
+                  <Button variant="outline" onClick={handleCancel}>
                     Cancel
                   </Button>
                   <Button
@@ -319,5 +356,5 @@ export default function CompanyProfile() {
         </div>
       </div>
     </div>
-  )
+  );
 }

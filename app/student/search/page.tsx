@@ -21,7 +21,7 @@ import {
   useApplications,
 } from "@/hooks/use-api";
 import { useAuthContext } from "../../../lib/ctx-auth";
-import { Application, Job } from "@/lib/db/db.types";
+import { UserApplication, Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useRefs } from "@/lib/db/use-refs";
 import {

@@ -8,19 +8,12 @@ export type JobType = Tables<"ref_job_types">;
 export type JobAllowance = Tables<"ref_job_allowances">;
 export type JobPayFreq = Tables<"ref_job_pay_freq">;
 export type JobMode = Tables<"ref_job_modes">;
-export type PrivateUser = Tables<"users">; // Has all fields accessible
-export type PublicUser = Omit<Tables<"users">, "verification_hash"> & {
-  // Additional profile fields
-  year_level?: string | number;
-  college?: string | number;
-  portfolio_link?: string;
-  github_link?: string;
-  linkedin_link?: string;
-  full_name?: string;
-  phone_number?: string;
-}; // Hidden private fields
+export type AppStatus = Tables<"ref_app_statuses">;
+export type PrivateUser = Tables<"users">;
+export type PublicUser = Omit<Tables<"users">, "verification_hash">;
 export type Employer = Partial<Tables<"employers">>;
-export type PublicEmployerUser = Omit<Tables<"employers">, "verification_hash">; // Employer user type
+export type PrivateEmployerUser = Tables<"employer_users">;
+export type PublicEmployerUser = Omit<Tables<"employer_users">, "is_god">;
 export interface MoA extends Partial<Tables<"moa">> {}
 
 export interface Job extends Partial<Tables<"jobs">> {
@@ -28,11 +21,18 @@ export interface Job extends Partial<Tables<"jobs">> {
   employers?: Partial<Employer>;
 }
 
-export interface Application extends Partial<Tables<"applications">> {
+export interface UserApplication extends Partial<Tables<"applications">> {
   job?: Partial<Job>;
   jobs?: Partial<Job>;
   employer?: Partial<Employer>;
   employers?: Partial<Employer>;
+}
+
+export interface EmployerApplication extends Partial<Tables<"applications">> {
+  job?: Partial<Job>;
+  jobs?: Partial<Job>;
+  user?: Partial<PrivateUser>;
+  users?: Partial<PrivateUser>;
 }
 
 export interface SavedJob extends Partial<Tables<"saved_jobs">> {

@@ -6,13 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -30,161 +23,24 @@ import {
 import Link from "next/link";
 import ApplicantModal from "@/components/hire/applicant-modal";
 import CalendarModal from "@/components/hire/calendar-modal";
-
-// Placeholder data for applicants
-const applicantsData = [
-  {
-    id: 1,
-    name: "John Doe",
-    school: "DLSU",
-    program: "IT",
-    job: "DevOps",
-    mode: "Full-Time",
-    status: "New",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    school: "DLSU",
-    program: "CS",
-    job: "Frontend Dev",
-    mode: "Part-Time",
-    status: "Rejected",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    school: "DLSU",
-    program: "IT",
-    job: "Backend Dev",
-    mode: "Full-Time",
-    status: "To Interview",
-  },
-  {
-    id: 4,
-    name: "Sarah Wilson",
-    school: "DLSU",
-    program: "CS",
-    job: "Full Stack",
-    mode: "Full-Time",
-    status: "Offer Sent",
-  },
-  {
-    id: 5,
-    name: "Chris Brown",
-    school: "DLSU",
-    program: "IT",
-    job: "Mobile Dev",
-    mode: "Part-Time",
-    status: "Shortlisted",
-  },
-  {
-    id: 6,
-    name: "Emily Davis",
-    school: "DLSU",
-    program: "CS",
-    job: "UI/UX",
-    mode: "OJT",
-    status: "Hired",
-  },
-  {
-    id: 7,
-    name: "Alex Garcia",
-    school: "DLSU",
-    program: "IT",
-    job: "DevOps",
-    mode: "Full-Time",
-    status: "Interviewing",
-  },
-  {
-    id: 8,
-    name: "Lisa Martinez",
-    school: "DLSU",
-    program: "CS",
-    job: "Data Science",
-    mode: "Part-Time",
-    status: "Offer Declined",
-  },
-  {
-    id: 9,
-    name: "Tom Anderson",
-    school: "DLSU",
-    program: "IT",
-    job: "QA Engineer",
-    mode: "Full-Time",
-    status: "Shortlisted",
-  },
-  {
-    id: 10,
-    name: "Maria Rodriguez",
-    school: "DLSU",
-    program: "CS",
-    job: "DevOps",
-    mode: "OJT",
-    status: "Hired",
-  },
-  {
-    id: 11,
-    name: "Kevin Lee",
-    school: "DLSU",
-    program: "IT",
-    job: "Frontend Dev",
-    mode: "Part-Time",
-    status: "Interviewing",
-  },
-  {
-    id: 12,
-    name: "Anna Taylor",
-    school: "DLSU",
-    program: "CS",
-    job: "Backend Dev",
-    mode: "Full-Time",
-    status: "Offer Declined",
-  },
-];
-
-const statusOptions = [
-  "New",
-  "Interviewing",
-  "Shortlisted",
-  "Offer Sent",
-  "Offer Accepted",
-  "Offer Declined",
-  "Hired",
-  "Rejected",
-];
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "New":
-      return "bg-blue-100 text-blue-800";
-    case "Interviewing":
-      return "bg-yellow-100 text-yellow-800";
-    case "Shortlisted":
-      return "bg-purple-100 text-purple-800";
-    case "Offer Sent":
-      return "bg-orange-100 text-orange-800";
-    case "Offer Accepted":
-      return "bg-green-100 text-green-800";
-    case "Offer Declined":
-      return "bg-red-100 text-red-800";
-    case "Hired":
-      return "bg-emerald-100 text-emerald-800";
-    case "Rejected":
-      return "bg-gray-100 text-gray-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
+import { useEmployerApplications } from "@/hooks/use-employer-api";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { useRefs } from "@/lib/db/use-refs";
+import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 
 export default function Dashboard() {
-  const [applicants, setApplicants] = useState(applicantsData);
-  const [selectedApplicant, setSelectedApplicant] = useState<
-    (typeof applicantsData)[0] | null
-  >(null);
+  const { employer_applications, loading, error } = useEmployerApplications();
+  const {
+    app_statuses,
+    get_college,
+    to_college_name,
+    to_level_name,
+    to_university_name,
+  } = useRefs();
+  const [selectedApplication, setSelectedApplication] =
+    useState<EmployerApplication | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const router = useRouter();
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("");
@@ -196,29 +52,33 @@ export default function Dashboard() {
 
   // Get unique values for filters
   const uniqueJobs = useMemo(
-    () => [...new Set(applicantsData.map((a) => a.job))].sort(),
-    []
-  );
-  const uniqueStatuses = useMemo(
-    () => [...new Set(applicantsData.map((a) => a.status))].sort(),
+    () =>
+      [
+        ...new Set(
+          employer_applications
+            .map((a) => a.job?.id)
+            .filter((a) => a !== undefined)
+        ),
+      ].sort(),
     []
   );
 
   // Filter and sort applicants
   const filteredAndSortedApplicants = useMemo(() => {
-    let filtered = applicantsData.filter((applicant) => {
+    let filtered = employer_applications.filter((application) => {
       const jobMatch =
-        selectedJobs.length === 0 || selectedJobs.includes(applicant.job);
+        selectedJobs.length === 0 ||
+        selectedJobs.includes(application.job?.id ?? "");
       const statusMatch =
         selectedStatuses.length === 0 ||
-        selectedStatuses.includes(applicant.status);
+        selectedStatuses.includes(application.status ?? "");
       return jobMatch && statusMatch;
     });
 
     if (sortField) {
       filtered.sort((a, b) => {
-        let aValue = a[sortField as keyof typeof a];
-        let bValue = b[sortField as keyof typeof b];
+        let aValue = a[sortField as keyof typeof a] ?? 0;
+        let bValue = b[sortField as keyof typeof b] ?? 0;
 
         if (typeof aValue === "string") aValue = aValue.toLowerCase();
         if (typeof bValue === "string") bValue = bValue.toLowerCase();
@@ -256,20 +116,11 @@ export default function Dashboard() {
   };
 
   const updateStatus = (id: number, newStatus: string) => {
-    setApplicants((prev) =>
-      prev.map((applicant) =>
-        applicant.id === id ? { ...applicant, status: newStatus } : applicant
-      )
-    );
-    // Also update the main data source if needed
-    const applicantIndex = applicantsData.findIndex((a) => a.id === id);
-    if (applicantIndex !== -1) {
-      applicantsData[applicantIndex].status = newStatus;
-    }
+    // !to implement
   };
 
-  const openApplicantModal = (applicant: (typeof applicantsData)[0]) => {
-    setSelectedApplicant(applicant);
+  const openApplicantModal = (application: EmployerApplication) => {
+    setSelectedApplication(application);
     setIsModalOpen(true);
   };
 
@@ -426,7 +277,7 @@ export default function Dashboard() {
           <div className="space-y-2">
             <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium cursor-default">
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              Applications
             </div>
             <Link
               href="/listings"
@@ -450,74 +301,6 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col">
         {/* Enhanced Dashboard */}
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
-          {/* Quick Stats Cards */}
-          <div className="grid grid-cols-4 gap-4" data-tour="dashboard-cards">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">
-                    Total Applications
-                  </p>
-                  <p className="text-2xl font-bold text-blue-900">
-                    {applicantsData.length}
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-200 rounded-lg">
-                  <User className="h-6 w-6 text-blue-700" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Hired</p>
-                  <p className="text-2xl font-bold text-green-900">
-                    {applicantsData.filter((a) => a.status === "Hired").length}
-                  </p>
-                </div>
-                <div className="p-3 bg-green-200 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-green-700" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-yellow-600">
-                    Interviewing
-                  </p>
-                  <p className="text-2xl font-bold text-yellow-900">
-                    {
-                      applicantsData.filter((a) => a.status === "Interviewing")
-                        .length
-                    }
-                  </p>
-                </div>
-                <div className="p-3 bg-yellow-200 rounded-lg">
-                  <Calendar className="h-6 w-6 text-yellow-700" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600">
-                    New Applications
-                  </p>
-                  <p className="text-2xl font-bold text-purple-900">
-                    {applicantsData.filter((a) => a.status === "New").length}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-200 rounded-lg">
-                  <FileText className="h-6 w-6 text-purple-700" />
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Enhanced Table */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
             {/* Table Header with Filters */}
@@ -528,8 +311,8 @@ export default function Dashboard() {
                 </h3>
                 <div className="flex items-center gap-3">
                   <div className="text-sm text-gray-500">
-                    Showing {filteredAndSortedApplicants.length} of{" "}
-                    {applicantsData.length} applicants
+                    Showing {employer_applications.length} of{" "}
+                    {employer_applications.length} applicants
                   </div>
                 </div>
               </div>
@@ -577,7 +360,7 @@ export default function Dashboard() {
                         <BarChart3 className="h-4 w-4 text-gray-400" />
                         <MultiSelectFilter
                           title="Status"
-                          options={uniqueStatuses}
+                          options={app_statuses.map((as) => as.name)}
                           selected={selectedStatuses}
                           onToggle={handleStatusToggle}
                           searchValue={statusSearch}
@@ -589,9 +372,9 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAndSortedApplicants.map((applicant, index) => (
+                  {employer_applications.map((application, index) => (
                     <tr
-                      key={applicant.id}
+                      key={application.id}
                       className={`border-b border-gray-50 hover:bg-gray-25 transition-colors ${
                         index % 2 === 0 ? "bg-white" : "bg-gray-25"
                       }`}
@@ -599,17 +382,19 @@ export default function Dashboard() {
                       <td className="px-6 py-4 w-[300px]">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {applicant.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {application.user?.full_name}
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">
-                              {applicant.name}
+                              {application.user?.full_name}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {applicant.school} • {applicant.program}
+                              {to_level_name(application.user?.year_level)} •{" "}
+                              {to_college_name(application.user?.college)} •{" "}
+                              {to_university_name(
+                                get_college(application.user?.college)
+                                  ?.university_id
+                              )}
                             </p>
                           </div>
                         </div>
@@ -618,11 +403,11 @@ export default function Dashboard() {
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                           <span className="font-medium text-gray-900">
-                            {applicant.job}
+                            {application.job?.title}
                           </span>
                         </div>
                         <p className="text-sm text-gray-500 mt-1">
-                          {applicant.mode}
+                          {application.job?.mode}
                         </p>
                       </td>
                       <td className="px-6 py-4 w-[120px] text-center">
@@ -630,7 +415,7 @@ export default function Dashboard() {
                           variant="ghost"
                           size="sm"
                           className="w-10 h-10 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                          onClick={() => openApplicantModal(applicant)}
+                          onClick={() => openApplicantModal(application)}
                         >
                           <FileText className="h-4 w-4" />
                         </Button>
@@ -646,27 +431,11 @@ export default function Dashboard() {
                         </Button>
                       </td>
                       <td className="px-6 py-4 w-[200px]">
-                        <Select
-                          value={applicant.status}
-                          onValueChange={(value) =>
-                            updateStatus(applicant.id, value)
-                          }
-                        >
-                          <SelectTrigger
-                            className={`w-full h-9 ${getStatusColor(
-                              applicant.status
-                            )} border-0 rounded-full font-medium text-sm`}
-                          >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusOptions.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {status}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <GroupableRadioDropdown
+                          name="status"
+                          options={app_statuses.map((as) => as.name)}
+                          on_change={() => alert("Status updated.")}
+                        ></GroupableRadioDropdown>
                       </td>
                     </tr>
                   ))}
@@ -678,9 +447,9 @@ export default function Dashboard() {
       </div>
 
       {/* Applicant Modal */}
-      {selectedApplicant && (
+      {selectedApplication && (
         <ApplicantModal
-          applicant={selectedApplicant}
+          application={selectedApplication}
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
         />
@@ -690,7 +459,7 @@ export default function Dashboard() {
       <CalendarModal
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
-        applicantName={selectedApplicant?.name}
+        applicantName={selectedApplication?.user?.full_name}
       />
     </>
   );

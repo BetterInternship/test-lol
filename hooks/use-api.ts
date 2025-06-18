@@ -5,7 +5,7 @@ import {
   application_service,
   handle_api_error,
 } from "@/lib/api";
-import { Job, PublicUser, Application, SavedJob } from "@/lib/db/db.types";
+import { Job, PublicUser, UserApplication, SavedJob } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "./use-cache";
 import { FetchResponse } from "./use-fetch";
@@ -355,7 +355,7 @@ export const useSavedJobs = () => {
     add: save_job,
     updating: saving,
     refetch,
-  } = listFromDBInternalHook<string, SavedJob>({
+  } = listFromDBInternalHook<string, Job>({
     name: "saved_jobs",
     fetches: {
       get_data,
@@ -369,7 +369,7 @@ export const useSavedJobs = () => {
   };
 
   return {
-    save_job,
+    save_job: (job_id: string) => save_job(job_id, {}),
     saved_jobs,
     loading,
     saving,
@@ -383,7 +383,7 @@ export const useSavedJobs = () => {
 export function useApplications() {
   const { is_authenticated, recheck_authentication } = useAuthContext();
   const { get_cache_item, set_cache_item } = useCache();
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
@@ -403,7 +403,7 @@ export function useApplications() {
       // Check cache first
       const cached_applications = get_cache_item(
         "_applications_list"
-      ) as Application[];
+      ) as UserApplication[];
       if (cached_applications) {
         await setTimeout(() => {}, 500);
         setApplications(cached_applications);
@@ -442,9 +442,9 @@ export function useApplications() {
         if (!get_cache_item("_applications_list"))
           set_cache_item("_applications_list", []);
         const new_applications = [
-          ...(get_cache_item("_applications_list") as Application[]),
+          ...(get_cache_item("_applications_list") as UserApplication[]),
           { ...response.application },
-        ] as Application[];
+        ] as UserApplication[];
         set_cache_item("_applications_list", new_applications);
         setApplications(new_applications);
       }

@@ -1,8 +1,59 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { job_service, handle_api_error } from "@/lib/api";
-import { Job } from "@/lib/db/db.types";
+import { job_service, handle_api_error, application_service } from "@/lib/api";
+import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/app/hire/authctx";
 import { useCache } from "./use-cache";
+
+export function useEmployerApplications() {
+  const { recheck_authentication } = useAuthContext();
+  const { get_cache_item, set_cache_item } = useCache();
+  const [employerApplications, setEmployerApplications] = useState<
+    EmployerApplication[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEmployerApplications = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Check cache first
+      const cached_employer_applications = get_cache_item(
+        "_apps_employer_list"
+      ) as EmployerApplication[];
+      if (cached_employer_applications) {
+        setEmployerApplications(cached_employer_applications);
+        return;
+      }
+
+      // Otherwise, pull from server
+      const response = await application_service.get_employer_applications();
+      if (response.success) {
+        setEmployerApplications(response.applications ?? []);
+        set_cache_item("_apps_employer_list", response.applications ?? []);
+      }
+    } catch (err) {
+      const errorMessage = handle_api_error(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    recheck_authentication().then((r) =>
+      r ? fetchEmployerApplications() : setLoading(false)
+    );
+  }, [fetchEmployerApplications]);
+
+  return {
+    employer_applications: employerApplications,
+    loading,
+    error,
+    refetch: fetchEmployerApplications,
+  };
+}
 
 /**
  * Hook for dealing with jobs owned by employer.
@@ -18,7 +69,7 @@ export function useOwnedJobs(
     industry?: string;
   } = {}
 ) {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const { recheck_authentication } = useAuthContext();
   const { get_cache_item, set_cache_item } = useCache();
   const [ownedJobs, setOwnedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +83,6 @@ export function useOwnedJobs(
       // Check cache first
       const cached_saved_jobs = get_cache_item("_jobs_owned_list") as Job[];
       if (cached_saved_jobs) {
-        await setTimeout(() => {}, 500);
         setOwnedJobs(cached_saved_jobs);
         return;
       }
@@ -54,6 +104,7 @@ export function useOwnedJobs(
   const update_job = async (job_id: string, job: Partial<Job>) => {
     const response = await job_service.update_job(job_id, job);
     if (response.success) {
+      // @ts-ignore
       const job = response.job;
       const old_job = ownedJobs.filter((oj) => oj.id === job.id)[0] ?? {};
       set_cache_item("_jobs_owned_list", [
