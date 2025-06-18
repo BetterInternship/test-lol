@@ -71,12 +71,7 @@ export const auth_service = {
     async refresh_token() {},
 
     async logout() {
-      // ! to remove
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
-
-      return APIClient.post<NoResponse>(
+      await APIClient.post<NoResponse>(
         APIRoute("auth").r("hire", "logout").build()
       );
     },
@@ -143,12 +138,7 @@ export const auth_service = {
   async refresh_token() {},
 
   async logout() {
-    // ! to remove
-    if (typeof window !== "undefined") {
-      window.location.href = "/";
-    }
-
-    return APIClient.post<NoResponse>(APIRoute("auth").r("logout").build());
+    await APIClient.post<NoResponse>(APIRoute("auth").r("logout").build());
   },
 };
 

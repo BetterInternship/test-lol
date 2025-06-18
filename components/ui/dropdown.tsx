@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-18 00:33:16
+ * @ Modified time: 2025-06-19 03:59:13
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -111,13 +111,15 @@ export const GroupableRadioDropdown = ({
   options,
   on_change,
   default_value = options[0],
-  button_class,
+  button_class = "",
+  className = "",
 }: {
   name: string;
   options: string[];
   on_change: (option: string) => void;
   default_value?: string;
   button_class?: string;
+  className?: string;
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const { is_mobile } = useAppContext();
@@ -156,7 +158,7 @@ export const GroupableRadioDropdown = ({
   }, [active_dropdown]);
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       <Button
         ref={ref}
         type="button"
@@ -187,7 +189,12 @@ export const GroupableRadioDropdown = ({
       </Button>
 
       {is_open && (
-        <div className="absolute top-full mt-2 bg-white rounded-md shadow-xl z-50 min-w-[200px] overflow-hidden border border-gray-100">
+        <div
+          className={cn(
+            "absolute top-full mt-2 bg-white rounded-md shadow-xl z-50 overflow-hidden border border-gray-100",
+            className
+          )}
+        >
           {options.map((option, index) => (
             <DropdownOptionButton key={index} set_is_open={set_is_open}>
               <DropdownOption
@@ -213,18 +220,20 @@ export const GroupableNavDropdown = ({
   display,
   content,
   children,
+  className = "",
 }: {
   display?: React.ReactNode;
   content?: React.ReactNode;
   children?:
     | React.ReactElement<IDropdownOptionProps>
     | React.ReactElement<IDropdownOptionProps>[];
+  className?: string;
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const [is_open, set_is_open] = useState(false);
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       <Button
         ref={ref}
         type="button"
@@ -242,7 +251,12 @@ export const GroupableNavDropdown = ({
       </Button>
 
       {is_open && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+        <div
+          className={cn(
+            "absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50",
+            className
+          )}
+        >
           <div className="py-1">
             {content}
 

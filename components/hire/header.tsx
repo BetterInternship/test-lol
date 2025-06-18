@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-// ! refactor auth context eventually
 import { useAuthContext } from "../../app/hire/authctx";
 import { useRouter } from "next/navigation";
 import { User, LogOut, Building2, UserPlus } from "lucide-react";
@@ -25,7 +23,7 @@ export const Header = () => {
   return (
     <div
       className={cn(
-        "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100",
+        "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[100]",
         is_mobile ? "px-6 py-4" : "py-4 px-8"
       )}
     >
