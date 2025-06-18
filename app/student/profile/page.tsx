@@ -45,6 +45,7 @@ import { UserLinkLabel } from "../../../components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
 import { user_service } from "@/lib/api";
 import { useClientDimensions } from "@/hooks/use-dimensions";
+import { FileUploadFormBuilder } from "@/lib/multipart-form";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
@@ -66,10 +67,7 @@ export default function ProfilePage() {
     }
   >();
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState<{
-    resume: boolean;
-    profilePicture: boolean;
-  }>({ resume: false, profilePicture: false });
+  const [uploading, setUploading] = useState<boolean>(false);
   const {
     open: open_employer_modal,
     close: close_employer_modal,
@@ -109,14 +107,20 @@ export default function ProfilePage() {
     }
 
     try {
-      setUploading((prev) => ({ ...prev, resume: true }));
-      const result = await user_service.update_resume(file);
+      setUploading(true);
+      const form = FileUploadFormBuilder.new("resume");
+      form.file(file);
+
+      console.log(form.build());
+      // @ts-ignore
+      const result = await user_service.update_resume(form.build());
+      console.log(result);
 
       alert("Resume uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload resume");
     } finally {
-      setUploading((prev) => ({ ...prev, resume: false }));
+      setUploading(false);
       // Clear the input
       if (resumeInputRef.current) {
         resumeInputRef.current.value = "";
@@ -144,14 +148,14 @@ export default function ProfilePage() {
     }
 
     try {
-      setUploading((prev) => ({ ...prev, profilePicture: true }));
-      const result = await user_service.upload_profile_picture(file);
+      setUploading(true);
+      const result = await user_service.update_profile_picture(file);
 
       alert("Profile picture uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload profile picture");
     } finally {
-      setUploading((prev) => ({ ...prev, profilePicture: false }));
+      setUploading(false);
       // Clear the input
       if (profilePictureInputRef.current) {
         profilePictureInputRef.current.value = "";
@@ -379,7 +383,7 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   {/* Preview Profile Section - Moved to top */}
                   <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-6 h-6 bg-indigo-100 rounded-lg flex items-center justify-center mr-2">
                         <Eye className="w-3 h-3 text-indigo-600" />
                       </div>
@@ -402,7 +406,7 @@ export default function ProfilePage() {
 
                   {/* Basic Information Card */}
                   <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
                         <User className="w-3 h-3 text-blue-600" />
                       </div>
@@ -542,7 +546,7 @@ export default function ProfilePage() {
 
                   {/* Professional Links Card */}
                   <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center mr-2">
                         <ExternalLink className="w-3 h-3 text-green-600" />
                       </div>
@@ -617,7 +621,7 @@ export default function ProfilePage() {
 
                   {/* About Card */}
                   <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-2">
                         <FileText className="w-3 h-3 text-purple-600" />
                       </div>
@@ -652,7 +656,7 @@ export default function ProfilePage() {
 
                   {/* Resume Section */}
                   <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
                       <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2">
                         <FileText className="w-3 h-3 text-orange-600" />
                       </div>
@@ -748,7 +752,7 @@ export default function ProfilePage() {
                   <div className="lg:col-span-2 space-y-4">
                     {/* Basic Information Card */}
                     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <h2 className="text-xl font-bold font-heading text-gray-900 mb-4 flex items-center">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                           <User className="w-4 h-4 text-blue-600" />
                         </div>
@@ -890,7 +894,7 @@ export default function ProfilePage() {
 
                     {/* Professional Links Card */}
                     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
                         <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                           <ExternalLink className="w-4 h-4 text-green-600" />
                         </div>
@@ -968,7 +972,7 @@ export default function ProfilePage() {
                   <div className="lg:col-span-1">
                     {/* Preview Profile Section */}
                     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow sticky top-6 mb-4">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
                         <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
                           <Eye className="w-4 h-4 text-indigo-600" />
                         </div>
@@ -991,7 +995,7 @@ export default function ProfilePage() {
 
                     {/* Resume Section */}
                     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
                         <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
                           <FileText className="w-4 h-4 text-orange-600" />
                         </div>
@@ -1060,20 +1064,16 @@ export default function ProfilePage() {
                         <div className="border border-dashed border-gray-300 rounded-md p-4 text-center">
                           <FileText className="w-6 h-6 text-gray-400 mx-auto mb-2" />
                           <p className="text-sm text-gray-600 mb-2">
-                            {uploading.resume
-                              ? "Uploading..."
-                              : "No resume uploaded"}
+                            {uploading ? "Uploading..." : "No resume uploaded"}
                           </p>
                           <Button
                             onClick={() => resumeInputRef.current?.click()}
-                            disabled={uploading.resume}
+                            disabled={uploading}
                             size="sm"
                             className="bg-blue-600 hover:bg-blue-700 h-8"
                           >
                             <Upload className="w-3 h-3 mr-1" />
-                            {uploading.resume
-                              ? "Uploading..."
-                              : "Upload Resume"}
+                            {uploading ? "Uploading..." : "Upload Resume"}
                           </Button>
                           <p className="text-xs text-gray-500 mt-1">
                             PDF files up to 3MB
@@ -1084,7 +1084,7 @@ export default function ProfilePage() {
 
                     {/* About Card - Moved here under Resume */}
                     <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mt-4">
-                      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
                         <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                           <FileText className="w-4 h-4 text-purple-600" />
                         </div>

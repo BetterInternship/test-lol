@@ -172,14 +172,18 @@ export const user_service = {
   },
 
   async update_resume(file: Blob | null) {
-    // ! to implement
+    return APIClient.put<Response>(
+      APIRoute("users").r("me", "resume").build(),
+      file,
+      "form-data"
+    );
   },
 
   async delete_resume() {
     // ! to implement
   },
 
-  async upload_profile_picture(file: Blob | null) {
+  async update_profile_picture(file: Blob | null) {
     // ! to implement
   },
 

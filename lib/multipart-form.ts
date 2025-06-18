@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-18 20:49:53
- * @ Modified time: 2025-06-18 21:15:29
+ * @ Modified time: 2025-06-19 00:07:21
  * @ Description:
  *
  * A utility class for creating multipart forms we can submit to the server.
@@ -63,26 +63,25 @@ export class MultipartFormBuilder<T extends FormDataReference> {
  * A form builder for single file uploads.
  * Has a built in system for checking file sizes.
  */
-export class FileUploadFormBuilder<
-  T extends FormDataReference
-> extends MultipartFormBuilder<T> {
+export class FileUploadFormBuilder<T extends FormDataReference> {
   filename: string;
+  form_builder: MultipartFormBuilder<T>;
 
   file(file?: Blob | null): FileUploadFormBuilder<T> {
     if (!file) return this;
-    this.add_file(this.filename, file);
+    this.form_builder.add_file(this.filename, file);
     return this;
   }
 
   // Returns the build form data
   build(): FormData {
-    return this.form;
+    return this.form_builder.build();
   }
 
   // We initialize the filename
   private constructor(filename: string) {
-    super();
     this.filename = filename;
+    this.form_builder = new MultipartFormBuilder();
   }
 
   // Im just a little stingy with use the new Class() syntax
