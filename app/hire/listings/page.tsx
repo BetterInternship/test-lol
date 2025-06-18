@@ -43,7 +43,7 @@ export default function MyListings() {
               className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
             >
               <BarChart3 className="h-5 w-5" />
-              Applications
+              My Applications
             </Link>
             <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium">
               <FileText className="h-5 w-5" />

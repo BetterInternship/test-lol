@@ -102,7 +102,7 @@ export default function CompanyProfile() {
               className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
             >
               <BarChart3 className="h-5 w-5" />
-              Applications
+              My Applications
             </Link>
             <Link
               href="/listings"

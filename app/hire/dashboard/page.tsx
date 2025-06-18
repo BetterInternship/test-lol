@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,15 +20,17 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import ApplicantModal from "@/components/hire/applicant-modal";
-import CalendarModal from "@/components/hire/calendar-modal";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { useModal } from "@/hooks/use-modal";
+import { useClientDimensions } from "@/hooks/use-dimensions";
 
 export default function Dashboard() {
   const { employer_applications, loading, error } = useEmployerApplications();
+  const { client_width, client_height } = useClientDimensions();
   const {
     app_statuses,
     get_college,
@@ -39,8 +40,10 @@ export default function Dashboard() {
   } = useRefs();
   const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const { open: open_applicant_modal, Modal: ApplicantModal } =
+    useModal("applicant-modal");
+  const { open: open_calendly_modal, Modal: CalendlyModal } =
+    useModal("calendly-modal");
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("");
@@ -63,35 +66,7 @@ export default function Dashboard() {
     []
   );
 
-  // Filter and sort applicants
-  const filteredAndSortedApplicants = useMemo(() => {
-    let filtered = employer_applications.filter((application) => {
-      const jobMatch =
-        selectedJobs.length === 0 ||
-        selectedJobs.includes(application.job?.id ?? "");
-      const statusMatch =
-        selectedStatuses.length === 0 ||
-        selectedStatuses.includes(application.status ?? "");
-      return jobMatch && statusMatch;
-    });
-
-    if (sortField) {
-      filtered.sort((a, b) => {
-        let aValue = a[sortField as keyof typeof a] ?? 0;
-        let bValue = b[sortField as keyof typeof b] ?? 0;
-
-        if (typeof aValue === "string") aValue = aValue.toLowerCase();
-        if (typeof bValue === "string") bValue = bValue.toLowerCase();
-
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return filtered;
-  }, [selectedJobs, selectedStatuses, sortField, sortDirection]);
-
+  // Filter and sort applications
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -113,15 +88,6 @@ export default function Dashboard() {
         ? prev.filter((s) => s !== status)
         : [...prev, status]
     );
-  };
-
-  const updateStatus = (id: number, newStatus: string) => {
-    // !to implement
-  };
-
-  const openApplicantModal = (application: EmployerApplication) => {
-    setSelectedApplication(application);
-    setIsModalOpen(true);
   };
 
   // Filter components
@@ -277,7 +243,7 @@ export default function Dashboard() {
           <div className="space-y-2">
             <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium cursor-default">
               <BarChart3 className="h-5 w-5" />
-              Applications
+              My Applications
             </div>
             <Link
               href="/listings"
@@ -302,13 +268,10 @@ export default function Dashboard() {
         {/* Enhanced Dashboard */}
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
           {/* Enhanced Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
             {/* Table Header with Filters */}
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Applicants
-                </h3>
                 <div className="flex items-center gap-3">
                   <div className="text-sm text-gray-500">
                     Showing {employer_applications.length} of{" "}
@@ -345,12 +308,6 @@ export default function Dashboard() {
                     </th>
                     <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
                       <div className="flex items-center justify-center gap-2">
-                        <FileText className="h-4 w-4 text-gray-400" />
-                        <span>Resume</span>
-                      </div>
-                    </th>
-                    <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
-                      <div className="flex items-center justify-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />
                         <span>Schedule</span>
                       </div>
@@ -375,9 +332,13 @@ export default function Dashboard() {
                   {employer_applications.map((application, index) => (
                     <tr
                       key={application.id}
-                      className={`border-b border-gray-50 hover:bg-gray-25 transition-colors ${
+                      className={`border-b border-gray-50 hover:bg-gray-50 hover:cursor-pointer transition-colors ${
                         index % 2 === 0 ? "bg-white" : "bg-gray-25"
                       }`}
+                      onClick={() => (
+                        setSelectedApplication(application),
+                        open_applicant_modal()
+                      )}
                     >
                       <td className="px-6 py-4 w-[300px]">
                         <div className="flex items-center gap-3">
@@ -389,12 +350,12 @@ export default function Dashboard() {
                               {application.user?.full_name}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {to_level_name(application.user?.year_level)} •{" "}
-                              {to_college_name(application.user?.college)} •{" "}
                               {to_university_name(
                                 get_college(application.user?.college)
                                   ?.university_id
-                              )}
+                              )}{" "}
+                              • {to_college_name(application.user?.college)} •{" "}
+                              {to_level_name(application.user?.year_level)}
                             </p>
                           </div>
                         </div>
@@ -412,20 +373,14 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-4 w-[120px] text-center">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="w-10 h-10 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                          onClick={() => openApplicantModal(application)}
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </td>
-                      <td className="px-6 py-4 w-[120px] text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-10 h-10 p-0 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
-                          onClick={() => setIsCalendarOpen(true)}
+                          className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedApplication(application);
+                            open_calendly_modal();
+                          }}
                         >
                           <Calendar className="h-4 w-4" />
                         </Button>
@@ -447,20 +402,37 @@ export default function Dashboard() {
       </div>
 
       {/* Applicant Modal */}
-      {selectedApplication && (
-        <ApplicantModal
-          application={selectedApplication}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+      <ApplicantModal>
+        <ApplicantModalContent
+          clickable={true}
+          applicant={selectedApplication?.user}
+          job={selectedApplication?.job}
         />
-      )}
+      </ApplicantModal>
 
       {/* Calendar Modal */}
-      <CalendarModal
-        isOpen={isCalendarOpen}
-        onClose={() => setIsCalendarOpen(false)}
-        applicantName={selectedApplication?.user?.full_name}
-      />
+      <CalendlyModal>
+        {selectedApplication?.user?.calendly_link ? (
+          <iframe
+            src={`${selectedApplication?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
+            allowTransparency={true}
+            style={{
+              width: Math.min(client_width * 0.6, 1000),
+              height: client_height * 0.7,
+              background: "#FFFFFF",
+            }}
+          >
+            Calendly could not be loaded.
+          </iframe>
+        ) : (
+          <div className="h-48 px-8">
+            <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
+            <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
+              The applicant does not have a calendly link.
+            </div>
+          </div>
+        )}
+      </CalendlyModal>
     </>
   );
 }

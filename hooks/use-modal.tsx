@@ -26,7 +26,7 @@ export const useModal = (name: string) => {
             onClick={() => set_is_open(false)}
           >
             <motion.div
-              className="bg-white rounded-2xl overflow-hidden shadow-2xl"
+              className="bg-white rounded-lg overflow-hidden shadow-2xl"
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}

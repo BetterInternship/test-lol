@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-19 04:02:25
+ * @ Modified time: 2025-06-19 04:27:58
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -163,7 +163,10 @@ export const GroupableRadioDropdown = ({
         ref={ref}
         type="button"
         variant="ghost"
-        onClick={handle_click}
+        onClick={(e) => {
+          e.stopPropagation();
+          handle_click(e);
+        }}
         className={cn(
           "flex items-center input-box justify-between",
           is_mobile
