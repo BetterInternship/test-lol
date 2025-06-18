@@ -159,30 +159,32 @@ interface SaveJobResponse extends FetchResponse {
 }
 
 export const user_service = {
-  async get_profile() {
+  async get_my_profile() {
     return APIClient.get<UserResponse>(APIRoute("users").r("me").build());
   },
 
-  async update_profile(data: Partial<PublicUser>) {
+  async update_my_profile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
   },
 
-  async get_resume_url() {
+  async get_my_resume_url() {
     return APIClient.get<ResourceHashResponse>(
       APIRoute("users").r("me", "resume").build()
     );
   },
 
-  async update_resume(file: Blob | null) {
+  async get_user_resume_url(user_id: string) {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r(user_id, "resume").build()
+    );
+  },
+
+  async update_my_resume(file: Blob | null) {
     return APIClient.put<Response>(
       APIRoute("users").r("me", "resume").build(),
       file,
       "form-data"
     );
-  },
-
-  async delete_resume() {
-    // ! to implement
   },
 
   async update_profile_picture(file: Blob | null) {

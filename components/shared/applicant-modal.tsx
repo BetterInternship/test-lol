@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-06-19 05:33:08
+ * @ Modified time: 2025-06-19 05:50:31
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -22,10 +22,14 @@ import {
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
   clickable = false,
+  open_resume_modal,
+  open_calendly_modal,
   job = {} as Partial<Job>,
 }: {
   applicant?: Partial<PublicUser>;
   clickable?: boolean;
+  open_resume_modal?: () => void;
+  open_calendly_modal?: () => void;
   job?: Partial<Job>;
 }) => {
   const { to_level_name, to_college_name, to_job_type_name } = useRefs();
@@ -64,6 +68,10 @@ export const ApplicantModalContent = ({
             <Button
               className="bg-blue-600 hover:bg-blue-700 text-white"
               disabled={!clickable || !applicant.resume}
+              onClick={() => {
+                if (!clickable) return;
+                open_resume_modal && open_resume_modal();
+              }}
             >
               <FileText className="h-4 w-4 mr-2" />
               {applicant.resume ? "View Resume" : "No Resume Uploaded"}
@@ -74,6 +82,7 @@ export const ApplicantModalContent = ({
               disabled={!clickable || !applicant?.calendly_link}
               onClick={() => {
                 if (!clickable) return;
+                open_calendly_modal && open_calendly_modal();
               }}
             >
               <Calendar className="h-4 w-4 mr-2" />

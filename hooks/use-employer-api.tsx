@@ -19,9 +19,13 @@ export function useEmployerApplications() {
       setError(null);
 
       // Check cache first
-      const cached_employer_applications = get_cache_item(
-        "_apps_employer_list"
-      ) as EmployerApplication[];
+      const cached_employer_applications = null;
+
+      // ! Disable caching for now, so employers get timely updates of applicants
+      // get_cache_item(
+      //   "_apps_employer_list"
+      // ) as EmployerApplication[];
+
       if (cached_employer_applications) {
         setEmployerApplications(cached_employer_applications);
         return;

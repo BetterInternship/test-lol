@@ -178,7 +178,7 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      const { user } = await user_service.get_profile();
+      const { user } = await user_service.get_my_profile();
       if (user) setProfile(user as PublicUser);
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -199,7 +199,7 @@ export function useProfile() {
   const updateProfile = async (data: Partial<PublicUser>) => {
     try {
       setError(null);
-      const { user } = await user_service.update_profile(data);
+      const { user } = await user_service.update_my_profile(data);
       if (user) setProfile(user as PublicUser);
       return user;
     } catch (err) {

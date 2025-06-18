@@ -18,7 +18,6 @@ import {
   Phone,
   ExternalLink,
   FileText,
-  Trash2,
   Eye,
   Calendar,
   Award,
@@ -46,6 +45,7 @@ import { useClientDimensions } from "@/hooks/use-dimensions";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
+import { useFile } from "@/hooks/use-file";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
@@ -60,7 +60,10 @@ export default function ProfilePage() {
     get_level_by_name,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
-  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
+  const { url: resume_url, sync: sync_resume_url } = useFile({
+    fetch: user_service.get_my_resume_url,
+    route: "/users/me/resume",
+  });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     PublicUser & {
       college_name: string | null;
@@ -114,7 +117,7 @@ export default function ProfilePage() {
 
       console.log(form.build());
       // @ts-ignore
-      const result = await user_service.update_resume(form.build());
+      const result = await user_service.update_my_resume(form.build());
       console.log(result);
 
       alert("Resume uploaded successfully!");
@@ -130,15 +133,7 @@ export default function ProfilePage() {
   };
 
   const handlePreviewResume = async () => {
-    const { success, hash } = await user_service.get_resume_url();
-    if (!success) {
-      alert("Could not find file.");
-      console.error("Could not fetch file.");
-      return;
-    }
-    setResumeUrl(
-      `http://localhost:5000/api/users/me/resume?hash=${hash}#toolbar=0&navpanes=0&scrollbar=0`
-    );
+    await sync_resume_url();
     open_resume_modal();
   };
 
@@ -1109,19 +1104,19 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {resumeUrl && (
+      {resume_url.length && (
         <ResumeModal>
-          <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-4">
+          <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-6">
             Resume Preview
           </h1>
           <iframe
             allowTransparency={true}
             style={{
-              width: client_width * 0.5,
+              width: client_width * 0.4,
               height: client_height * 0.8,
               background: "#FFFFFF",
             }}
-            src={resumeUrl}
+            src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
           >
             Resume could not be loaded.
           </iframe>

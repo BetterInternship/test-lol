@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +27,8 @@ import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
 import { useClientDimensions } from "@/hooks/use-dimensions";
+import { useFile } from "@/hooks/use-file";
+import { user_service } from "@/lib/api";
 
 export default function Dashboard() {
   const { employer_applications, loading, error } = useEmployerApplications();
@@ -38,20 +40,39 @@ export default function Dashboard() {
     to_level_name,
     to_university_name,
   } = useRefs();
-  const [selectedApplication, setSelectedApplication] =
+  const [selected_application, set_selected_application] =
     useState<EmployerApplication | null>(null);
-  const { open: open_applicant_modal, Modal: ApplicantModal } =
-    useModal("applicant-modal");
+  const {
+    open: open_applicant_modal,
+    close: close_applicant_modal,
+    Modal: ApplicantModal,
+  } = useModal("applicant-modal");
   const { open: open_calendly_modal, Modal: CalendlyModal } =
     useModal("calendly-modal");
+  const { open: open_resume_modal, Modal: ResumeModal } =
+    useModal("resume-modal");
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selected_statuses, set_selected_statuses] = useState<string[]>([]);
   const [jobSearch, setJobSearch] = useState("");
   const [statusSearch, setStatusSearch] = useState("");
+  const [selected_resume, set_selected_resume] = useState("");
+
+  const get_user_resume_url = useCallback(
+    async () => (
+      console.log(selected_application),
+      user_service.get_user_resume_url(selected_application?.user?.id ?? "")
+    ),
+    [selected_application]
+  );
+
+  const { url: resume_url, sync: sync_resume_url } = useFile({
+    fetch: get_user_resume_url,
+    route: selected_resume,
+  });
 
   // Get unique values for filters
   const uniqueJobs = useMemo(
@@ -83,7 +104,7 @@ export default function Dashboard() {
   };
 
   const handleStatusToggle = (status: string) => {
-    setSelectedStatuses((prev) =>
+    set_selected_statuses((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
         : [...prev, status]
@@ -318,7 +339,7 @@ export default function Dashboard() {
                         <MultiSelectFilter
                           title="Status"
                           options={app_statuses.map((as) => as.name)}
-                          selected={selectedStatuses}
+                          selected={selected_statuses}
                           onToggle={handleStatusToggle}
                           searchValue={statusSearch}
                           onSearchChange={setStatusSearch}
@@ -335,10 +356,13 @@ export default function Dashboard() {
                       className={`border-b border-gray-50 hover:bg-gray-50 hover:cursor-pointer transition-colors ${
                         index % 2 === 0 ? "bg-white" : "bg-gray-25"
                       }`}
-                      onClick={() => (
-                        setSelectedApplication(application),
-                        open_applicant_modal()
-                      )}
+                      onClick={() => {
+                        set_selected_application(application),
+                          set_selected_resume(
+                            "/users/" + application?.user?.id + "/resume"
+                          ),
+                          open_applicant_modal();
+                      }}
                     >
                       <td className="px-6 py-4 w-[300px]">
                         <div className="flex items-center gap-3">
@@ -378,7 +402,12 @@ export default function Dashboard() {
                           className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedApplication(application);
+                            set_selected_application(application);
+                            set_selected_resume(
+                              "/users/" +
+                                selected_application?.user?.id +
+                                "/resume"
+                            );
                             open_calendly_modal();
                           }}
                         >
@@ -401,20 +430,28 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Applicant Modal */}
       <ApplicantModal>
         <ApplicantModalContent
           clickable={true}
-          applicant={selectedApplication?.user}
-          job={selectedApplication?.job}
+          applicant={selected_application?.user}
+          open_calendly_modal={async () => {
+            close_applicant_modal();
+            open_calendly_modal();
+          }}
+          open_resume_modal={async () => {
+            console.log("Opening resume");
+            close_applicant_modal();
+            await sync_resume_url();
+            open_resume_modal();
+          }}
+          job={selected_application?.job}
         />
       </ApplicantModal>
 
-      {/* Calendar Modal */}
       <CalendlyModal>
-        {selectedApplication?.user?.calendly_link ? (
+        {selected_application?.user?.calendly_link ? (
           <iframe
-            src={`${selectedApplication?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
+            src={`${selected_application?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
             allowTransparency={true}
             style={{
               width: Math.min(client_width * 0.6, 1000),
@@ -428,11 +465,39 @@ export default function Dashboard() {
           <div className="h-48 px-8">
             <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
             <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
-              The applicant does not have a calendly link.
+              This applicant does not have a calendly link.
             </div>
           </div>
         )}
       </CalendlyModal>
+
+      <ResumeModal>
+        {selected_application?.user?.resume ? (
+          <>
+            <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-6">
+              {selected_application?.user?.full_name} - Resume
+            </h1>
+            <iframe
+              allowTransparency={true}
+              style={{
+                width: client_width * 0.4,
+                height: client_height * 0.8,
+                background: "#FFFFFF",
+              }}
+              src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+            >
+              Resume could not be loaded.
+            </iframe>
+          </>
+        ) : (
+          <div className="h-48 px-8">
+            <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
+            <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
+              This applicant has not uploaded a resume.
+            </div>
+          </div>
+        )}
+      </ResumeModal>
     </>
   );
 }
