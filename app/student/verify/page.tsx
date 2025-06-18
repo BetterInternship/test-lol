@@ -29,9 +29,11 @@ export default function VerifyPage() {
     if (user && key) {
       // Production mode with real verification
       verify(user, key)
-        .then(() => {
-          setVerified(true);
-          setTimeout(() => router.push("/"), 2000);
+        .then((r) => {
+          if (r.success) {
+            setVerified(true);
+            setTimeout(() => router.push("/"), 2000);
+          }
         })
         .catch((error) => {
           alert("Verification failed: " + error.message);
