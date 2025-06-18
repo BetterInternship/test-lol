@@ -60,6 +60,7 @@ export default function ProfilePage() {
     get_level_by_name,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null);
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     PublicUser & {
       college_name: string | null;
@@ -126,6 +127,19 @@ export default function ProfilePage() {
         resumeInputRef.current.value = "";
       }
     }
+  };
+
+  const handlePreviewResume = async () => {
+    const { success, hash } = await user_service.get_resume_url();
+    if (!success) {
+      alert("Could not find file.");
+      console.error("Could not fetch file.");
+      return;
+    }
+    setResumeUrl(
+      `http://localhost:5000/api/users/me/resume?hash=${hash}#toolbar=0&navpanes=0&scrollbar=0`
+    );
+    open_resume_modal();
   };
 
   const handleProfilePictureUpload = async (
@@ -695,7 +709,7 @@ export default function ProfilePage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={open_resume_modal}
+                              onClick={handlePreviewResume}
                               className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                             >
                               <Fullscreen className="w-3 h-3" />
@@ -704,7 +718,7 @@ export default function ProfilePage() {
                               variant="outline"
                               size="sm"
                               onClick={() => resumeInputRef.current?.click()}
-                              disabled={uploading.resume}
+                              disabled={uploading}
                               className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
                             >
                               <Upload className="w-3 h-3" />
@@ -725,18 +739,16 @@ export default function ProfilePage() {
                       <div className="border border-dashed border-gray-300 rounded-md p-4 text-center">
                         <FileText className="w-6 h-6 text-gray-400 mx-auto mb-2" />
                         <p className="text-sm text-gray-600 mb-2">
-                          {uploading.resume
-                            ? "Uploading..."
-                            : "No resume uploaded"}
+                          {uploading ? "Uploading..." : "No resume uploaded"}
                         </p>
                         <Button
                           onClick={() => resumeInputRef.current?.click()}
-                          disabled={uploading.resume}
+                          disabled={uploading}
                           size="sm"
                           className="bg-blue-600 hover:bg-blue-700 h-8"
                         >
                           <Upload className="w-3 h-3 mr-1" />
-                          {uploading.resume ? "Uploading..." : "Upload Resume"}
+                          {uploading ? "Uploading..." : "Upload Resume"}
                         </Button>
                         <p className="text-xs text-gray-500 mt-1">
                           PDF files up to 3MB
@@ -1034,7 +1046,7 @@ export default function ProfilePage() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={open_resume_modal}
+                                onClick={handlePreviewResume}
                                 className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
                               >
                                 <Fullscreen className="w-3 h-3" />
@@ -1043,7 +1055,7 @@ export default function ProfilePage() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => resumeInputRef.current?.click()}
-                                disabled={uploading.resume}
+                                disabled={uploading}
                                 className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
                               >
                                 <Upload className="w-3 h-3" />
@@ -1124,22 +1136,24 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      <ResumeModal>
-        <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-4">
-          Resume Preview
-        </h1>
-        <iframe
-          allowTransparency={true}
-          style={{
-            width: client_width * 0.5,
-            height: client_height * 0.8,
-            background: "#FFFFFF",
-          }}
-          src="http://localhost:5000/api/users/me/resume#toolbar=0&navpanes=0&scrollbar=0"
-        >
-          Resume could not be loaded.
-        </iframe>
-      </ResumeModal>
+      {resumeUrl && (
+        <ResumeModal>
+          <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-4">
+            Resume Preview
+          </h1>
+          <iframe
+            allowTransparency={true}
+            style={{
+              width: client_width * 0.5,
+              height: client_height * 0.8,
+              background: "#FFFFFF",
+            }}
+            src={resumeUrl}
+          >
+            Resume could not be loaded.
+          </iframe>
+        </ResumeModal>
+      )}
 
       {/* Employer Preview Modal */}
       <EmployerModal>

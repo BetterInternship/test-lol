@@ -152,6 +152,11 @@ export const auth_service = {
 };
 
 // User Services
+interface ResourceHashResponse {
+  success?: boolean;
+  message?: string;
+  hash?: string;
+}
 interface UserResponse extends FetchResponse {
   user: Partial<PublicUser>;
 }
@@ -169,6 +174,12 @@ export const user_service = {
 
   async update_profile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
+  },
+
+  async get_resume_url() {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r("me", "resume").build()
+    );
   },
 
   async update_resume(file: Blob | null) {
