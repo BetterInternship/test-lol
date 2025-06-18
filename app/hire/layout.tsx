@@ -20,7 +20,7 @@ export default function RootLayout({
     <AppContextProvider>
       <AuthContextProvider>
         <RefsContextProvider>
-          <html lang="en">
+          <html lang="en" className="overflow-hidden">
             <body>
               <div className="h-screen bg-gray-50 flex flex-col">
                 <Header />

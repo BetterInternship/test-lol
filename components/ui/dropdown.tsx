@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-19 03:59:13
+ * @ Modified time: 2025-06-19 04:02:25
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -191,7 +191,7 @@ export const GroupableRadioDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute top-full mt-2 bg-white rounded-md shadow-xl z-50 overflow-hidden border border-gray-100",
+            "absolute top-full mt-2 bg-white rounded-md shadow-xl min-w-[200px] z-50 overflow-hidden border border-gray-100",
             className
           )}
         >
