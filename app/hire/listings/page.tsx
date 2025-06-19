@@ -14,8 +14,7 @@ import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
-import { JobCard } from "@/components/shared/jobs";
-import { JobDetails } from "@/components/shared/jobs";
+import { EditableJobDetails, JobCard } from "@/components/shared/jobs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
@@ -25,11 +24,17 @@ export default function MyListings() {
   const { ownedJobs, update_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
+  const [saving, set_saving] = useState(false);
+  const [is_editing, set_is_editing] = useState(false);
   const {
-    open: open_edit_modal,
-    close: close_edit_modal,
-    Modal: EditModal,
-  } = useModal("edit-modal");
+    open: open_create_modal,
+    close: close_create_modal,
+    Modal: CreateModal,
+  } = useModal("create-modal");
+
+  useEffect(() => {
+    if (!is_editing) set_saving(false);
+  }, [is_editing]);
 
   return (
     <>
@@ -103,6 +108,7 @@ export default function MyListings() {
                   <JobCard
                     key={job.id}
                     job={job}
+                    disabled={is_editing}
                     on_click={() => setSelectedJob(job)}
                     selected={job.id === selectedJob.id}
                   ></JobCard>
@@ -112,12 +118,47 @@ export default function MyListings() {
 
           {/* Right Panel - Job Details */}
           {selectedJob?.id ? (
-            <JobDetails
+            <EditableJobDetails
+              is_editing={is_editing}
+              set_is_editing={set_is_editing}
               job={selectedJob}
+              saving={saving}
               actions={[
-                <Button variant="outline" onClick={() => open_edit_modal()}>
-                  Edit
-                </Button>,
+                !is_editing ? (
+                  <Button
+                    variant="outline"
+                    disabled={saving}
+                    onClick={() => set_is_editing(true)}
+                  >
+                    Edit
+                  </Button>
+                ) : (
+                  <></>
+                ),
+                is_editing ? (
+                  <Button
+                    variant="default"
+                    className="bg-blue-600 text-white"
+                    disabled={saving}
+                    onClick={() => set_saving(true)}
+                  >
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
+                ) : (
+                  <></>
+                ),
+                is_editing ? (
+                  <Button
+                    variant="outline"
+                    className="text-red-500"
+                    disabled={saving}
+                    onClick={() => set_is_editing(false)}
+                  >
+                    Cancel
+                  </Button>
+                ) : (
+                  <></>
+                ),
               ]}
             />
           ) : (
@@ -145,19 +186,19 @@ export default function MyListings() {
       </div>
 
       {/* Edit Job Modal */}
-      <EditModal>
-        <EditModalForm
+      <CreateModal>
+        <CreateModalForm
           job={selectedJob}
           set_selected_job={setSelectedJob}
           update_job={update_job}
-          close={() => close_edit_modal()}
-        ></EditModalForm>
-      </EditModal>
+          close={() => close_create_modal()}
+        ></CreateModalForm>
+      </CreateModal>
     </>
   );
 }
 
-const EditModalForm = ({
+const CreateModalForm = ({
   job,
   set_selected_job,
   update_job,

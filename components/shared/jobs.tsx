@@ -1,11 +1,16 @@
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
-import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { Building, PhilippinePeso, MapPin, Monitor, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JobModeIcon } from "@/components/ui/icons";
 import ReactMarkdown from "react-markdown";
+import { useFormData } from "@/lib/form-data";
+import { EditableGroupableRadioDropdown, EditableInput } from "../ui/editable";
+import { useEffect } from "react";
+import { JobPropertyLabel, JobTitleLabel } from "../ui/labels";
+import { MDXEditor } from "../MDXEditor";
+import { useOwnedJobs } from "@/hooks/use-employer-api";
 
 /**
  * The scrollable job card component.
@@ -16,10 +21,12 @@ import ReactMarkdown from "react-markdown";
 export const JobCard = ({
   job,
   selected,
+  disabled,
   on_click,
 }: {
   job: Job;
   selected?: boolean;
+  disabled?: boolean;
   on_click?: (job: Job) => void;
 }) => {
   const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
@@ -30,9 +37,10 @@ export const JobCard = ({
       onClick={() => on_click && on_click(job)}
       className={cn(
         "p-4 border-2 rounded-lg cursor-pointer transition-colors",
-        selected
+        selected && !disabled
           ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300"
+          : "border-gray-200 hover:border-gray-300",
+        disabled ? "opacity-65 pointer-events-none hover:cursor-default" : ""
       )}
     >
       <h3 className="font-semibold text-gray-900">{job.title}</h3>
@@ -134,23 +142,95 @@ export const MobileJobCard = ({
  *
  * @component
  */
-export const JobDetails = ({
+export const EditableJobDetails = ({
   job,
+  is_editing = false,
+  set_is_editing = () => {},
+  saving = false,
   actions = [],
 }: {
   job: Job;
+  is_editing: boolean;
+  set_is_editing: (is_editing: boolean) => void;
+  saving?: boolean;
   actions?: React.ReactNode[];
 }) => {
-  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useRefs();
+  const { update_job } = useOwnedJobs();
+  const {
+    job_modes,
+    job_types,
+    job_pay_freq,
+    to_job_mode_name,
+    to_job_type_name,
+    get_job_mode_by_name,
+    get_job_type_by_name,
+    get_job_pay_freq_by_name,
+  } = useRefs();
+  const { form_data, set_field, set_fields, field_setter } = useFormData<
+    Job & {
+      job_type_name: string | null;
+      job_mode_name: string | null;
+      job_pay_freq_name: string | null;
+    }
+  >();
+
+  useEffect(() => {
+    if (job) {
+      set_fields({
+        ...job,
+        job_type_name: to_job_type_name(job.type),
+        job_mode_name: to_job_mode_name(job.mode),
+        job_pay_freq_name: to_job_mode_name(job.salary_freq),
+      });
+    }
+  }, [job, is_editing]);
+
+  const clean_int = (s: string | undefined): number | undefined =>
+    s && s.trim().length ? parseInt(s.trim()) : undefined;
+
+  useEffect(() => {
+    if (job) {
+      const edited_job: Partial<Job> = {
+        id: form_data.id,
+        title: form_data.title ?? "",
+        description: form_data.description ?? "",
+        requirements: form_data.requirements ?? "",
+        location: form_data.location ?? "",
+        mode: clean_int(`${get_job_mode_by_name(form_data.job_mode_name)?.id}`),
+        type: clean_int(`${get_job_type_by_name(form_data.job_type_name)?.id}`),
+        salary: form_data.salary ?? null,
+        salary_freq: clean_int(
+          `${get_job_pay_freq_by_name(form_data.job_pay_freq_name)?.id}`
+        ),
+        require_github: form_data.require_github ?? false,
+        require_portfolio: form_data.require_portfolio ?? false,
+      };
+
+      update_job(edited_job.id ?? "", edited_job).then(
+        // @ts-ignore
+        ({ job: updated_job }) => {
+          if (updated_job) {
+            set_is_editing(false);
+            alert("Successfully updated job!");
+          }
+        }
+      );
+    }
+  }, [saving]);
 
   return (
     <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
       <div className="mb-6">
-        <h2 className="text-4xl font-heading font-bold text-gray-900 mb-2">
-          {job.title}
-        </h2>
-        <p className="text-gray-600 mb-1">{job.employer?.name}</p>
+        <div className="max-w-prose">
+          <EditableInput
+            is_editing={is_editing}
+            value={form_data.title ?? "Not specified"}
+            setter={field_setter("title")}
+          >
+            <JobTitleLabel />
+          </EditableInput>
+        </div>
+        <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
         <p className="text-sm text-gray-500 mb-4">
           Listed on {formatDate(job.created_at ?? "")}
         </p>
@@ -161,49 +241,76 @@ export const JobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex items-start gap-3">
-            <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Location: </span>
-                <span className="opacity-80">
-                  {job.location || "Not specified"}
-                </span>
-              </p>
-            </div>
+          <div className="flex flex-col items-start gap-3 max-w-prose">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+              Location:
+            </label>
+            <EditableInput
+              is_editing={is_editing}
+              value={form_data.location ?? "Not specified"}
+              setter={field_setter("location")}
+            >
+              <JobPropertyLabel />
+            </EditableInput>
           </div>
 
-          <div className="flex items-start gap-3">
-            <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Mode: </span>
-                <span className="opacity-80">{to_job_mode_name(job.mode)}</span>
-              </p>
-            </div>
+          <div className="flex flex-col items-start gap-3">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
+              Mode:
+            </label>
+            <EditableGroupableRadioDropdown
+              is_editing={is_editing}
+              options={["Not specified", ...job_modes.map((jm) => jm.name)]}
+              value={form_data.job_mode_name}
+              setter={field_setter("job_mode_name")}
+              name={"job_mode"}
+            >
+              <JobPropertyLabel />
+            </EditableGroupableRadioDropdown>
           </div>
 
-          <div className="flex items-start gap-3">
-            <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Salary: </span>
-                <span className="opacity-80">
-                  {job.salary || "Not specified"}{" "}
-                  {to_job_pay_freq_name(job.salary_freq)}
-                </span>
-              </p>
-            </div>
+          <div className="flex flex-col items-start gap-3 max-w-prose">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
+              Salary:
+            </label>
+            <EditableInput
+              is_editing={is_editing}
+              value={form_data.salary?.toString() ?? "Not specified"}
+              setter={field_setter("salary")}
+            >
+              <JobPropertyLabel />
+            </EditableInput>
+            <EditableGroupableRadioDropdown
+              name="pay_freq"
+              is_editing={is_editing}
+              value={form_data.job_type_name}
+              options={[
+                "Not specified",
+                ...job_pay_freq.map((jpf) => jpf.name),
+              ]}
+              setter={field_setter("job_pay_freq_name")}
+            >
+              <JobPropertyLabel />
+            </EditableGroupableRadioDropdown>
           </div>
 
-          <div className="flex items-start gap-3">
-            <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-sm">
-                <span className="font-medium">Employment Type: </span>
-                <span className="opacity-80">{to_job_type_name(job.type)}</span>
-              </p>
-            </div>
+          <div className="flex flex-col items-start gap-3 max-w-prose">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+              Employment Type:
+            </label>
+            <EditableGroupableRadioDropdown
+              is_editing={is_editing}
+              value={form_data.job_type_name}
+              setter={field_setter("job_type_name")}
+              name={"job_type"}
+              options={["Not specified", ...job_types.map((jt) => jt.name)]}
+            >
+              <JobPropertyLabel />
+            </EditableGroupableRadioDropdown>
           </div>
         </div>
       </div>
@@ -214,9 +321,17 @@ export const JobDetails = ({
         <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
           Description
         </h1>
-        <div className="markdown">
-          <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
-        </div>
+        {!is_editing ? (
+          <div className="markdown">
+            <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
+          </div>
+        ) : (
+          <MDXEditor
+            className="min-h-[300px] border border-gray-200 rounded-lg"
+            markdown={form_data.description ?? ""}
+            onChange={(value) => set_field("description", value)}
+          />
+        )}
       </div>
 
       {/* Job Requirements */}
@@ -225,10 +340,41 @@ export const JobDetails = ({
         <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
           Requirements
         </h1>
-        <div className="markdown">
-          <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
-        </div>
+        {!is_editing ? (
+          <div className="markdown">
+            <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
+          </div>
+        ) : (
+          <MDXEditor
+            className="min-h-[300px] border border-gray-200 rounded-lg"
+            markdown={form_data.requirements ?? ""}
+            onChange={(value) => set_field("requirements", value)}
+          />
+        )}
       </div>
     </div>
+  );
+};
+
+/**
+ * The right panel that describes job details.
+ *
+ * @component
+ */
+export const JobDetails = ({
+  job,
+  actions = [],
+}: {
+  job: Job;
+  actions?: React.ReactNode[];
+}) => {
+  // Returns a non-editable version of it
+  return (
+    <EditableJobDetails
+      is_editing={false}
+      set_is_editing={() => {}}
+      job={job}
+      actions={actions}
+    ></EditableJobDetails>
   );
 };

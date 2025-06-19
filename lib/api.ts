@@ -226,9 +226,7 @@ export const job_service = {
   },
 
   async get_job_by_id(job_id: string) {
-    return APIClient.get<JobResponse>(
-      APIRoute("jobs").r("detail", job_id).build()
-    );
+    return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
   },
 
   async get_saved_jobs() {
@@ -240,6 +238,13 @@ export const job_service = {
   async get_owned_jobs() {
     return APIClient.get<OwnedJobsResponse>(
       APIRoute("jobs").r("owned").build()
+    );
+  },
+
+  async create_job(job: Partial<Job>) {
+    return APIClient.post<StatusResponse>(
+      APIRoute("jobs").r("create").build(),
+      job
     );
   },
 

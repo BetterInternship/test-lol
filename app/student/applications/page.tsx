@@ -225,7 +225,7 @@ export default function ApplicationsPage() {
                   </p>
 
                   <div className="flex gap-3">
-                    <Link href={`/search?jobId=${application.job?.id}`}>
+                    <Link href={`/search/${application.job?.id}`}>
                       <Button
                         size={is_mobile ? "default" : "sm"}
                         className={is_mobile ? "px-6 py-2 font-medium" : ""}

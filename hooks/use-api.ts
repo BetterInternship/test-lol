@@ -135,36 +135,43 @@ export function useJobs(
 }
 
 // Single Job Hook
-export function useJob(jobId: string | null) {
+export function useJob(job_id: string | null) {
   const { is_authenticated } = useAuthContext();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchJob = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // @ts-ignore
+      const { job, error } = await job_service.get_job_by_id(job_id ?? "");
+      if (error) {
+        setError(error);
+        setLoading(false);
+        return;
+      }
+
+      setJob(job);
+    } catch (err) {
+      const errorMessage = handle_api_error(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [job_id]);
+
   useEffect(() => {
-    if (!jobId) {
+    if (!job_id) {
       setLoading(false);
       return;
     }
-
-    const fetchJob = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const jobData = await job_service.get_job_by_id(jobId);
-        setJob(jobData);
-      } catch (err) {
-        const errorMessage = handle_api_error(err);
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchJob();
-  }, [jobId]);
+  }, [job_id]);
 
-  return { job, loading, error };
+  return { job, loading, error, refetch: fetchJob };
 }
 
 // User Profile Hook
@@ -424,18 +431,10 @@ export function useApplications() {
     }
   }, []);
 
-  const apply = async (
-    job_id: string,
-    data: {
-      github_link?: string;
-      portfolio_link?: string;
-      resume?: string;
-    }
-  ) => {
+  const apply = async (job_id: string) => {
     try {
       const response = await application_service.create_application({
         job_id,
-        ...data,
       });
 
       if (response.application) {

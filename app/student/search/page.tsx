@@ -20,7 +20,7 @@ import {
   useProfile,
   useApplications,
 } from "@/hooks/use-api";
-import { useAuthContext } from "../../../lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-auth";
 import { UserApplication, Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useRefs } from "@/lib/db/use-refs";
@@ -200,11 +200,9 @@ export default function SearchPage() {
     if (!selectedJob) return;
 
     try {
-      await apply(selectedJob.id ?? "", {
-        github_link: profile?.github_link || undefined,
-        portfolio_link: profile?.portfolio_link || undefined,
-      });
-      open_success_modal();
+      const { success } = await apply(selectedJob.id ?? "");
+      if (success) open_success_modal();
+      else alert("Could not apply to job.");
     } catch (error) {
       console.error("Failed to submit application:", error);
       alert("Failed to submit application. Please try again.");

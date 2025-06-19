@@ -339,7 +339,7 @@ export default function SavedJobsPage() {
                             is_mobile ? "flex-col sm:flex-row" : ""
                           }`}
                         >
-                          <Link href={`/search?jobId=${savedJob.id}`}>
+                          <Link href={`/search/${savedJob.id}`}>
                             <Button
                               size={is_mobile ? "default" : "sm"}
                               className={`${
