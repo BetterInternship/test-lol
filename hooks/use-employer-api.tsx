@@ -45,6 +45,40 @@ export function useEmployerApplications() {
     }
   }, []);
 
+  const review = async (
+    app_id: string,
+    review_options: { review?: string; notes?: string; status?: number }
+  ) => {
+    const cache = get_cache_item(
+      "_apps_employer_list"
+    ) as EmployerApplication[];
+    const response = await application_service.review_application(
+      app_id,
+      review_options
+    );
+
+    if (cache) {
+      const new_apps = [
+        {
+          ...cache.filter((a) => a?.id === app_id)[0],
+          ...response.application,
+        },
+        ...cache.filter((a) => a?.id !== app_id),
+        // @ts-ignore
+      ].sort(
+        (a, b) =>
+          new Date(a.applied_at).getTime() - new Date(b.applied_at).getTime()
+      );
+      set_cache_item("_apps_employer_list", new_apps);
+      setEmployerApplications(new_apps as EmployerApplication[]);
+    } else {
+      // @ts-ignore
+      set_cache_item("_apps_employer_list", [response.application]);
+      // @ts-ignore
+      setEmployerApplications([response.application]);
+    }
+  };
+
   useEffect(() => {
     recheck_authentication().then((r) =>
       r ? fetchEmployerApplications() : setLoading(false)
@@ -53,6 +87,7 @@ export function useEmployerApplications() {
 
   return {
     employer_applications: employerApplications,
+    review,
     loading,
     error,
     refetch: fetchEmployerApplications,

@@ -18,6 +18,7 @@ import {
   Building2,
   FileEdit,
   Search,
+  Notebook,
 } from "lucide-react";
 import Link from "next/link";
 import { useEmployerApplications } from "@/hooks/use-employer-api";
@@ -28,11 +29,19 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { useFile } from "@/hooks/use-file";
-import { user_service } from "@/lib/api";
+import { application_service, user_service } from "@/lib/api";
 import { Pfp } from "@/components/shared/pfp";
+import { MDXEditor } from "@/components/MDXEditor";
+import { useAuthContext } from "../authctx";
 
 export default function Dashboard() {
-  const { employer_applications, loading, error } = useEmployerApplications();
+  const {
+    employer_applications,
+    review: review_app,
+    loading,
+    error,
+  } = useEmployerApplications();
+  const { redirect_if_not_loggedin } = useAuthContext();
   const { client_width, client_height } = useClientDimensions();
   const {
     app_statuses,
@@ -52,6 +61,13 @@ export default function Dashboard() {
     useModal("calendly-modal");
   const { open: open_resume_modal, Modal: ResumeModal } =
     useModal("resume-modal");
+  const {
+    open: open_review_modal,
+    close: close_review_modal,
+    Modal: ReviewModal,
+  } = useModal("review-modal");
+
+  redirect_if_not_loggedin();
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("");
@@ -61,12 +77,18 @@ export default function Dashboard() {
   const [jobSearch, setJobSearch] = useState("");
   const [statusSearch, setStatusSearch] = useState("");
   const [selected_resume, set_selected_resume] = useState("");
+  const [review, set_review] = useState("");
+
+  // Syncs everything
+  const set_application = (application: EmployerApplication) => {
+    set_selected_application(application);
+    set_selected_resume("/users/" + application?.user_id + "/resume");
+    set_review(application.review ?? "");
+  };
 
   const get_user_resume_url = useCallback(
-    async () => (
-      console.log(selected_application),
-      user_service.get_user_resume_url(selected_application?.user?.id ?? "")
-    ),
+    async () =>
+      user_service.get_user_resume_url(selected_application?.user?.id ?? ""),
     [selected_application]
   );
 
@@ -330,6 +352,12 @@ export default function Dashboard() {
                     </th>
                     <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
                       <div className="flex items-center justify-center gap-2">
+                        <Notebook className="h-4 w-4 text-gray-400" />
+                        <span>Review</span>
+                      </div>
+                    </th>
+                    <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
+                      <div className="flex items-center justify-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />
                         <span>Schedule</span>
                       </div>
@@ -358,11 +386,8 @@ export default function Dashboard() {
                         index % 2 === 0 ? "bg-white" : "bg-gray-25"
                       }`}
                       onClick={() => {
-                        set_selected_application(application),
-                          set_selected_resume(
-                            "/users/" + application?.user_id + "/resume"
-                          ),
-                          open_applicant_modal();
+                        set_application(application);
+                        open_applicant_modal();
                       }}
                     >
                       <td className="px-6 py-4 w-[300px]">
@@ -403,12 +428,21 @@ export default function Dashboard() {
                           className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
-                            set_selected_application(application);
-                            set_selected_resume(
-                              "/users/" +
-                                selected_application?.user?.id +
-                                "/resume"
-                            );
+                            set_application(application);
+                            open_review_modal();
+                          }}
+                        >
+                          <Notebook className="h-4 w-4" />
+                        </Button>
+                      </td>
+                      <td className="px-6 py-4 w-[120px] text-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            set_application(application);
                             open_calendly_modal();
                           }}
                         >
@@ -440,7 +474,6 @@ export default function Dashboard() {
             open_calendly_modal();
           }}
           open_resume_modal={async () => {
-            console.log("Opening resume");
             close_applicant_modal();
             await sync_resume_url();
             open_resume_modal();
@@ -448,6 +481,16 @@ export default function Dashboard() {
           job={selected_application?.job}
         />
       </ApplicantModal>
+
+      <ReviewModal>
+        {selected_application && (
+          <ReviewModalContent
+            application={selected_application}
+            review_app={review_app}
+            close={close_review_modal}
+          />
+        )}
+      </ReviewModal>
 
       <CalendlyModal>
         {selected_application?.user?.calendly_link ? (
@@ -502,3 +545,56 @@ export default function Dashboard() {
     </>
   );
 }
+
+const ReviewModalContent = ({
+  application,
+  review_app,
+  close,
+}: {
+  application: EmployerApplication;
+  review_app: (
+    id: string,
+    review_options: { review?: string; notes?: string; status?: number }
+  ) => void;
+  close: () => void;
+}) => {
+  const [review, set_review] = useState("");
+  const handle_save = async () => {
+    if (!application.id) return;
+    await review_app(application.id, {
+      review,
+      notes: application.notes ?? "",
+      status: application.status,
+    });
+    close();
+  };
+
+  useEffect(() => {
+    set_review(application.review ?? "");
+  }, [application]);
+
+  return (
+    <>
+      <div className="flex flex-col">
+        <h1 className="font-bold font-heading text-4xl px-8 pb-4">
+          {application?.user?.full_name} - Review
+        </h1>
+        <div className="flex flex-row">
+          <Button className="bg-blue-500 ml-8" onClick={handle_save}>
+            Save
+          </Button>
+          <Button variant="outline" className="ml-2" onClick={close}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+      <div className="relative h-[500px] w-[600px] mt-4">
+        <MDXEditor
+          className="min-h-[300px] border border-gray-200 rounded-lg"
+          markdown={review}
+          onChange={(value) => set_review(value)}
+        />
+      </div>
+    </>
+  );
+};

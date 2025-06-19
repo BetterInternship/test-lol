@@ -5,7 +5,14 @@ import {
   application_service,
   handle_api_error,
 } from "@/lib/api";
-import { Job, PublicUser, UserApplication, SavedJob } from "@/lib/db/db.types";
+import {
+  Job,
+  PublicUser,
+  UserApplication,
+  SavedJob,
+  Employer,
+  EmployerApplication,
+} from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "./use-cache";
 import { FetchResponse } from "./use-fetch";
@@ -388,7 +395,6 @@ export const useSavedJobs = () => {
 
 // Saved Jobs Hook
 export function useApplications() {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
   const { get_cache_item, set_cache_item } = useCache();
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
@@ -454,12 +460,6 @@ export function useApplications() {
       throw error;
     }
   };
-
-  useEffect(() => {
-    recheck_authentication().then((r) =>
-      r ? fetchApplications() : setLoading(false)
-    );
-  }, [fetchApplications]);
 
   const is_applied = (job_id: string): boolean => {
     return applications.some((application) => application.id === job_id);

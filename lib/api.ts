@@ -365,6 +365,16 @@ export const application_service = {
       APIRoute("applications").r(id).build()
     );
   },
+
+  async review_application(
+    id: string,
+    review_options: { review?: string; notes?: string; status?: number }
+  ) {
+    return APIClient.post<StatusResponse>(
+      APIRoute("applications").r(id, "review").build(),
+      review_options
+    );
+  },
 };
 
 // Error handling utility

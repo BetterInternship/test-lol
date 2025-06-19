@@ -1,7 +1,17 @@
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { cn, formatDate } from "@/lib/utils";
-import { Building, PhilippinePeso, MapPin, Monitor, Clock } from "lucide-react";
+import {
+  Building,
+  PhilippinePeso,
+  MapPin,
+  Monitor,
+  Clock,
+  Eye,
+  Globe,
+  Lock,
+  EyeOff,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JobModeIcon } from "@/components/ui/icons";
 import ReactMarkdown from "react-markdown";
@@ -16,6 +26,8 @@ import { JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { DropdownGroup } from "../ui/dropdown";
+import { Checkbox } from "../ui/checkbox";
+import { Button } from "../ui/button";
 
 /**
  * The scrollable job card component.
@@ -69,6 +81,96 @@ export const JobCard = ({
           </span>
         )}
       </div>
+    </div>
+  );
+};
+
+/**
+ * The scrollable job card component.
+ * Used in both hire and student UI.
+ *
+ * @component
+ */
+export const EmployerJobCard = ({
+  job,
+  selected,
+  disabled,
+  on_click,
+}: {
+  job: Job;
+  selected?: boolean;
+  disabled?: boolean;
+  on_click?: (job: Job) => void;
+}) => {
+  const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
+  const { update_job } = useOwnedJobs();
+
+  return (
+    <div
+      key={job.id}
+      onClick={() => on_click && on_click(job)}
+      className={cn(
+        "relative p-4 border-2 rounded-lg cursor-pointer transition-colors",
+        selected && !disabled
+          ? "border-blue-500 bg-blue-50"
+          : "border-gray-200 hover:border-gray-300",
+        disabled ? "opacity-65 pointer-events-none hover:cursor-default" : ""
+      )}
+    >
+      <div className="w-full h-full flex flex-row items-start justify-between">
+        <div>
+          <h3 className="font-semibold text-gray-900">{job.title}</h3>
+          <p className="text-sm text-gray-600">{job.location}</p>
+          <p className="text-sm text-gray-600">
+            {job.employer?.name ?? "Not known"}
+          </p>
+          <p className="text-sm text-gray-500 mb-3">
+            Last updated on {formatDate(job.updated_at ?? "")}
+          </p>
+        </div>
+        <div className="m-0 p-0">
+          <Button
+            variant="ghost"
+            className="my-[-0.5em] rounded-full w-10 h-10 hover:border hover:border-red-300"
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (!job.id) return;
+              const response = await update_job(job.id, {
+                is_active: !job.is_active,
+              });
+              // @ts-ignore
+              if (response.success) job.is_active = response.job.is_active;
+            }}
+          >
+            {job.is_active ? (
+              <Globe className="w-4 h-4 text-gray-700 hover:text-red-300"></Globe>
+            ) : (
+              <Lock className="w-4 h-4 text-gray-700 hover:text-red-300"></Lock>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {ref_is_not_null(job.mode) && (
+          <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+            {to_job_mode_name(job.mode)}
+          </span>
+        )}
+        {ref_is_not_null(job.type) && (
+          <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+            {to_job_type_name(job.type)}
+          </span>
+        )}
+      </div>
+
+      {!job.is_active && (
+        <div className="absolute w-full h-full bg-gray-400 bg-opacity-20 top-0 left-0 pointer-events-none">
+          <div className="w-full h-full flex flex-row items-center justify-center">
+            <EyeOff className="w-24 h-24 opacity-20"></EyeOff>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

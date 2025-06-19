@@ -21,13 +21,19 @@ import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
-import { EditableJobDetails, JobCard } from "@/components/shared/jobs";
+import {
+  EditableJobDetails,
+  EmployerJobCard,
+  JobCard,
+} from "@/components/shared/jobs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
+import { useAuthContext } from "../authctx";
 
 export default function MyListings() {
+  const { redirect_if_not_loggedin } = useAuthContext();
   const { ownedJobs, create_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +44,8 @@ export default function MyListings() {
     close: close_create_modal,
     Modal: CreateModal,
   } = useModal("create-modal");
+
+  redirect_if_not_loggedin();
 
   useEffect(() => {
     if (!is_editing) set_saving(false);
@@ -126,13 +134,15 @@ export default function MyListings() {
                   );
                 })
                 .map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    disabled={is_editing}
-                    on_click={() => setSelectedJob(job)}
-                    selected={job.id === selectedJob.id}
-                  ></JobCard>
+                  <div key={job.id}>
+                    <EmployerJobCard
+                      key={job.id}
+                      job={job}
+                      disabled={is_editing}
+                      on_click={() => setSelectedJob(job)}
+                      selected={job.id === selectedJob.id}
+                    ></EmployerJobCard>
+                  </div>
                 ))}
             </div>
           </div>
@@ -384,7 +394,7 @@ const CreateModalForm = ({
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Work Mode
+                    Job Allowance
                   </Label>
                   <GroupableRadioDropdown
                     name="allowance"

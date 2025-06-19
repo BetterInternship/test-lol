@@ -36,7 +36,14 @@ export default function LoginPage() {
       }
 
       // Wait for confirmation of otp being sent, then focus on otp input
-      await send_otp_request(email.trim());
+      const response = await send_otp_request(email.trim());
+      // @ts-ignore
+      if (!response.success) {
+        setIsLoading(false);
+        // @ts-ignore
+        alert(response.message);
+        return;
+      }
       setIsLoading(false);
       setStep("otp");
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
