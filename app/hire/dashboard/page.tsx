@@ -29,6 +29,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { useFile } from "@/hooks/use-file";
 import { user_service } from "@/lib/api";
+import { Pfp } from "@/components/shared/pfp";
 
 export default function Dashboard() {
   const { employer_applications, loading, error } = useEmployerApplications();
@@ -359,16 +360,16 @@ export default function Dashboard() {
                       onClick={() => {
                         set_selected_application(application),
                           set_selected_resume(
-                            "/users/" + application?.user?.id + "/resume"
+                            "/users/" + application?.user_id + "/resume"
                           ),
                           open_applicant_modal();
                       }}
                     >
                       <td className="px-6 py-4 w-[300px]">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {application.user?.full_name}
-                          </div>
+                          {application.user?.id && (
+                            <Pfp user_id={application.user?.id}></Pfp>
+                          )}
                           <div>
                             <p className="font-medium text-gray-900">
                               {application.user?.full_name}

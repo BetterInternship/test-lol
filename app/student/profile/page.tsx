@@ -23,6 +23,7 @@ import {
   Award,
   Github,
   Hash,
+  Camera,
 } from "lucide-react";
 import { useProfile } from "@/hooks/use-api";
 import { useRouter } from "next/navigation";
@@ -64,6 +65,10 @@ export default function ProfilePage() {
     fetch: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
+  const { url: pfp_url, sync: sync_pfp_url } = useFile({
+    fetch: user_service.get_my_pfp_url,
+    route: "/users/me/pic",
+  });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     PublicUser & {
       college_name: string | null;
@@ -90,6 +95,10 @@ export default function ProfilePage() {
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    sync_pfp_url();
+  }, []);
+
   // File upload handlers
   const handleResumeUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -115,10 +124,8 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("resume");
       form.file(file);
 
-      console.log(form.build());
       // @ts-ignore
       const result = await user_service.update_my_resume(form.build());
-      console.log(result);
 
       alert("Resume uploaded successfully!");
     } catch (error: any) {
@@ -137,6 +144,7 @@ export default function ProfilePage() {
     open_resume_modal();
   };
 
+  console.log(profile);
   const handleProfilePictureUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -158,8 +166,16 @@ export default function ProfilePage() {
 
     try {
       setUploading(true);
-      const result = await user_service.update_profile_picture(file);
+      const form = FileUploadFormBuilder.new("pfp");
+      form.file(file);
+      // @ts-ignore
+      const result = await user_service.update_my_pfp(form.build());
+      if (!result.success) {
+        alert("Could not upload profile picture.");
+        return;
+      }
 
+      await sync_pfp_url();
       alert("Profile picture uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload profile picture");
@@ -330,49 +346,71 @@ export default function ProfilePage() {
             <div
               className={`${is_mobile ? "max-w-none" : "max-w-4xl mx-auto"}`}
             >
-              <div
-                className={`flex ${
-                  is_mobile ? "flex-col gap-3" : "items-center justify-between"
-                } mb-6`}
-              >
-                <h1 className={"font-bold font-heading text-4xl text-gray-900"}>
-                  Profile Settings
-                </h1>
-                <div className="flex gap-2">
-                  {isEditing ? (
+              <div className="flex flex-col gap-y-3 mb-8">
+                <div className="relative w-24 h-24 rounded-full border border-gray-300 flex items-center overflow-hidden">
+                  {profile.profile_picture ? (
                     <>
+                      <img className="w-24 h-24" src={pfp_url}></img>
                       <Button
-                        variant="outline"
-                        onClick={handleCancel}
-                        disabled={saving}
-                        size={is_mobile ? "sm" : "default"}
+                        variant="ghost"
+                        className="absolute w-full h-full hover:opacity-30 opacity-0"
+                        onClick={() => profilePictureInputRef.current?.click()}
                       >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleSave}
-                        disabled={saving}
-                        size={is_mobile ? "sm" : "default"}
-                      >
-                        {saving ? "Saving..." : "Save Changes"}
+                        <Camera className="w-32 h-32 m-auto opacity-50"></Camera>
                       </Button>
                     </>
                   ) : (
                     <Button
-                      onClick={() => (
-                        setIsEditing(true),
-                        set_fields({
-                          ...profile,
-                          college_name: to_college_name(profile.college),
-                          year_level_name: to_level_name(profile.year_level),
-                        })
-                      )}
-                      size={is_mobile ? "sm" : "default"}
+                      variant="ghost"
+                      className="w-full h-full"
+                      onClick={() => profilePictureInputRef.current?.click()}
                     >
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Edit Profile
+                      <Camera className="w-32 h-32 m-auto opacity-50"></Camera>
                     </Button>
                   )}
+                </div>
+                <div className="flex flex-row w-full justify-between">
+                  <h1
+                    className={"font-bold font-heading text-4xl text-gray-900"}
+                  >
+                    {profile.full_name}
+                  </h1>
+                  <div className="flex gap-2">
+                    {isEditing ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          onClick={handleCancel}
+                          disabled={saving}
+                          size={is_mobile ? "sm" : "default"}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSave}
+                          disabled={saving}
+                          size={is_mobile ? "sm" : "default"}
+                        >
+                          {saving ? "Saving..." : "Save Changes"}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={() => (
+                          setIsEditing(true),
+                          set_fields({
+                            ...profile,
+                            college_name: to_college_name(profile.college),
+                            year_level_name: to_level_name(profile.year_level),
+                          })
+                        )}
+                        size={is_mobile ? "sm" : "default"}
+                      >
+                        <Edit2 className="w-4 h-4 mr-2" />
+                        Edit Profile
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -666,13 +704,15 @@ export default function ProfilePage() {
                       type="file"
                       ref={resumeInputRef}
                       onChange={handleResumeUpload}
-                      accept=".pdf,.doc,.docx"
+                      disabled={uploading}
+                      accept=".pdf"
                       style={{ display: "none" }}
                     />
                     <input
                       type="file"
                       ref={profilePictureInputRef}
                       onChange={handleProfilePictureUpload}
+                      disabled={uploading}
                       accept="image/*"
                       style={{ display: "none" }}
                     />

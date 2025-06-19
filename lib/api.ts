@@ -173,6 +173,26 @@ export const user_service = {
     );
   },
 
+  async get_my_pfp_url() {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r("me", "pic").build()
+    );
+  },
+
+  async get_user_pfp_url(user_id: string) {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r(user_id, "pic").build()
+    );
+  },
+
+  async update_my_pfp(file: Blob | null) {
+    return APIClient.put<ResourceHashResponse>(
+      APIRoute("users").r("me", "pic").build(),
+      file,
+      "form-data"
+    );
+  },
+
   async get_user_resume_url(user_id: string) {
     return APIClient.get<ResourceHashResponse>(
       APIRoute("users").r(user_id, "resume").build()
