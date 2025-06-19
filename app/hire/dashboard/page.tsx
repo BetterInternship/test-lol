@@ -383,85 +383,91 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {employer_applications.map((application, index) => (
-                    <tr
-                      key={application.id}
-                      className={`border-b border-gray-50 hover:bg-gray-50 hover:cursor-pointer transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-25"
-                      }`}
-                      onClick={() => {
-                        set_application(application);
-                        open_applicant_modal();
-                      }}
-                    >
-                      <td className="px-6 py-4 w-[300px]">
-                        <div className="flex items-center gap-3">
-                          {application.user?.id && (
-                            <Pfp user_id={application.user?.id}></Pfp>
-                          )}
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {application.user?.full_name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {to_university_name(
-                                get_college(application.user?.college)
-                                  ?.university_id
-                              )}{" "}
-                              • {to_college_name(application.user?.college)} •{" "}
-                              {to_level_name(application.user?.year_level)}
-                            </p>
+                  {employer_applications
+                    .toSorted(
+                      (a, b) =>
+                        new Date(b.applied_at ?? "").getTime() -
+                        new Date(a.applied_at ?? "").getTime()
+                    )
+                    .map((application, index) => (
+                      <tr
+                        key={application.id}
+                        className={`border-b border-gray-50 hover:bg-gray-50 hover:cursor-pointer transition-colors ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-25"
+                        }`}
+                        onClick={() => {
+                          set_application(application);
+                          open_applicant_modal();
+                        }}
+                      >
+                        <td className="px-6 py-4 w-[300px]">
+                          <div className="flex items-center gap-3">
+                            {application.user?.id && (
+                              <Pfp user_id={application.user?.id}></Pfp>
+                            )}
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {application.user?.full_name}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {to_university_name(
+                                  get_college(application.user?.college)
+                                    ?.university_id
+                                )}{" "}
+                                • {to_college_name(application.user?.college)} •{" "}
+                                {to_level_name(application.user?.year_level)}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 w-[250px]">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                          <span className="font-medium text-gray-900">
-                            {application.job?.title}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {application.job?.mode}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4 w-[120px] text-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            set_application(application);
-                            open_review_modal();
-                          }}
-                        >
-                          <Notebook className="h-4 w-4" />
-                        </Button>
-                      </td>
-                      <td className="px-6 py-4 w-[120px] text-center">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            set_application(application);
-                            open_calendly_modal();
-                          }}
-                        >
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                      </td>
-                      <td className="px-6 py-4 w-[200px]">
-                        <GroupableRadioDropdown
-                          name="status"
-                          options={app_statuses.map((as) => as.name)}
-                          on_change={() => alert("Status updated.")}
-                        ></GroupableRadioDropdown>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4 w-[250px]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span className="font-medium text-gray-900">
+                              {application.job?.title}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {application.job?.mode}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 w-[120px] text-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              set_application(application);
+                              open_review_modal();
+                            }}
+                          >
+                            <Notebook className="h-4 w-4" />
+                          </Button>
+                        </td>
+                        <td className="px-6 py-4 w-[120px] text-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              set_application(application);
+                              open_calendly_modal();
+                            }}
+                          >
+                            <Calendar className="h-4 w-4" />
+                          </Button>
+                        </td>
+                        <td className="px-6 py-4 w-[200px]">
+                          <GroupableRadioDropdown
+                            name="status"
+                            options={app_statuses.map((as) => as.name)}
+                            on_change={() => alert("Status updated.")}
+                          ></GroupableRadioDropdown>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -563,13 +569,16 @@ const ReviewModalContent = ({
   close: () => void;
 }) => {
   const [review, set_review] = useState("");
+  const [saving, set_saving] = useState(false);
   const handle_save = async () => {
     if (!application.id) return;
+    set_saving(true);
     await review_app(application.id, {
       review,
       notes: application.notes ?? "",
       status: application.status,
     });
+    set_saving(false);
     close();
   };
 
@@ -584,10 +593,19 @@ const ReviewModalContent = ({
           {application?.user?.full_name} - Review
         </h1>
         <div className="flex flex-row">
-          <Button className="bg-blue-500 ml-8" onClick={handle_save}>
-            Save
+          <Button
+            disabled={saving}
+            className="bg-blue-500 ml-8"
+            onClick={handle_save}
+          >
+            {saving ? "Saving..." : "Save"}
           </Button>
-          <Button variant="outline" className="ml-2" onClick={close}>
+          <Button
+            variant="outline"
+            disabled={saving}
+            className="ml-2"
+            onClick={close}
+          >
             Cancel
           </Button>
         </div>
