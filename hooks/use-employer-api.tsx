@@ -61,22 +61,26 @@ export function useEmployerApplications() {
       const new_apps = [
         {
           ...cache.filter((a) => a?.id === app_id)[0],
+          // @ts-ignore
           ...response.application,
         },
         ...cache.filter((a) => a?.id !== app_id),
         // @ts-ignore
       ].sort(
         (a, b) =>
-          new Date(a.applied_at).getTime() - new Date(b.applied_at).getTime()
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       );
       set_cache_item("_apps_employer_list", new_apps);
-      setEmployerApplications(new_apps as EmployerApplication[]);
+      setEmployerApplications(
+        get_cache_item("_apps_employer_list") as EmployerApplication[]
+      );
     } else {
       // @ts-ignore
       set_cache_item("_apps_employer_list", [response.application]);
       // @ts-ignore
       setEmployerApplications([response.application]);
     }
+    return response;
   };
 
   useEffect(() => {

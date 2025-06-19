@@ -77,14 +77,18 @@ export default function Dashboard() {
   const [jobSearch, setJobSearch] = useState("");
   const [statusSearch, setStatusSearch] = useState("");
   const [selected_resume, set_selected_resume] = useState("");
-  const [review, set_review] = useState("");
 
   // Syncs everything
   const set_application = (application: EmployerApplication) => {
     set_selected_application(application);
     set_selected_resume("/users/" + application?.user_id + "/resume");
-    set_review(application.review ?? "");
   };
+
+  useEffect(() => {
+    const id = selected_application?.id;
+    if (!id) return;
+    set_application(employer_applications.filter((a) => a.id === id)[0]);
+  }, [employer_applications]);
 
   const get_user_resume_url = useCallback(
     async () =>
@@ -591,7 +595,7 @@ const ReviewModalContent = ({
       <div className="relative h-[500px] w-[600px] mt-4">
         <MDXEditor
           className="min-h-[300px] border border-gray-200 rounded-lg"
-          markdown={review}
+          markdown={application.review ?? ""}
           onChange={(value) => set_review(value)}
         />
       </div>
