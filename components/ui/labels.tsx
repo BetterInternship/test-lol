@@ -1,13 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-06-19 16:33:17
+ * @ Modified time: 2025-06-20 05:44:22
  * @ Description:
  *
  * Commonly used label components
  * All of them must have the value prop
  */
 
+import { CheckCircle, CircleX } from "lucide-react";
 import React from "react";
 
 const DEFAULT_LABEL = "Not specified";
@@ -71,6 +72,28 @@ export const JobPropertyLabel: LabelComponent = ({
         <span className="text-gray-400 italic">
           {fallback ?? DEFAULT_LABEL}
         </span>
+      )}
+    </p>
+  );
+};
+
+/**
+ * Used in job details
+ *
+ * @component
+ */
+export const JobBooleanLabel: LabelComponent = ({
+  value,
+  fallback,
+}: LabelComponentProps) => {
+  return (
+    <p className="text-gray-500 font-medium text-sm">
+      {!["", "false", "null", "undefined"].includes(
+        value?.toString().trim() ?? ""
+      ) ? (
+        <CheckCircle className="w-5 h-5 text-blue-500"></CheckCircle>
+      ) : (
+        <CircleX className="w-5 h-5 text-grey-500"></CircleX>
       )}
     </p>
   );

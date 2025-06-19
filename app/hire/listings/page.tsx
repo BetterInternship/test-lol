@@ -34,7 +34,7 @@ import { useAuthContext } from "../authctx";
 
 export default function MyListings() {
   const { redirect_if_not_loggedin } = useAuthContext();
-  const { ownedJobs, create_job } = useOwnedJobs();
+  const { ownedJobs, create_job, update_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
@@ -46,6 +46,12 @@ export default function MyListings() {
   } = useModal("create-modal");
 
   redirect_if_not_loggedin();
+
+  useEffect(() => {
+    const id = selectedJob.id;
+    if (!id) return;
+    setSelectedJob(ownedJobs.filter((j) => j.id === id)[0]);
+  }, [ownedJobs]);
 
   useEffect(() => {
     if (!is_editing) set_saving(false);
@@ -126,24 +132,16 @@ export default function MyListings() {
                   </div>
                 </Button>
               </div>
-              {ownedJobs
-                .sort((a, b) => {
-                  return (
-                    new Date(b.updated_at ?? "").getTime() -
-                    new Date(a.updated_at ?? "").getTime()
-                  );
-                })
-                .map((job) => (
-                  <div key={job.id}>
-                    <EmployerJobCard
-                      key={job.id}
-                      job={job}
-                      disabled={is_editing}
-                      on_click={() => setSelectedJob(job)}
-                      selected={job.id === selectedJob.id}
-                    ></EmployerJobCard>
-                  </div>
-                ))}
+              {ownedJobs.map((job) => (
+                <EmployerJobCard
+                  key={job.id}
+                  job={job}
+                  disabled={is_editing}
+                  update_job={update_job}
+                  on_click={() => setSelectedJob(job)}
+                  selected={job.id === selectedJob.id}
+                ></EmployerJobCard>
+              ))}
             </div>
           </div>
 
@@ -154,9 +152,11 @@ export default function MyListings() {
               set_is_editing={set_is_editing}
               job={selectedJob}
               saving={saving}
+              update_job={update_job}
               actions={[
                 !is_editing ? (
                   <Button
+                    key="1"
                     variant="outline"
                     disabled={saving}
                     onClick={() => set_is_editing(true)}
@@ -168,6 +168,7 @@ export default function MyListings() {
                 ),
                 is_editing ? (
                   <Button
+                    key="2"
                     variant="default"
                     className="bg-blue-600 text-white"
                     disabled={saving}
@@ -180,6 +181,7 @@ export default function MyListings() {
                 ),
                 is_editing ? (
                   <Button
+                    key="3"
                     variant="outline"
                     className="text-red-500"
                     disabled={saving}
@@ -473,9 +475,9 @@ const CreateModalForm = ({
                 </div>
                 <Checkbox
                   checked={form_data.require_github ?? false}
-                  onCheckedChange={(value) =>
-                    set_field("require_github", value)
-                  }
+                  onCheckedChange={(value) => {
+                    set_field("require_github", value);
+                  }}
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
               </div>
@@ -491,9 +493,9 @@ const CreateModalForm = ({
                 </div>
                 <Checkbox
                   checked={form_data.require_portfolio ?? false}
-                  onCheckedChange={(value) =>
-                    set_field("require_portfolio", value)
-                  }
+                  onCheckedChange={(value) => {
+                    set_field("require_portfolio", value);
+                  }}
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
               </div>

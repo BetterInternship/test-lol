@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-06-19 16:21:03
+ * @ Modified time: 2025-06-20 05:43:48
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -11,6 +11,8 @@ import { Input } from "./input";
 import React from "react";
 import { GroupableRadioDropdown } from "./dropdown";
 import { Checkbox } from "@radix-ui/react-checkbox";
+import { cn } from "@/lib/utils";
+import { Check } from "lucide-react";
 
 type Value = string | null | undefined;
 
@@ -86,50 +88,44 @@ export const EditableGroupableRadioDropdown = ({
 
 export const EditableCheckbox = ({
   is_editing,
-  name,
   value,
   setter,
-  options = [],
   children,
 }: {
   is_editing: boolean;
-  name: string;
   value: boolean | null | undefined;
   setter: (value: string) => void;
-  options: string[];
   children?: React.ReactElement<{ value?: Value }>;
 }) => {
   return is_editing ? (
-    <div className="flex items-center space-x-2 bg-blue-500">
+    <div className="relative flex items-center space-x-2">
       <Checkbox
         checked={value ?? false}
-        className="border-gray-300 w-8 h-8"
-        onCheckedChange={(value) => setter(value.toString())}
-      />
+        className={cn(
+          "flex flex-row items-center justify-center border rounded-full w-5 h-5",
+          value
+            ? "border-blue-500 border-opacity-85 bg-blue-200"
+            : "border-gray-300 bg-gray-50"
+        )}
+        // @ts-ignore
+        onCheckedChange={(value) => setter(value)}
+      >
+        {value && <Check className="absolute w-3 h-3 text-blue-600"></Check>}
+      </Checkbox>
     </div>
   ) : (
     <p className="text-gray-900 font-medium text-sm">
-      {value ? (
+      {
         <span className="inline-flex items-center gap-2 text-green-700">
-          {
-            (React.Children.map(children, (child) => {
-              if (React.isValidElement(child))
-                return React.cloneElement(child, { value: value.toString() });
-              return <></>;
-            }) ?? [<></>])[0]
-          }
-        </span>
-      ) : (
-        <span className="text-gray-400 italic">
           {
             (React.Children.map(children, (child) => {
               if (React.isValidElement(child))
                 return React.cloneElement(child, { value: value?.toString() });
               return <></>;
-            }) ?? [<></>])[1]
+            }) ?? [<></>])[0]
           }
         </span>
-      )}
+      }
     </p>
   );
 };

@@ -7,7 +7,6 @@ import {
   MapPin,
   Monitor,
   Clock,
-  Eye,
   Globe,
   Lock,
   EyeOff,
@@ -22,11 +21,9 @@ import {
   EditableInput,
 } from "@/components/ui/editable";
 import { useEffect } from "react";
-import { JobPropertyLabel, JobTitleLabel } from "../ui/labels";
+import { JobBooleanLabel, JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
-import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { DropdownGroup } from "../ui/dropdown";
-import { Checkbox } from "../ui/checkbox";
 import { Button } from "../ui/button";
 
 /**
@@ -96,14 +93,19 @@ export const EmployerJobCard = ({
   selected,
   disabled,
   on_click,
+  update_job,
 }: {
   job: Job;
   selected?: boolean;
   disabled?: boolean;
   on_click?: (job: Job) => void;
+  // ! please fucking change the types
+  update_job: (
+    job_id: string,
+    job: Partial<Job>
+  ) => Promise<{ success: boolean }>;
 }) => {
   const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
-  const { update_job } = useOwnedJobs();
 
   return (
     <div
@@ -138,8 +140,6 @@ export const EmployerJobCard = ({
               const response = await update_job(job.id, {
                 is_active: !job.is_active,
               });
-              // @ts-ignore
-              if (response.success) job.is_active = response.job.is_active;
             }}
           >
             {job.is_active ? (
@@ -152,6 +152,11 @@ export const EmployerJobCard = ({
       </div>
 
       <div className="flex gap-2 flex-wrap">
+        {job.is_unlisted && (
+          <span className="px-3 py-1 bg-orange-100 text-orange-700 border border-orange-300 border-opacity-50 text-xs rounded-full">
+            Unlisted
+          </span>
+        )}
         {ref_is_not_null(job.mode) && (
           <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
             {to_job_mode_name(job.mode)}
@@ -254,15 +259,20 @@ export const EditableJobDetails = ({
   is_editing = false,
   set_is_editing = () => {},
   saving = false,
+  update_job,
   actions = [],
 }: {
   job: Job;
   is_editing: boolean;
   set_is_editing: (is_editing: boolean) => void;
   saving?: boolean;
+  // ! please fucking change the types
+  update_job: (
+    job_id: string,
+    job: Partial<Job>
+  ) => Promise<{ success: boolean }>;
   actions?: React.ReactNode[];
 }) => {
-  const { update_job } = useOwnedJobs();
   const {
     job_modes,
     job_types,
@@ -297,7 +307,7 @@ export const EditableJobDetails = ({
     s && s.trim().length ? parseInt(s.trim()) : undefined;
 
   useEffect(() => {
-    if (job) {
+    if (job && saving) {
       const edited_job: Partial<Job> = {
         id: form_data.id,
         title: form_data.title ?? "",
@@ -310,17 +320,14 @@ export const EditableJobDetails = ({
         salary_freq: clean_int(
           `${get_job_pay_freq_by_name(form_data.job_pay_freq_name)?.id}`
         ),
-        require_github: form_data.require_github ?? false,
-        require_portfolio: form_data.require_portfolio ?? false,
+        require_github: form_data.require_github,
+        require_portfolio: form_data.require_portfolio,
       };
 
       update_job(edited_job.id ?? "", edited_job).then(
         // @ts-ignore
         ({ job: updated_job }) => {
-          if (updated_job) {
-            set_is_editing(false);
-            alert("Successfully updated job!");
-          }
+          if (updated_job) set_is_editing(false);
         }
       );
     }
@@ -392,18 +399,21 @@ export const EditableJobDetails = ({
               >
                 <JobPropertyLabel />
               </EditableInput>
-              <EditableGroupableRadioDropdown
-                name="pay_freq"
-                is_editing={is_editing}
-                value={form_data.job_pay_freq_name}
-                options={[
-                  "Not specified",
-                  ...job_pay_freq.map((jpf) => jpf.name),
-                ]}
-                setter={field_setter("job_pay_freq_name")}
-              >
-                <JobPropertyLabel />
-              </EditableGroupableRadioDropdown>
+              {form_data.salary_freq ||
+                (form_data.salary_freq === 0 && (
+                  <EditableGroupableRadioDropdown
+                    name="pay_freq"
+                    is_editing={is_editing}
+                    value={form_data.job_pay_freq_name}
+                    options={[
+                      "Not specified",
+                      ...job_pay_freq.map((jpf) => jpf.name),
+                    ]}
+                    setter={field_setter("job_pay_freq_name")}
+                  >
+                    <JobPropertyLabel fallback="" />
+                  </EditableGroupableRadioDropdown>
+                ))}
             </div>
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
@@ -423,13 +433,46 @@ export const EditableJobDetails = ({
             </div>
           </DropdownGroup>
 
-          <EditableCheckbox
-            is_editing={is_editing}
-            name={"require_github"}
-            value={form_data.require_github}
-            setter={field_setter("require_github")}
-            options={[]}
-          ></EditableCheckbox>
+          <div className="flex flex-col space-y-2">
+            <div className="flex flex-row items-start gap-3 max-w-prose">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.require_github}
+                setter={field_setter("require_github")}
+              >
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Require Github
+              </label>
+            </div>
+
+            <div className="flex flex-row items-start gap-3 max-w-prose">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.require_portfolio}
+                setter={field_setter("require_portfolio")}
+              >
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Require Portfolio
+              </label>
+            </div>
+
+            <div className="flex flex-row items-start gap-3 max-w-prose">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.is_unlisted}
+                setter={field_setter("is_unlisted")}
+              >
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Unlisted
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
