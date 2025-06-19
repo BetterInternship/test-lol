@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-06-19 07:06:55
+ * @ Modified time: 2025-06-19 16:33:17
  * @ Description:
  *
  * Commonly used label components
@@ -12,8 +12,8 @@ import React from "react";
 
 const DEFAULT_LABEL = "Not specified";
 type Value = string | null | undefined;
-type LabelComponentProps = { value?: Value };
-export type LabelComponent = React.FC<{ value?: Value }>;
+type LabelComponentProps = { value?: Value; fallback?: Value };
+export type LabelComponent = React.FC<LabelComponentProps>;
 
 /**
  * Used in profile page
@@ -63,10 +63,15 @@ export const UserLinkLabel: LabelComponent = ({
  */
 export const JobPropertyLabel: LabelComponent = ({
   value,
+  fallback,
 }: LabelComponentProps) => {
   return (
     <p className="text-gray-500 font-medium text-sm">
-      {value || <span className="text-gray-400 italic">{DEFAULT_LABEL}</span>}
+      {value || (
+        <span className="text-gray-400 italic">
+          {fallback ?? DEFAULT_LABEL}
+        </span>
+      )}
     </p>
   );
 };
@@ -78,10 +83,15 @@ export const JobPropertyLabel: LabelComponent = ({
  */
 export const JobTitleLabel: LabelComponent = ({
   value,
+  fallback,
 }: LabelComponentProps) => {
   return (
     <p className="text-gray-900 font-heading font-bold text-4xl">
-      {value || <span className="text-gray-400 italic">{DEFAULT_LABEL}</span>}
+      {value || (
+        <span className="text-gray-400 italic">
+          {fallback ?? DEFAULT_LABEL}
+        </span>
+      )}
     </p>
   );
 };

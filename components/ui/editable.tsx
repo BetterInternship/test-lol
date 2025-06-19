@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-06-17 22:44:51
+ * @ Modified time: 2025-06-19 16:21:03
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -10,6 +10,7 @@
 import { Input } from "./input";
 import React from "react";
 import { GroupableRadioDropdown } from "./dropdown";
+import { Checkbox } from "@radix-ui/react-checkbox";
 
 type Value = string | null | undefined;
 
@@ -70,6 +71,7 @@ export const EditableGroupableRadioDropdown = ({
   return is_editing ? (
     <GroupableRadioDropdown
       name={name}
+      default_value={value as string}
       options={options}
       on_change={setter}
     ></GroupableRadioDropdown>
@@ -79,5 +81,55 @@ export const EditableGroupableRadioDropdown = ({
         return React.cloneElement(child, { value });
       return <></>;
     })
+  );
+};
+
+export const EditableCheckbox = ({
+  is_editing,
+  name,
+  value,
+  setter,
+  options = [],
+  children,
+}: {
+  is_editing: boolean;
+  name: string;
+  value: boolean | null | undefined;
+  setter: (value: string) => void;
+  options: string[];
+  children?: React.ReactElement<{ value?: Value }>;
+}) => {
+  return is_editing ? (
+    <div className="flex items-center space-x-2 bg-blue-500">
+      <Checkbox
+        checked={value ?? false}
+        className="border-gray-300 w-8 h-8"
+        onCheckedChange={(value) => setter(value.toString())}
+      />
+    </div>
+  ) : (
+    <p className="text-gray-900 font-medium text-sm">
+      {value ? (
+        <span className="inline-flex items-center gap-2 text-green-700">
+          {
+            (React.Children.map(children, (child) => {
+              if (React.isValidElement(child))
+                return React.cloneElement(child, { value: value.toString() });
+              return <></>;
+            }) ?? [<></>])[0]
+          }
+        </span>
+      ) : (
+        <span className="text-gray-400 italic">
+          {
+            (React.Children.map(children, (child) => {
+              if (React.isValidElement(child))
+                return React.cloneElement(child, { value: value?.toString() });
+              return <></>;
+            }) ?? [<></>])[1]
+          }
+        </span>
+      )}
+    </p>
   );
 };

@@ -364,6 +364,7 @@ export default function SearchPage() {
                   job={selectedJob}
                   actions={[
                     <Button
+                      key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
                       onClick={() =>
                         !appliedJob(selectedJob.id ?? "") && handleApply()
@@ -380,6 +381,7 @@ export default function SearchPage() {
                       {appliedJob(selectedJob.id ?? "") ? "Applied" : "Apply"}
                     </Button>,
                     <Button
+                      key="2"
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
                       className={cn(

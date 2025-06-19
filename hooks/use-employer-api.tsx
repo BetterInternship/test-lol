@@ -120,6 +120,16 @@ export function useOwnedJobs(
     return response;
   };
 
+  const create_job = async (job: Partial<Job>) => {
+    const response = await job_service.create_job(job);
+    if (response.success) {
+      // @ts-ignore
+      const job = response.job;
+      set_cache_item("_jobs_owned_list", [job, ...ownedJobs]);
+      setOwnedJobs(get_cache_item("_jobs_owned_list") as Job[]);
+    }
+  };
+
   useEffect(() => {
     recheck_authentication().then((r) =>
       r ? fetchOwnedJobs() : setLoading(false)
@@ -191,6 +201,7 @@ export function useOwnedJobs(
 
   return {
     ownedJobs: filteredJobs,
+    create_job,
     update_job,
     loading,
     error,

@@ -5,7 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { BarChart3, Search, FileText, FileEdit, Filter } from "lucide-react";
+import {
+  BarChart3,
+  Search,
+  FileText,
+  FileEdit,
+  Filter,
+  Plus,
+} from "lucide-react";
 import Link from "next/link";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
@@ -21,7 +28,7 @@ import {
 } from "@/components/ui/dropdown";
 
 export default function MyListings() {
-  const { ownedJobs, update_job } = useOwnedJobs();
+  const { ownedJobs, create_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
@@ -96,7 +103,21 @@ export default function MyListings() {
             </div>
 
             {/* Job Cards - Scrollable */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 min-h-0 border-r">
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r">
+              <div className="p-0 border-2 rounded-lg cursor-pointer transition-colors">
+                <Button
+                  variant="ghost"
+                  className="w-full m-0 h-24"
+                  onClick={() => open_create_modal()}
+                >
+                  <div className="h-full text-bold flex flex-row items-center text-xl text-blue-600">
+                    <div className="4xl">
+                      <Plus className="w-10 h-10 mr-2"></Plus>
+                    </div>
+                    Add Listing
+                  </div>
+                </Button>
+              </div>
               {ownedJobs
                 .sort((a, b) => {
                   return (
@@ -188,9 +209,7 @@ export default function MyListings() {
       {/* Edit Job Modal */}
       <CreateModal>
         <CreateModalForm
-          job={selectedJob}
-          set_selected_job={setSelectedJob}
-          update_job={update_job}
+          create_job={create_job}
           close={() => close_create_modal()}
         ></CreateModalForm>
       </CreateModal>
@@ -199,48 +218,30 @@ export default function MyListings() {
 }
 
 const CreateModalForm = ({
-  job,
-  set_selected_job,
-  update_job,
+  create_job,
   close,
 }: {
-  job: Job;
-  set_selected_job: (job: Job) => void;
-  update_job: (id: string, job: Job) => Promise<any>;
+  create_job: (job: Partial<Job>) => Promise<any>;
   close: () => void;
 }) => {
-  const defaultDropdownValue = "Not specified";
-  const [updating, setUpdating] = useState(false);
+  const [creating, setCreating] = useState(false);
   const { form_data, set_field, set_fields, field_setter } = useFormData<
-    Job & { salary_freq_name: string; mode_name: string; type_name: string }
+    Job & {
+      salary_freq_name: string;
+      mode_name: string;
+      type_name: string;
+      allowance_name: string;
+    }
   >();
   const {
-    to_job_mode_name,
-    to_job_type_name,
-    to_job_pay_freq_name,
     get_job_mode_by_name,
     get_job_type_by_name,
     get_job_pay_freq_by_name,
     job_types,
     job_modes,
     job_pay_freq,
+    job_allowances,
   } = useRefs();
-
-  useEffect(() => {
-    if (job) {
-      set_fields({
-        ...job,
-        location: job.location ?? "",
-        salary: job.salary,
-        salary_freq_name: to_job_pay_freq_name(job.salary_freq) ?? undefined,
-        mode_name: to_job_mode_name(job.mode) ?? undefined,
-        type_name: to_job_type_name(job.type) ?? undefined,
-        requirements: job.requirements ?? "",
-        require_github: job.require_github ?? false,
-        require_portfolio: job.require_portfolio ?? false,
-      });
-    }
-  }, [job]);
 
   const clean_int = (s: string | undefined): number | undefined =>
     s && s.trim().length ? parseInt(s.trim()) : undefined;
@@ -248,60 +249,83 @@ const CreateModalForm = ({
     const job: Partial<Job> = {
       id: form_data.id,
       title: form_data.title,
-      description: form_data.description,
-      requirements: form_data.requirements,
-      location: form_data.location,
+      description: form_data.description ?? "",
+      requirements: form_data.requirements ?? "",
+      location: form_data.location ?? "",
+      allowance: clean_int(
+        `${get_job_mode_by_name(form_data.allowance_name)?.id}`
+      ),
       mode: clean_int(`${get_job_mode_by_name(form_data.mode_name)?.id}`),
       type: clean_int(`${get_job_type_by_name(form_data.type_name)?.id}`),
-      salary: form_data.salary,
-      salary_freq: clean_int(
-        `${get_job_pay_freq_by_name(form_data.salary_freq_name)?.id}`
-      ),
+      salary:
+        form_data.allowance_name === job_allowances[1].name
+          ? form_data.salary
+          : null,
+      salary_freq:
+        form_data.allowance_name === job_allowances[1].name
+          ? clean_int(
+              `${get_job_pay_freq_by_name(form_data.salary_freq_name)?.id}`
+            )
+          : null,
       require_github: form_data.require_github,
       require_portfolio: form_data.require_portfolio,
+      is_unlisted: form_data.is_unlisted,
     };
 
-    setUpdating(true);
-    const { job: updated_job, success } = await update_job(job.id ?? "", job);
-    if (updated_job) set_selected_job(updated_job);
-    setUpdating(false);
+    setCreating(true);
+    const { job: created_job, success } = await create_job(job);
+    if (!success) return alert("Could not create job");
+    setCreating(false);
     close();
   };
+
+  useEffect(() => {
+    set_fields({
+      mode_name: job_modes[0].name,
+      type_name: job_types[0].name,
+      salary_freq_name: job_pay_freq[0].name,
+      allowance_name: job_allowances[0].name,
+    });
+  }, []);
 
   return (
     <>
       {/* Header with improved styling */}
       <div className="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-1">
-              Edit Job Listing
-            </h2>
-            <p className="text-sm text-gray-600">
+          <div className="">
+            <div className="text-4xl font-heading font-bold text-gray-700">
               {form_data.title || "Untitled Job"}
-            </p>
+            </div>
+            <br />
+            <Input
+              value={form_data.title || ""}
+              onChange={(e) => set_field("title", e.target.value)}
+              className="text-4xl text-bold"
+              placeholder={"Enter job title here..."}
+            ></Input>
           </div>
           <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={() => close()}
               className="px-5 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50"
-              disabled={updating}
+              disabled={creating}
             >
               Cancel
             </Button>
             <Button
-              disabled={updating}
+              disabled={creating}
               onClick={handleSaveEdit}
               className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-sm"
             >
-              {updating ? (
+              {creating ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Saving...
                 </>
               ) : (
-                "Save Changes"
+                "Publish Listing"
               )}
             </Button>
           </div>
@@ -323,18 +347,6 @@ const CreateModalForm = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
-                  Job Title
-                </Label>
-                <Input
-                  value={form_data.title || ""}
-                  onChange={(e) => set_field("title", e.target.value)}
-                  placeholder="Enter job title"
-                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">
                   Location
                 </Label>
                 <Input
@@ -353,10 +365,7 @@ const CreateModalForm = ({
                   <GroupableRadioDropdown
                     name="type"
                     default_value={form_data.type_name}
-                    options={[
-                      defaultDropdownValue,
-                      ...job_types.map((jt) => jt.name),
-                    ]}
+                    options={job_types.map((jt) => jt.name)}
                     on_change={field_setter("type_name")}
                   />
                 </div>
@@ -368,41 +377,68 @@ const CreateModalForm = ({
                   <GroupableRadioDropdown
                     name="mode"
                     default_value={form_data.mode_name}
-                    options={[
-                      defaultDropdownValue,
-                      ...job_modes.map((jm) => jm.name),
-                    ]}
+                    options={job_modes.map((jm) => jm.name)}
                     on_change={field_setter("mode_name")}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Salary
+                    Work Mode
                   </Label>
-                  <Input
-                    value={form_data.salary ?? ""}
-                    onChange={(e) => set_field("salary", e.target.value)}
-                    placeholder="Enter salary amount"
-                    className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  <GroupableRadioDropdown
+                    name="allowance"
+                    default_value={form_data.allowance_name}
+                    options={job_allowances.map((ja) => ja.name).reverse()}
+                    on_change={field_setter("allowance_name")}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
-                    Pay Frequency
-                  </Label>
-                  <GroupableRadioDropdown
-                    name="pay_freq"
-                    default_value={form_data.salary_freq_name}
-                    options={[
-                      defaultDropdownValue,
-                      ...job_pay_freq.map((jpf) => jpf.name),
-                    ]}
-                    on_change={field_setter("salary_freq_name")}
+                {form_data.allowance_name === "Paid" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Salary
+                      </Label>
+                      <Input
+                        value={form_data.salary ?? ""}
+                        onChange={(e) => set_field("salary", e.target.value)}
+                        placeholder="Enter salary amount"
+                        className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium text-gray-700">
+                        Pay Frequency
+                      </Label>
+                      <GroupableRadioDropdown
+                        name="pay_freq"
+                        default_value={form_data.salary_freq_name}
+                        options={job_pay_freq.map((jpf) => jpf.name)}
+                        on_change={field_setter("salary_freq_name")}
+                      />
+                    </div>
+                  </>
+                )}
+              </DropdownGroup>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-900">
+                  Mark as Unlisted
+                </Label>
+                <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                  <div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      This job will only be visible to applicants with the link
+                    </p>
+                  </div>
+                  <Checkbox
+                    checked={form_data.is_unlisted ?? false}
+                    onCheckedChange={(value) => set_field("is_unlisted", value)}
+                    className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                   />
                 </div>
-              </DropdownGroup>
+              </div>
             </div>
           </div>
 

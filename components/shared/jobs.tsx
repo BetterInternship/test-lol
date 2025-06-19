@@ -6,11 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { JobModeIcon } from "@/components/ui/icons";
 import ReactMarkdown from "react-markdown";
 import { useFormData } from "@/lib/form-data";
-import { EditableGroupableRadioDropdown, EditableInput } from "../ui/editable";
+import {
+  EditableCheckbox,
+  EditableGroupableRadioDropdown,
+  EditableInput,
+} from "@/components/ui/editable";
 import { useEffect } from "react";
 import { JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
+import { DropdownGroup } from "../ui/dropdown";
 
 /**
  * The scrollable job card component.
@@ -162,6 +167,7 @@ export const EditableJobDetails = ({
     job_pay_freq,
     to_job_mode_name,
     to_job_type_name,
+    to_job_pay_freq_name,
     get_job_mode_by_name,
     get_job_type_by_name,
     get_job_pay_freq_by_name,
@@ -180,7 +186,7 @@ export const EditableJobDetails = ({
         ...job,
         job_type_name: to_job_type_name(job.type),
         job_mode_name: to_job_mode_name(job.mode),
-        job_pay_freq_name: to_job_mode_name(job.salary_freq),
+        job_pay_freq_name: to_job_pay_freq_name(job.salary_freq),
       });
     }
   }, [job, is_editing]);
@@ -255,63 +261,73 @@ export const EditableJobDetails = ({
             </EditableInput>
           </div>
 
-          <div className="flex flex-col items-start gap-3">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
-              Mode:
-            </label>
-            <EditableGroupableRadioDropdown
-              is_editing={is_editing}
-              options={["Not specified", ...job_modes.map((jm) => jm.name)]}
-              value={form_data.job_mode_name}
-              setter={field_setter("job_mode_name")}
-              name={"job_mode"}
-            >
-              <JobPropertyLabel />
-            </EditableGroupableRadioDropdown>
-          </div>
+          <DropdownGroup>
+            <div className="flex flex-col items-start gap-3">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
+                Mode:
+              </label>
+              <EditableGroupableRadioDropdown
+                is_editing={is_editing}
+                name={"job_mode"}
+                value={form_data.job_mode_name}
+                setter={field_setter("job_mode_name")}
+                options={["Not specified", ...job_modes.map((jm) => jm.name)]}
+              >
+                <JobPropertyLabel />
+              </EditableGroupableRadioDropdown>
+            </div>
 
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
-              Salary:
-            </label>
-            <EditableInput
-              is_editing={is_editing}
-              value={form_data.salary?.toString() ?? "Not specified"}
-              setter={field_setter("salary")}
-            >
-              <JobPropertyLabel />
-            </EditableInput>
-            <EditableGroupableRadioDropdown
-              name="pay_freq"
-              is_editing={is_editing}
-              value={form_data.job_type_name}
-              options={[
-                "Not specified",
-                ...job_pay_freq.map((jpf) => jpf.name),
-              ]}
-              setter={field_setter("job_pay_freq_name")}
-            >
-              <JobPropertyLabel />
-            </EditableGroupableRadioDropdown>
-          </div>
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
+                Salary:
+              </label>
+              <EditableInput
+                is_editing={is_editing}
+                value={form_data.salary?.toString() ?? "Not specified"}
+                setter={field_setter("salary")}
+              >
+                <JobPropertyLabel />
+              </EditableInput>
+              <EditableGroupableRadioDropdown
+                name="pay_freq"
+                is_editing={is_editing}
+                value={form_data.job_pay_freq_name}
+                options={[
+                  "Not specified",
+                  ...job_pay_freq.map((jpf) => jpf.name),
+                ]}
+                setter={field_setter("job_pay_freq_name")}
+              >
+                <JobPropertyLabel />
+              </EditableGroupableRadioDropdown>
+            </div>
 
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
-              Employment Type:
-            </label>
-            <EditableGroupableRadioDropdown
-              is_editing={is_editing}
-              value={form_data.job_type_name}
-              setter={field_setter("job_type_name")}
-              name={"job_type"}
-              options={["Not specified", ...job_types.map((jt) => jt.name)]}
-            >
-              <JobPropertyLabel />
-            </EditableGroupableRadioDropdown>
-          </div>
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                Employment Type:
+              </label>
+              <EditableGroupableRadioDropdown
+                is_editing={is_editing}
+                value={form_data.job_type_name}
+                setter={field_setter("job_type_name")}
+                name={"job_type"}
+                options={["Not specified", ...job_types.map((jt) => jt.name)]}
+              >
+                <JobPropertyLabel />
+              </EditableGroupableRadioDropdown>
+            </div>
+          </DropdownGroup>
+
+          <EditableCheckbox
+            is_editing={is_editing}
+            name={"require_github"}
+            value={form_data.require_github}
+            setter={field_setter("require_github")}
+            options={[]}
+          ></EditableCheckbox>
         </div>
       </div>
 
@@ -368,13 +384,94 @@ export const JobDetails = ({
   job: Job;
   actions?: React.ReactNode[];
 }) => {
+  const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
+    useRefs();
+
   // Returns a non-editable version of it
   return (
-    <EditableJobDetails
-      is_editing={false}
-      set_is_editing={() => {}}
-      job={job}
-      actions={actions}
-    ></EditableJobDetails>
+    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
+      <div className="mb-6">
+        <div className="max-w-prose">
+          <JobTitleLabel value={job.title} />
+        </div>
+        <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+        <p className="text-sm text-gray-500 mb-4">
+          Listed on {formatDate(job.created_at ?? "")}
+        </p>
+        <div className="flex gap-3">{actions}</div>
+      </div>
+
+      {/* Job Details Grid */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-4">Job Details</h3>
+        <div className="grid grid-cols-2 gap-6">
+          <div className="flex flex-col items-start gap-3 max-w-prose">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+              Location:
+            </label>
+            <JobPropertyLabel value={job.location} />
+          </div>
+
+          <DropdownGroup>
+            <div className="flex flex-col items-start gap-3">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
+                Mode:
+              </label>
+              <JobPropertyLabel value={to_job_mode_name(job.mode)} />
+            </div>
+
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
+                Salary:
+              </label>
+              <JobPropertyLabel value={job.salary?.toString()} />{" "}
+              <JobPropertyLabel
+                value={
+                  job.salary_freq !== null && job.salary_freq !== undefined
+                    ? to_job_pay_freq_name(job.salary_freq)
+                    : null
+                }
+                fallback=""
+              />
+            </div>
+
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                Employment Type:
+              </label>
+              <JobPropertyLabel value={to_job_type_name(job.type)} />
+            </div>
+          </DropdownGroup>
+
+          {/* // ! checkbox labels */}
+        </div>
+      </div>
+
+      {/* Job Description */}
+      <hr />
+      <div className="mb-6 mt-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Description
+        </h1>
+        <div className="markdown">
+          <ReactMarkdown>{job.description}</ReactMarkdown>
+        </div>
+      </div>
+
+      {/* Job Requirements */}
+      <hr />
+      <div className="mb-6 mt-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Requirements
+        </h1>
+        <div className="markdown">
+          <ReactMarkdown>{job.requirements}</ReactMarkdown>
+        </div>
+      </div>
+    </div>
   );
 };
