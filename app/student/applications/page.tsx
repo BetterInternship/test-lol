@@ -134,12 +134,6 @@ export default function ApplicationsPage() {
                           <span className="font-medium">
                             {application.job?.employer?.name || application.employer?.name || "Company Name"}
                           </span>
-                          {(application.job?.employer?.has_dlsu_moa || application.employer?.has_dlsu_moa) && (
-                            <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              DLSU MOA
-                            </span>
-                          )}
                         </div>
                         
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
@@ -154,6 +148,15 @@ export default function ApplicationsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
+                  {(application.job?.employer?.has_dlsu_moa || application.employer?.has_dlsu_moa) && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center px-3 py-1 bg-green-50 border-green-200 text-green-700"
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      DLSU MOA
+                    </Badge>
+                  )}
                   {(application.job?.type || application.job?.type === 0) && (
                     <Badge
                       variant="outline"

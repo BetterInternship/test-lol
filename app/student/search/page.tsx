@@ -18,6 +18,7 @@ import {
   Monitor,
   PhilippinePeso,
   Clock,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +42,7 @@ import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
+import FilterModalRedesign from "./filter-modal-redesign";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -57,6 +59,7 @@ export default function SearchPage() {
   const { is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  
   const { filters, set_filter, filter_setter } = useFilter<{
     job_type: string;
     location: string;
@@ -284,7 +287,6 @@ export default function SearchPage() {
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
         {jobs_loading ? (
-          /* Loading State */
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -292,7 +294,6 @@ export default function SearchPage() {
             </div>
           </div>
         ) : is_mobile ? (
-          /* Mobile Layout - Fixed Search Bar with Scrollable Job Cards */
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
@@ -349,7 +350,6 @@ export default function SearchPage() {
             </div>
           </div>
         ) : (
-          /* Desktop Layout - Split View */
           <>
             {/* Job List */}
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
@@ -761,57 +761,11 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="space-y-6 py-4 px-8">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
-          </div>
-          <DropdownGroup>
-            <GroupableRadioDropdown
-              name="jobType"
-              options={["All types", "Internships", "Full-time", "Part-time"]}
-              on_change={filter_setter("job_type")}
-              default_value={filters.job_type}
-            />
-            <GroupableRadioDropdown
-              name="location"
-              options={["Any location", "In-Person", "Remote", "Hybrid"]}
-              on_change={filter_setter("location")}
-              default_value={filters.location}
-            />
-            <GroupableRadioDropdown
-              name="category"
-              options={[
-                "All industries",
-                "Technology",
-                "Creative Services",
-                "Consumer Goods",
-              ]}
-              on_change={filter_setter("industry")}
-              default_value={filters.industry}
-            />
-          </DropdownGroup>
-
-          <div className="flex gap-3 pt-6">
-            <Button
-              variant="outline"
-              onClick={() => {
-                // Clear temp filters but keep search term
-                set_filter("job_type", "All types");
-                set_filter("location", "Any location");
-                set_filter("industry", "All industries");
-              }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
-            >
-              Clear Filters
-            </Button>
-            <Button
-              onClick={() => close_filter_modal()}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Apply Filters
-            </Button>
-          </div>
-        </div>
+        <FilterModalRedesign
+          filters={filters}
+          filter_setter={filter_setter}
+          close_filter_modal={close_filter_modal}
+        />
       </FilterModal>
     </>
   );
