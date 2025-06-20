@@ -22,27 +22,30 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
       <AnimatePresence>
         {is_open && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4 backdrop-blur-sm"
+            className={`fixed inset-0 bg-black bg-opacity-50 flex z-[100] p-4 backdrop-blur-sm ${
+              is_mobile ? 'items-start pt-16' : 'items-center justify-center'
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             onClick={() => set_is_open(false)}
-            style={{
-              // Account for page header on mobile
-              paddingTop: is_mobile ? '80px' : '16px'
-            }}
           >
             <motion.div
-              className="bg-white rounded-lg overflow-hidden shadow-2xl"
+              className={`bg-white rounded-lg overflow-hidden shadow-2xl w-full ${
+                is_mobile 
+                  ? 'max-w-full mx-0 h-[85vh] flex flex-col' 
+                  : 'max-w-4xl max-h-[90vh]'
+              }`}
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                // Ensure modal doesn't exceed available height
-                maxHeight: is_mobile ? 'calc(100vh - 80px)' : '90vh'
+                // Ensure modal never exceeds this height on mobile
+                maxHeight: is_mobile ? '85vh' : '90vh',
+                height: is_mobile ? '85vh' : 'auto'
               }}
             >
               {showCloseButton && (

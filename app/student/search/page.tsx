@@ -475,7 +475,7 @@ export default function SearchPage() {
 
       {/* Mobile Job Details Modal */}
       <JobModal>
-        <div className="h-full max-h-full flex flex-col bg-white">
+        <div className="h-full flex flex-col bg-white overflow-hidden">
           {/* Fixed Header with Close Button */}
           <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
             <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
@@ -492,21 +492,21 @@ export default function SearchPage() {
           {/* Fixed Job Header - Non-scrollable */}
           {selectedJob && (
             <div className="p-4 bg-white flex-shrink-0 border-b">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                 {selectedJob.title}
               </h1>
               <div className="flex items-center gap-2 text-gray-600 mb-1">
-                <Building className="w-4 h-4" />
-                <span>{selectedJob.employer?.name}</span>
+                <Building className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate text-sm">{selectedJob.employer?.name}</span>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs text-gray-500">
                 Listed on {formatDate(selectedJob.created_at ?? "")}
               </p>
             </div>
           )}
 
-          {/* Scrollable Content - Only job details and below */}
-          <div className="flex-1 overflow-y-auto min-h-0">
+          {/* Scrollable Content Area - Takes remaining space */}
+          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
             {selectedJob && (
               <div className="p-4">
                 {/* Mobile Job Details Grid */}
@@ -573,21 +573,24 @@ export default function SearchPage() {
                 </div>
 
                 {/* Job Requirements */}
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold mb-4">Requirements</h2>
-                  <div className="prose prose-sm max-w-none text-gray-700">
-                    <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
+                {selectedJob.requirements && (
+                  <div className="mb-6">
+                    <h2 className="text-lg font-bold mb-3">Requirements</h2>
+                    <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
+                      <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Bottom spacing for action buttons */}
-                <div className="pb-20"></div>
+                {/* Bottom padding for scroll area */}
+                <div className="pb-4"></div>
+
               </div>
             )}
           </div>
 
-          {/* Fixed Action Buttons at Bottom */}
-          <div className="bg-white border-t p-4 flex-shrink-0">
+          {/* Fixed Action Buttons at Bottom - Always Visible */}
+          <div className="bg-white border-t p-4 flex-shrink-0 safe-area-bottom mb-4">
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
