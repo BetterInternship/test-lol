@@ -29,9 +29,7 @@ import {
   EditableGroupableRadioDropdown,
   EditableInput,
 } from "@/components/ui/editable";
-import { UserPropertyLabel } from "@/components/ui/labels";
-import Link from "next/link";
-import { UserLinkLabel } from "../../../components/ui/labels";
+import { UserPropertyLabel, UserLinkLabel } from "@/components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
 import { user_service } from "@/lib/api";
 import { useClientDimensions } from "@/hooks/use-dimensions";
@@ -39,6 +37,8 @@ import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/hooks/use-file";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
@@ -98,14 +98,12 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ["application/pdf"];
     if (!allowedTypes.includes(file.type)) {
       alert("Please upload a PDF document");
       return;
     }
 
-    // Validate file size (3MB)
     if (file.size > 3 * 1024 * 1024) {
       alert("File size must be less than 3MB");
       return;
@@ -115,16 +113,13 @@ export default function ProfilePage() {
       setUploading(true);
       const form = FileUploadFormBuilder.new("resume");
       form.file(file);
-
       // @ts-ignore
       const result = await user_service.update_my_resume(form.build());
-
       alert("Resume uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload resume");
     } finally {
       setUploading(false);
-      // Clear the input
       if (resumeInputRef.current) {
         resumeInputRef.current.value = "";
       }
@@ -136,21 +131,18 @@ export default function ProfilePage() {
     open_resume_modal();
   };
 
-  console.log(profile);
   const handleProfilePictureUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       alert("Please upload a JPEG, PNG, GIF, or WebP image");
       return;
     }
 
-    // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       alert("Image size must be less than 2MB");
       return;
@@ -166,14 +158,12 @@ export default function ProfilePage() {
         alert("Could not upload profile picture.");
         return;
       }
-
       await sync_pfp_url();
       alert("Profile picture uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload profile picture");
     } finally {
       setUploading(false);
-      // Clear the input
       if (profilePictureInputRef.current) {
         profilePictureInputRef.current.value = "";
       }
@@ -198,7 +188,6 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      // Transform frontend field names to backend field names
       const dataToSend = {
         full_name: form_data.full_name ?? "",
         phone_number: form_data.phone_number ?? "",
@@ -213,7 +202,6 @@ export default function ProfilePage() {
         taking_for_credit: form_data.taking_for_credit,
         linkage_officer: form_data.linkage_officer ?? "",
       };
-      console.log(dataToSend);
       await updateProfile(dataToSend);
       setIsEditing(false);
     } catch (error) {
@@ -231,10 +219,10 @@ export default function ProfilePage() {
 
   if (!is_authenticated()) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -242,9 +230,9 @@ export default function ProfilePage() {
 
   if (error) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load profile: {error}</p>
+      <div className="h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-destructive">Failed to load profile: {error}</p>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </div>
       </div>
@@ -253,9 +241,9 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Profile not found</p>
+          <p className="text-muted-foreground">Profile not found</p>
         </div>
       </div>
     );
@@ -263,140 +251,104 @@ export default function ProfilePage() {
 
   return (
     <>
-      <div className="flex h-full">
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col">
-          {/* Profile Content */}
-          <div
-            className={`flex-1 ${
-              is_mobile ? "p-4 pb-32" : "p-4"
-            }`}
-          >
-            <div
-              className={`${is_mobile ? "max-w-none" : "max-w-4xl mx-auto"}`}
-            >
-              <div className="flex flex-col gap-y-3 mb-8">
-                <div className="relative w-24 h-24 rounded-full border border-gray-300 flex items-center overflow-hidden">
-                  {profile.profile_picture && pfp_url ? (
-                    <>
-                      <img className="w-24 h-24" src={pfp_url} alt="Profile picture"></img>
-                      <Button
-                        variant="ghost"
-                        className="absolute w-full h-full hover:opacity-30 opacity-0"
-                        onClick={() => profilePictureInputRef.current?.click()}
-                      >
-                        <Camera className="w-32 h-32 m-auto opacity-50"></Camera>
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="ghost"
-                      className="w-full h-full"
-                      onClick={() => profilePictureInputRef.current?.click()}
-                    >
-                      <Camera className="w-32 h-32 m-auto opacity-50"></Camera>
-                    </Button>
+      <div className="min-h-screen bg-background">
+        <div className="container max-w-6xl py-6">
+          {/* Compact Header with Avatar, Name and Actions */}
+          <div className="flex items-start gap-6 mb-8">
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-20 w-20">
+                {profile.profile_picture && pfp_url ? (
+                  <AvatarImage src={pfp_url} alt="Profile picture" />
+                ) : (
+                  <AvatarFallback className="text-lg font-semibold">
+                    {profile.full_name?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full"
+                onClick={() => profilePictureInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Camera className="h-3 w-3" />
+              </Button>
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold font-heading mb-1">{profile.full_name}</h1>
+              <p className="text-muted-foreground text-sm">
+                {profile.college && to_college_name(profile.college)} 
+                {profile.college && profile.year_level && " • "} 
+                {profile.year_level && to_level_name(profile.year_level)}
+              </p>
+            </div>
+
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => open_employer_modal()}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Preview
+              </Button>
+              {isEditing ? (
+                <>
+                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleSave} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => (
+                    setIsEditing(true),
+                    set_fields({
+                      ...profile,
+                      college_name: to_college_name(profile.college),
+                      year_level_name: to_level_name(profile.year_level),
+                    })
                   )}
-                </div>
-                <div className="flex flex-row w-full justify-between">
-                  <h1
-                    className={"font-bold font-heading text-4xl text-gray-900"}
-                  >
-                    {profile.full_name}
-                  </h1>
-                  <div className="flex gap-2">
-                    {isEditing ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          onClick={handleCancel}
-                          disabled={saving}
-                          size={is_mobile ? "sm" : "default"}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleSave}
-                          disabled={saving}
-                          size={is_mobile ? "sm" : "default"}
-                        >
-                          {saving ? "Saving..." : "Save Changes"}
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        onClick={() => (
-                          setIsEditing(true),
-                          set_fields({
-                            ...profile,
-                            college_name: to_college_name(profile.college),
-                            year_level_name: to_level_name(profile.year_level),
-                          })
-                        )}
-                        size={is_mobile ? "sm" : "default"}
-                      >
-                        <Edit2 className="w-4 h-4 mr-2" />
-                        Edit Profile
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
+                >
+                  <Edit2 className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+              )}
+            </div>
+          </div>
 
-              {/* Mobile Layout */}
-              {is_mobile ? (
-                <div className="space-y-4">
-                  {/* Preview Profile Section - Moved to top */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
-                      <div className="w-6 h-6 bg-indigo-100 rounded-lg flex items-center justify-center mr-2">
-                        <Eye className="w-3 h-3 text-indigo-600" />
-                      </div>
-                      Preview Profile
+          {/* Two Column Layout */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            {/* Main Content - Personal Info and Links */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardContent className="p-6">
+                  {/* Personal Information Section */}
+                  <div className="mb-8">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <User className="h-5 w-5 text-blue-600" />
+                      Personal Information
                     </h2>
-
-                    <Button
-                      variant="outline"
-                      onClick={() => open_employer_modal()}
-                      className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                    >
-                      <Eye className="w-4 h-4 mr-2" />
-                      Preview
-                    </Button>
-
-                    <p className="text-xs text-gray-500 mt-2 text-center">
-                      See how employers view your profile
-                    </p>
-                  </div>
-
-                  {/* Basic Information Card */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
-                      <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center mr-2">
-                        <User className="w-3 h-3 text-blue-600" />
-                      </div>
-                      Basic Information
-                    </h2>
-                    <div className="space-y-4">
-                      {/* Full Name */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <User className="w-4 h-4 mr-2 text-gray-500" />
-                          Full Name
-                        </label>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">Full Name</label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.full_name}
                           setter={field_setter("full_name")}
-                        ></EditableInput>
+                        >
+                          <UserPropertyLabel />
+                        </EditableInput>
                       </div>
 
-                      {/* Phone Number */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                          Phone Number
-                        </label>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">Phone Number</label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.phone_number}
@@ -407,123 +359,95 @@ export default function ProfilePage() {
                       </div>
 
                       <DropdownGroup>
-                        {/* College */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                            College
-                          </label>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">College</label>
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="college"
                             value={form_data.college_name}
                             setter={field_setter("college_name")}
-                            options={[
-                              "Not specified",
-                              ...colleges.map((c) => c.name),
-                            ]}
+                            options={["Not specified", ...colleges.map((c) => c.name)]}
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
                         </div>
 
-                        {/* Year Level and Internship for Credit */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Hash className="w-4 h-4 mr-2 text-gray-500" />
-                            Year Level
-                          </label>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">Year Level</label>
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="year_level"
                             value={form_data.year_level_name}
                             setter={field_setter("year_level_name")}
-                            options={[
-                              "Not specified",
-                              ...levels.map((l) => l.name),
-                            ]}
+                            options={["Not specified", ...levels.map((l) => l.name)]}
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
                         </div>
                       </DropdownGroup>
 
-                      {/* Taking for Credit */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Award className="w-4 h-4 mr-2 text-gray-500" />
-                          Internship for Credit
-                        </label>
+                      <div className="sm:col-span-2">
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Internship for Credit</label>
                         {isEditing ? (
-                          <div className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={form_data.taking_for_credit ?? false}
-                              className="border-gray-300"
-                              onCheckedChange={(value) => {
-                                set_fields({
-                                  taking_for_credit: !!value,
-                                  linkage_officer: !!value
-                                    ? form_data.linkage_officer
-                                    : "",
-                                });
-                              }}
-                            />
-                            <span className="text-sm text-gray-700">
-                              Taking for credit
-                            </span>
+                          <div className="space-y-3">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={form_data.taking_for_credit ?? false}
+                                onCheckedChange={(value) => {
+                                  set_fields({
+                                    taking_for_credit: !!value,
+                                    linkage_officer: !!value ? form_data.linkage_officer : "",
+                                  });
+                                }}
+                              />
+                              <span className="text-sm">Taking for credit</span>
+                            </div>
+                            {form_data.taking_for_credit && (
+                              <div>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">Linkage Officer</label>
+                                <EditableInput
+                                  is_editing={isEditing}
+                                  value={form_data.linkage_officer}
+                                  setter={field_setter("linkage_officer")}
+                                >
+                                  <UserPropertyLabel />
+                                </EditableInput>
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <p className="text-gray-900 font-medium text-sm">
+                          <div>
                             {profile.taking_for_credit ? (
-                              <span className="inline-flex items-center gap-2 text-green-700">
-                                <Award className="w-4 h-4" />
-                                Taking for credit
-                              </span>
+                              <div className="space-y-2">
+                                <div className="inline-flex items-center gap-2 text-green-700">
+                                  <Award className="h-4 w-4" />
+                                  <span className="text-sm font-medium">Taking for credit</span>
+                                </div>
+                                {profile.linkage_officer && (
+                                  <div>
+                                    <label className="text-sm font-medium text-gray-700 mb-1 block">Linkage Officer</label>
+                                    <UserPropertyLabel value={profile.linkage_officer} />
+                                  </div>
+                                )}
+                              </div>
                             ) : (
-                              <span className="text-gray-400 italic">
-                                Not taking for credit
-                              </span>
+                              <span className="text-muted-foreground italic text-sm">Not taking for credit</span>
                             )}
-                          </p>
+                          </div>
                         )}
                       </div>
-
-                      {/* Linkage Officer - Conditional */}
-                      {(isEditing
-                        ? form_data.taking_for_credit
-                        : profile.taking_for_credit) && (
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <User className="w-4 h-4 mr-2 text-gray-500" />
-                            Linkage Officer
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.linkage_officer}
-                            setter={field_setter("linkage_officer")}
-                          >
-                            <UserPropertyLabel />
-                          </EditableInput>
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Professional Links Card */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
-                      <div className="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center mr-2">
-                        <ExternalLink className="w-3 h-3 text-green-600" />
-                      </div>
+                  {/* Professional Links Section */}
+                  <div>
+                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <ExternalLink className="h-5 w-5 text-green-600" />
                       Professional Links
                     </h2>
-                    <div className="space-y-4">
-                      {/* Portfolio */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
-                          Portfolio Website
-                        </label>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">Portfolio Website</label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.portfolio_link}
@@ -534,12 +458,8 @@ export default function ProfilePage() {
                         </EditableInput>
                       </div>
 
-                      {/* GitHub */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Github className="w-4 h-4 mr-2 text-gray-500" />
-                          GitHub Profile
-                        </label>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">GitHub Profile</label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.github_link}
@@ -550,12 +470,8 @@ export default function ProfilePage() {
                         </EditableInput>
                       </div>
 
-                      {/* LinkedIn */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
-                          LinkedIn Profile
-                        </label>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">LinkedIn Profile</label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.linkedin_link}
@@ -566,12 +482,8 @@ export default function ProfilePage() {
                         </EditableInput>
                       </div>
 
-                      {/* Calendly */}
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                          Calendly Link
-                        </label>
+                      <div>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">Calendly Link</label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.calendly_link}
@@ -583,516 +495,144 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                  {/* About Card */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
-                      <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center mr-2">
-                        <FileText className="w-3 h-3 text-purple-600" />
-                      </div>
-                      About
-                    </h2>
-                    {isEditing ? (
-                      <div className="space-y-2">
-                        <textarea
-                          value={form_data.bio || ""}
-                          onChange={(e) => set_field("bio", e.target.value)}
-                          placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
-                          className="w-full border border-gray-200 rounded-lg px-4 py-3 h-32 resize-none focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                          maxLength={500}
-                        />
-                        <p className="text-xs text-gray-500 text-right">
-                          {(form_data.bio || "").length}/500 characters
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                        <p className="text-gray-900 leading-relaxed break-words overflow-wrap-anywhere text-sm">
-                          {profile.bio || (
-                            <span className="text-gray-400 italic">
-                              No bio provided. Click "Edit Profile" to add
-                              information about yourself.
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+            {/* Sidebar - Resume and About */}
+            <div className="space-y-6">
+              {/* Resume Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-orange-600" />
+                    Resume
+                  </h3>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <input
+                    type="file"
+                    ref={resumeInputRef}
+                    onChange={handleResumeUpload}
+                    accept=".pdf"
+                    style={{ display: "none" }}
+                  />
+                  <input
+                    type="file"
+                    ref={profilePictureInputRef}
+                    onChange={handleProfilePictureUpload}
+                    accept="image/*"
+                    style={{ display: "none" }}
+                  />
 
-                  {/* Resume Section */}
-                  <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                    <h2 className="text-lg font-heading font-bold text-gray-900 mb-4 flex items-center">
-                      <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center mr-2">
-                        <FileText className="w-3 h-3 text-orange-600" />
-                      </div>
-                      Resume
-                    </h2>
-
-                    {/* Hidden file inputs */}
-                    <input
-                      type="file"
-                      ref={resumeInputRef}
-                      onChange={handleResumeUpload}
-                      disabled={uploading}
-                      accept=".pdf"
-                      style={{ display: "none" }}
-                    />
-                    <input
-                      type="file"
-                      ref={profilePictureInputRef}
-                      onChange={handleProfilePictureUpload}
-                      disabled={uploading}
-                      accept="image/*"
-                      style={{ display: "none" }}
-                    />
-
-                    {profile.resume ? (
-                      // Resume exists
-                      <div className="border border-green-200 bg-green-50 rounded-md p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-green-600" />
-                            <div>
-                              <p className="text-sm font-medium text-green-800">
-                                Resume uploaded
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handlePreviewResume}
-                              className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
-                            >
-                              <Eye className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => resumeInputRef.current?.click()}
-                              disabled={uploading}
-                              className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
-                            >
-                              <Upload className="w-3 h-3" />
-                            </Button>
-                          </div>
+                  {profile.resume ? (
+                    <div className="border border-green-200 bg-green-50 rounded-lg p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-800">Uploaded</span>
                         </div>
-                      </div>
-                    ) : (
-                      // No resume
-                      <div className="border border-dashed border-gray-300 rounded-md p-4 text-center">
-                        <FileText className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600 mb-2">
-                          {uploading ? "Uploading..." : "No resume uploaded"}
-                        </p>
-                        <Button
-                          onClick={() => resumeInputRef.current?.click()}
-                          disabled={uploading}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700 h-8"
-                        >
-                          <Upload className="w-3 h-3 mr-1" />
-                          {uploading ? "Uploading..." : "Upload Resume"}
-                        </Button>
-                        <p className="text-xs text-gray-500 mt-1">
-                          PDF files up to 3MB
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                /* Desktop Layout */
-                <div className="grid gap-4 lg:grid-cols-3">
-                  {/* Left Column - Basic Information and Professional Links */}
-                  <div className="lg:col-span-2 space-y-4">
-                    {/* Basic Information Card */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <h2 className="text-xl font-bold font-heading text-gray-900 mb-4 flex items-center">
-                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                          <User className="w-4 h-4 text-blue-600" />
-                        </div>
-                        Basic Information
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Full Name */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <User className="w-4 h-4 mr-2 text-gray-500" />
-                            Full Name
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.full_name}
-                            setter={field_setter("full_name")}
-                          >
-                            <UserPropertyLabel />
-                          </EditableInput>
-                        </div>
-
-                        {/* Phone Number */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                            Phone Number
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.phone_number}
-                            setter={field_setter("phone_number")}
-                          >
-                            <UserPropertyLabel />
-                          </EditableInput>
-                        </div>
-
-                        <DropdownGroup>
-                          {/* College */}
-                          <div className="space-y-2">
-                            <label className="flex items-center text-sm font-semibold text-gray-700">
-                              <GraduationCap className="w-4 h-4 mr-2 text-gray-500" />
-                              College
-                            </label>
-                            <EditableGroupableRadioDropdown
-                              is_editing={isEditing}
-                              name="college"
-                              value={form_data.college_name}
-                              setter={field_setter("college_name")}
-                              options={[
-                                "Not specified",
-                                ...colleges.map((c) => c.name),
-                              ]}
-                            >
-                              <UserPropertyLabel />
-                            </EditableGroupableRadioDropdown>
-                          </div>
-
-                          {/* Year Level */}
-                          <div className="space-y-2">
-                            <label className="flex items-center text-sm font-semibold text-gray-700">
-                              <Hash className="w-4 h-4 mr-2 text-gray-500"></Hash>
-                              Year Level
-                            </label>
-                            <EditableGroupableRadioDropdown
-                              is_editing={isEditing}
-                              name="year_level"
-                              value={form_data.year_level_name}
-                              setter={field_setter("year_level_name")}
-                              options={[
-                                "Not specified",
-                                ...levels.map((l) => l.name),
-                              ]}
-                            >
-                              <UserPropertyLabel />
-                            </EditableGroupableRadioDropdown>
-                          </div>
-                        </DropdownGroup>
-
-                        {/* Taking for Credit */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Award className="w-4 h-4 mr-2 text-gray-500" />
-                            Internship for Credit
-                          </label>
-                          {isEditing ? (
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                checked={form_data.taking_for_credit ?? false}
-                                className="inline-block p-3 m-1"
-                                onCheckedChange={(value) => {
-                                  set_fields({
-                                    taking_for_credit: !!value,
-                                    linkage_officer: !!value
-                                      ? form_data.linkage_officer
-                                      : "",
-                                  });
-                                }}
-                              />
-                              <span className="text-sm text-gray-700">
-                                Taking for credit{" "}
-                              </span>
-                            </div>
-                          ) : (
-                            <p className="text-gray-900 font-medium text-sm">
-                              {profile.taking_for_credit ? (
-                                <span className="inline-flex items-center gap-2 text-green-700">
-                                  <Award className="w-4 h-4" />
-                                  Taking for credit
-                                </span>
-                              ) : (
-                                <span className="text-gray-400 italic">
-                                  Not taking for credit
-                                </span>
-                              )}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Linkage Officer - Conditional */}
-                        {(isEditing
-                          ? form_data.taking_for_credit
-                          : profile.taking_for_credit) && (
-                          <div className="space-y-2">
-                            <label className="flex items-center text-sm font-semibold text-gray-700">
-                              <User className="w-4 h-4 mr-2 text-gray-500" />
-                              Linkage Officer
-                            </label>
-                            <EditableInput
-                              is_editing={isEditing}
-                              value={form_data.linkage_officer}
-                              setter={field_setter("linkage_officer")}
-                            >
-                              <UserPropertyLabel />
-                            </EditableInput>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Professional Links Card */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
-                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                          <ExternalLink className="w-4 h-4 text-green-600" />
-                        </div>
-                        Professional Links
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Portfolio */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
-                            Portfolio Website
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.portfolio_link}
-                            setter={field_setter("portfolio_link")}
-                            placeholder="https://yourportfolio.com"
-                          >
-                            <UserLinkLabel />
-                          </EditableInput>
-                        </div>
-
-                        {/* GitHub */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Github className="w-4 h-4 mr-2 text-gray-500" />
-                            GitHub Profile
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.github_link}
-                            setter={field_setter("github_link")}
-                            placeholder="https://github.com/yourusername"
-                          >
-                            <UserLinkLabel />
-                          </EditableInput>
-                        </div>
-
-                        {/* LinkedIn */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <ExternalLink className="w-4 h-4 mr-2 text-gray-500" />
-                            LinkedIn Profile
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.linkedin_link}
-                            setter={field_setter("linkedin_link")}
-                            placeholder="https://linkedin.com/in/yourusername"
-                          >
-                            <UserLinkLabel />
-                          </EditableInput>
-                        </div>
-
-                        {/* Calendly */}
-                        <div className="space-y-2">
-                          <label className="flex items-center text-sm font-semibold text-gray-700">
-                            <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                            Calendly Link
-                          </label>
-                          <EditableInput
-                            is_editing={isEditing}
-                            value={form_data.calendly_link}
-                            setter={field_setter("calendly_link")}
-                            placeholder="https://calendly.com/yourusername"
-                          >
-                            <UserLinkLabel />
-                          </EditableInput>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Column - Preview Profile & Resume */}
-                  <div className="lg:col-span-1">
-                    {/* Preview Profile Section */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow sticky top-6 mb-4">
-                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
-                        <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
-                          <Eye className="w-4 h-4 text-indigo-600" />
-                        </div>
-                        Preview Profile
-                      </h2>
-
-                      <Button
-                        variant="outline"
-                        onClick={() => open_employer_modal()}
-                        className="w-full h-12 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                      >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Preview
-                      </Button>
-
-                      <p className="text-xs text-gray-500 mt-2 text-center">
-                        See how employers view your profile
-                      </p>
-                    </div>
-
-                    {/* Resume Section */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
-                        <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                          <FileText className="w-4 h-4 text-orange-600" />
-                        </div>
-                        Resume
-                      </h2>
-
-                      {/* Hidden file inputs */}
-                      <input
-                        type="file"
-                        ref={resumeInputRef}
-                        onChange={handleResumeUpload}
-                        accept=".pdf,.doc,.docx"
-                        style={{ display: "none" }}
-                      />
-                      <input
-                        type="file"
-                        ref={profilePictureInputRef}
-                        onChange={handleProfilePictureUpload}
-                        accept="image/*"
-                        style={{ display: "none" }}
-                      />
-
-                      {profile.resume ? (
-                        // Resume exists
-                        <div className="border border-green-200 bg-green-50 rounded-md p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-5 h-5 text-green-600" />
-                              <div>
-                                <p className="text-sm font-medium text-green-800">
-                                  Uploaded
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handlePreviewResume}
-                                className="text-green-600 border-green-600 hover:bg-green-100 h-7 px-2"
-                              >
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => resumeInputRef.current?.click()}
-                                disabled={uploading}
-                                className="text-blue-600 border-blue-600 hover:bg-blue-100 h-7 px-2"
-                              >
-                                <Upload className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        // No resume
-                        <div className="border border-dashed border-gray-300 rounded-md p-4 text-center">
-                          <FileText className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-                          <p className="text-sm text-gray-600 mb-2">
-                            {uploading ? "Uploading..." : "No resume uploaded"}
-                          </p>
+                        <div className="flex gap-1">
                           <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handlePreviewResume}
+                            className="h-7 px-2 text-green-600 border-green-600 hover:bg-green-100"
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => resumeInputRef.current?.click()}
                             disabled={uploading}
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700 h-8"
+                            className="h-7 px-2 text-blue-600 border-blue-600 hover:bg-blue-100"
                           >
-                            <Upload className="w-3 h-3 mr-1" />
-                            {uploading ? "Uploading..." : "Upload Resume"}
+                            <Upload className="h-3 w-3" />
                           </Button>
-                          <p className="text-xs text-gray-500 mt-1">
-                            PDF files up to 3MB
-                          </p>
                         </div>
-                      )}
+                      </div>
                     </div>
+                  ) : (
+                    <div className="border border-dashed border-gray-300 rounded-lg p-4 text-center">
+                      <FileText className="h-6 w-6 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {uploading ? "Uploading..." : "No resume uploaded"}
+                      </p>
+                      <Button
+                        onClick={() => resumeInputRef.current?.click()}
+                        disabled={uploading}
+                        size="sm"
+                      >
+                        <Upload className="h-4 w-4 mr-1" />
+                        {uploading ? "Uploading..." : "Upload"}
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-1">PDF up to 3MB</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                    {/* About Card - Moved here under Resume */}
-                    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow mt-4">
-                      <h2 className="text-xl font-heading font-bold text-gray-900 mb-4 flex items-center">
-                        <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                          <FileText className="w-4 h-4 text-purple-600" />
-                        </div>
-                        About
-                      </h2>
-                      {isEditing ? (
-                        <div className="space-y-2">
-                          <textarea
-                            value={form_data.bio || ""}
-                            onChange={(e) => set_field("bio", e.target.value)}
-                            placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
-                            className="w-full border border-gray-200 rounded-lg px-4 py-3 h-32 resize-none focus:border-blue-500 focus:ring-blue-500 text-gray-900"
-                            maxLength={500}
-                          />
-                          <p className="text-xs text-gray-500 text-right">
-                            {(form_data.bio || "").length}/500 characters
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                          <p className="text-gray-900 leading-relaxed break-words overflow-wrap-anywhere text-sm">
-                            {profile.bio || (
-                              <span className="text-gray-400 italic">
-                                No bio provided. Click "Edit Profile" to add
-                                information about yourself.
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      )}
+              {/* About Section */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-purple-600" />
+                    About
+                  </h3>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {isEditing ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={form_data.bio || ""}
+                        onChange={(e) => set_field("bio", e.target.value)}
+                        placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm min-h-24 resize-none focus:border-blue-500 focus:ring-blue-500"
+                        maxLength={500}
+                      />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {(form_data.bio || "").length}/500 characters
+                      </p>
                     </div>
-                  </div>
-                </div>
-              )}
+                  ) : (
+                    <div className="bg-muted/50 rounded-lg p-3">
+                      <p className="text-sm leading-relaxed">
+                        {profile.bio || (
+                          <span className="text-muted-foreground italic">
+                            No bio provided. Click "Edit" to add information about yourself.
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Modals */}
       {resume_url.length && (
         <ResumeModal>
-          <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-6">
-            Resume Preview
-          </h1>
-          <iframe
-            allowTransparency={true}
-            style={{
-              width: client_width * 0.4,
-              height: client_height * 0.8,
-              background: "#FFFFFF",
-            }}
-            src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
-          >
-            Resume could not be loaded.
-          </iframe>
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
+            <iframe
+              allowTransparency={true}
+              style={{
+                width: client_width * 0.4,
+                height: client_height * 0.8,
+                background: "#FFFFFF",
+              }}
+              src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+            >
+              Resume could not be loaded.
+            </iframe>
+          </div>
         </ResumeModal>
       )}
 
-      {/* Employer Preview Modal */}
       <EmployerModal>
         <ApplicantModalContent applicant={profile} />
       </EmployerModal>
