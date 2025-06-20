@@ -21,6 +21,7 @@ import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
+import { Paginator } from "@/components/ui/paginator";
 import {
   EditableJobDetails,
   EmployerJobCard,
@@ -39,6 +40,8 @@ export default function MyListings() {
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
   const [is_editing, set_is_editing] = useState(false);
+  const [jobsPage, setJobsPage] = useState(1);
+  const jobs_page_size = 10;
   const {
     open: open_create_modal,
     close: close_create_modal,
@@ -46,6 +49,22 @@ export default function MyListings() {
   } = useModal("create-modal");
 
   redirect_if_not_loggedin();
+
+  // Filter jobs based on search term
+  const filteredJobs = useMemo(() => {
+    if (!searchTerm.trim()) return ownedJobs;
+    return ownedJobs.filter(job => 
+      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [ownedJobs, searchTerm]);
+
+  // Handle search input key press
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      // Could add additional search functionality here
+    }
+  };
 
   useEffect(() => {
     const id = selectedJob.id;
@@ -111,7 +130,7 @@ export default function MyListings() {
               <Button
                 className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
                 size="icon"
-                onClick={() => open_add_modal()}
+                onClick={() => open_create_modal()}
                 data-tour="add-job-btn"
               >
                 <Plus className="h-4 w-4" />
@@ -134,7 +153,7 @@ export default function MyListings() {
                   </div>
                 </Button>
               </div>
-              {ownedJobs.map((job) => (
+              {filteredJobs.map((job) => (
                 <EmployerJobCard
                   key={job.id}
                   job={job}
@@ -296,10 +315,18 @@ const CreateModalForm = ({
     };
 
     setCreating(true);
-    const { job: created_job, success } = await create_job(job);
-    if (!success) return alert("Could not create job");
-    setCreating(false);
-    close();
+    try {
+      const { job: created_job, success } = await create_job(job);
+      if (!success) {
+        alert("Could not create job");
+        return;
+      }
+      setCreating(false);
+      close(); // Ensure modal closes after successful creation
+    } catch (error) {
+      setCreating(false);
+      alert("Error creating job");
+    }
   };
 
   useEffect(() => {

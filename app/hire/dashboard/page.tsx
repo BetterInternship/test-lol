@@ -315,6 +315,58 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col">
         {/* Enhanced Dashboard */}
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
+          {/* Dashboard Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Total Applications</h4>
+                  <p className="text-3xl font-bold text-gray-900">{employer_applications.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <User className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">Last 30 days</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Active Jobs</h4>
+                  <p className="text-3xl font-bold text-gray-900">{uniqueJobs.length}</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">Currently posted</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">Recent Activity</h4>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {employer_applications.filter(app => 
+                      new Date(app.applied_at ?? "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+                    ).length}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">Applications this week</p>
+              </div>
+            </div>
+          </div>
+
           {/* Enhanced Table */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
             {/* Table Header with Filters */}
@@ -504,17 +556,23 @@ export default function Dashboard() {
 
       <CalendlyModal>
         {selected_application?.user?.calendly_link ? (
-          <iframe
-            src={`${selected_application?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
-            allowTransparency={true}
-            style={{
-              width: Math.min(client_width * 0.6, 1000),
-              height: client_height * 0.7,
-              background: "#FFFFFF",
-            }}
-          >
-            Calendly could not be loaded.
-          </iframe>
+          <div className="p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Schedule Interview</h2>
+            <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+              <iframe
+                src={`${selected_application?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
+                allowTransparency={true}
+                className="w-full border-0 rounded-lg"
+                style={{
+                  width: Math.min(client_width * 0.6, 1000),
+                  height: client_height * 0.7,
+                  background: "#FFFFFF",
+                }}
+              >
+                Calendly could not be loaded.
+              </iframe>
+            </div>
+          </div>
         ) : (
           <div className="h-48 px-8">
             <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
@@ -527,22 +585,25 @@ export default function Dashboard() {
 
       <ResumeModal>
         {selected_application?.user?.resume ? (
-          <>
-            <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-6">
+          <div className="p-6">
+            <h1 className="font-bold font-heading text-3xl pb-6 text-gray-900">
               {selected_application?.user?.full_name} - Resume
             </h1>
-            <iframe
-              allowTransparency={true}
-              style={{
-                width: client_width * 0.4,
-                height: client_height * 0.8,
-                background: "#FFFFFF",
-              }}
-              src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
-            >
-              Resume could not be loaded.
-            </iframe>
-          </>
+            <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+              <iframe
+                allowTransparency={true}
+                className="w-full border-0 rounded-lg"
+                style={{
+                  width: client_width * 0.4,
+                  height: client_height * 0.8,
+                  background: "#FFFFFF",
+                }}
+                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+              >
+                Resume could not be loaded.
+              </iframe>
+            </div>
+          </div>
         ) : (
           <div className="h-48 px-8">
             <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>

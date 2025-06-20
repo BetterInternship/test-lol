@@ -10,6 +10,7 @@ import {
   Globe,
   Lock,
   EyeOff,
+  CheckCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JobModeIcon } from "@/components/ui/icons";
@@ -59,9 +60,17 @@ export const JobCard = ({
     >
       <h3 className="font-semibold text-gray-900">{job.title}</h3>
       <p className="text-sm text-gray-600">{job.location}</p>
-      <p className="text-sm text-gray-600">
-        {job.employer?.name ?? "Not known"}
-      </p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm text-gray-600">
+          {job.employer?.name ?? "Not known"}
+        </p>
+        {job.employer?.has_dlsu_moa && (
+          <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            DLSU MOA
+          </span>
+        )}
+      </div>
       <p className="text-sm text-gray-500 mb-3">
         Last updated on {formatDate(job.updated_at ?? "")}
       </p>
@@ -123,9 +132,17 @@ export const EmployerJobCard = ({
         <div>
           <h3 className="font-semibold text-gray-900">{job.title}</h3>
           <p className="text-sm text-gray-600">{job.location}</p>
-          <p className="text-sm text-gray-600">
-            {job.employer?.name ?? "Not known"}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-gray-600">
+              {job.employer?.name ?? "Not known"}
+            </p>
+            {job.employer?.has_dlsu_moa && (
+              <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                DLSU MOA
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500 mb-3">
             Last updated on {formatDate(job.updated_at ?? "")}
           </p>
@@ -207,6 +224,12 @@ export const MobileJobCard = ({
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Building className="w-4 h-4" />
             <span>{job.employer?.name}</span>
+            {job.employer?.has_dlsu_moa && (
+              <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">
+                <CheckCircle className="w-3 h-3 mr-1" />
+                DLSU MOA
+              </span>
+            )}
           </div>
         </div>
         <div className="text-xs text-gray-500 ml-2">
@@ -345,7 +368,15 @@ export const EditableJobDetails = ({
             <JobTitleLabel />
           </EditableInput>
         </div>
-        <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+          {job.employer?.has_dlsu_moa && (
+            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+              <CheckCircle className="w-4 h-4 mr-1" />
+              DLSU MOA
+            </span>
+          )}
+        </div>
         <p className="text-sm text-gray-500 mb-4">
           Listed on {formatDate(job.created_at ?? "")}
         </p>
@@ -539,7 +570,15 @@ export const JobDetails = ({
         <div className="max-w-prose">
           <JobTitleLabel value={job.title} />
         </div>
-        <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+          {job.employer?.has_dlsu_moa && (
+            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
+              <CheckCircle className="w-4 h-4 mr-1" />
+              DLSU MOA
+            </span>
+          )}
+        </div>
         <p className="text-sm text-gray-500 mb-4">
           Listed on {formatDate(job.created_at ?? "")}
         </p>

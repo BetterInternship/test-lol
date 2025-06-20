@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookA, Calendar, Clock, Clipboard } from "lucide-react";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { BookA, Calendar, Clock, Clipboard, CheckCircle } from "lucide-react";
 import { useApplications } from "@/hooks/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
@@ -29,42 +30,6 @@ export default function ApplicationsPage() {
       month: "short",
       day: "numeric",
     });
-  };
-
-  // Helper function to get status badge color
-  const getStatusBadgeVariant = (status: number) => {
-    switch (status) {
-      case 0:
-        return "default";
-      case 1:
-        return "secondary";
-      case 2:
-        return "default";
-      case 3:
-        return "default";
-      case 4:
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
-
-  // Helper function to get status display text
-  const getStatusDisplayText = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "pending":
-        return "⏳ Pending";
-      case "reviewed":
-        return "👀 Reviewed";
-      case "shortlisted":
-        return "⭐ Shortlisted";
-      case "accepted":
-        return "✅ Accepted";
-      case "rejected":
-        return "❌ Rejected";
-      default:
-        return status || "Unknown";
-    }
   };
 
   return (
@@ -106,138 +71,110 @@ export default function ApplicationsPage() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {applications.map((application) => (
               <div
                 key={application.id}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow"
+                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200 hover:border-gray-300"
               >
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <div
-                      className={`flex items-start justify-between ${
-                        is_mobile ? "mb-3" : "mb-3"
-                      }`}
-                    >
+                    <div className="flex items-center justify-between mb-3">
                       <div className="flex-1">
-                        <div
-                          className={`flex ${
-                            is_mobile ? "flex-col gap-3" : "items-center gap-3"
-                          } mb-2`}
-                        >
-                          <h3
-                            className={`${
-                              is_mobile ? "text-xl" : "text-xl"
-                            } font-semibold text-gray-900 leading-tight`}
-                          >
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-semibold text-gray-900 leading-tight">
                             {application.job?.title}
                           </h3>
-                          <Badge
-                            variant={getStatusBadgeVariant(
-                              application.status ?? 0
-                            )}
-                            className={`text-xs w-fit ${
-                              is_mobile ? "px-3 py-1" : ""
-                            }`}
-                          >
-                            {to_app_status_name(application.status)}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar
-                            className={`${is_mobile ? "w-4 h-4" : "w-4 h-4"}`}
+                          <StatusBadge 
+                            status={application.status ?? 0}
+                            variant="with-icon"
+                            size="md"
                           />
-                          <span className={is_mobile ? "text-sm" : ""}>
-                            Sent {formatDate(application.applied_at ?? "")}
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <Calendar className="w-4 h-4" />
+                          <span className="text-sm">
+                            Applied on {formatDate(application.applied_at ?? "")}
                           </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-gray-700 mb-3">
+                          <span className="font-medium">{application.job?.employer?.name}</span>
+                          {application.job?.employer?.has_dlsu_moa && (
+                            <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              DLSU MOA
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div
-                    className={`flex flex-wrap gap-2 ${
-                      is_mobile ? "mb-4" : "mb-4"
-                    }`}
-                  >
-                    {(application.job?.type || application.job?.type === 0) && (
-                      <Badge
-                        variant="outline"
-                        className={`text-xs flex items-center ${
-                          is_mobile ? "px-3 py-1" : ""
-                        }`}
-                      >
-                        <JobTypeIcon type={application.job.type} />
-                        {to_job_type_name(application.job.type)}
-                      </Badge>
-                    )}
-                    {(application.job?.mode || application.job?.mode === 0) && (
-                      <Badge
-                        variant="outline"
-                        className={`text-xs flex items-center ${
-                          is_mobile ? "px-3 py-1" : ""
-                        }`}
-                      >
-                        <JobModeIcon mode={application.job.mode} />
-                        {to_job_mode_name(application.job.mode)}
-                      </Badge>
-                    )}
-                    {(application.job?.allowance ||
-                      application.job?.allowance === 0) && (
-                      <Badge
-                        variant="outline"
-                        className={`text-xs flex items-center ${
-                          is_mobile ? "px-3 py-1" : ""
-                        }`}
-                      >
-                        <Clipboard className="w-3 h-3 mr-1" />
-                        {to_job_allowance_name(application.job?.allowance)}
-                      </Badge>
-                    )}
-                    {application.job?.salary && (
-                      <Badge
-                        variant="outline"
-                        className={`text-xs flex items-center ${
-                          is_mobile ? "px-3 py-1" : ""
-                        }`}
-                      >
-                        <SalaryIcon />
-                        {application.job.salary}
-                      </Badge>
-                    )}
-                    {application.job?.duration && (
-                      <Badge
-                        variant="outline"
-                        className={`text-xs flex items-center ${
-                          is_mobile ? "px-3 py-1" : ""
-                        }`}
-                      >
-                        <Clock className="w-3 h-3 mr-1" />
-                        {application.job.duration}
-                      </Badge>
-                    )}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {(application.job?.type || application.job?.type === 0) && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center px-3 py-1"
+                    >
+                      <JobTypeIcon type={application.job.type} />
+                      {to_job_type_name(application.job.type)}
+                    </Badge>
+                  )}
+                  {(application.job?.mode || application.job?.mode === 0) && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center px-3 py-1"
+                    >
+                      <JobModeIcon mode={application.job.mode} />
+                      {to_job_mode_name(application.job.mode)}
+                    </Badge>
+                  )}
+                  {(application.job?.allowance ||
+                    application.job?.allowance === 0) && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center px-3 py-1"
+                    >
+                      <Clipboard className="w-3 h-3 mr-1" />
+                      {to_job_allowance_name(application.job?.allowance)}
+                    </Badge>
+                  )}
+                  {application.job?.salary && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center px-3 py-1"
+                    >
+                      <SalaryIcon />
+                      ₱{application.job.salary}
+                    </Badge>
+                  )}
+                  {application.job?.duration && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex items-center px-3 py-1"
+                    >
+                      <Clock className="w-3 h-3 mr-1" />
+                      {application.job.duration}
+                    </Badge>
+                  )}
+                </div>
+
+                <p className="text-gray-700 text-sm mb-4 leading-relaxed line-clamp-2">
+                  {application.job?.description}
+                </p>
+
+                <div className="flex justify-between items-center pt-4 border-t border-gray-100">
+                  <div className="text-xs text-gray-500">
+                    Application ID: {application.id?.slice(0, 8)}...
                   </div>
-
-                  <p
-                    className={`text-gray-700 ${
-                      is_mobile
-                        ? "text-sm mb-5 leading-relaxed"
-                        : "text-sm mb-4"
-                    } line-clamp-2`}
-                  >
-                    {application.job?.description}
-                  </p>
-
-                  <div className="flex gap-3">
-                    <Link href={`/search/${application.job?.id}`}>
-                      <Button
-                        size={is_mobile ? "default" : "sm"}
-                        className={is_mobile ? "px-6 py-2 font-medium" : ""}
-                      >
-                        View Details
-                      </Button>
-                    </Link>
-                  </div>
+                  <Link href={`/search/${application.job?.id}`}>
+                    <Button size="sm" className="px-4 py-2 font-medium hover:shadow-sm">
+                      View Job Details
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}
