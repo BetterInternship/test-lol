@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  User, 
-  BarChart3, 
+} from "@/components/ui/dropdown-menu";
+import {
+  User,
+  BarChart3,
   FileText,
   Building2,
   UserPlus,
@@ -21,52 +21,56 @@ import {
   FileEdit,
   Settings,
   ArrowLeft,
-  Upload
-} from "lucide-react"
-import Link from "next/link"
+  Upload,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function SignatoryInfo() {
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
-    signatoryName: '',
-    position: '',
-    governmentId: '',
-    eSignature: null
-  })
+    signatoryName: "",
+    position: "",
+    governmentId: "",
+    eSignature: null,
+  });
 
   const handleLogout = () => {
-    router.push('/login')
-  }
+    router.push("/login");
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        eSignature: file
-      }))
+        eSignature: file,
+      }));
     }
-  }
+  };
 
   const handleContinue = () => {
     // Validate required fields
-    if (!formData.signatoryName || !formData.position || !formData.governmentId) {
-      alert("Please fill in all required fields.")
-      return
+    if (
+      !formData.signatoryName ||
+      !formData.position ||
+      !formData.governmentId
+    ) {
+      alert("Please fill in all required fields.");
+      return;
     }
 
     // For now, just navigate back to template info page
-    alert("Signatory information saved successfully!")
-    router.back()
-  }
+    alert("Signatory information saved successfully!");
+    router.back();
+  };
 
   return (
     <div className="h-screen bg-white flex">
@@ -75,15 +79,21 @@ export default function SignatoryInfo() {
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
-        
+
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
-            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              My Applications
             </Link>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/listings"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
@@ -129,7 +139,7 @@ export default function SignatoryInfo() {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="cursor-pointer text-red-600"
                 onClick={handleLogout}
               >
@@ -168,13 +178,18 @@ export default function SignatoryInfo() {
                 <div className="space-y-6">
                   {/* Name of Signatory */}
                   <div>
-                    <Label htmlFor="signatory-name" className="text-sm font-medium text-gray-900 mb-2 block">
+                    <Label
+                      htmlFor="signatory-name"
+                      className="text-sm font-medium text-gray-900 mb-2 block"
+                    >
                       Name of Signatory
                     </Label>
                     <Input
                       id="signatory-name"
                       value={formData.signatoryName}
-                      onChange={(e) => handleInputChange('signatoryName', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("signatoryName", e.target.value)
+                      }
                       placeholder="Enter Signatory Name"
                       className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                     />
@@ -182,13 +197,18 @@ export default function SignatoryInfo() {
 
                   {/* Government ID Number */}
                   <div>
-                    <Label htmlFor="government-id" className="text-sm font-medium text-gray-900 mb-2 block">
+                    <Label
+                      htmlFor="government-id"
+                      className="text-sm font-medium text-gray-900 mb-2 block"
+                    >
                       Government ID Number
                     </Label>
                     <Input
                       id="government-id"
                       value={formData.governmentId}
-                      onChange={(e) => handleInputChange('governmentId', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("governmentId", e.target.value)
+                      }
                       placeholder="Enter ID Number"
                       className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                     />
@@ -199,13 +219,18 @@ export default function SignatoryInfo() {
                 <div className="space-y-6">
                   {/* Designation/Position */}
                   <div>
-                    <Label htmlFor="position" className="text-sm font-medium text-gray-900 mb-2 block">
+                    <Label
+                      htmlFor="position"
+                      className="text-sm font-medium text-gray-900 mb-2 block"
+                    >
                       Designation/Position
                     </Label>
                     <Input
                       id="position"
                       value={formData.position}
-                      onChange={(e) => handleInputChange('position', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("position", e.target.value)
+                      }
                       placeholder="Enter Position of Signatory"
                       className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                     />
@@ -213,7 +238,10 @@ export default function SignatoryInfo() {
 
                   {/* E-Signature Upload */}
                   <div>
-                    <Label htmlFor="e-signature" className="text-sm font-medium text-gray-900 mb-2 block">
+                    <Label
+                      htmlFor="e-signature"
+                      className="text-sm font-medium text-gray-900 mb-2 block"
+                    >
                       E-Signature (Optional)
                     </Label>
                     <div className="relative">
@@ -227,11 +255,15 @@ export default function SignatoryInfo() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => document.getElementById('e-signature')?.click()}
+                        onClick={() =>
+                          document.getElementById("e-signature")?.click()
+                        }
                         className="w-full h-12 border-2 border-gray-300 rounded-xl hover:border-gray-400 bg-white text-gray-700 flex items-center justify-center gap-2"
                       >
                         <Upload className="h-4 w-4" />
-                        {formData.eSignature ? formData.eSignature.name : 'Upload File >'}
+                        {formData.eSignature
+                          ? formData.eSignature.name
+                          : "Upload File >"}
                       </Button>
                     </div>
                   </div>
@@ -241,7 +273,7 @@ export default function SignatoryInfo() {
 
             {/* Continue Button */}
             <div className="flex justify-center mt-12">
-              <Button 
+              <Button
                 onClick={handleContinue}
                 className="px-24 py-4 text-xl bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium shadow-lg"
               >
@@ -252,5 +284,5 @@ export default function SignatoryInfo() {
         </div>
       </div>
     </div>
-  )
+  );
 }

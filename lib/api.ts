@@ -1,37 +1,39 @@
 import {
   Job,
   PublicUser,
-  Application,
+  UserApplication,
   SavedJob,
   PublicEmployerUser,
+  EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
+import { FetchResponse } from "@/hooks/use-fetch";
 
 // Generic Responses
-interface NoResponse {}
+interface NoResponse extends FetchResponse {}
 
-interface StatusResponse {
+interface StatusResponse extends FetchResponse {
   message: string;
   success: boolean;
 }
 
-interface ToggleResponse {
+interface ToggleResponse extends FetchResponse {
   message: string;
   state: boolean;
 }
 
 // Auth Services
-interface AuthResponse {
+interface AuthResponse extends FetchResponse {
   success: boolean;
   user: Partial<PublicUser> | Partial<PublicEmployerUser>;
 }
 
-interface EmailStatusResponse {
+interface EmailStatusResponse extends FetchResponse {
   existing_user: boolean;
   verified_user: boolean;
 }
 
-interface SendOTPResponse {
+interface SendOTPResponse extends FetchResponse {
   email: string;
 }
 
@@ -69,12 +71,7 @@ export const auth_service = {
     async refresh_token() {},
 
     async logout() {
-      // ! to remove
-      if (typeof window !== "undefined") {
-        window.location.href = "/";
-      }
-
-      return APIClient.post<NoResponse>(
+      await APIClient.post<NoResponse>(
         APIRoute("auth").r("hire", "logout").build()
       );
     },
@@ -123,6 +120,13 @@ export const auth_service = {
     );
   },
 
+  async resend_otp_request(email: string) {
+    return APIClient.post<SendOTPResponse>(
+      APIRoute("auth").r("resend-new-otp").build(),
+      { email }
+    );
+  },
+
   async verify_otp(email: string, otp: string) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("verify-otp").build(),
@@ -134,31 +138,77 @@ export const auth_service = {
   async refresh_token() {},
 
   async logout() {
-    // ! to remove
-    if (typeof window !== "undefined") {
-      window.location.href = "/";
-    }
-
-    return APIClient.post<NoResponse>(APIRoute("auth").r("logout").build());
+    await APIClient.post<NoResponse>(APIRoute("auth").r("logout").build());
   },
 };
 
 // User Services
-interface UserResponse extends Partial<PublicUser> {}
+interface ResourceHashResponse {
+  success?: boolean;
+  message?: string;
+  hash?: string;
+}
+interface UserResponse extends FetchResponse {
+  user: Partial<PublicUser>;
+}
 
-interface SaveJobResponse {
+interface SaveJobResponse extends FetchResponse {
   job?: Job;
   success: boolean;
   message: string;
 }
 
 export const user_service = {
-  async get_profile() {
+  async get_my_profile() {
     return APIClient.get<UserResponse>(APIRoute("users").r("me").build());
   },
 
-  async update_profile(data: Partial<PublicUser>) {
+  async update_my_profile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
+  },
+
+  async get_my_resume_url() {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r("me", "resume").build()
+    );
+  },
+
+  async get_my_pfp_url() {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r("me", "pic").build()
+    );
+  },
+
+  async get_user_pfp_url(user_id: string) {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r(user_id, "pic").build()
+    );
+  },
+
+  async update_my_pfp(file: Blob | null) {
+    return APIClient.put<ResourceHashResponse>(
+      APIRoute("users").r("me", "pic").build(),
+      file,
+      "form-data"
+    );
+  },
+
+  async get_user_resume_url(user_id: string) {
+    return APIClient.get<ResourceHashResponse>(
+      APIRoute("users").r(user_id, "resume").build()
+    );
+  },
+
+  async update_my_resume(file: Blob | null) {
+    return APIClient.put<Response>(
+      APIRoute("users").r("me", "resume").build(),
+      file,
+      "form-data"
+    );
+  },
+
+  async update_profile_picture(file: Blob | null) {
+    // ! to implement
   },
 
   async save_job(job_id: string) {
@@ -170,27 +220,21 @@ export const user_service = {
 };
 
 // Job Services
-interface JobResponse extends Job {}
+interface JobResponse extends Job, FetchResponse {}
 
-interface CreateJobResponse {
-  job?: Job;
-  success: boolean;
-  message: string;
-}
-
-interface JobsResponse {
+interface JobsResponse extends FetchResponse {
   jobs?: Job[];
   success?: boolean;
   message: string;
 }
 
-interface SavedJobsResponse {
-  jobs: SavedJob[];
+interface SavedJobsResponse extends FetchResponse {
+  jobs?: SavedJob[];
   success?: boolean;
   message: string;
 }
 
-interface OwnedJobsResponse {
+interface OwnedJobsResponse extends FetchResponse {
   jobs: Job[];
   success?: boolean;
   message: string;
@@ -202,9 +246,7 @@ export const job_service = {
   },
 
   async get_job_by_id(job_id: string) {
-    return APIClient.get<JobResponse>(
-      APIRoute("jobs").r("detail", job_id).build()
-    );
+    return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
   },
 
   async get_saved_jobs() {
@@ -220,7 +262,7 @@ export const job_service = {
   },
 
   async create_job(job: Partial<Job>) {
-    return APIClient.post<CreateJobResponse>(
+    return APIClient.post<StatusResponse>(
       APIRoute("jobs").r("create").build(),
       job
     );
@@ -235,32 +277,35 @@ export const job_service = {
 };
 
 // Application Services
-interface ApplicationsResponse {
+interface UserApplicationsResponse extends FetchResponse {
   success?: boolean;
   message?: string;
-  applications: Application[];
-  totalPages: number;
-  currentPage: number;
+  applications: UserApplication[];
   total: number;
 }
 
-interface ApplicationResponse extends Application {
+interface EmployerApplicationsResponse extends FetchResponse {
+  success?: boolean;
+  message?: string;
+  applications: EmployerApplication[];
+  total: number;
+}
+
+interface UserApplicationResponse extends UserApplication, FetchResponse {
   success?: boolean;
   message?: string;
 }
 
-interface CreateApplicationResponse {
-  message: string;
-  application: Application;
+interface EmployerApplicationResponse
+  extends EmployerApplication,
+    FetchResponse {
+  success?: boolean;
+  message?: string;
 }
 
-interface ApplicationStatsResponse {
-  total_applications: number;
-  pending: number;
-  reviewed: number;
-  shortlisted: number;
-  accepted: number;
-  rejected: number;
+interface CreateApplicationResponse extends FetchResponse {
+  message: string;
+  application: UserApplication;
 }
 
 export const application_service = {
@@ -271,7 +316,7 @@ export const application_service = {
       status?: string;
     } = {}
   ) {
-    return APIClient.get<ApplicationsResponse>(
+    return APIClient.get<UserApplicationsResponse>(
       APIRoute("applications").p(params).build()
     );
   },
@@ -288,9 +333,15 @@ export const application_service = {
     );
   },
 
-  async get_application_by_id(id: string): Promise<ApplicationResponse> {
-    return APIClient.get<ApplicationResponse>(
+  async get_application_by_id(id: string): Promise<UserApplicationResponse> {
+    return APIClient.get<UserApplicationResponse>(
       APIRoute("applications").r(id).build()
+    );
+  },
+
+  async get_employer_applications(): Promise<EmployerApplicationsResponse> {
+    return APIClient.get<EmployerApplicationsResponse>(
+      APIRoute("employer").r("applications").build()
     );
   },
 
@@ -303,7 +354,7 @@ export const application_service = {
       resumeFilename?: string;
     }
   ) {
-    return APIClient.put<ApplicationResponse>(
+    return APIClient.put<UserApplicationResponse>(
       APIRoute("applications").r(id).build(),
       data
     );
@@ -315,9 +366,13 @@ export const application_service = {
     );
   },
 
-  async get_stats() {
-    return APIClient.get<ApplicationStatsResponse>(
-      APIRoute("applications").r("stats").build()
+  async review_application(
+    id: string,
+    review_options: { review?: string; notes?: string; status?: number }
+  ) {
+    return APIClient.post<StatusResponse>(
+      APIRoute("applications").r(id, "review").build(),
+      review_options
     );
   },
 };
@@ -335,49 +390,4 @@ export const handle_api_error = (error: any) => {
   // For example, show toast notifications
 
   return error.message || "An unexpected error occurred";
-};
-
-// File Services
-interface FileUploadResponse {
-  message: string;
-  file: {
-    filename: string;
-    url: string;
-    size: number;
-    originalName: string;
-  };
-}
-
-export const file_service = {
-  async upload_resume(file: File) {
-    const formData = new FormData();
-    formData.append("resume", file);
-
-    return APIClient.uploadFile<FileUploadResponse>(
-      APIRoute("files").r("upload", "resume").build(),
-      formData
-    );
-  },
-
-  async upload_profile_picture(file: File) {
-    const formData = new FormData();
-    formData.append("profilePicture", file);
-
-    return APIClient.uploadFile<FileUploadResponse>(
-      APIRoute("files").r("upload", "profile-picture").build(),
-      formData
-    );
-  },
-
-  async delete_resume() {
-    return APIClient.delete<StatusResponse>(
-      APIRoute("files").r("resume").build()
-    );
-  },
-
-  async delete_profile_picture() {
-    return APIClient.delete<StatusResponse>(
-      APIRoute("files").r("profile-picture").build()
-    );
-  },
 };

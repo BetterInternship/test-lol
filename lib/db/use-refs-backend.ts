@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-16 08:21:04
+ * @ Modified time: 2025-06-19 03:21:27
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -16,6 +16,7 @@ import {
   JobMode,
   JobAllowance,
   JobPayFreq,
+  AppStatus,
 } from "./db.types";
 import { createClient } from "@supabase/supabase-js";
 
@@ -38,6 +39,7 @@ export interface IRefsContext {
   job_modes: JobMode[];
   job_allowances: JobAllowance[];
   job_pay_freq: JobPayFreq[];
+  app_statuses: AppStatus[];
 
   to_level_name: (id: number | null | undefined) => string | null;
   to_college_name: (id: string | null | undefined) => string | null;
@@ -46,6 +48,7 @@ export interface IRefsContext {
   to_job_mode_name: (id: number | null | undefined) => string | null;
   to_job_allowance_name: (id: number | null | undefined) => string | null;
   to_job_pay_freq_name: (id: number | null | undefined) => string | null;
+  to_app_status_name: (id: number | null | undefined) => string | null;
 
   get_level: (id: number | null | undefined) => Level | null;
   get_college: (id: string | null | undefined) => College | null;
@@ -54,6 +57,7 @@ export interface IRefsContext {
   get_job_mode: (id: number | null | undefined) => JobMode | null;
   get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
   get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
+  get_app_status: (id: number | null | undefined) => JobPayFreq | null;
 
   get_level_by_name: (name: string | null | undefined) => Level | null;
   get_college_by_name: (name: string | null | undefined) => College | null;
@@ -67,6 +71,9 @@ export interface IRefsContext {
     name: string | null | undefined
   ) => JobAllowance | null;
   get_job_pay_freq_by_name: (
+    name: string | null | undefined
+  ) => JobPayFreq | null;
+  get_app_status_by_name: (
     name: string | null | undefined
   ) => JobPayFreq | null;
 
@@ -219,8 +226,16 @@ export const useRefsContext = () => {
     loading: l7,
   } = createRefInternalHook<number, JobPayFreq>("ref_job_pay_freq");
 
+  const {
+    data: app_statuses,
+    get: get_app_status,
+    to_name: to_app_status_name,
+    get_by_name: get_app_status_by_name,
+    loading: l8,
+  } = createRefInternalHook<number, AppStatus>("ref_app_statuses");
+
   useEffect(() => {
-    setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7);
+    setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8);
   }, [l1, l2, l3, l4, l5, l6, l7]);
 
   /**
@@ -248,6 +263,7 @@ export const useRefsContext = () => {
     job_modes,
     job_allowances,
     job_pay_freq,
+    app_statuses,
 
     to_level_name,
     to_college_name,
@@ -256,6 +272,7 @@ export const useRefsContext = () => {
     to_job_mode_name,
     to_job_allowance_name,
     to_job_pay_freq_name,
+    to_app_status_name,
 
     get_level,
     get_college,
@@ -264,6 +281,7 @@ export const useRefsContext = () => {
     get_job_mode,
     get_job_allowance,
     get_job_pay_freq,
+    get_app_status,
 
     get_level_by_name,
     get_college_by_name,
@@ -273,6 +291,7 @@ export const useRefsContext = () => {
     get_job_mode_by_name,
     get_job_allowance_by_name,
     get_job_pay_freq_by_name,
+    get_app_status_by_name,
 
     ref_is_not_null: (ref: any) => ref || ref === 0,
   };

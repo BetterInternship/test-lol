@@ -5,10 +5,15 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useAuthContext } from "@/lib/ctx-auth";
+import Countdown from "react-countdown";
 
 export default function OTPPage() {
-  const { send_otp_request, verify_otp, redirect_if_logged_in } =
-    useAuthContext();
+  const {
+    send_otp_request,
+    resend_otp_request,
+    verify_otp,
+    redirect_if_logged_in,
+  } = useAuthContext();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
@@ -16,6 +21,7 @@ export default function OTPPage() {
   const [resending, setResending] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [timer, setTimer] = useState<number>(Date.now() + 60000);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   redirect_if_logged_in();
@@ -91,7 +97,9 @@ export default function OTPPage() {
       setLoading(true);
       setError("");
       await verify_otp(email, otpString)
-        .then((r) => (r?.success ? router.push("/") : setError("Invalid OTP.")))
+        .then((r) =>
+          r?.success ? router.push("/") : setError(r.message ?? "Invalid OTP.")
+        )
         .catch((e) => setError(e.message ?? ""));
     } catch (err: any) {
       setError(err.message || "Verification failed. Please try again.");
@@ -108,6 +116,12 @@ export default function OTPPage() {
     try {
       setResending(true);
       setError("");
+      if (!email) return;
+      await resend_otp_request(email).then((r) =>
+        r?.success
+          ? setTimer(Date.now() + 60000)
+          : setError(r.message ?? "Could not resend OTP.")
+      );
     } catch (err: any) {
       setError(err.message || "Failed to resend OTP");
     } finally {
@@ -166,6 +180,7 @@ export default function OTPPage() {
             {otp.map((digit, index) => (
               <input
                 key={index}
+                // @ts-ignore
                 ref={(el) => (otpRefs.current[index] = el)}
                 type="text"
                 inputMode="numeric"
@@ -193,13 +208,26 @@ export default function OTPPage() {
           <div className="text-center">
             <p className="text-sm text-gray-500 mb-2">
               Didn't receive the code?
-              <button
-                onClick={handleResendOTP}
-                disabled={resending || loading}
-                className="ml-1 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors disabled:opacity-50"
-              >
-                {resending ? "Sending..." : "Resend OTP"}
-              </button>
+              <Countdown
+                key={timer}
+                date={timer}
+                renderer={({ minutes, seconds, completed }) => (
+                  <button
+                    onClick={handleResendOTP}
+                    disabled={resending || loading || !completed}
+                    className="ml-1 text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors disabled:opacity-50"
+                  >
+                    {minutes > 0 || seconds > 0
+                      ? `Resend in ${minutes || ""}${minutes ? ":" : ""}${
+                          seconds || "00"
+                        } secsonds`
+                      : resending
+                      ? "Sending..."
+                      : "Resend OTP"}
+                  </button>
+                )}
+              />
+              ,
             </p>
           </div>
         </div>

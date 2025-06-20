@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-16 03:04:26
+ * @ Modified time: 2025-06-19 15:16:38
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -12,8 +12,8 @@ import { ChevronDown, Search } from "lucide-react";
 import { useDetectClickOutside } from "react-detect-click-outside";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 /**
  * The group context interface.
@@ -64,7 +64,7 @@ const DropdownOptionButton = ({
       onClick={() => {
         set_is_open(false);
         children.props.on_click && children.props.on_click();
-        router.push(children.props.href ?? "");
+        children.props.href && router.push(children.props.href);
       }}
     >
       <div
@@ -111,11 +111,15 @@ export const GroupableRadioDropdown = ({
   options,
   on_change,
   default_value = options[0],
+  button_class = "",
+  className = "",
 }: {
   name: string;
   options: string[];
   on_change: (option: string) => void;
   default_value?: string;
+  button_class?: string;
+  className?: string;
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const { is_mobile } = useAppContext();
@@ -123,6 +127,11 @@ export const GroupableRadioDropdown = ({
     useContext(DropdownGroupContext);
   const [is_open, set_is_open] = useState(false);
   const [value, set_value] = useState(default_value);
+
+  // Just so it's not stuck at the first default when the default changes
+  useEffect(() => {
+    set_value(default_value);
+  }, [default_value]);
 
   /**
    * Activates dropdown
@@ -149,16 +158,21 @@ export const GroupableRadioDropdown = ({
   }, [active_dropdown]);
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       <Button
         ref={ref}
+        type="button"
         variant="ghost"
-        onClick={handle_click}
+        onClick={(e) => {
+          e.stopPropagation();
+          handle_click(e);
+        }}
         className={cn(
-          "flex items-center justify-between border-0 transition-all duration-200 text-gray-700",
+          "flex items-center input-box justify-between",
           is_mobile
             ? "h-12 px-4 gap-2 w-full text-left bg-white rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 font-medium"
-            : "h-auto py-2 px-2 gap-1 bg-transparent font-normal text-sm w-full"
+            : "h-auto py-3 px-3 gap-1 bg-transparent font-normal text-sm w-full",
+          button_class
         )}
       >
         <span
@@ -178,7 +192,12 @@ export const GroupableRadioDropdown = ({
       </Button>
 
       {is_open && (
-        <div className="absolute top-full mt-2 bg-white rounded-md shadow-xl z-[9999] min-w-[200px] overflow-hidden border border-gray-100">
+        <div
+          className={cn(
+            "absolute top-full mt-2 bg-white rounded-md shadow-xl min-w-[200px] z-50 overflow-hidden border border-gray-100",
+            className
+          )}
+        >
           {options.map((option, index) => (
             <DropdownOptionButton key={index} set_is_open={set_is_open}>
               <DropdownOption
@@ -204,22 +223,23 @@ export const GroupableNavDropdown = ({
   display,
   content,
   children,
-  show_arrow = true, // New optional prop to control arrow visibility
+  className = "",
 }: {
   display?: React.ReactNode;
   content?: React.ReactNode;
   children?:
     | React.ReactElement<IDropdownOptionProps>
     | React.ReactElement<IDropdownOptionProps>[];
-  show_arrow?: boolean; // Optional prop - defaults to true for backward compatibility
+  className?: string;
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const [is_open, set_is_open] = useState(false);
 
   return (
-    <div className="relative" style={{ zIndex: 'inherit' }}>
+    <div className={cn("relative", className)}>
       <Button
         ref={ref}
+        type="button"
         variant="outline"
         className="flex items-center gap-2 h-10 px-4 bg-white border-gray-300 hover:bg-gray-50"
         onClick={() => set_is_open(!is_open)}
@@ -237,17 +257,11 @@ export const GroupableNavDropdown = ({
       </Button>
 
       {is_open && (
-        <div 
-          className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-[9999]"
-          style={{
-            // Ensure dropdown appears above all content
-            position: 'absolute',
-            top: '100%',
-            right: 0,
-            zIndex: 9999,
-            // Add shadow for better visibility
-            boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-          }}
+        <div
+          className={cn(
+            "absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50",
+            className
+          )}
         >
           <div className="py-1">
             {content}

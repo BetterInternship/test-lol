@@ -14,8 +14,12 @@ export default function ApplicationsPage() {
   const { redirect_if_not_loggedin } = useAuthContext();
   const { is_mobile } = useAppContext();
   const { applications, loading, error, refetch } = useApplications();
-  const { to_job_mode_name, to_job_type_name, to_job_allowance_name } =
-    useRefs();
+  const {
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_allowance_name,
+    to_app_status_name,
+  } = useRefs();
 
   redirect_if_not_loggedin();
 
@@ -28,17 +32,17 @@ export default function ApplicationsPage() {
   };
 
   // Helper function to get status badge color
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "pending":
+  const getStatusBadgeVariant = (status: number) => {
+    switch (status) {
+      case 0:
         return "default";
-      case "reviewed":
+      case 1:
         return "secondary";
-      case "shortlisted":
+      case 2:
         return "default";
-      case "accepted":
+      case 3:
         return "default";
-      case "rejected":
+      case 4:
         return "destructive";
       default:
         return "outline";
@@ -130,13 +134,13 @@ export default function ApplicationsPage() {
                           </h3>
                           <Badge
                             variant={getStatusBadgeVariant(
-                              application.status ?? ""
+                              application.status ?? 0
                             )}
                             className={`text-xs w-fit ${
                               is_mobile ? "px-3 py-1" : ""
                             }`}
                           >
-                            {getStatusDisplayText(application.status ?? "")}
+                            {to_app_status_name(application.status)}
                           </Badge>
                         </div>
                         <div className="flex items-center gap-1">
@@ -225,7 +229,7 @@ export default function ApplicationsPage() {
                   </p>
 
                   <div className="flex gap-3">
-                    <Link href={`/search?jobId=${application.job?.id}`}>
+                    <Link href={`/search/${application.job?.id}`}>
                       <Button
                         size={is_mobile ? "default" : "sm"}
                         className={is_mobile ? "px-6 py-2 font-medium" : ""}

@@ -1,24 +1,38 @@
 "use client";
 
-import { PublicEmployerUser, PublicUser } from "@/lib/db/db.types";
+import { PublicUser } from "@/lib/db/db.types";
 import { auth_service } from "@/lib/api";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { FetchResponse } from "@/hooks/use-fetch";
 
 interface IAuthContext {
-  user: Partial<PublicUser> | null;
-  recheck_authentication: () => Promise<Partial<PublicUser | null>>;
-  register: (user: Partial<PublicUser>) => Promise<Partial<PublicUser> | null>;
-  verify: (user_id: string, key: string) => Promise<Partial<PublicUser> | null>;
-  send_otp_request: (email: string) => Promise<{ email: string }>;
-  resend_otp_request: (email: string) => Promise<{ email: string }>;
+  user: (Partial<PublicUser> & FetchResponse) | null;
+  recheck_authentication: () => Promise<
+    (Partial<PublicUser> & FetchResponse) | null
+  >;
+  register: (
+    user: Partial<PublicUser>
+  ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
+  verify: (
+    user_id: string,
+    key: string
+  ) => Promise<Partial<PublicUser> & FetchResponse>;
+  send_otp_request: (
+    email: string
+  ) => Promise<{ email: string } & FetchResponse>;
+  resend_otp_request: (
+    email: string
+  ) => Promise<{ email: string } & FetchResponse>;
   verify_otp: (
     email: string,
     otp: string
-  ) => Promise<Partial<PublicUser> | null>;
+  ) => Promise<Partial<PublicUser> & FetchResponse>;
   email_status: (
     email: string
-  ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
+  ) => Promise<
+    { existing_user: boolean; verified_user: boolean } & FetchResponse
+  >;
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
   redirect_if_not_loggedin: () => void;
@@ -74,9 +88,6 @@ export const AuthContextProvider = ({
   const register = async (user: Partial<PublicUser>) => {
     const response = await auth_service.register(user);
     if (!response.success) return null;
-
-    set_user(response.user as PublicUser);
-    set_is_authenticated(true);
     return response;
   };
 
@@ -95,7 +106,7 @@ export const AuthContextProvider = ({
   };
 
   const resend_otp_request = async (email: string) => {
-    const response = await auth_service.send_otp_request(email);
+    const response = await auth_service.resend_otp_request(email);
     return response;
   };
 

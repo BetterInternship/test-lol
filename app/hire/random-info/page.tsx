@@ -1,95 +1,105 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  User, 
-  BarChart3, 
+} from "@/components/ui/dropdown-menu";
+import {
+  User,
+  BarChart3,
   FileText,
   Building2,
   UserPlus,
   LogOut,
   FileEdit,
   Settings,
-  ArrowLeft
-} from "lucide-react"
-import Link from "next/link"
+  ArrowLeft,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function RandomInfo() {
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     // Company Project Details
-    projectTitle: '',
-    projectDescription: '',
-    numberOfStudents: '',
-    projectDuration: '',
-    projectActivities: '',
-    expectedOutputs: '',
-    
+    projectTitle: "",
+    projectDescription: "",
+    numberOfStudents: "",
+    projectDuration: "",
+    projectActivities: "",
+    expectedOutputs: "",
+
     // Training Plan
-    mainTasks: '',
-    learningObjectives: '',
-    trainingSchedule: ''
-  })
+    mainTasks: "",
+    learningObjectives: "",
+    trainingSchedule: "",
+  });
 
   const handleLogout = () => {
-    router.push('/login')
-  }
+    router.push("/login");
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
   const handleContinue = () => {
     // Validate required fields
     const requiredFields = [
-      'projectTitle', 'projectDescription', 'numberOfStudents', 'projectDuration',
-      'projectActivities', 'expectedOutputs', 'mainTasks', 'learningObjectives',
-      'trainingSchedule'
-    ]
-    
-    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData])
-    
+      "projectTitle",
+      "projectDescription",
+      "numberOfStudents",
+      "projectDuration",
+      "projectActivities",
+      "expectedOutputs",
+      "mainTasks",
+      "learningObjectives",
+      "trainingSchedule",
+    ];
+
+    const missingFields = requiredFields.filter(
+      (field) => !formData[field as keyof typeof formData]
+    );
+
     if (missingFields.length > 0) {
-      alert("Please fill in all required fields.")
-      return
+      alert("Please fill in all required fields.");
+      return;
     }
 
-    alert("Project and training information saved successfully!")
-    router.back()
-  }
+    alert("Project and training information saved successfully!");
+    router.back();
+  };
 
   const handleClearForm = () => {
-    const confirmClear = confirm("Are you sure you want to clear all form data? This action cannot be undone.")
-    
+    const confirmClear = confirm(
+      "Are you sure you want to clear all form data? This action cannot be undone."
+    );
+
     if (confirmClear) {
       setFormData({
-        projectAssignment: '',
-        projectDescription: '',
-        numberOfStudents: '',
-        projectActivities: '',
-        mainTasks: '',
-        activitiesForWeek: '',
-        majorAccomplishments: '',
-        solutionsSuggestions: ''
-      })
-      alert("Form cleared successfully!")
+        projectAssignment: "",
+        projectDescription: "",
+        numberOfStudents: "",
+        projectActivities: "",
+        mainTasks: "",
+        activitiesForWeek: "",
+        majorAccomplishments: "",
+        solutionsSuggestions: "",
+      });
+      alert("Form cleared successfully!");
     }
-  }
+  };
 
   return (
     <div className="h-screen bg-white flex">
@@ -98,15 +108,21 @@ export default function RandomInfo() {
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
-        
+
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
-            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              My Applications
             </Link>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/listings"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
@@ -152,7 +168,7 @@ export default function RandomInfo() {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="cursor-pointer text-red-600"
                 onClick={handleLogout}
               >
@@ -184,46 +200,62 @@ export default function RandomInfo() {
                   Project Information
                 </h2>
                 <p className="text-gray-600 text-center mb-8">
-                  Tell us about the project or work you want students to help with
+                  Tell us about the project or work you want students to help
+                  with
                 </p>
-                
+
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="project-title" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="project-title"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Project Title *
                       </Label>
                       <Input
                         id="project-title"
                         value={formData.projectTitle}
-                        onChange={(e) => handleInputChange('projectTitle', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("projectTitle", e.target.value)
+                        }
                         placeholder="e.g., Mobile App Development, Data Analysis Project"
                         className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="number-students" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="number-students"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Number of Students Needed *
                       </Label>
                       <Input
                         id="number-students"
                         type="number"
                         value={formData.numberOfStudents}
-                        onChange={(e) => handleInputChange('numberOfStudents', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("numberOfStudents", e.target.value)
+                        }
                         placeholder="e.g., 2"
                         className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="project-duration" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="project-duration"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Project Duration *
                       </Label>
                       <Input
                         id="project-duration"
                         value={formData.projectDuration}
-                        onChange={(e) => handleInputChange('projectDuration', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("projectDuration", e.target.value)
+                        }
                         placeholder="e.g., 8 weeks, 3 months"
                         className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                       />
@@ -232,39 +264,57 @@ export default function RandomInfo() {
 
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="project-description" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="project-description"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Project Description *
                       </Label>
                       <Textarea
                         id="project-description"
                         value={formData.projectDescription}
-                        onChange={(e) => handleInputChange('projectDescription', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "projectDescription",
+                            e.target.value
+                          )
+                        }
                         placeholder="Describe what the project involves and what students will be working on"
                         className="w-full h-24 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0 resize-none"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="project-activities" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="project-activities"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Main Activities *
                       </Label>
                       <Textarea
                         id="project-activities"
                         value={formData.projectActivities}
-                        onChange={(e) => handleInputChange('projectActivities', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("projectActivities", e.target.value)
+                        }
                         placeholder="List the key tasks students will be doing (e.g., research, coding, testing, documentation)"
                         className="w-full h-24 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0 resize-none"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="expected-outputs" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="expected-outputs"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Expected Results *
                       </Label>
                       <Input
                         id="expected-outputs"
                         value={formData.expectedOutputs}
-                        onChange={(e) => handleInputChange('expectedOutputs', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("expectedOutputs", e.target.value)
+                        }
                         placeholder="e.g., Working prototype, Research report, Completed analysis"
                         className="w-full h-12 px-4 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0"
                       />
@@ -281,30 +331,43 @@ export default function RandomInfo() {
                 <p className="text-gray-600 text-center mb-8">
                   Help us understand how you'll guide and develop the students
                 </p>
-                
+
                 <div className="grid grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="main-tasks" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="main-tasks"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Daily/Weekly Tasks *
                       </Label>
                       <Textarea
                         id="main-tasks"
                         value={formData.mainTasks}
-                        onChange={(e) => handleInputChange('mainTasks', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("mainTasks", e.target.value)
+                        }
                         placeholder="What will students be doing on a typical day or week? (separate tasks with commas)"
                         className="w-full h-32 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0 resize-none"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="learning-objectives" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="learning-objectives"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Learning Goals *
                       </Label>
                       <Textarea
                         id="learning-objectives"
                         value={formData.learningObjectives}
-                        onChange={(e) => handleInputChange('learningObjectives', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "learningObjectives",
+                            e.target.value
+                          )
+                        }
                         placeholder="What skills or knowledge should students gain from this experience?"
                         className="w-full h-24 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0 resize-none"
                       />
@@ -313,13 +376,18 @@ export default function RandomInfo() {
 
                   <div className="space-y-6">
                     <div>
-                      <Label htmlFor="training-schedule" className="text-sm font-medium text-gray-900 mb-2 block">
+                      <Label
+                        htmlFor="training-schedule"
+                        className="text-sm font-medium text-gray-900 mb-2 block"
+                      >
                         Training Schedule *
                       </Label>
                       <Textarea
                         id="training-schedule"
                         value={formData.trainingSchedule}
-                        onChange={(e) => handleInputChange('trainingSchedule', e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("trainingSchedule", e.target.value)
+                        }
                         placeholder="How will you onboard and train students? (e.g., first week orientation, weekly check-ins)"
                         className="w-full h-32 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-gray-900 focus:ring-0 resize-none"
                       />
@@ -331,14 +399,14 @@ export default function RandomInfo() {
 
             {/* Action Buttons */}
             <div className="flex justify-center gap-4 mt-12">
-              <Button 
+              <Button
                 onClick={handleClearForm}
                 variant="outline"
                 className="px-16 py-4 text-xl border-2 border-red-300 text-red-600 hover:bg-red-50 rounded-xl font-medium"
               >
                 Clear Form
               </Button>
-              <Button 
+              <Button
                 onClick={handleContinue}
                 className="px-24 py-4 text-xl bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-medium shadow-lg"
               >
@@ -349,5 +417,5 @@ export default function RandomInfo() {
         </div>
       </div>
     </div>
-  )
+  );
 }

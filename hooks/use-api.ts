@@ -5,9 +5,17 @@ import {
   application_service,
   handle_api_error,
 } from "@/lib/api";
-import { Job, PublicUser, Application } from "@/lib/db/db.types";
+import {
+  Job,
+  PublicUser,
+  UserApplication,
+  SavedJob,
+  Employer,
+  EmployerApplication,
+} from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "./use-cache";
+import { FetchResponse } from "./use-fetch";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -100,7 +108,6 @@ export function useJobs(
           job.location,
           ...(job.keywords || []),
           ...(job.requirements || []),
-          ...(job.responsibilities || []),
         ]
           .join(" ")
           .toLowerCase();
@@ -135,36 +142,43 @@ export function useJobs(
 }
 
 // Single Job Hook
-export function useJob(jobId: string | null) {
+export function useJob(job_id: string | null) {
   const { is_authenticated } = useAuthContext();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchJob = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // @ts-ignore
+      const { job, error } = await job_service.get_job_by_id(job_id ?? "");
+      if (error) {
+        setError(error);
+        setLoading(false);
+        return;
+      }
+
+      setJob(job);
+    } catch (err) {
+      const errorMessage = handle_api_error(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [job_id]);
+
   useEffect(() => {
-    if (!jobId) {
+    if (!job_id) {
       setLoading(false);
       return;
     }
-
-    const fetchJob = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const jobData = await job_service.get_job_by_id(jobId);
-        setJob(jobData);
-      } catch (err) {
-        const errorMessage = handle_api_error(err);
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchJob();
-  }, [jobId]);
+  }, [job_id]);
 
-  return { job, loading, error };
+  return { job, loading, error, refetch: fetchJob };
 }
 
 // User Profile Hook
@@ -178,8 +192,8 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      const userData = await user_service.get_profile();
-      setProfile(userData as PublicUser);
+      const { user } = await user_service.get_my_profile();
+      if (user) setProfile(user as PublicUser);
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -199,9 +213,9 @@ export function useProfile() {
   const updateProfile = async (data: Partial<PublicUser>) => {
     try {
       setError(null);
-      const updatedProfile = await user_service.update_profile(data);
-      setProfile(updatedProfile as PublicUser);
-      return updatedProfile;
+      const { user } = await user_service.update_my_profile(data);
+      if (user) setProfile(user as PublicUser);
+      return user;
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -218,102 +232,172 @@ export function useProfile() {
   };
 }
 
-// Saved Jobs Hook
-export function useSavedJobs() {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
+/**
+ * Makes life easier
+ *
+ * @hook
+ * @internal
+ */
+const listFromDBInternalHook = <
+  ID extends number | string,
+  T extends { id?: ID }
+>({
+  name,
+  fetches,
+}: {
+  name: string;
+  fetches: {
+    get_data: () => Promise<{ data?: T[] } & FetchResponse>;
+    add_data?: (
+      id: ID,
+      new_data: Partial<T>
+    ) => Promise<{ data?: T } & FetchResponse>;
+    set_data?: (
+      id: ID,
+      new_data: Partial<T>
+    ) => Promise<{ data?: T } & FetchResponse>;
+  };
+}) => {
+  const cache_key = `__${name}__cache`;
   const { get_cache_item, set_cache_item } = useCache();
-  const [savedJobs, setSavedJobs] = useState<Job[]>([]);
+  const [data, setData] = useState<T[]>([]);
+  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState(false);
 
-  const save_job = async (job_id: string) => {
+  /**
+   * Adds an item to the list.
+   */
+  const add_data = useCallback(async (id: ID, new_data: Partial<T>) => {
+    if (!fetches.add_data) return;
+
     try {
-      setSaving(true);
-      const response = await user_service.save_job(job_id);
+      setUpdating(true);
+      const response = await fetches.add_data(id, new_data);
+      const added_data = response.data as T;
 
-      // We saved a job
-      if (response.job) {
-        if (!get_cache_item("_jobs_saved_list"))
-          set_cache_item("_jobs_saved_list", []);
-        const new_saved_jobs = [
-          ...(get_cache_item("_jobs_saved_list") as Job[]),
-          { ...response.job },
-        ] as Job[];
-        set_cache_item("_jobs_saved_list", new_saved_jobs);
-        setSavedJobs(new_saved_jobs);
-        console.log(new_saved_jobs);
+      // We added an item
+      if (added_data) {
+        console.log("[DBLISTHOOK] Toggling on; table " + name);
+        if (!get_cache_item(cache_key)) set_cache_item(cache_key, []);
+        const new_data = [
+          ...(get_cache_item(cache_key) as T[]),
+          { ...added_data },
+        ] as T[];
+        set_cache_item(cache_key, new_data);
+        setData(new_data);
 
-        // We unsaved a job
-      } else {
-        const new_saved_jobs = (
-          get_cache_item("_jobs_saved_list") as Job[]
-        ).filter((saved_job) => saved_job.id !== job_id);
-        set_cache_item("_jobs_saved_list", new_saved_jobs);
-        setSavedJobs(new_saved_jobs);
+        // We unadded an item, for toggle routes
+      } else if (response.success) {
+        console.log("[DBLISTHOOK] Toggling off; table " + name);
+        const new_data = (get_cache_item(cache_key) as T[]).filter(
+          (old_data) => old_data.id !== id
+        );
+        set_cache_item(cache_key, new_data);
+        setData(new_data);
       }
       return response;
     } catch (error) {
       handle_api_error(error);
       throw error;
     } finally {
-      setSaving(false);
+      setUpdating(false);
     }
-  };
+  }, []);
 
-  const fetchSavedJobs = useCallback(async () => {
+  /**
+   * Syncs up list with the db.
+   */
+  const get_data = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
+      setError("");
 
       // Check cache first
-      const cached_saved_jobs = get_cache_item("_jobs_saved_list") as Job[];
-      if (cached_saved_jobs) {
-        await setTimeout(() => {}, 500);
-        setSavedJobs(cached_saved_jobs);
+      const cache_data = get_cache_item(cache_key) as T[];
+      if (cache_data) {
+        setData(cache_data);
         return;
       }
 
       // Otherwise, pull from server
-      const response = await job_service.get_saved_jobs();
+      const response = await fetches.get_data();
+      const gotten_data = (response.data as T[]) ?? [];
+
       if (response.success) {
-        setSavedJobs(response.jobs ?? []);
-        set_cache_item("_jobs_saved_list", response.jobs ?? []);
+        setData(gotten_data);
+        set_cache_item(cache_key, gotten_data);
       }
     } catch (err) {
-      const errorMessage = handle_api_error(err);
-      setError(errorMessage);
+      setError(handle_api_error(err));
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    recheck_authentication().then((r) =>
-      r ? fetchSavedJobs() : setLoading(false)
-    );
-  }, [fetchSavedJobs]);
+    get_data();
+  }, [get_data]);
 
+  return {
+    data,
+    error,
+    loading,
+    updating,
+    add: add_data,
+    refetch: get_data,
+  };
+};
+
+/**
+ * Saved jobs hook
+ *
+ * @hook
+ */
+export const useSavedJobs = () => {
+  // Mapping of fetch outputs
+  const get_data = async () =>
+    await job_service.get_saved_jobs().then((r) => ({ ...r, data: r.jobs }));
+  const add_data = async (id: string) =>
+    await user_service.save_job(id).then((r) => ({ ...r, data: r.job }));
+
+  // Makes our lives easier
+  const {
+    data: saved_jobs,
+    error,
+    loading,
+    add: save_job,
+    updating: saving,
+    refetch,
+  } = listFromDBInternalHook<string, Job>({
+    name: "saved_jobs",
+    fetches: {
+      get_data,
+      add_data,
+    },
+  });
+
+  // Other utils
   const is_saved = (job_id: string): boolean => {
-    return savedJobs.some((saved_job) => saved_job.id === job_id);
+    return saved_jobs.some((saved_job) => saved_job.id === job_id);
   };
 
   return {
-    save_job,
-    savedJobs,
+    save_job: (job_id: string) => save_job(job_id, {}),
+    saved_jobs,
     loading,
     saving,
     error,
     is_saved: is_saved,
-    refetch: fetchSavedJobs,
+    refetch: refetch,
   };
-}
+};
 
 // Saved Jobs Hook
 export function useApplications() {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const { recheck_authentication } = useAuthContext();
   const { get_cache_item, set_cache_item } = useCache();
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
@@ -333,7 +417,7 @@ export function useApplications() {
       // Check cache first
       const cached_applications = get_cache_item(
         "_applications_list"
-      ) as Application[];
+      ) as UserApplication[];
       if (cached_applications) {
         await setTimeout(() => {}, 500);
         setApplications(cached_applications);
@@ -354,27 +438,19 @@ export function useApplications() {
     }
   }, []);
 
-  const apply = async (
-    job_id: string,
-    data: {
-      github_link?: string;
-      portfolio_link?: string;
-      resume?: string;
-    }
-  ) => {
+  const apply = async (job_id: string) => {
     try {
       const response = await application_service.create_application({
         job_id,
-        ...data,
       });
 
       if (response.application) {
         if (!get_cache_item("_applications_list"))
           set_cache_item("_applications_list", []);
         const new_applications = [
-          ...(get_cache_item("_applications_list") as Application[]),
+          ...(get_cache_item("_applications_list") as UserApplication[]),
           { ...response.application },
-        ] as Application[];
+        ] as UserApplication[];
         set_cache_item("_applications_list", new_applications);
         setApplications(new_applications);
       }
@@ -386,15 +462,15 @@ export function useApplications() {
     }
   };
 
+  const is_applied = (job_id: string): boolean => {
+    return applications.some((application) => application.id === job_id);
+  };
+
   useEffect(() => {
     recheck_authentication().then((r) =>
       r ? fetchApplications() : setLoading(false)
     );
   }, [fetchApplications]);
-
-  const is_applied = (job_id: string): boolean => {
-    return applications.some((application) => application.id === job_id);
-  };
 
   return {
     apply,

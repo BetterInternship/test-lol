@@ -13,7 +13,6 @@ import {
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
-import { Header } from "@/components/student/header";
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function HomePage() {
@@ -69,7 +68,7 @@ export default function HomePage() {
         {/* Hero Text */}
         <div className="text-center mb-8">
           <h1
-            className={`font-bold text-gray-900 leading-tight mb-3 ${
+            className={`font-display font-bold text-gray-900 leading-tight mb-3 ${
               is_mobile
                 ? "text-4xl tracking-tight"
                 : "text-3xl sm:text-4xl lg:text-6xl"
@@ -210,6 +209,20 @@ export default function HomePage() {
                   <div className="flex items-center">
                     <div className="h-8 w-px bg-gray-300 mx-1" />
                     <DropdownGroup>
+                      <div className="w-24">
+                        <GroupableRadioDropdown
+                          name="jobType"
+                          options={[
+                            "All types",
+                            "Internships",
+                            "Full-time",
+                            "Part-time",
+                          ]}
+                          button_class="!border-0"
+                          on_change={filter_setter("job_type")}
+                        />
+                      </div>
+                      <div className="h-8 w-px bg-gray-300 mx-1" />
                       <div className="w-28">
                         <GroupableRadioDropdown
                           name="location"
@@ -219,7 +232,7 @@ export default function HomePage() {
                             "Remote",
                             "Hybrid",
                           ]}
-                          default_value="All Modes"
+                          button_class="!border-0"
                           on_change={filter_setter("location")}
                         />
                       </div>
@@ -236,7 +249,7 @@ export default function HomePage() {
                             "Education",
                             "Others",
                           ]}
-                          default_value="All categories"
+                          button_class="!border-0"
                           on_change={filter_setter("category")}
                         />
                       </div>
@@ -280,19 +293,6 @@ export default function HomePage() {
           </div>
         )}
       </div>
-
-      {/* Footer - Hide on mobile */}
-      {!is_mobile && (
-        <div className="p-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
-          Are you an Employer? Send us an Email:{" "}
-          <a
-            href="mailto:hello@betterinternship.com"
-            className="text-blue-600 hover:underline"
-          >
-            hello@betterinternship.com
-          </a>
-        </div>
-      )}
 
       {/* Category Modal - Mobile Only */}
       {is_mobile && showCategoryModal && (

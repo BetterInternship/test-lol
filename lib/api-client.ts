@@ -81,16 +81,16 @@ class FetchClient {
 
     try {
       const response = await fetch(url, config);
-
-      if (!response.ok) {
+      if (!response.ok && response.status !== 304) {
         const errorData = await response.json().catch(() => ({}));
         console.warn(`${url}: ${errorData.message || response.status}`);
         return { error: errorData.message } as T;
       }
 
       const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json"))
-        return await response.json();
+      if (contentType && contentType.includes("application/json")) {
+        return (await response.json()) as unknown as T;
+      }
       return (await response.text()) as unknown as T;
     } catch (error) {
       console.error("API request failed:", error);
@@ -117,11 +117,19 @@ class FetchClient {
     );
   }
 
-  async put<T>(url: string, data?: any): Promise<T> {
-    return this.request<T>(url, {
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  async put<T>(url: string, data?: any, type: string = "json"): Promise<T> {
+    return this.request<T>(
+      url,
+      {
+        method: "PUT",
+        body: data
+          ? type === "json"
+            ? JSON.stringify(data)
+            : data
+          : undefined,
+      },
+      type
+    );
   }
 
   async delete<T>(url: string): Promise<T> {

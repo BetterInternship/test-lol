@@ -1,17 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Popover,
   PopoverContent,
@@ -24,222 +16,105 @@ import {
   BarChart3,
   ChevronDown,
   Building2,
-  UserPlus,
-  LogOut,
   FileEdit,
   Search,
-  HelpCircle,
+  Notebook,
 } from "lucide-react";
 import Link from "next/link";
-import ApplicantModal from "@/components/hire/applicant-modal";
-import CalendarModal from "@/components/hire/calendar-modal";
-import ProfileButton from "@/components/hire/profile-button";
-import {
-  GroupableMultiselectDropdown,
-  DropdownGroup,
-} from "../../../components/ui/dropdown";
-
-// Placeholder data for applicants
-const applicantsData = [
-  {
-    id: 1,
-    name: "John Doe",
-    school: "DLSU",
-    program: "IT",
-    job: "DevOps",
-    mode: "Full-Time",
-    status: "New",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    school: "DLSU",
-    program: "CS",
-    job: "Frontend Dev",
-    mode: "Part-Time",
-    status: "Rejected",
-  },
-  {
-    id: 3,
-    name: "Mike Johnson",
-    school: "DLSU",
-    program: "IT",
-    job: "Backend Dev",
-    mode: "Full-Time",
-    status: "To Interview",
-  },
-  {
-    id: 4,
-    name: "Sarah Wilson",
-    school: "DLSU",
-    program: "CS",
-    job: "Full Stack",
-    mode: "Full-Time",
-    status: "Offer Sent",
-  },
-  {
-    id: 5,
-    name: "Chris Brown",
-    school: "DLSU",
-    program: "IT",
-    job: "Mobile Dev",
-    mode: "Part-Time",
-    status: "Shortlisted",
-  },
-  {
-    id: 6,
-    name: "Emily Davis",
-    school: "DLSU",
-    program: "CS",
-    job: "UI/UX",
-    mode: "OJT",
-    status: "Hired",
-  },
-  {
-    id: 7,
-    name: "Alex Garcia",
-    school: "DLSU",
-    program: "IT",
-    job: "DevOps",
-    mode: "Full-Time",
-    status: "Interviewing",
-  },
-  {
-    id: 8,
-    name: "Lisa Martinez",
-    school: "DLSU",
-    program: "CS",
-    job: "Data Science",
-    mode: "Part-Time",
-    status: "Offer Declined",
-  },
-  {
-    id: 9,
-    name: "Tom Anderson",
-    school: "DLSU",
-    program: "IT",
-    job: "QA Engineer",
-    mode: "Full-Time",
-    status: "Shortlisted",
-  },
-  {
-    id: 10,
-    name: "Maria Rodriguez",
-    school: "DLSU",
-    program: "CS",
-    job: "DevOps",
-    mode: "OJT",
-    status: "Hired",
-  },
-  {
-    id: 11,
-    name: "Kevin Lee",
-    school: "DLSU",
-    program: "IT",
-    job: "Frontend Dev",
-    mode: "Part-Time",
-    status: "Interviewing",
-  },
-  {
-    id: 12,
-    name: "Anna Taylor",
-    school: "DLSU",
-    program: "CS",
-    job: "Backend Dev",
-    mode: "Full-Time",
-    status: "Offer Declined",
-  },
-];
-
-const statusOptions = [
-  "New",
-  "Interviewing",
-  "Shortlisted",
-  "Offer Sent",
-  "Offer Accepted",
-  "Offer Declined",
-  "Hired",
-  "Rejected",
-];
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case "New":
-      return "bg-blue-100 text-blue-800";
-    case "Interviewing":
-      return "bg-yellow-100 text-yellow-800";
-    case "Shortlisted":
-      return "bg-purple-100 text-purple-800";
-    case "Offer Sent":
-      return "bg-orange-100 text-orange-800";
-    case "Offer Accepted":
-      return "bg-green-100 text-green-800";
-    case "Offer Declined":
-      return "bg-red-100 text-red-800";
-    case "Hired":
-      return "bg-emerald-100 text-emerald-800";
-    case "Rejected":
-      return "bg-gray-100 text-gray-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
+import { useEmployerApplications } from "@/hooks/use-employer-api";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { useRefs } from "@/lib/db/use-refs";
+import { GroupableRadioDropdown } from "@/components/ui/dropdown";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { useModal } from "@/hooks/use-modal";
+import { useClientDimensions } from "@/hooks/use-dimensions";
+import { useFile } from "@/hooks/use-file";
+import { application_service, user_service } from "@/lib/api";
+import { Pfp } from "@/components/shared/pfp";
+import { MDXEditor } from "@/components/MDXEditor";
+import { useAuthContext } from "../authctx";
 
 export default function Dashboard() {
-  const [applicants, setApplicants] = useState(applicantsData);
-  const [selectedApplicant, setSelectedApplicant] = useState<
-    (typeof applicantsData)[0] | null
-  >(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const router = useRouter();
+  const {
+    employer_applications,
+    review: review_app,
+    loading,
+    error,
+  } = useEmployerApplications();
+  const { redirect_if_not_loggedin } = useAuthContext();
+  const { client_width, client_height } = useClientDimensions();
+  const {
+    app_statuses,
+    get_college,
+    to_college_name,
+    to_level_name,
+    to_university_name,
+  } = useRefs();
+  const [selected_application, set_selected_application] =
+    useState<EmployerApplication | null>(null);
+  const {
+    open: open_applicant_modal,
+    close: close_applicant_modal,
+    Modal: ApplicantModal,
+  } = useModal("applicant-modal");
+  const { open: open_calendly_modal, Modal: CalendlyModal } =
+    useModal("calendly-modal");
+  const { open: open_resume_modal, Modal: ResumeModal } =
+    useModal("resume-modal");
+  const {
+    open: open_review_modal,
+    close: close_review_modal,
+    Modal: ReviewModal,
+  } = useModal("review-modal");
+
+  redirect_if_not_loggedin();
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selected_statuses, set_selected_statuses] = useState<string[]>([]);
   const [jobSearch, setJobSearch] = useState("");
   const [statusSearch, setStatusSearch] = useState("");
+  const [selected_resume, set_selected_resume] = useState("");
+
+  // Syncs everything
+  const set_application = (application: EmployerApplication) => {
+    set_selected_application(application);
+    set_selected_resume("/users/" + application?.user_id + "/resume");
+  };
+
+  useEffect(() => {
+    const id = selected_application?.id;
+    if (!id) return;
+    set_application(employer_applications.filter((a) => a.id === id)[0]);
+  }, [employer_applications]);
+
+  const get_user_resume_url = useCallback(
+    async () =>
+      user_service.get_user_resume_url(selected_application?.user?.id ?? ""),
+    [selected_application]
+  );
+
+  const { url: resume_url, sync: sync_resume_url } = useFile({
+    fetch: get_user_resume_url,
+    route: selected_resume,
+  });
 
   // Get unique values for filters
   const uniqueJobs = useMemo(
-    () => [...new Set(applicantsData.map((a) => a.job))].sort(),
+    () =>
+      [
+        ...new Set(
+          employer_applications
+            .map((a) => a.job?.id)
+            .filter((a) => a !== undefined)
+        ),
+      ].sort(),
     []
   );
-  const uniqueStatuses = useMemo(
-    () => [...new Set(applicantsData.map((a) => a.status))].sort(),
-    []
-  );
 
-  // Filter and sort applicants
-  const filteredAndSortedApplicants = useMemo(() => {
-    let filtered = applicantsData.filter((applicant) => {
-      const jobMatch =
-        selectedJobs.length === 0 || selectedJobs.includes(applicant.job);
-      const statusMatch =
-        selectedStatuses.length === 0 ||
-        selectedStatuses.includes(applicant.status);
-      return jobMatch && statusMatch;
-    });
-
-    if (sortField) {
-      filtered.sort((a, b) => {
-        let aValue = a[sortField as keyof typeof a];
-        let bValue = b[sortField as keyof typeof b];
-
-        if (typeof aValue === "string") aValue = aValue.toLowerCase();
-        if (typeof bValue === "string") bValue = bValue.toLowerCase();
-
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return filtered;
-  }, [selectedJobs, selectedStatuses, sortField, sortDirection]);
-
+  // Filter and sort applications
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -256,29 +131,11 @@ export default function Dashboard() {
   };
 
   const handleStatusToggle = (status: string) => {
-    setSelectedStatuses((prev) =>
+    set_selected_statuses((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
         : [...prev, status]
     );
-  };
-
-  const updateStatus = (id: number, newStatus: string) => {
-    setApplicants((prev) =>
-      prev.map((applicant) =>
-        applicant.id === id ? { ...applicant, status: newStatus } : applicant
-      )
-    );
-    // Also update the main data source if needed
-    const applicantIndex = applicantsData.findIndex((a) => a.id === id);
-    if (applicantIndex !== -1) {
-      applicantsData[applicantIndex].status = newStatus;
-    }
-  };
-
-  const openApplicantModal = (applicant: (typeof applicantsData)[0]) => {
-    setSelectedApplicant(applicant);
-    setIsModalOpen(true);
   };
 
   // Filter components
@@ -423,22 +280,18 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="h-screen bg-white flex">
+    <>
       {/* Sidebar */}
       <div
         className="w-64 border-r bg-gray-50 flex flex-col"
         data-tour="sidebar"
       >
         <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
-        </div>
-
-        <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
             <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium cursor-default">
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              My Applications
             </div>
             <Link
               href="/listings"
@@ -460,98 +313,17 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Application Dashboard
-          </h1>
-          <div className="flex items-center gap-3">
-            <ProfileButton />
-          </div>
-        </div>
-
         {/* Enhanced Dashboard */}
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
-          {/* Quick Stats Cards */}
-          <div className="grid grid-cols-4 gap-4" data-tour="dashboard-cards">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600">
-                    Total Applications
-                  </p>
-                  <p className="text-2xl font-bold text-blue-900">
-                    {applicantsData.length}
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-200 rounded-lg">
-                  <User className="h-6 w-6 text-blue-700" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">Hired</p>
-                  <p className="text-2xl font-bold text-green-900">
-                    {applicantsData.filter((a) => a.status === "Hired").length}
-                  </p>
-                </div>
-                <div className="p-3 bg-green-200 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-green-700" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-yellow-600">
-                    Interviewing
-                  </p>
-                  <p className="text-2xl font-bold text-yellow-900">
-                    {
-                      applicantsData.filter((a) => a.status === "Interviewing")
-                        .length
-                    }
-                  </p>
-                </div>
-                <div className="p-3 bg-yellow-200 rounded-lg">
-                  <Calendar className="h-6 w-6 text-yellow-700" />
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-purple-600">
-                    New Applications
-                  </p>
-                  <p className="text-2xl font-bold text-purple-900">
-                    {applicantsData.filter((a) => a.status === "New").length}
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-200 rounded-lg">
-                  <FileText className="h-6 w-6 text-purple-700" />
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Enhanced Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col flex-1">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
             {/* Table Header with Filters */}
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Applicants
-                </h3>
                 <div className="flex items-center gap-3">
                   <div className="text-sm text-gray-500">
-                    Showing {filteredAndSortedApplicants.length} of{" "}
-                    {applicantsData.length} applicants
+                    Showing {employer_applications.length} of{" "}
+                    {employer_applications.length} applicants
                   </div>
                 </div>
               </div>
@@ -584,8 +356,8 @@ export default function Dashboard() {
                     </th>
                     <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
                       <div className="flex items-center justify-center gap-2">
-                        <FileText className="h-4 w-4 text-gray-400" />
-                        <span>Resume</span>
+                        <Notebook className="h-4 w-4 text-gray-400" />
+                        <span>Review</span>
                       </div>
                     </th>
                     <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
@@ -599,8 +371,8 @@ export default function Dashboard() {
                         <BarChart3 className="h-4 w-4 text-gray-400" />
                         <MultiSelectFilter
                           title="Status"
-                          options={uniqueStatuses}
-                          selected={selectedStatuses}
+                          options={app_statuses.map((as) => as.name)}
+                          selected={selected_statuses}
                           onToggle={handleStatusToggle}
                           searchValue={statusSearch}
                           onSearchChange={setStatusSearch}
@@ -611,87 +383,91 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAndSortedApplicants.map((applicant, index) => (
-                    <tr
-                      key={applicant.id}
-                      className={`border-b border-gray-50 hover:bg-gray-25 transition-colors ${
-                        index % 2 === 0 ? "bg-white" : "bg-gray-25"
-                      }`}
-                    >
-                      <td className="px-6 py-4 w-[300px]">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {applicant.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                  {employer_applications
+                    .toSorted(
+                      (a, b) =>
+                        new Date(b.applied_at ?? "").getTime() -
+                        new Date(a.applied_at ?? "").getTime()
+                    )
+                    .map((application, index) => (
+                      <tr
+                        key={application.id}
+                        className={`border-b border-gray-50 hover:bg-gray-50 hover:cursor-pointer transition-colors ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-25"
+                        }`}
+                        onClick={() => {
+                          set_application(application);
+                          open_applicant_modal();
+                        }}
+                      >
+                        <td className="px-6 py-4 w-[300px]">
+                          <div className="flex items-center gap-3">
+                            {application.user?.id && (
+                              <Pfp user_id={application.user?.id}></Pfp>
+                            )}
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {application.user?.full_name}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                {to_university_name(
+                                  get_college(application.user?.college)
+                                    ?.university_id
+                                )}{" "}
+                                • {to_college_name(application.user?.college)} •{" "}
+                                {to_level_name(application.user?.year_level)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {applicant.name}
-                            </p>
-                            <p className="text-sm text-gray-500">
-                              {applicant.school} • {applicant.program}
-                            </p>
+                        </td>
+                        <td className="px-6 py-4 w-[250px]">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <span className="font-medium text-gray-900">
+                              {application.job?.title}
+                            </span>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 w-[250px]">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                          <span className="font-medium text-gray-900">
-                            {applicant.job}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {applicant.mode}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4 w-[120px] text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-10 h-10 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                          onClick={() => openApplicantModal(applicant)}
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </td>
-                      <td className="px-6 py-4 w-[120px] text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="w-10 h-10 p-0 rounded-full hover:bg-green-50 hover:text-green-600 transition-colors"
-                          onClick={() => setIsCalendarOpen(true)}
-                        >
-                          <Calendar className="h-4 w-4" />
-                        </Button>
-                      </td>
-                      <td className="px-6 py-4 w-[200px]">
-                        <Select
-                          value={applicant.status}
-                          onValueChange={(value) =>
-                            updateStatus(applicant.id, value)
-                          }
-                        >
-                          <SelectTrigger
-                            className={`w-full h-9 ${getStatusColor(
-                              applicant.status
-                            )} border-0 rounded-full font-medium text-sm`}
+                          <p className="text-sm text-gray-500 mt-1">
+                            {application.job?.mode}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 w-[120px] text-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              set_application(application);
+                              open_review_modal();
+                            }}
                           >
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {statusOptions.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {status}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                    </tr>
-                  ))}
+                            <Notebook className="h-4 w-4" />
+                          </Button>
+                        </td>
+                        <td className="px-6 py-4 w-[120px] text-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-10 w-20 input-box hover:bg-green-50 hover:text-green-600 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              set_application(application);
+                              open_calendly_modal();
+                            }}
+                          >
+                            <Calendar className="h-4 w-4" />
+                          </Button>
+                        </td>
+                        <td className="px-6 py-4 w-[200px]">
+                          <GroupableRadioDropdown
+                            name="status"
+                            options={app_statuses.map((as) => as.name)}
+                            on_change={() => alert("Status updated.")}
+                          ></GroupableRadioDropdown>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -699,21 +475,148 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Applicant Modal */}
-      {selectedApplicant && (
-        <ApplicantModal
-          applicant={selectedApplicant}
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+      <ApplicantModal>
+        <ApplicantModalContent
+          clickable={true}
+          applicant={selected_application?.user}
+          open_calendly_modal={async () => {
+            close_applicant_modal();
+            open_calendly_modal();
+          }}
+          open_resume_modal={async () => {
+            close_applicant_modal();
+            await sync_resume_url();
+            open_resume_modal();
+          }}
+          job={selected_application?.job}
         />
-      )}
+      </ApplicantModal>
 
-      {/* Calendar Modal */}
-      <CalendarModal
-        isOpen={isCalendarOpen}
-        onClose={() => setIsCalendarOpen(false)}
-        applicantName={selectedApplicant?.name}
-      />
-    </div>
+      <ReviewModal>
+        {selected_application && (
+          <ReviewModalContent
+            application={selected_application}
+            review_app={review_app}
+            close={close_review_modal}
+          />
+        )}
+      </ReviewModal>
+
+      <CalendlyModal>
+        {selected_application?.user?.calendly_link ? (
+          <iframe
+            src={`${selected_application?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
+            allowTransparency={true}
+            style={{
+              width: Math.min(client_width * 0.6, 1000),
+              height: client_height * 0.7,
+              background: "#FFFFFF",
+            }}
+          >
+            Calendly could not be loaded.
+          </iframe>
+        ) : (
+          <div className="h-48 px-8">
+            <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
+            <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
+              This applicant does not have a calendly link.
+            </div>
+          </div>
+        )}
+      </CalendlyModal>
+
+      <ResumeModal>
+        {selected_application?.user?.resume ? (
+          <>
+            <h1 className="font-bold font-heading text-4xl px-8 pt-2 pb-6">
+              {selected_application?.user?.full_name} - Resume
+            </h1>
+            <iframe
+              allowTransparency={true}
+              style={{
+                width: client_width * 0.4,
+                height: client_height * 0.8,
+                background: "#FFFFFF",
+              }}
+              src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+            >
+              Resume could not be loaded.
+            </iframe>
+          </>
+        ) : (
+          <div className="h-48 px-8">
+            <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
+            <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
+              This applicant has not uploaded a resume.
+            </div>
+          </div>
+        )}
+      </ResumeModal>
+    </>
   );
 }
+
+const ReviewModalContent = ({
+  application,
+  review_app,
+  close,
+}: {
+  application: EmployerApplication;
+  review_app: (
+    id: string,
+    review_options: { review?: string; notes?: string; status?: number }
+  ) => void;
+  close: () => void;
+}) => {
+  const [review, set_review] = useState("");
+  const [saving, set_saving] = useState(false);
+  const handle_save = async () => {
+    if (!application.id) return;
+    set_saving(true);
+    await review_app(application.id, {
+      review,
+      notes: application.notes ?? "",
+      status: application.status,
+    });
+    set_saving(false);
+    close();
+  };
+
+  useEffect(() => {
+    set_review(application.review ?? "");
+  }, [application]);
+
+  return (
+    <>
+      <div className="flex flex-col">
+        <h1 className="font-bold font-heading text-4xl px-8 pb-4">
+          {application?.user?.full_name} - Review
+        </h1>
+        <div className="flex flex-row">
+          <Button
+            disabled={saving}
+            className="bg-blue-500 ml-8"
+            onClick={handle_save}
+          >
+            {saving ? "Saving..." : "Save"}
+          </Button>
+          <Button
+            variant="outline"
+            disabled={saving}
+            className="ml-2"
+            onClick={close}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+      <div className="relative h-[500px] w-[600px] mt-4">
+        <MDXEditor
+          className="min-h-[300px] border border-gray-200 rounded-lg"
+          markdown={application.review ?? ""}
+          onChange={(value) => set_review(value)}
+        />
+      </div>
+    </>
+  );
+};

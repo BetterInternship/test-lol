@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,7 @@ import { useAppContext } from "@/lib/ctx-app";
 
 export default function SavedJobsPage() {
   const { is_authenticated, recheck_authentication } = useAuthContext();
-  const { save_job, savedJobs, saving, loading, error, refetch } =
+  const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
   const router = useRouter();
   const { is_mobile } = useAppContext();
@@ -162,7 +162,7 @@ export default function SavedJobsPage() {
                   variant="outline"
                   className={`ml-2 ${is_mobile ? "text-sm px-3 py-1" : ""}`}
                 >
-                  {savedJobs.length} saved
+                  {saved_jobs.length} saved
                 </Badge>
               )}
             </div>
@@ -189,7 +189,7 @@ export default function SavedJobsPage() {
                   Try Again
                 </Button>
               </div>
-            ) : savedJobs.length === 0 ? (
+            ) : saved_jobs.length === 0 ? (
               <div className={`text-center ${is_mobile ? "py-20" : "py-12"}`}>
                 <Heart
                   className={`${
@@ -224,7 +224,7 @@ export default function SavedJobsPage() {
               </div>
             ) : (
               <div className={`space-y-${is_mobile ? "4" : "4"}`}>
-                {savedJobs.map((savedJob) => (
+                {saved_jobs.map((savedJob) => (
                   <div
                     key={savedJob.id}
                     className={`bg-white border border-gray-200 rounded-xl ${
@@ -339,7 +339,7 @@ export default function SavedJobsPage() {
                             is_mobile ? "flex-col sm:flex-row" : ""
                           }`}
                         >
-                          <Link href={`/search?jobId=${savedJob.id}`}>
+                          <Link href={`/search/${savedJob.id}`}>
                             <Button
                               size={is_mobile ? "default" : "sm"}
                               className={`${
@@ -353,7 +353,7 @@ export default function SavedJobsPage() {
                           </Link>
                           <Link
                             href={`/search?q=${encodeURIComponent(
-                              savedJob.job?.title ?? ""
+                              savedJob.title ?? ""
                             )}`}
                           >
                             <Button

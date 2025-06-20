@@ -26,8 +26,8 @@ import {
   useProfile,
   useApplications,
 } from "@/hooks/use-api";
-import { useAuthContext } from "../../../lib/ctx-auth";
-import { Application, Job } from "@/lib/db/db.types";
+import { useAuthContext } from "@/lib/ctx-auth";
+import { UserApplication, Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useRefs } from "@/lib/db/use-refs";
 import {
@@ -39,8 +39,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
-import { formatDate } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
+import { Badge } from "@/components/ui/badge";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -219,11 +218,9 @@ export default function SearchPage() {
     if (!selectedJob) return;
 
     try {
-      await apply(selectedJob.id ?? "", {
-        github_link: profile?.github_link || undefined,
-        portfolio_link: profile?.portfolio_link || undefined,
-      });
-      open_success_modal();
+      const { success } = await apply(selectedJob.id ?? "");
+      if (success) open_success_modal();
+      else alert("Could not apply to job.");
     } catch (error) {
       console.error("Failed to submit application:", error);
       alert("Failed to submit application. Please try again.");
@@ -399,11 +396,12 @@ export default function SearchPage() {
 
             {/* Job Details */}
             <div className="w-2/3 flex flex-col overflow-hidden">
-              {selectedJob && (
+              {selectedJob?.id ? (
                 <JobDetails
                   job={selectedJob}
                   actions={[
                     <Button
+                      key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
                       onClick={() =>
                         !appliedJob(selectedJob.id ?? "") && handleApply()
@@ -420,6 +418,7 @@ export default function SearchPage() {
                       {appliedJob(selectedJob.id ?? "") ? "Applied" : "Apply"}
                     </Button>,
                     <Button
+                      key="2"
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
                       className={cn(
@@ -437,6 +436,27 @@ export default function SearchPage() {
                     </Button>,
                   ]}
                 />
+              ) : (
+                <div className="h-full m-auto">
+                  <div className="flex flex-col items-center pt-[25vh] h-screen">
+                    <div className="opacity-35 mb-10">
+                      <div className="flex flex-row justify-center w-full">
+                        <h1 className="block text-6xl font-heading font-bold ">
+                          BetterInternship
+                        </h1>
+                      </div>
+                      <br />
+                      <div className="flex flex-row justify-center w-full">
+                        <p className="block text-2xl">
+                          Better Internships Start Here
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
+                      Click on a job listing to view more details!
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </>
@@ -728,97 +748,55 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className={`${is_mobile ? 'h-full flex flex-col' : ''}`}>
-          {/* Header */}
-          <div className={`${is_mobile ? 'p-4 pb-3' : 'p-6 pb-4'} flex-shrink-0`}>
+        <div className="space-y-6 py-4 px-8">
+          <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
           </div>
+          <DropdownGroup>
+            <GroupableRadioDropdown
+              name="jobType"
+              options={["All types", "Internships", "Full-time", "Part-time"]}
+              on_change={filter_setter("job_type")}
+              default_value={filters.job_type}
+            />
+            <GroupableRadioDropdown
+              name="location"
+              options={["Any location", "In-Person", "Remote", "Hybrid"]}
+              on_change={filter_setter("location")}
+              default_value={filters.location}
+            />
+            <GroupableRadioDropdown
+              name="category"
+              options={[
+                "All industries",
+                "Technology",
+                "Creative Services",
+                "Consumer Goods",
+              ]}
+              on_change={filter_setter("industry")}
+              default_value={filters.industry}
+            />
+          </DropdownGroup>
 
-          {/* Content - No flex-1 to prevent excessive stretching */}
-          <div className={`${is_mobile ? 'px-4' : 'px-6 pb-4'}`}>
-            <div className={`${is_mobile ? 'space-y-5' : 'space-y-6'}`}>
-              <DropdownGroup>
-                {/* Job Categories Dropdown */}
-                <div className="space-y-2">
-                  <label className="text-lg font-semibold text-gray-900 block">Job Categories</label>
-                  <div className="relative border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-150">
-                    <GroupableRadioDropdown
-                      name="category"
-                      options={[
-                        "All categories",
-                        "Tech",
-                        "Non-Tech", 
-                        "Engineering",
-                        "Research",
-                        "Education",
-                        "Others",
-                      ]}
-                      on_change={filter_setter("category")}
-                      default_value={filters.category || "All categories"}
-                    />
-                  </div>
-                </div>
-
-                {/* Location Dropdown */}
-                <div className="space-y-2">
-                  <label className="text-lg font-semibold text-gray-900 block">Any location</label>
-                  <div className="relative border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-150">
-                    <GroupableRadioDropdown
-                      name="location"
-                      options={["Any location", "In-Person", "Remote", "Hybrid"]}
-                      on_change={filter_setter("location")}
-                      default_value={filters.location || "Any location"}
-                    />
-                  </div>
-                </div>
-
-                {/* Industries Dropdown */}
-                <div className="space-y-2">
-                  <label className="text-lg font-semibold text-gray-900 block">All industries</label>
-                  <div className="relative border-2 border-gray-200 rounded-xl hover:border-gray-300 transition-colors duration-150">
-                    <GroupableRadioDropdown
-                      name="industry"
-                      options={[
-                        "All industries",
-                        "Technology",
-                        "Creative Services", 
-                        "Consumer Goods",
-                      ]}
-                      on_change={filter_setter("industry")}
-                      default_value={filters.industry || "All industries"}
-                    />
-                  </div>
-                </div>
-              </DropdownGroup>
-            </div>
-          </div>
-
-          {/* Flexible spacer to push buttons down on mobile */}
-          {is_mobile && <div className="flex-1"></div>}
-
-          {/* Fixed Action Buttons at Bottom */}
-          <div className={`${is_mobile ? 'p-4 pb-12 flex-shrink-0 border-t border-gray-100' : 'p-6 pt-4'}`}>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  // Clear all filters including category
-                  set_filter("job_type", "All types");
-                  set_filter("location", "Any location");
-                  set_filter("industry", "All industries");
-                  set_filter("category", "All categories");
-                }}
-                className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
-              >
-                Clear Filters
-              </Button>
-              <Button
-                onClick={() => close_filter_modal()}
-                className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                Apply Filters
-              </Button>
-            </div>
+          <div className="flex gap-3 pt-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Clear temp filters but keep search term
+                set_filter("job_type", "All types");
+                set_filter("location", "Any location");
+                set_filter("industry", "All industries");
+              }}
+              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+            >
+              Clear Filters
+            </Button>
+            <Button
+              onClick={() => close_filter_modal()}
+              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Apply Filters
+            </Button>
           </div>
         </div>
       </FilterModal>

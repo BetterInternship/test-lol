@@ -9,9 +9,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { verify, redirect_if_logged_in } = useAuthContext();
-
-  redirect_if_logged_in();
+  const { verify } = useAuthContext();
 
   // Redirect to home page when verified
   useEffect(() => {
@@ -27,11 +25,12 @@ export default function VerifyPage() {
     const key = searchParams.get("key");
 
     if (user && key) {
-      // Production mode with real verification
       verify(user, key)
-        .then(() => {
-          setVerified(true);
-          setTimeout(() => router.push("/"), 2000);
+        .then((r) => {
+          if (r && r.success) {
+            setVerified(true);
+            setTimeout(() => router.push("/"), 2000);
+          }
         })
         .catch((error) => {
           alert("Verification failed: " + error.message);
@@ -71,19 +70,6 @@ export default function VerifyPage() {
               Redirecting you to the dashboard...
             </p>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-600 mt-8">
-          <p>
-            Need help? Contact us at{" "}
-            <a
-              href="mailto:hello@betterinternship.com"
-              className="text-blue-600 hover:underline"
-            >
-              hello@betterinternship.com
-            </a>
-          </p>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 "use client";
 
-import { useAuthContext } from "@/lib/ctx-auth";
-import { usePathname, useRouter } from "next/navigation";
-import { User, Settings, BookA, Heart, LogOut } from "lucide-react";
+import { useAuthContext } from "../../app/hire/authctx";
+import { useRouter } from "next/navigation";
+import { User, LogOut, Building2, UserPlus } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "../ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -26,12 +26,6 @@ export const Header = () => {
         "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
         is_mobile ? "px-6 py-4" : "py-4 px-8"
       )}
-      style={{ 
-        // Ensure dropdown can escape overflow constraints
-        overflow: 'visible',
-        position: 'relative',
-        zIndex: 100
-      }}
     >
       <HeaderTitle />
       {route_excluded(header_routes) ? (
@@ -49,8 +43,8 @@ export const Header = () => {
  * @component
  */
 export const ProfileButton = () => {
-  const { user, is_authenticated, logout } = useAuthContext();
   const router = useRouter();
+  const { user, is_authenticated, logout } = useAuthContext();
 
   const handle_logout = () => {
     logout().then(() => {
@@ -73,7 +67,11 @@ export const ProfileButton = () => {
           <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
             <User className="w-4 h-4 text-gray-600" />
           </div>
-        }
+          <span className="text-gray-700 font-medium">
+            {is_authenticated() ? get_display_name() : "Account"}
+          </span>
+        </>
+      }
       content={
         <div className="px-4 py-3 border-b border-gray-200">
           <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
@@ -83,17 +81,13 @@ export const ProfileButton = () => {
         </div>
       }
     >
-      <DropdownOption href="/profile">
-        <Settings className="w-4 h-4 inline-block m-1 mr-2" />
-        Profile Settings
+      <DropdownOption href="/company-profile">
+        <Building2 className="w-4 h-4 inline-block m-1 mr-2" />
+        Edit Company Profile
       </DropdownOption>
       <DropdownOption href="/applications">
-        <BookA className="w-4 h-4 inline-block m-1 mr-2" />
-        Applications
-      </DropdownOption>
-      <DropdownOption href="/saved">
-        <Heart className="w-4 h-4 inline-block m-1 mr-2" />
-        Saved Jobs
+        <UserPlus className="w-4 h-4 inline-block m-1 mr-2" />
+        Add Users
       </DropdownOption>
       <DropdownOption href="/login" on_click={handle_logout}>
         <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2"></LogOut>

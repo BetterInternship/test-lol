@@ -22,7 +22,7 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
       <AnimatePresence>
         {is_open && (
           <motion.div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -34,11 +34,7 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
             }}
           >
             <motion.div
-              className={`bg-white overflow-hidden shadow-2xl ${
-                is_mobile 
-                  ? "w-full h-full rounded-2xl" // Fully rounded corners on mobile
-                  : "rounded-2xl max-w-4xl max-h-[90vh]" // Fully rounded on desktop
-              }`}
+              className="bg-white rounded-lg overflow-hidden shadow-2xl"
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}

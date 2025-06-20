@@ -1,3 +1,6 @@
+@import url('https://fonts.cdnfonts.com/css/cosima');
+@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -156,4 +159,26 @@ div[contenteditable="true"] {
 
 .markdown > * {
   all: revert;
+}
+
+.input-box {
+  @apply border border-opacity-80 border-gray-300 transition-colors duration-100 rounded-md text-gray-700 placeholder-gray-500;
+  @apply hover:cursor-pointer hover:border-gray-300 hover:bg-gray-50;
+}
+
+.font-heading {
+  @apply font-display tracking-normal;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4,
+.markdown h5,
+.markdown h6 {
+  @apply font-heading text-gray-700;
+}
+
+button[role="checkbox"]:checked {
+  @apply bg-blue-600;
 }

@@ -10,6 +10,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: [
+          '"Cosima"',
+          '"SF Pro Display"',
+          '"Helvetica Neue"',
+          '"BlinkMacSystemFont"',
+          '"Arial"',
+          '"sans-serif"',
+        ],
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
@@ -91,6 +101,10 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("@tailwindcss/typography"), require("tailwindcss-animate")],
+  plugins: [
+    require("@tailwindcss/typography"),
+    require("tailwindcss-animate"),
+    require("@tailwindcss/forms"),
+  ],
 };
 export default config;

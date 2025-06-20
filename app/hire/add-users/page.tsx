@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { 
-  User, 
-  BarChart3, 
+} from "@/components/ui/dropdown-menu";
+import {
+  User,
+  BarChart3,
   FileText,
   Building2,
   UserPlus,
@@ -27,21 +27,21 @@ import {
   Edit2,
   Check,
   X,
-  FileEdit
-} from "lucide-react"
-import Link from "next/link"
+  FileEdit,
+} from "lucide-react";
+import Link from "next/link";
 
 interface UserData {
-  id: number
-  name: string
-  email: string
-  role: string
-  dateAdded: string
-  status: string
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  dateAdded: string;
+  status: string;
 }
 
 export default function AddUsers() {
-  const router = useRouter()
+  const router = useRouter();
   const [users, setUsers] = useState<UserData[]>([
     {
       id: 1,
@@ -49,7 +49,7 @@ export default function AddUsers() {
       email: "john.smith@google.com",
       role: "Admin",
       dateAdded: "May 15, 2025",
-      status: "Active"
+      status: "Active",
     },
     {
       id: 2,
@@ -57,7 +57,7 @@ export default function AddUsers() {
       email: "sarah.j@google.com",
       role: "Recruiter",
       dateAdded: "May 10, 2025",
-      status: "Active"
+      status: "Active",
     },
     {
       id: 3,
@@ -65,20 +65,20 @@ export default function AddUsers() {
       email: "m.chen@google.com",
       role: "Recruiter",
       dateAdded: "May 5, 2025",
-      status: "Active"
+      status: "Active",
     },
-  ])
+  ]);
 
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [editingId, setEditingId] = useState<number | null>(null)
-  const [editingUser, setEditingUser] = useState<Partial<UserData>>({})
-  
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingUser, setEditingUser] = useState<Partial<UserData>>({});
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
-    role: "Recruiter"
-  })
+    role: "Recruiter",
+  });
 
   const handleAddUser = () => {
     if (newUser.name && newUser.email) {
@@ -87,49 +87,56 @@ export default function AddUsers() {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
-        dateAdded: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        status: "Active"
-      }
-      setUsers([...users, user])
-      setNewUser({ name: "", email: "", role: "Recruiter" })
-      setShowAddForm(false)
+        dateAdded: new Date().toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        }),
+        status: "Active",
+      };
+      setUsers([...users, user]);
+      setNewUser({ name: "", email: "", role: "Recruiter" });
+      setShowAddForm(false);
     }
-  }
+  };
 
   const handleDeleteUser = (id: number) => {
-    setUsers(users.filter(user => user.id !== id))
-  }
+    setUsers(users.filter((user) => user.id !== id));
+  };
 
   const handleEditUser = (user: UserData) => {
-    setEditingId(user.id)
-    setEditingUser({ ...user })
-  }
+    setEditingId(user.id);
+    setEditingUser({ ...user });
+  };
 
   const handleSaveEdit = () => {
-    setUsers(users.map(user => 
-      user.id === editingId ? { ...user, ...editingUser } as UserData : user
-    ))
-    setEditingId(null)
-    setEditingUser({})
-  }
+    setUsers(
+      users.map((user) =>
+        user.id === editingId ? ({ ...user, ...editingUser } as UserData) : user
+      )
+    );
+    setEditingId(null);
+    setEditingUser({});
+  };
 
   const handleCancelEdit = () => {
-    setEditingId(null)
-    setEditingUser({})
-  }
+    setEditingId(null);
+    setEditingUser({});
+  };
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredUsers = users.filter(
+    (user) =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleLogout = () => {
     // Clear any stored authentication data (if you add localStorage/sessionStorage later)
     // localStorage.removeItem('authToken') // Future implementation
-    
+
     // Redirect to login page
-    router.push('/login')
-  }
+    router.push("/login");
+  };
 
   return (
     <div className="h-screen bg-white flex">
@@ -138,19 +145,28 @@ export default function AddUsers() {
         <div className="p-6">
           <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
         </div>
-        
+
         <div className="px-6">
           <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
           <div className="space-y-2">
-            <Link href="/dashboard" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <BarChart3 className="h-5 w-5" />
-              Dashboard
+              My Applications
             </Link>
-            <Link href="/listings" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/listings"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileText className="h-5 w-5" />
               My Listings
             </Link>
-            <Link href="/forms-automation" className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors">
+            <Link
+              href="/forms-automation"
+              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
+            >
               <FileEdit className="h-5 w-5" />
               Forms Automation
             </Link>
@@ -176,7 +192,7 @@ export default function AddUsers() {
                   <span>Edit Company Profile</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="cursor-pointer text-red-600"
                 onClick={handleLogout}
               >
@@ -220,7 +236,9 @@ export default function AddUsers() {
                   <Input
                     id="new-name"
                     value={newUser.name}
-                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, name: e.target.value })
+                    }
                     placeholder="Enter full name"
                     className="mt-1"
                   />
@@ -231,7 +249,9 @@ export default function AddUsers() {
                     id="new-email"
                     type="email"
                     value={newUser.email}
-                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, email: e.target.value })
+                    }
                     placeholder="user@company.com"
                     className="mt-1"
                   />
@@ -241,7 +261,9 @@ export default function AddUsers() {
                   <select
                     id="new-role"
                     value={newUser.role}
-                    onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                    onChange={(e) =>
+                      setNewUser({ ...newUser, role: e.target.value })
+                    }
                     className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     <option value="Admin">Admin</option>
@@ -254,8 +276,8 @@ export default function AddUsers() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setShowAddForm(false)
-                    setNewUser({ name: "", email: "", role: "Recruiter" })
+                    setShowAddForm(false);
+                    setNewUser({ name: "", email: "", role: "Recruiter" });
                   }}
                 >
                   Cancel
@@ -276,12 +298,24 @@ export default function AddUsers() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-left p-4 font-semibold text-gray-800">Name</th>
-                    <th className="text-left p-4 font-semibold text-gray-800">Email</th>
-                    <th className="text-left p-4 font-semibold text-gray-800">Role</th>
-                    <th className="text-left p-4 font-semibold text-gray-800">Date Added</th>
-                    <th className="text-left p-4 font-semibold text-gray-800">Status</th>
-                    <th className="text-left p-4 font-semibold text-gray-800">Actions</th>
+                    <th className="text-left p-4 font-semibold text-gray-800">
+                      Name
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-800">
+                      Email
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-800">
+                      Role
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-800">
+                      Date Added
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-800">
+                      Status
+                    </th>
+                    <th className="text-left p-4 font-semibold text-gray-800">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -291,7 +325,12 @@ export default function AddUsers() {
                         {editingId === user.id ? (
                           <Input
                             value={editingUser.name}
-                            onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                            onChange={(e) =>
+                              setEditingUser({
+                                ...editingUser,
+                                name: e.target.value,
+                              })
+                            }
                             className="w-full"
                           />
                         ) : (
@@ -299,7 +338,9 @@ export default function AddUsers() {
                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                               <User className="h-4 w-4 text-blue-600" />
                             </div>
-                            <span className="font-medium text-gray-900">{user.name}</span>
+                            <span className="font-medium text-gray-900">
+                              {user.name}
+                            </span>
                           </div>
                         )}
                       </td>
@@ -308,7 +349,12 @@ export default function AddUsers() {
                           <Input
                             type="email"
                             value={editingUser.email}
-                            onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                            onChange={(e) =>
+                              setEditingUser({
+                                ...editingUser,
+                                email: e.target.value,
+                              })
+                            }
                             className="w-full"
                           />
                         ) : (
@@ -319,7 +365,12 @@ export default function AddUsers() {
                         {editingId === user.id ? (
                           <select
                             value={editingUser.role}
-                            onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                            onChange={(e) =>
+                              setEditingUser({
+                                ...editingUser,
+                                role: e.target.value,
+                              })
+                            }
                             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                           >
                             <option value="Admin">Admin</option>
@@ -327,13 +378,15 @@ export default function AddUsers() {
                             <option value="Viewer">Viewer</option>
                           </select>
                         ) : (
-                          <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                            user.role === 'Admin' 
-                              ? 'bg-purple-100 text-purple-700' 
-                              : user.role === 'Recruiter'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                              user.role === "Admin"
+                                ? "bg-purple-100 text-purple-700"
+                                : user.role === "Recruiter"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-100 text-gray-700"
+                            }`}
+                          >
                             <Shield className="h-3 w-3" />
                             {user.role}
                           </span>
@@ -400,5 +453,5 @@ export default function AddUsers() {
         </div>
       </div>
     </div>
-  )
+  );
 }
