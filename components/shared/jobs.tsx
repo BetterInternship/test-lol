@@ -698,10 +698,10 @@ export const JobDetails = ({
       {/* Job Description */}
       <hr />
       <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Description
-        </h1>
-        <div className="markdown">
+        </h2>
+        <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
           <ReactMarkdown>{job.description}</ReactMarkdown>
         </div>
       </div>
@@ -709,10 +709,10 @@ export const JobDetails = ({
       {/* Job Requirements */}
       <hr />
       <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Requirements
-        </h1>
-        <div className="markdown">
+        </h2>
+        <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
           <ReactMarkdown>{job.requirements}</ReactMarkdown>
         </div>
       </div>

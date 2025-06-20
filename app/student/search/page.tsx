@@ -566,8 +566,8 @@ export default function SearchPage() {
 
                 {/* Job Description */}
                 <div className="mb-6">
-                  <h2 className="text-xl font-bold mb-4">Description</h2>
-                  <div className="prose prose-sm max-w-none text-gray-700">
+                  <h2 className="text-lg font-semibold mb-3">Description</h2>
+                  <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                     <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
                   </div>
                 </div>
@@ -575,7 +575,7 @@ export default function SearchPage() {
                 {/* Job Requirements */}
                 {selectedJob.requirements && (
                   <div className="mb-6">
-                    <h2 className="text-lg font-bold mb-3">Requirements</h2>
+                    <h2 className="text-lg font-semibold mb-3">Requirements</h2>
                     <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                       <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                     </div>
