@@ -5,15 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Edit2,
   Upload,
-  Home,
-  Monitor,
-  HardHat,
-  GraduationCap,
-  Palette,
-  Stethoscope,
-  Scale,
-  ChefHat,
-  Building2,
   User,
   Phone,
   ExternalLink,
@@ -24,6 +15,7 @@ import {
   Github,
   Hash,
   Camera,
+  GraduationCap,
 } from "lucide-react";
 import { useProfile } from "@/hooks/use-api";
 import { useRouter } from "next/navigation";
@@ -272,69 +264,6 @@ export default function ProfilePage() {
   return (
     <>
       <div className="flex h-full">
-        {/* Left Sidebar - Hide on mobile */}
-        {!is_mobile && (
-          <div className="w-80 border-r bg-gray-50 flex flex-col">
-            <div className="p-6 space-y-4 flex-1 overflow-y-auto">
-              <Link
-                href="/search?category=all"
-                className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-2 rounded-md hover:bg-gray-100 transition-colors"
-              >
-                <Home className="h-5 w-5" />
-                <span>Browse All</span>
-              </Link>
-
-              <div className="pt-4 border-t border-gray-200">
-                <h2 className="font-semibold mb-4 text-gray-800">
-                  All Categories
-                </h2>
-                <div className="space-y-2">
-                  <CategoryLink
-                    icon={<Monitor className="h-5 w-5" />}
-                    label="Technology & Dev."
-                    category="Technology & Development"
-                  />
-                  <CategoryLink
-                    icon={<HardHat className="h-5 w-5" />}
-                    label="Engineering"
-                    category="Engineering"
-                  />
-                  <CategoryLink
-                    icon={<GraduationCap className="h-5 w-5" />}
-                    label="Education & Psychology"
-                    category="Education & Psychology"
-                  />
-                  <CategoryLink
-                    icon={<Palette className="h-5 w-5" />}
-                    label="Design & Arts"
-                    category="Design & Arts"
-                  />
-                  <CategoryLink
-                    icon={<Stethoscope className="h-5 w-5" />}
-                    label="Medical"
-                    category="Medical"
-                  />
-                  <CategoryLink
-                    icon={<Scale className="h-5 w-5" />}
-                    label="Law"
-                    category="Law"
-                  />
-                  <CategoryLink
-                    icon={<ChefHat className="h-5 w-5" />}
-                    label="Culinary Arts"
-                    category="Culinary Arts"
-                  />
-                  <CategoryLink
-                    icon={<Building2 className="h-5 w-5" />}
-                    label="Banking & Finance"
-                    category="Banking & Finance"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Profile Content */}
@@ -1168,27 +1097,5 @@ export default function ProfilePage() {
         <ApplicantModalContent applicant={profile} />
       </EmployerModal>
     </>
-  );
-}
-
-function CategoryLink({
-  icon,
-  label,
-  category,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  category: string;
-}) {
-  return (
-    <Link
-      href={`/search?category=${encodeURIComponent(category)}`}
-      className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-2 rounded-md hover:bg-gray-100 transition-colors"
-    >
-      <div className="border rounded-full p-2 bg-white flex-shrink-0">
-        {icon}
-      </div>
-      <span className="text-sm truncate">{label}</span>
-    </Link>
   );
 }
