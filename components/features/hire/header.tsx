@@ -31,12 +31,14 @@ export const Header = () => {
       )}
     >
       <HeaderTitle />
-      <Link
-        className="p-2 px-4 border border-gray-300 rounded-sm"
-        href={"/god"}
-      >
-        Select Different Employer
-      </Link>
+      {god && (
+        <Link
+          className="p-2 px-4 border border-gray-300 rounded-sm"
+          href={"/god"}
+        >
+          Select Different Employer
+        </Link>
+      )}
       {route_excluded(header_routes) ? (
         <ProfileButton />
       ) : (
