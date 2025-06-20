@@ -131,8 +131,10 @@ export default function ApplicationsPage() {
                         
                         <div className="flex items-center gap-2 text-gray-700 mb-3">
                           <Building className="w-4 h-4" />
-                          <span className="font-medium">{application.job?.employer?.name}</span>
-                          {application.job?.employer?.has_dlsu_moa && (
+                          <span className="font-medium">
+                            {application.job?.employer?.name || application.employer?.name || "Company Name"}
+                          </span>
+                          {(application.job?.employer?.has_dlsu_moa || application.employer?.has_dlsu_moa) && (
                             <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
                               <CheckCircle className="w-3 h-3 mr-1" />
                               DLSU MOA
