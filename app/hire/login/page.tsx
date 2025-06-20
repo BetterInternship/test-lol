@@ -102,7 +102,8 @@ export default function LoginPage() {
     const otpString = otp.join("");
     await verify_otp(email, otpString).then((r) => {
       if (r.success) {
-        router.push("/dashboard");
+        if (r.god) router.push("/god");
+        else router.push("/dashboard");
       } else {
         setError("Invalid OTP.");
       }

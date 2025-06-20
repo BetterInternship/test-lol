@@ -53,15 +53,16 @@ export default function MyListings() {
   // Filter jobs based on search term
   const filteredJobs = useMemo(() => {
     if (!searchTerm.trim()) return ownedJobs;
-    return ownedJobs.filter(job => 
-      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    return ownedJobs.filter(
+      (job) =>
+        job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [ownedJobs, searchTerm]);
 
   // Handle search input key press
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       // Could add additional search functionality here
     }
   };
@@ -316,8 +317,8 @@ const CreateModalForm = ({
 
     setCreating(true);
     try {
-      const { job: created_job, success } = await create_job(job);
-      if (!success) {
+      const response = await create_job(job);
+      if (!response?.success) {
         alert("Could not create job");
         return;
       }

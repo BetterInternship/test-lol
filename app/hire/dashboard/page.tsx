@@ -29,18 +29,14 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { useFile } from "@/hooks/use-file";
-import { application_service, user_service } from "@/lib/api";
+import { user_service } from "@/lib/api";
 import { Pfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
 
 export default function Dashboard() {
-  const {
-    employer_applications,
-    review: review_app,
-    loading,
-    error,
-  } = useEmployerApplications();
+  const { employer_applications, review: review_app } =
+    useEmployerApplications();
   const { redirect_if_not_loggedin } = useAuthContext();
   const { client_width, client_height } = useClientDimensions();
   const {
@@ -531,9 +527,9 @@ export default function Dashboard() {
                           <GroupableRadioDropdown
                             name="status"
                             options={app_statuses.map((as) => as.name)}
-                            default_value={to_app_status_name(
-                              application.status
-                            )}
+                            default_value={
+                              to_app_status_name(application.status) ?? ""
+                            }
                             on_change={async (status) => {
                               if (!application?.id) {
                                 console.error(
