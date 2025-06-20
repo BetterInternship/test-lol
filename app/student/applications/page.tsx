@@ -7,7 +7,7 @@ import React from "react";
 import Link from "next/link";
 
 // Third-party imports
-import { BookA, Calendar, Clock, Clipboard, CheckCircle } from "lucide-react";
+import { BookA, Calendar, Clock, Clipboard, CheckCircle, Building } from "lucide-react";
 
 // UI components
 import { Button } from "@/components/ui/button";
@@ -129,14 +129,8 @@ export default function ApplicationsPage() {
                           />
                         </div>
                         
-                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                          <Calendar className="w-4 h-4" />
-                          <span className="text-sm">
-                            Applied on {formatDate(application.applied_at ?? "")}
-                          </span>
-                        </div>
-
                         <div className="flex items-center gap-2 text-gray-700 mb-3">
+                          <Building className="w-4 h-4" />
                           <span className="font-medium">{application.job?.employer?.name}</span>
                           {application.job?.employer?.has_dlsu_moa && (
                             <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
@@ -144,6 +138,13 @@ export default function ApplicationsPage() {
                               DLSU MOA
                             </span>
                           )}
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <Calendar className="w-4 h-4" />
+                          <span className="text-sm">
+                            Applied on {formatDate(application.applied_at ?? "")}
+                          </span>
                         </div>
                       </div>
                     </div>

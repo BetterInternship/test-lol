@@ -279,23 +279,6 @@ export default function SavedJobsPage() {
                               View Details
                             </Button>
                           </Link>
-                          <Link
-                            href={`/search?q=${encodeURIComponent(
-                              savedJob.title ?? ""
-                            )}`}
-                          >
-                            <Button
-                              variant="outline"
-                              size={is_mobile ? "default" : "sm"}
-                              className={`${
-                                is_mobile
-                                  ? "w-full sm:w-auto px-6 py-2 font-medium"
-                                  : ""
-                              }`}
-                            >
-                              Find Similar
-                            </Button>
-                          </Link>
                         </div>
                       </div>
                     </div>
