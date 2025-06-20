@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-19 15:16:38
+ * @ Modified time: 2025-06-20 15:06:57
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -61,7 +61,8 @@ const DropdownOptionButton = ({
   return (
     <button
       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-      onClick={() => {
+      onClick={(e) => {
+        e.stopPropagation();
         set_is_open(false);
         children.props.on_click && children.props.on_click();
         children.props.href && router.push(children.props.href);

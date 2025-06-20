@@ -240,7 +240,6 @@ export function useOwnedJobs(
 
   return {
     ownedJobs: filteredJobs,
-    create_job,
     update_job,
     create_job,
     loading,
