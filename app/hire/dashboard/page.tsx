@@ -46,9 +46,11 @@ export default function Dashboard() {
   const {
     app_statuses,
     get_college,
+    get_app_status_by_name,
     to_college_name,
     to_level_name,
     to_university_name,
+    to_app_status_name,
   } = useRefs();
   const [selected_application, set_selected_application] =
     useState<EmployerApplication | null>(null);
@@ -320,8 +322,12 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-1">Total Applications</h4>
-                  <p className="text-3xl font-bold text-gray-900">{employer_applications.length}</p>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">
+                    Total Applications
+                  </h4>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {employer_applications.length}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                   <User className="w-6 h-6 text-blue-600" />
@@ -335,8 +341,12 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-1">Active Jobs</h4>
-                  <p className="text-3xl font-bold text-gray-900">{uniqueJobs.length}</p>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">
+                    Active Jobs
+                  </h4>
+                  <p className="text-3xl font-bold text-gray-900">
+                    {uniqueJobs.length}
+                  </p>
                 </div>
                 <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                   <Building2 className="w-6 h-6 text-green-600" />
@@ -350,11 +360,17 @@ export default function Dashboard() {
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-600 mb-1">Recent Activity</h4>
+                  <h4 className="text-sm font-medium text-gray-600 mb-1">
+                    Recent Activity
+                  </h4>
                   <p className="text-3xl font-bold text-gray-900">
-                    {employer_applications.filter(app => 
-                      new Date(app.applied_at ?? "").getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
-                    ).length}
+                    {
+                      employer_applications.filter(
+                        (app) =>
+                          new Date(app.applied_at ?? "").getTime() >
+                          Date.now() - 7 * 24 * 60 * 60 * 1000
+                      ).length
+                    }
                   </p>
                 </div>
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -515,7 +531,25 @@ export default function Dashboard() {
                           <GroupableRadioDropdown
                             name="status"
                             options={app_statuses.map((as) => as.name)}
-                            on_change={() => alert("Status updated.")}
+                            default_value={to_app_status_name(
+                              application.status
+                            )}
+                            on_change={async (status) => {
+                              if (!application?.id) {
+                                console.error(
+                                  "Not an application you can edit."
+                                );
+                                return;
+                              }
+
+                              // @ts-ignore
+                              const { application: updated_app, success } =
+                                await review_app(application.id, {
+                                  status: get_app_status_by_name(status)?.id,
+                                });
+
+                              console.log(success, updated_app);
+                            }}
                           ></GroupableRadioDropdown>
                         </td>
                       </tr>
@@ -557,7 +591,9 @@ export default function Dashboard() {
       <CalendlyModal>
         {selected_application?.user?.calendly_link ? (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Schedule Interview</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Schedule Interview
+            </h2>
             <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
               <iframe
                 src={`${selected_application?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
