@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-19 03:21:27
+ * @ Modified time: 2025-06-21 01:09:06
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -17,6 +17,8 @@ import {
   JobAllowance,
   JobPayFreq,
   AppStatus,
+  Industry,
+  JobCategory,
 } from "./db.types";
 import { createClient } from "@supabase/supabase-js";
 
@@ -38,8 +40,10 @@ export interface IRefsContext {
   job_types: JobType[];
   job_modes: JobMode[];
   job_allowances: JobAllowance[];
+  job_categories: JobCategory[];
   job_pay_freq: JobPayFreq[];
   app_statuses: AppStatus[];
+  industries: Industry[];
 
   to_level_name: (id: number | null | undefined) => string | null;
   to_college_name: (id: string | null | undefined) => string | null;
@@ -49,6 +53,8 @@ export interface IRefsContext {
   to_job_allowance_name: (id: number | null | undefined) => string | null;
   to_job_pay_freq_name: (id: number | null | undefined) => string | null;
   to_app_status_name: (id: number | null | undefined) => string | null;
+  to_industry_name: (id: string | null | undefined) => string | null;
+  to_job_category_name: (id: string | null | undefined) => string | null;
 
   get_level: (id: number | null | undefined) => Level | null;
   get_college: (id: string | null | undefined) => College | null;
@@ -58,6 +64,8 @@ export interface IRefsContext {
   get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
   get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
   get_app_status: (id: number | null | undefined) => JobPayFreq | null;
+  get_industry: (id: string | null | undefined) => Industry | null;
+  get_job_category: (id: string | null | undefined) => JobCategory | null;
 
   get_level_by_name: (name: string | null | undefined) => Level | null;
   get_college_by_name: (name: string | null | undefined) => College | null;
@@ -73,9 +81,13 @@ export interface IRefsContext {
   get_job_pay_freq_by_name: (
     name: string | null | undefined
   ) => JobPayFreq | null;
+  get_job_category_by_name: (
+    name: string | null | undefined
+  ) => JobCategory | null;
   get_app_status_by_name: (
     name: string | null | undefined
   ) => JobPayFreq | null;
+  get_industry_by_name: (name: string | null | undefined) => Industry | null;
 
   ref_is_not_null: (ref: any) => boolean;
 }
@@ -234,9 +246,25 @@ export const useRefsContext = () => {
     loading: l8,
   } = createRefInternalHook<number, AppStatus>("ref_app_statuses");
 
+  const {
+    data: industries,
+    get: get_industry,
+    to_name: to_industry_name,
+    get_by_name: get_industry_by_name,
+    loading: l9,
+  } = createRefInternalHook<string, Industry>("ref_industries");
+
+  const {
+    data: job_categories,
+    get: get_job_category,
+    to_name: to_job_category_name,
+    get_by_name: get_job_category_by_name,
+    loading: l10,
+  } = createRefInternalHook<string, JobCategory>("ref_category");
+
   useEffect(() => {
-    setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8);
-  }, [l1, l2, l3, l4, l5, l6, l7]);
+    setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10);
+  }, [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10]);
 
   /**
    * An additional helper for grabbing uni from email
@@ -262,7 +290,9 @@ export const useRefsContext = () => {
     job_types,
     job_modes,
     job_allowances,
+    job_categories,
     job_pay_freq,
+    industries,
     app_statuses,
 
     to_level_name,
@@ -271,17 +301,21 @@ export const useRefsContext = () => {
     to_job_type_name,
     to_job_mode_name,
     to_job_allowance_name,
+    to_job_category_name,
     to_job_pay_freq_name,
     to_app_status_name,
+    to_industry_name,
 
     get_level,
     get_college,
     get_university,
     get_job_type,
     get_job_mode,
+    get_job_category,
     get_job_allowance,
     get_job_pay_freq,
     get_app_status,
+    get_industry,
 
     get_level_by_name,
     get_college_by_name,
@@ -290,8 +324,10 @@ export const useRefsContext = () => {
     get_job_type_by_name,
     get_job_mode_by_name,
     get_job_allowance_by_name,
+    get_job_category_by_name,
     get_job_pay_freq_by_name,
     get_app_status_by_name,
+    get_industry_by_name,
 
     ref_is_not_null: (ref: any) => ref || ref === 0,
   };
