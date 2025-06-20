@@ -268,7 +268,7 @@ export default function ProfilePage() {
         <div className="flex-1 flex flex-col">
           {/* Profile Content */}
           <div
-            className={`flex-1 overflow-y-auto ${
+            className={`flex-1 ${
               is_mobile ? "p-4 pb-32" : "p-4"
             }`}
           >
@@ -277,9 +277,9 @@ export default function ProfilePage() {
             >
               <div className="flex flex-col gap-y-3 mb-8">
                 <div className="relative w-24 h-24 rounded-full border border-gray-300 flex items-center overflow-hidden">
-                  {profile.profile_picture ? (
+                  {profile.profile_picture && pfp_url ? (
                     <>
-                      <img className="w-24 h-24" src={pfp_url}></img>
+                      <img className="w-24 h-24" src={pfp_url} alt="Profile picture"></img>
                       <Button
                         variant="ghost"
                         className="absolute w-full h-full hover:opacity-30 opacity-0"
