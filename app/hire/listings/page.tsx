@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import {
-  BarChart3,
-  Search,
-  FileText,
-  FileEdit,
-  Filter,
-  Plus,
-} from "lucide-react";
+import { BarChart3, Search, FileText, FileEdit, Plus } from "lucide-react";
 import Link from "next/link";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
@@ -22,16 +15,14 @@ import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { Paginator } from "@/components/ui/paginator";
-import {
-  EditableJobDetails,
-  EmployerJobCard,
-  JobCard,
-} from "@/components/shared/jobs";
+import { EditableJobDetails, EmployerJobCard } from "@/components/shared/jobs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
 } from "@/components/ui/dropdown";
 import { useAuthContext } from "../authctx";
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
 
 export default function MyListings() {
   const { redirect_if_not_loggedin } = useAuthContext();
@@ -274,12 +265,14 @@ const CreateModalForm = ({
       mode_name: string;
       type_name: string;
       allowance_name: string;
+      industry_name: string;
     }
   >();
   const {
     get_job_mode_by_name,
     get_job_type_by_name,
     get_job_pay_freq_by_name,
+    industries,
     job_types,
     job_modes,
     job_pay_freq,
@@ -313,7 +306,12 @@ const CreateModalForm = ({
       require_github: form_data.require_github,
       require_portfolio: form_data.require_portfolio,
       is_unlisted: form_data.is_unlisted,
+      start_date: form_data.start_date,
+      end_date: form_data.end_date,
+      is_year_round: form_data.is_year_round,
     };
+
+    console.log(form_data.start_date, form_data.end_date);
 
     setCreating(true);
     try {
@@ -411,7 +409,19 @@ const CreateModalForm = ({
               <DropdownGroup>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Employment Type
+                    Industry
+                  </Label>
+                  <GroupableRadioDropdown
+                    name="type"
+                    default_value={form_data.industry_name}
+                    options={industries.map((i) => i.name)}
+                    on_change={field_setter("industry_name")}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Work Load
                   </Label>
                   <GroupableRadioDropdown
                     name="type"
@@ -489,6 +499,58 @@ const CreateModalForm = ({
                     className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={form_data.is_year_round ?? false}
+                    onCheckedChange={(value) => {
+                      set_fields({
+                        is_year_round: !!value,
+                      });
+                    }}
+                  />
+                  <span className="text-sm">Year Round</span>
+                </div>
+                {!form_data.is_year_round && (
+                  <>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Start Date
+                      </label>
+                      <DatePicker
+                        id="start-date"
+                        selected={
+                          form_data.start_date
+                            ? new Date(form_data.start_date)
+                            : new Date()
+                        }
+                        className="input-box"
+                        onChange={(date) =>
+                          set_field("start_date", date?.getTime())
+                        }
+                      ></DatePicker>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        End Date
+                      </label>
+                      <DatePicker
+                        id="end-date"
+                        selected={
+                          form_data.end_date
+                            ? new Date(form_data.end_date)
+                            : new Date()
+                        }
+                        className="input-box"
+                        onChange={(date) =>
+                          set_field("end_date", date?.getTime())
+                        }
+                      ></DatePicker>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
