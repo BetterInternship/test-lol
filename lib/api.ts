@@ -67,6 +67,16 @@ export const auth_service = {
       );
     },
 
+    async login_as_employer(employer_id: string) {
+      return APIClient.post<AuthResponse>(
+        APIRoute("employer").r("proxy", employer_id).build()
+      );
+    },
+
+    async get_all_employers() {
+      return APIClient.get<AuthResponse>(APIRoute("employer").r("all").build());
+    },
+
     // ! to implement
     async refresh_token() {},
 
@@ -78,7 +88,9 @@ export const auth_service = {
   },
 
   async loggedin() {
-    return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
+    return APIClient.post<AuthResponse>(
+      APIRoute("auth").r("hire", "loggedin").build()
+    );
   },
 
   async register(user: Partial<PublicUser>) {

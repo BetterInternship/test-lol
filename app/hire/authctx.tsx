@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
+  god: boolean;
   recheck_authentication: () => Promise<Partial<PublicEmployerUser | null>>;
   register: (
     user: Partial<PublicEmployerUser>
@@ -49,6 +50,7 @@ export const AuthContextProvider = ({
     const isAuthed = sessionStorage.getItem("isAuthenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
+  const [god, setGod] = useState(false);
   const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
@@ -91,6 +93,10 @@ export const AuthContextProvider = ({
 
     setUser(response.user as PublicEmployerUser);
     setIsAuthenticated(true);
+
+    // @ts-ignore
+    if (response.god) setGod(true);
+
     return response;
   };
 
@@ -101,6 +107,7 @@ export const AuthContextProvider = ({
 
   const logout = async () => {
     auth_service.employer.logout();
+    router.push("/login");
     setUser(null);
     setIsAuthenticated(false);
   };
@@ -117,6 +124,7 @@ export const AuthContextProvider = ({
     <AuthContext.Provider
       value={{
         user,
+        god,
         recheck_authentication,
         send_otp_request,
         resend_otp_request,
