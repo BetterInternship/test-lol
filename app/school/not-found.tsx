@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/school/ui/button";
+import { Button } from "@/components/features/school/ui/button";
 import { NotFound as NotFoundImage } from "@/lib/images";
 
 export default function NotFound() {

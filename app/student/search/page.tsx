@@ -40,6 +40,16 @@ import { useModal } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import ReactMarkdown from "react-markdown";
+
+// Utility function to format dates
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
 
 export default function SearchPage() {
   const router = useRouter();

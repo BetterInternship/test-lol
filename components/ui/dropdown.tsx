@@ -224,6 +224,7 @@ export const GroupableNavDropdown = ({
   content,
   children,
   className = "",
+  showArrow = true,
 }: {
   display?: React.ReactNode;
   content?: React.ReactNode;
@@ -231,6 +232,7 @@ export const GroupableNavDropdown = ({
     | React.ReactElement<IDropdownOptionProps>
     | React.ReactElement<IDropdownOptionProps>[];
   className?: string;
+  showArrow?: boolean;
 }) => {
   const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const [is_open, set_is_open] = useState(false);
@@ -246,7 +248,7 @@ export const GroupableNavDropdown = ({
       >
         {display}
         {/* Conditionally render the chevron arrow */}
-        {show_arrow && (
+        {showArrow && (
           <ChevronDown
             className={cn(
               "w-4 h-4 text-gray-600 transition-transform",

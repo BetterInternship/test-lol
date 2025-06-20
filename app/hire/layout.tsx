@@ -3,7 +3,7 @@ import "../globals.css";
 import { AuthContextProvider } from "./authctx";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import { AppContextProvider } from "@/lib/ctx-app";
-import Header from "@/components/hire/header";
+import Header from "@/components/features/hire/header";
 import { Footer } from "@/components/shared/footer";
 
 export const metadata: Metadata = {

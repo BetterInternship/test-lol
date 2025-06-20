@@ -27,6 +27,15 @@ import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
 import { Button } from "../ui/button";
 
+// Utility function to format dates
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 /**
  * The scrollable job card component.
  * Used in both hire and student UI.
@@ -53,39 +62,57 @@ export const JobCard = ({
       className={cn(
         "p-4 border-2 rounded-lg cursor-pointer transition-colors",
         selected && !disabled
-          ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300",
-        disabled ? "opacity-65 pointer-events-none hover:cursor-default" : ""
+          ? "selected ring-2 ring-primary ring-offset-2"
+          : "hover:shadow-lg hover:border-gray-300",
+        disabled ? "opacity-50 pointer-events-none" : "cursor-pointer"
       )}
     >
-      <h3 className="font-semibold text-gray-900">{job.title}</h3>
-      <p className="text-sm text-gray-600">{job.location}</p>
-      <div className="flex items-center gap-2">
-        <p className="text-sm text-gray-600">
-          {job.employer?.name ?? "Not known"}
-        </p>
-        {job.employer?.has_dlsu_moa && (
-          <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            DLSU MOA
-          </span>
-        )}
-      </div>
-      <p className="text-sm text-gray-500 mb-3">
-        Last updated on {formatDate(job.updated_at ?? "")}
-      </p>
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
+              {job.title}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm text-gray-600 font-medium">
+                {job.employer?.name ?? "Company Name"}
+              </p>
+              {job.employer?.has_dlsu_moa && (
+                <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  DLSU MOA
+                </span>
+              )}
+            </div>
+          </div>
+          {selected && (
+            <div className="flex-shrink-0">
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
+            </div>
+          )}
+        </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {ref_is_not_null(job.mode) && (
-          <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-            {to_job_mode_name(job.mode)}
-          </span>
-        )}
-        {ref_is_not_null(job.type) && (
-          <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-            {to_job_type_name(job.type)}
-          </span>
-        )}
+        <div className="flex items-center text-sm text-gray-500">
+          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+          <span className="truncate">{job.location || "Location not specified"}</span>
+        </div>
+
+        <p className="text-xs text-gray-500">
+          Updated {formatDate(job.updated_at ?? "")}
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {ref_is_not_null(job.mode) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+              {to_job_mode_name(job.mode)}
+            </span>
+          )}
+          {ref_is_not_null(job.type) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
+              {to_job_type_name(job.type)}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -121,75 +148,97 @@ export const EmployerJobCard = ({
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        "relative p-4 border-2 rounded-lg cursor-pointer transition-colors",
+        "job-card group relative",
         selected && !disabled
-          ? "border-blue-500 bg-blue-50"
-          : "border-gray-200 hover:border-gray-300",
-        disabled ? "opacity-65 pointer-events-none hover:cursor-default" : ""
+          ? "selected ring-2 ring-primary ring-offset-2"
+          : "hover:shadow-lg hover:border-gray-300",
+        disabled ? "opacity-50 pointer-events-none" : "cursor-pointer"
       )}
     >
-      <div className="w-full h-full flex flex-row items-start justify-between">
-        <div>
-          <h3 className="font-semibold text-gray-900">{job.title}</h3>
-          <p className="text-sm text-gray-600">{job.location}</p>
-          <div className="flex items-center gap-2">
-            <p className="text-sm text-gray-600">
-              {job.employer?.name ?? "Not known"}
-            </p>
-            {job.employer?.has_dlsu_moa && (
-              <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                DLSU MOA
-              </span>
-            )}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
+              {job.title}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-sm text-gray-600 font-medium">
+                {job.employer?.name ?? "Company Name"}
+              </p>
+              {job.employer?.has_dlsu_moa && (
+                <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  DLSU MOA
+                </span>
+              )}
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mb-3">
-            Last updated on {formatDate(job.updated_at ?? "")}
-          </p>
-        </div>
-        <div className="m-0 p-0">
-          <Button
-            variant="ghost"
-            className="my-[-0.5em] rounded-full w-10 h-10 hover:border hover:border-red-300"
-            onClick={async (e) => {
-              e.stopPropagation();
-              if (!job.id) return;
-              const response = await update_job(job.id, {
-                is_active: !job.is_active,
-              });
-            }}
-          >
-            {job.is_active ? (
-              <Globe className="w-4 h-4 text-gray-700 hover:text-red-300"></Globe>
-            ) : (
-              <Lock className="w-4 h-4 text-gray-700 hover:text-red-300"></Lock>
+          
+          <div className="flex items-center gap-2">
+            {selected && (
+              <div className="w-2 h-2 bg-primary rounded-full"></div>
             )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+              onClick={async (e) => {
+                e.stopPropagation();
+                if (!job.id) return;
+                await update_job(job.id, {
+                  is_active: !job.is_active,
+                });
+              }}
+            >
+              {job.is_active ? (
+                <Globe className="w-4 h-4 text-green-600" />
+              ) : (
+                <Lock className="w-4 h-4 text-gray-400" />
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {job.is_unlisted && (
-          <span className="px-3 py-1 bg-orange-100 text-orange-700 border border-orange-300 border-opacity-50 text-xs rounded-full">
-            Unlisted
-          </span>
-        )}
-        {ref_is_not_null(job.mode) && (
-          <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-            {to_job_mode_name(job.mode)}
-          </span>
-        )}
-        {ref_is_not_null(job.type) && (
-          <span className="px-3 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-            {to_job_type_name(job.type)}
-          </span>
-        )}
+        <div className="flex items-center text-sm text-gray-500">
+          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+          <span className="truncate">{job.location || "Location not specified"}</span>
+        </div>
+
+        <p className="text-xs text-gray-500">
+          Updated {formatDate(job.updated_at ?? "")}
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {job.is_unlisted && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium border border-orange-200">
+              <EyeOff className="w-3 h-3 mr-1" />
+              Unlisted
+            </span>
+          )}
+          {ref_is_not_null(job.mode) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+              {to_job_mode_name(job.mode)}
+            </span>
+          )}
+          {ref_is_not_null(job.type) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
+              {to_job_type_name(job.type)}
+            </span>
+          )}
+          {!job.is_active && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium border border-gray-200">
+              <Lock className="w-3 h-3 mr-1" />
+              Inactive
+            </span>
+          )}
+        </div>
       </div>
 
       {!job.is_active && (
-        <div className="absolute w-full h-full bg-gray-400 bg-opacity-20 top-0 left-0 pointer-events-none">
-          <div className="w-full h-full flex flex-row items-center justify-center">
-            <EyeOff className="w-24 h-24 opacity-20"></EyeOff>
+        <div className="absolute inset-0 bg-gray-100 bg-opacity-60 rounded-lg flex items-center justify-center">
+          <div className="text-center">
+            <EyeOff className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+            <p className="text-xs text-gray-500 font-medium">Inactive</p>
           </div>
         </div>
       )}
@@ -212,46 +261,52 @@ export const MobileJobCard = ({
   const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
   return (
     <div
-      className="bg-white border border-gray-200 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:border-gray-300 active:scale-[0.98]"
+      className="card hover-lift p-6 animate-fade-in"
       onClick={on_click}
     >
       {/* Header */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 mb-1 text-base leading-tight">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
             {job.title}
           </h3>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Building className="w-4 h-4" />
-            <span>{job.employer?.name}</span>
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <Building className="w-4 h-4 flex-shrink-0" />
+            <span className="font-medium truncate">{job.employer?.name}</span>
             {job.employer?.has_dlsu_moa && (
-              <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2">
+              <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 DLSU MOA
               </span>
             )}
           </div>
         </div>
-        <div className="text-xs text-gray-500 ml-2">
+        <div className="text-xs text-gray-500 ml-3 flex-shrink-0">
           {formatDate(job.created_at ?? "")}
         </div>
       </div>
 
+      {/* Location */}
+      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+        <MapPin className="w-4 h-4 flex-shrink-0" />
+        <span className="truncate">{job.location || "Location not specified"}</span>
+      </div>
+
       {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-3">
+      <div className="flex flex-wrap gap-2 mb-4">
         {ref_is_not_null(job.type) && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs border-purple-200 bg-purple-50 text-purple-700">
             {to_job_type_name(job.type)}
           </Badge>
         )}
         {job.salary && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
             <PhilippinePeso className="w-3 h-3 mr-1" />
-            {job.salary}
+            ₱{job.salary}
           </Badge>
         )}
         {ref_is_not_null(job.mode) && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs border-blue-200 bg-blue-50 text-blue-700">
             <JobModeIcon mode={job.mode} />
             {to_job_mode_name(job.mode)}
           </Badge>
@@ -259,14 +314,19 @@ export const MobileJobCard = ({
       </div>
 
       {/* Description Preview */}
-      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-        {job.description}
+      <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+        {job.description || "No description available."}
       </p>
 
-      {/* Location */}
-      <div className="flex items-center gap-1 text-xs text-gray-500">
-        <MapPin className="w-3 h-3" />
-        <span>{job.location}</span>
+      {/* Footer */}
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <MapPin className="w-3 h-3" />
+          <span className="truncate">{job.location}</span>
+        </div>
+        <div className="text-xs text-gray-400">
+          Click to view details
+        </div>
       </div>
     </div>
   );

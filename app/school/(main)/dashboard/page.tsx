@@ -1,7 +1,7 @@
 import React from "react";
-import { ContentLayout } from "@/components/school/ui/admin-panel/content-layout";
-import { StatsCards } from "@/components/school/dashboard/stats/stats-card";
-import { StatsCharts } from "@/components/school/dashboard/stats/stats-chart";
+import { ContentLayout } from "@/components/features/school/ui/admin-panel/content-layout";
+import { StatsCards } from "@/components/features/school/dashboard/stats/stats-card";
+import { StatsCharts } from "@/components/features/school/dashboard/stats/stats-chart";
 
 const Page = () => {
   return (

@@ -1,5 +1,5 @@
 import React from "react";
-import AdminPanelLayout from "@/components/school/ui/admin-panel/admin-panel-layout";
+import AdminPanelLayout from "@/components/features/school/ui/admin-panel/admin-panel-layout";
 
 const Layout = ({
   children,

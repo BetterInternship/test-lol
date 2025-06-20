@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import RootProviders from "@/components/school/providers";
+import RootProviders from "@/components/features/school/providers";
 import { AppContextProvider } from "@/lib/ctx-app";
 const dmSans = DM_Sans({
   subsets: ["latin"],

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { AuthContextInitter, AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
-import Header from "@/components/student/header";
+import Header from "@/components/features/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { Footer } from "@/components/shared/footer";
 

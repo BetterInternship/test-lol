@@ -1,8 +1,8 @@
 import React from "react";
-import { ContentLayout } from "@/components/school/ui/admin-panel/content-layout";
+import { ContentLayout } from "@/components/features/school/ui/admin-panel/content-layout";
 import { CompanyData, FeedbackData, HiringData } from "@/types";
 import { ACADEMIC_YEARS, DEPARTMENTS, MOCK_COMPANIES } from "@/lib/utils";
-import { InternshipDataTable } from "@/components/school/dashboard/data/internship-data-table";
+import { InternshipDataTable } from "@/components/features/school/dashboard/data/internship-data-table";
 
 const generateMockHiringData = (count: number): HiringData[] => {
   const data: HiringData[] = [];
