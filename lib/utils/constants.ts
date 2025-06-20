@@ -17,12 +17,14 @@ export const MOCK_COMPANIES = [
   "Data Wizards LLC",
   "CyberPro Corp.",
 ] as const;
+
 export const ACADEMIC_YEARS = [
   "2023-2024",
   "2024-2025",
   "2025-2026",
   "2026-2027",
 ] as const;
+
 export const DEPARTMENTS = [
   "College of Computer Studies",
   "College of Business and Accountancy",

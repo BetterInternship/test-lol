@@ -102,14 +102,25 @@ export const JobCard = ({
         </p>
 
         <div className="flex flex-wrap gap-2">
-          {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
+          {job.employer?.has_dlsu_moa && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              DLSU MOA
             </span>
           )}
           {ref_is_not_null(job.type) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
               {to_job_type_name(job.type)}
+            </span>
+          )}
+          {job.salary && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              ₱{job.salary}
+            </span>
+          )}
+          {ref_is_not_null(job.mode) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+              {to_job_mode_name(job.mode)}
             </span>
           )}
         </div>
@@ -209,20 +220,31 @@ export const EmployerJobCard = ({
         </p>
 
         <div className="flex flex-wrap gap-2">
+          {job.employer?.has_dlsu_moa && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              DLSU MOA
+            </span>
+          )}
           {job.is_unlisted && (
             <span className="inline-flex items-center px-2.5 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium border border-orange-200">
               <EyeOff className="w-3 h-3 mr-1" />
               Unlisted
             </span>
           )}
-          {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
-            </span>
-          )}
           {ref_is_not_null(job.type) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
               {to_job_type_name(job.type)}
+            </span>
+          )}
+          {job.salary && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              ₱{job.salary}
+            </span>
+          )}
+          {ref_is_not_null(job.mode) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+              {to_job_mode_name(job.mode)}
             </span>
           )}
           {!job.is_active && (
@@ -294,6 +316,12 @@ export const MobileJobCard = ({
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
+        {job.employer?.has_dlsu_moa && (
+          <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            DLSU MOA
+          </Badge>
+        )}
         {ref_is_not_null(job.type) && (
           <Badge variant="outline" className="text-xs border-purple-200 bg-purple-50 text-purple-700">
             {to_job_type_name(job.type)}
@@ -301,7 +329,6 @@ export const MobileJobCard = ({
         )}
         {job.salary && (
           <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
-            <PhilippinePeso className="w-3 h-3 mr-1" />
             ₱{job.salary}
           </Badge>
         )}
