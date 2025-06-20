@@ -395,6 +395,7 @@ export const useSavedJobs = () => {
 
 // Saved Jobs Hook
 export function useApplications() {
+  const { recheck_authentication } = useAuthContext();
   const { get_cache_item, set_cache_item } = useCache();
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
@@ -464,6 +465,12 @@ export function useApplications() {
   const is_applied = (job_id: string): boolean => {
     return applications.some((application) => application.id === job_id);
   };
+
+  useEffect(() => {
+    recheck_authentication().then((r) =>
+      r ? fetchApplications() : setLoading(false)
+    );
+  }, [fetchApplications]);
 
   return {
     apply,
