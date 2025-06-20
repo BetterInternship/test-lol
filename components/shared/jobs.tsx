@@ -449,7 +449,7 @@ export const EditableJobDetails = ({
         <div className="grid grid-cols-2 gap-6">
           <div className="flex flex-col items-start gap-3 max-w-prose">
             <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               Location:
             </label>
             <EditableInput
@@ -464,7 +464,7 @@ export const EditableJobDetails = ({
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
+                <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Mode:
               </label>
               <EditableGroupableRadioDropdown
@@ -480,7 +480,7 @@ export const EditableJobDetails = ({
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
+                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
               <EditableInput
@@ -509,7 +509,7 @@ export const EditableJobDetails = ({
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Employment Type:
               </label>
               <EditableGroupableRadioDropdown
@@ -651,7 +651,7 @@ export const JobDetails = ({
         <div className="grid grid-cols-2 gap-6">
           <div className="flex flex-col items-start gap-3 max-w-prose">
             <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               Location:
             </label>
             <JobPropertyLabel value={job.location} />
@@ -660,7 +660,7 @@ export const JobDetails = ({
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Monitor className="h-5 w-5 text-gray-400 mt-0.5" />
+                <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Mode:
               </label>
               <JobPropertyLabel value={to_job_mode_name(job.mode)} />
@@ -668,7 +668,7 @@ export const JobDetails = ({
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5" />
+                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
               <JobPropertyLabel value={job.salary?.toString()} />{" "}
@@ -684,7 +684,7 @@ export const JobDetails = ({
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Clock className="h-5 w-5 text-gray-400 mt-0.5" />
+                <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Employment Type:
               </label>
               <JobPropertyLabel value={to_job_type_name(job.type)} />

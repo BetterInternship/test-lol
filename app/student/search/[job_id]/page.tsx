@@ -9,6 +9,7 @@ import {
   Clipboard,
   AlertTriangle,
   User,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -152,44 +153,195 @@ export default function JobPage() {
             </div>
           </div>
         ) : (
-          <div className="w-full flex flex-col overflow-hidden">
+          <div className="w-full flex flex-col h-full bg-gray-50">
+            {/* Enhanced Header with Back Navigation */}
+            <div className="bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+              <div className="max-w-4xl mx-auto px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back to Applications
+                  </Button>
+                  
+                  {job && (
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => handleSave(job)}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all",
+                          is_saved(job.id ?? "")
+                            ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                            : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                        )}
+                      >
+                        <Heart className={cn("w-4 h-4", is_saved(job.id ?? "") ? "fill-current" : "")} />
+                        {is_saved(job.id ?? "") ? "Saved" : saving ? "Saving..." : "Save"}
+                      </Button>
+                      
+                      <Button
+                        disabled={appliedJob(job.id ?? "")}
+                        onClick={() => !appliedJob(job.id ?? "") && handleApply()}
+                        className={cn(
+                          "flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all",
+                          appliedJob(job.id ?? "")
+                            ? "bg-green-600 text-white hover:bg-green-700"
+                            : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl"
+                        )}
+                      >
+                        {appliedJob(job.id ?? "") && (
+                          <CheckCircle className="w-4 h-4" />
+                        )}
+                        {appliedJob(job.id ?? "") ? "Applied" : "Apply Now"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {job?.id ? (
-              <div className="w-1/2 min-w-[600px] max-w-[800px] m-auto h-full border-x border-opacity-50">
-                <JobDetails
-                  job={job}
-                  actions={[
-                    <Button
-                      disabled={appliedJob(job.id ?? "")}
-                      onClick={() => !appliedJob(job.id ?? "") && handleApply()}
-                      className={cn(
-                        appliedJob(job.id ?? "")
-                          ? "bg-green-600 text-white"
-                          : "bg-blue-600 hover:bg-blue-700"
-                      )}
-                    >
-                      {appliedJob(job.id ?? "") && (
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                      )}
-                      {appliedJob(job.id ?? "") ? "Applied" : "Apply"}
-                    </Button>,
-                    <Button
-                      variant="outline"
-                      onClick={() => handleSave(job)}
-                      className={cn(
-                        is_saved(job.id ?? "")
-                          ? "bg-red-50 border-red-200 text-red-600"
-                          : ""
-                      )}
-                    >
-                      {is_saved(job.id ?? "") && <Heart />}
-                      {is_saved(job.id ?? "")
-                        ? "Saved"
-                        : saving
-                        ? "Saving..."
-                        : "Save"}
-                    </Button>,
-                  ]}
-                />
+              <div className="flex-1 overflow-y-auto">
+                <div className="max-w-4xl mx-auto px-6 py-8">
+                  {/* Job Header Card */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex-1">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+                          {job.title}
+                        </h1>
+                        <div className="flex items-center gap-3 mb-2">
+                          <p className="text-lg text-gray-700 font-medium">
+                            {job.employer?.name}
+                          </p>
+                          {job.employer?.has_dlsu_moa && (
+                            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1.5 rounded-full font-medium">
+                              <CheckCircle className="w-4 h-4 mr-1.5" />
+                              DLSU MOA
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-gray-500 text-sm">
+                          Listed on {job.created_at ? new Date(job.created_at).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long", 
+                            day: "numeric"
+                          }) : ""}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Job Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-gray-50 rounded-lg">
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">Location</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          {job.location || "Not specified"}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">Mode</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          {job.mode !== null && job.mode !== undefined ? 
+                            (job.mode === 0 ? "Face to Face" : job.mode === 1 ? "Remote" : "Hybrid") : 
+                            "Not specified"}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">Salary</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          {job.salary ? `₱${job.salary}` : "Not specified"}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">Type</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          {job.type !== null && job.type !== undefined ? 
+                            (job.type === 0 ? "Internship" : job.type === 1 ? "Full-time" : "Part-time") : 
+                            "Not specified"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content Sections */}
+                  <div className="space-y-8">
+                    {/* Job Description */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        Description
+                      </h2>
+                      <div className="prose max-w-none text-gray-700 leading-relaxed">
+                        <div className="whitespace-pre-wrap text-base leading-7">
+                          {job.description || "No description provided."}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Job Requirements */}
+                    {job.requirements && (
+                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                          <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                          </div>
+                          Requirements
+                        </h2>
+                        <div className="prose max-w-none text-gray-700 leading-relaxed">
+                          <div className="whitespace-pre-wrap text-base leading-7">
+                            {job.requirements}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom Spacing */}
+                  <div className="h-16"></div>
+                </div>
               </div>
             ) : (
               <div className="h-full m-auto">

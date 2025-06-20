@@ -209,20 +209,6 @@ export default function HomePage() {
                   <div className="flex items-center">
                     <div className="h-8 w-px bg-gray-300 mx-1" />
                     <DropdownGroup>
-                      <div className="w-24">
-                        <GroupableRadioDropdown
-                          name="jobType"
-                          options={[
-                            "All types",
-                            "Internships",
-                            "Full-time",
-                            "Part-time",
-                          ]}
-                          button_class="!border-0"
-                          on_change={filter_setter("job_type")}
-                        />
-                      </div>
-                      <div className="h-8 w-px bg-gray-300 mx-1" />
                       <div className="w-28">
                         <GroupableRadioDropdown
                           name="location"
@@ -237,7 +223,7 @@ export default function HomePage() {
                         />
                       </div>
                       <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-32">
+                      <div className="w-40">
                         <GroupableRadioDropdown
                           name="category"
                           options={[
