@@ -8,8 +8,15 @@
  * Can also be previewed by applicants, that's why it's a shared component.
  */
 
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
+import { useModal } from "@/hooks/use-modal";
+import { useFile } from "@/hooks/use-file";
+import { useClientDimensions } from "@/hooks/use-dimensions";
+import { user_service } from "@/lib/api";
 import { Button } from "../ui/button";
 import {
   Award,
@@ -21,7 +28,7 @@ import {
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
-  clickable = false,
+  clickable = true,
   open_resume_modal,
   open_calendly_modal,
   job = {} as Partial<Job>,
@@ -33,8 +40,81 @@ export const ApplicantModalContent = ({
   job?: Partial<Job>;
 }) => {
   const { to_level_name, to_college_name, to_job_type_name } = useRefs();
+  const { client_width, client_height } = useClientDimensions();
+  
+  // Resume modal setup
+  const {
+    open: open_internal_resume_modal,
+    close: close_resume_modal,
+    Modal: ResumeModal,
+  } = useModal("resume-modal");
+
+  // Calendly modal setup
+  const {
+    open: open_internal_calendly_modal,
+    close: close_calendly_modal,
+    Modal: CalendlyModal,
+  } = useModal("calendly-modal");
+
+  // Resume URL management
+  const [resume_route, set_resume_route] = useState("");
+  
+  const get_user_resume_url = useCallback(
+    async () => user_service.get_user_resume_url(applicant?.id ?? ""),
+    [applicant?.id]
+  );
+
+  const { url: resume_url, sync: sync_resume_url } = useFile({
+    fetch: get_user_resume_url,
+    route: resume_route,
+  });
+
+  // Set the resume route when applicant changes
+  useEffect(() => {
+    if (applicant?.id) {
+      set_resume_route(`/users/${applicant.id}/resume`);
+    }
+  }, [applicant?.id]);
+
+  // Handle resume button click
+  const handleResumeClick = async () => {
+    if (!clickable || !applicant?.resume || !applicant?.id) return;
+    
+    if (open_resume_modal) {
+      // Use external modal handler if provided
+      open_resume_modal();
+    } else {
+      // Use internal modal - ensure route is set first
+      if (!resume_route) {
+        set_resume_route(`/users/${applicant.id}/resume`);
+      }
+      
+      try {
+        await sync_resume_url();
+        open_internal_resume_modal();
+      } catch (error) {
+        console.error("Failed to sync resume URL:", error);
+        // Optionally show user-friendly error message
+      }
+    }
+  };
+
+  // Handle calendly button click
+  const handleCalendlyClick = () => {
+    if (!clickable || !applicant?.calendly_link) return;
+    
+    if (open_calendly_modal) {
+      // Use external modal handler if provided
+      open_calendly_modal();
+    } else {
+      // Use internal modal
+      open_internal_calendly_modal();
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full min-h-0 max-h-[80vh]">
+    <>
+      <div className="flex flex-col h-full min-h-0 max-h-[80vh]">
       {/* Fixed Header Section - Not Scrollable */}
       <div className="flex-shrink-0 px-4 md:px-8 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2 mb-2">
@@ -66,10 +146,7 @@ export const ApplicantModalContent = ({
           <Button
             className="bg-blue-600 hover:bg-blue-700 text-white h-9 text-sm px-3"
             disabled={!clickable || !applicant.resume}
-            onClick={() => {
-              if (!clickable) return;
-              open_resume_modal && open_resume_modal();
-            }}
+            onClick={handleResumeClick}
           >
             <FileText className="h-4 w-4 mr-2" />
             {applicant.resume ? "View Resume" : "No Resume"}
@@ -78,10 +155,7 @@ export const ApplicantModalContent = ({
             variant="outline"
             className="border-blue-600 text-blue-600 hover:bg-blue-50 h-9 text-sm px-3"
             disabled={!clickable || !applicant?.calendly_link}
-            onClick={() => {
-              if (!clickable) return;
-              open_calendly_modal && open_calendly_modal();
-            }}
+            onClick={handleCalendlyClick}
           >
             <Calendar className="h-4 w-4 mr-2" />
             {applicant?.calendly_link ? "Schedule" : "No Calendly"}
@@ -219,6 +293,53 @@ export const ApplicantModalContent = ({
           </div>
         )}
       </div>
-    </div>
+      </div>
+      
+      {/* Resume Modal */}
+      {resume_url.length && (
+        <ResumeModal>
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
+            <div className="px-6 pb-6">
+              <iframe
+                allowTransparency={true}
+                className="w-full border border-gray-200 rounded-lg"
+                style={{
+                  width: "100%",
+                  height: client_height * 0.75,
+                  minHeight: "600px",
+                  maxHeight: "800px",
+                  background: "#FFFFFF",
+                }}
+                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+              >
+                Resume could not be loaded.
+              </iframe>
+            </div>
+          </div>
+        </ResumeModal>
+      )}
+
+      {/* Calendly Modal */}
+      {applicant?.calendly_link && (
+        <CalendlyModal>
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold px-6 pt-2">Schedule Interview</h1>
+          <iframe
+            src={applicant.calendly_link}
+            width="100%"
+            height="700"
+            frameBorder="0"
+            style={{
+              minWidth: "320px",
+              height: "700px",
+            }}
+          >
+            Loading Calendly...
+          </iframe>
+        </div>
+      </CalendlyModal>
+      )}
+    </>
   );
 };
