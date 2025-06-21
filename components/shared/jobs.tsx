@@ -444,7 +444,7 @@ export const EditableJobDetails = ({
   }, [saving]);
 
   return (
-    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
+    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto overflow-x-hidden">
       <div className="mb-6">
         <div className="max-w-prose">
           <EditableInput
@@ -594,41 +594,66 @@ export const EditableJobDetails = ({
         </div>
       </div>
 
-      {/* Job Description */}
+      {/* Job Description and Requirements - Side by Side */}
       <hr />
-      <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-          Description
-        </h1>
+      <div className={`mb-6 mt-8 ${is_editing ? 'pb-8' : ''}`}>
         {!is_editing ? (
-          <div className="markdown">
-            <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
-          </div>
+          // Non-editing mode: stack vertically
+          <>
+            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+              Description
+            </h1>
+            <div className="markdown mb-8">
+              <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
+            </div>
+            
+            <hr />
+            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4 mt-8">
+              Requirements
+            </h1>
+            <div className="markdown">
+              <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
+            </div>
+          </>
         ) : (
-          <MDXEditor
-            className="min-h-[300px] border border-gray-200 rounded-lg"
-            markdown={form_data.description ?? ""}
-            onChange={(value) => set_field("description", value)}
-          />
-        )}
-      </div>
+          // Editing mode: side by side layout
+          <div className="flex gap-6 overflow-hidden min-h-[500px] w-full">
+            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  📝
+                </div>
+                Job Description
+              </h3>
+              <div className="relative w-full overflow-hidden">
+                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
+                  <MDXEditor
+                    className="min-h-[300px] max-w-none break-all"
+                    markdown={form_data.description ?? ""}
+                    onChange={(value) => set_field("description", value)}
+                  />
+                </div>
+              </div>
+            </div>
 
-      {/* Job Requirements */}
-      <hr />
-      <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-          Requirements
-        </h1>
-        {!is_editing ? (
-          <div className="markdown">
-            <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
+            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                  📋
+                </div>
+                Requirements
+              </h3>
+              <div className="relative w-full overflow-hidden">
+                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
+                  <MDXEditor
+                    className="min-h-[300px] max-w-none break-all"
+                    markdown={form_data.requirements ?? ""}
+                    onChange={(value) => set_field("requirements", value)}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <MDXEditor
-            className="min-h-[300px] border border-gray-200 rounded-lg"
-            markdown={form_data.requirements ?? ""}
-            onChange={(value) => set_field("requirements", value)}
-          />
         )}
       </div>
     </div>
