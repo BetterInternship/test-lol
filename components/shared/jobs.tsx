@@ -546,32 +546,6 @@ export const EditableJobDetails = ({
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
-                value={form_data.require_github}
-                setter={field_setter("require_github")}
-              >
-                <JobBooleanLabel />
-              </EditableCheckbox>
-              <label className="text-sm font-semibold text-gray-700">
-                Require Github?
-              </label>
-            </div>
-
-            <div className="flex flex-row items-start gap-3 max-w-prose">
-              <EditableCheckbox
-                is_editing={is_editing}
-                value={form_data.require_portfolio}
-                setter={field_setter("require_portfolio")}
-              >
-                <JobBooleanLabel />
-              </EditableCheckbox>
-              <label className="text-sm font-semibold text-gray-700">
-                Require Portfolio?
-              </label>
-            </div>
-
-            <div className="flex flex-row items-start gap-3 max-w-prose">
-              <EditableCheckbox
-                is_editing={is_editing}
                 value={form_data.is_unlisted}
                 setter={field_setter("is_unlisted")}
               >
@@ -648,7 +622,7 @@ export const EditableJobDetails = ({
           </div>
         ) : (
           <MDXEditor
-            className="min-h-[300px] border border-gray-200 rounded-lg"
+            className="min-h-[300px] border border-gray-200 rounded-lg overflow-y-scroll"
             markdown={form_data.description ?? ""}
             onChange={(value) => set_field("description", value)}
           />
@@ -668,54 +642,55 @@ export const EditableJobDetails = ({
             Application Requirements:
           </h4>
           <div className="flex flex-wrap gap-4">
-            {/* Resume - Always required */}
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-gray-700 font-medium">Resume</span>
+            <div
+              className={cn(
+                "flex flex-row items-start gap-3 max-w-prose",
+                is_editing ? "opacity-50" : ""
+              )}
+            >
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={true}
+                setter={() => {}}
+              >
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Require Resume?
+              </label>
             </div>
 
-            {/* GitHub Requirement */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_github ? "bg-green-500" : "bg-gray-300"
-                }`}
+            <div className="flex flex-row items-start gap-3 max-w-prose">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.require_github}
+                setter={field_setter("require_github")}
               >
-                {job.require_github && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_github ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                GitHub Profile
-              </span>
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Require Github?
+              </label>
             </div>
 
-            {/* Portfolio Requirement */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_portfolio ? "bg-green-500" : "bg-gray-300"
-                }`}
+            <div className="flex flex-row items-start gap-3 max-w-prose">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.require_portfolio}
+                setter={field_setter("require_portfolio")}
               >
-                {job.require_portfolio && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_portfolio ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                Portfolio
-              </span>
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Require Portfolio?
+              </label>
             </div>
           </div>
+          {is_editing && (
+            <p className="text-sm text-gray-700 my-3">
+              *Note that resumes will always be required for applicants.
+            </p>
+          )}
         </div>
 
         {/* Requirements Content */}
@@ -727,7 +702,7 @@ export const EditableJobDetails = ({
           </div>
         ) : (
           <MDXEditor
-            className="min-h-[300px] border border-gray-200 rounded-lg"
+            className="min-h-[300px] border border-gray-200 rounded-lg overflow-y-scroll"
             markdown={form_data.requirements ?? ""}
             onChange={(value) => set_field("requirements", value)}
           />
