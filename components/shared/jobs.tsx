@@ -92,9 +92,6 @@ export const JobCard = ({
           <span className="truncate">{job.location || "Location not specified"}</span>
         </div>
 
-        <p className="text-xs text-gray-500">
-          Updated {formatDate(job.updated_at ?? "")}
-        </p>
 
         <div className="flex flex-wrap gap-2">
           {true && (
@@ -451,9 +448,6 @@ export const EditableJobDetails = ({
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
         </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p>
         <div className="flex gap-3">{actions}</div>
       </div>
 
@@ -653,9 +647,7 @@ export const JobDetails = ({
             </span>
           )}
         </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p>
+
         <div className="flex gap-3">{actions}</div>
       </div>
 
