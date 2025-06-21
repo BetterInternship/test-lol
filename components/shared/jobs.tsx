@@ -77,6 +77,7 @@ export const JobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
+
             </div>
           </div>
           {selected && (
@@ -86,17 +87,16 @@ export const JobCard = ({
           )}
         </div>
 
-        <div className="flex items-center text-sm text-gray-500">
-          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">{job.location || "Location not specified"}</span>
-        </div>
+        {job.location && (
+          <div className="flex items-center text-sm text-gray-500">
+            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+            <span className="truncate">{job.location || "Location not specified"}</span>
+          </div>
+        )}
 
-        <p className="text-xs text-gray-500">
-          Updated {formatDate(job.updated_at ?? "")}
-        </p>
 
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -140,7 +140,6 @@ export const EmployerJobCard = ({
   selected?: boolean;
   disabled?: boolean;
   on_click?: (job: Job) => void;
-  // ! please fucking change the types
   update_job: (
     job_id: string,
     job: Partial<Job>
@@ -170,6 +169,12 @@ export const EmployerJobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
+              {true && (
+                <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                  <CheckCircle className="w-3 h-3 mr-1" />
+                  DLSU MOA
+                </span>
+              )}
             </div>
           </div>
           
@@ -203,12 +208,10 @@ export const EmployerJobCard = ({
           <span className="truncate">{job.location || "Location not specified"}</span>
         </div>
 
-        <p className="text-xs text-gray-500">
-          Updated {formatDate(job.updated_at ?? "")}
-        </p>
+
 
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -283,7 +286,7 @@ export const MobileJobCard = ({
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Building className="w-4 h-4 flex-shrink-0" />
             <span className="font-medium truncate">{job.employer?.name}</span>
-            {job.employer?.has_dlsu_moa && (
+            {true && (
               <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 DLSU MOA
@@ -297,13 +300,21 @@ export const MobileJobCard = ({
       </div>
 
       {/* Location */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-        <MapPin className="w-4 h-4 flex-shrink-0" />
-        <span className="truncate">{job.location || "Location not specified"}</span>
-      </div>
+      {job.location && (
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+          <MapPin className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">{job.location || "Location not specified"}</span>
+        </div>
+      )}
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
+        {true && (
+          <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            DLSU MOA
+          </Badge>
+        )}
         {ref_is_not_null(job.type) && (
           <Badge variant="outline" className="text-xs border-purple-200 bg-purple-50 text-purple-700">
             {to_job_type_name(job.type)}
@@ -328,10 +339,13 @@ export const MobileJobCard = ({
       </p>
 
       {/* Footer */}
-      <div className="flex items-center justify-end pt-3 border-t border-gray-100">
-        <div className="text-xs text-gray-400">
-          Click to view details
-        </div>
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+        {job.location && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <MapPin className="w-3 h-3" />
+            <span className="truncate">{job.location}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -354,7 +368,6 @@ export const EditableJobDetails = ({
   is_editing: boolean;
   set_is_editing: (is_editing: boolean) => void;
   saving?: boolean;
-  // ! please fucking change the types
   update_job: (
     job_id: string,
     job: Partial<Job>
@@ -435,16 +448,7 @@ export const EditableJobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {job.employer?.has_dlsu_moa && (
-            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              DLSU MOA
-            </span>
-          )}
         </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p>
         <div className="flex gap-3">{actions}</div>
       </div>
 
@@ -452,19 +456,21 @@ export const EditableJobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Location:
-            </label>
-            <EditableInput
-              is_editing={is_editing}
-              value={form_data.location ?? "Not specified"}
-              setter={field_setter("location")}
-            >
-              <JobPropertyLabel />
-            </EditableInput>
-          </div>
+          {job.location && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Location:
+              </label>
+              <EditableInput
+                is_editing={is_editing}
+                value={form_data.location ?? "Not specified"}
+                setter={field_setter("location")}
+              >
+                <JobPropertyLabel />
+              </EditableInput>
+            </div>
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -574,64 +580,39 @@ export const EditableJobDetails = ({
 
       {/* Job Description and Requirements - Side by Side */}
       <hr />
-      <div className={`mb-6 mt-8 ${is_editing ? 'pb-8' : ''}`}>
+      <div className="mb-6 mt-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Description
+        </h1>
         {!is_editing ? (
-          // Non-editing mode: stack vertically
-          <>
-            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-              Description
-            </h1>
-            <div className="markdown mb-8">
-              <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
-            </div>
-            
-            <hr />
-            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4 mt-8">
-              Requirements
-            </h1>
-            <div className="markdown">
-              <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
-            </div>
-          </>
-        ) : (
-          // Editing mode: side by side layout
-          <div className="flex gap-6 overflow-hidden min-h-[500px] w-full">
-            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                  📝
-                </div>
-                Job Description
-              </h3>
-              <div className="relative w-full overflow-hidden">
-                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
-                  <MDXEditor
-                    className="min-h-[300px] max-w-none break-all"
-                    markdown={form_data.description ?? ""}
-                    onChange={(value) => set_field("description", value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                  📋
-                </div>
-                Requirements
-              </h3>
-              <div className="relative w-full overflow-hidden">
-                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
-                  <MDXEditor
-                    className="min-h-[300px] max-w-none break-all"
-                    markdown={form_data.requirements ?? ""}
-                    onChange={(value) => set_field("requirements", value)}
-                  />
-                </div>
-              </div>
-            </div>
+          <div className="markdown">
+            <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
           </div>
+        ) : (
+          <MDXEditor
+            className="min-h-[300px] border border-gray-200 rounded-lg"
+            markdown={form_data.description ?? ""}
+            onChange={(value) => set_field("description", value)}
+          />
+        )}
+      </div>
+
+      {/* Job Requirements */}
+      <hr />
+      <div className="mb-6 mt-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Requirements
+        </h1>
+        {!is_editing ? (
+          <div className="markdown">
+            <ReactMarkdown>{job.requirements?.replace("/", ";") || "None"}</ReactMarkdown>
+          </div>
+        ) : (
+          <MDXEditor
+            className="min-h-[300px] border border-gray-200 rounded-lg"
+            markdown={form_data.requirements ?? ""}
+            onChange={(value) => set_field("requirements", value)}
+          />
         )}
       </div>
     </div>
@@ -662,16 +643,8 @@ export const JobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {job.employer?.has_dlsu_moa && (
-            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              DLSU MOA
-            </span>
-          )}
         </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p>
+
         <div className="flex gap-3">{actions}</div>
       </div>
 
@@ -679,13 +652,15 @@ export const JobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Location:
-            </label>
-            <JobPropertyLabel value={job.location} />
-          </div>
+          {job.location && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Location:
+              </label>
+              <JobPropertyLabel value={job.location} />
+            </div>
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -743,7 +718,7 @@ export const JobDetails = ({
           Requirements
         </h2>
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          <ReactMarkdown>{job.requirements}</ReactMarkdown>
+          <ReactMarkdown>{job.requirements || "None"}</ReactMarkdown>
         </div>
       </div>
     </div>

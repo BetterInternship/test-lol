@@ -543,7 +543,7 @@ export default function SearchPage() {
                         <p className="text-sm">
                           <span className="font-medium">Salary: </span>
                           <span className="opacity-80">
-                            {selectedJob.salary || "Not specified"}{" "}
+                            {selectedJob.salary || "Not specified"}{"/"}
                             {to_job_pay_freq_name(selectedJob.salary_freq)}
                           </span>
                         </p>
