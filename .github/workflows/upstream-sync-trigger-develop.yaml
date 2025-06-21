@@ -3,7 +3,7 @@ name: Sync to Deployment Fork
 on:
   push:
     branches:
-      - develop # Develop branch
+      - main  # Release branch
 
 jobs:
   call-fork:
@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Trigger sync in fork
         run: |
-          curl -X POST https://api.github.com/repos/MoDavid15/Better-Internship-Client-Develop-/actions/workflows/??/dispatches \
-            -H "Authorization: token ${{ secrets.DEPLOY_FORK_PAT_DEV }}" \
+          curl -X POST https://api.github.com/repos/neue-dev/Better-Internship-Client/actions/workflows/168537103/dispatches \
+            -H "Authorization: token ${{ secrets.DEPLOY_FORK_PAT }}" \
             -H "Accept: application/vnd.github+json" \
             -d '{"ref":"develop"}'
