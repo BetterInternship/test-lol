@@ -54,6 +54,25 @@ export default function HomePage() {
     router.push(`/search?${params.toString()}`);
   };
 
+  // Helper to apply filter and go to job listings
+  const applyFilterAndGo = (type: "industry" | "category", value: string) => {
+    set_filter(type, value);
+    setTimeout(() => {
+      const params = new URLSearchParams();
+      const newFilters = { ...filters, [type]: value };
+      if (searchTerm.trim()) {
+        params.set("q", searchTerm);
+      }
+      if (newFilters.industry && newFilters.industry !== "All Industries") {
+        params.set("industry", newFilters.industry);
+      }
+      if (newFilters.category && newFilters.category !== "All categories") {
+        params.set("category", newFilters.category);
+      }
+      router.push(`/search?${params.toString()}`);
+    }, 0);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
@@ -270,8 +289,8 @@ export default function HomePage() {
               {/* All Categories Option */}
               <button
                 onClick={() => {
-                  set_filter("category", "All categories");
                   setShowCategoryModal(false);
+                  applyFilterAndGo("category", "All categories");
                 }}
                 className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
                   filters.category === "All categories"
@@ -293,8 +312,8 @@ export default function HomePage() {
                   <button
                     key={option}
                     onClick={() => {
-                      set_filter("category", option);
                       setShowCategoryModal(false);
+                      applyFilterAndGo("category", option);
                     }}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
                       filters.category === option
@@ -318,8 +337,8 @@ export default function HomePage() {
                   <button
                     key={option}
                     onClick={() => {
-                      set_filter("category", option);
                       setShowCategoryModal(false);
+                      applyFilterAndGo("category", option);
                     }}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
                       filters.category === option
@@ -343,8 +362,8 @@ export default function HomePage() {
                   <button
                     key={option}
                     onClick={() => {
-                      set_filter("category", option);
                       setShowCategoryModal(false);
+                      applyFilterAndGo("category", option);
                     }}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
                       filters.category === option
@@ -381,8 +400,8 @@ export default function HomePage() {
                 <button
                   key={option}
                   onClick={() => {
-                    set_filter("industry", option);
                     setShowIndustryModal(false);
+                    applyFilterAndGo("industry", option);
                   }}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
                     filters.industry === option
