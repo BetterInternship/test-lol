@@ -81,9 +81,7 @@ export const JobCard = ({
         {job.location && (
           <div className="flex items-center text-sm text-gray-500">
             <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-            <span className="truncate">
-              {job.location || "Location not specified"}
-            </span>
+            <span className="truncate">{job.location}</span>
           </div>
         )}
 
@@ -197,9 +195,7 @@ export const EmployerJobCard = ({
 
         <div className="flex items-center text-sm text-gray-500">
           <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">
-            {job.location || "Location not specified"}
-          </span>
+          <span className="truncate">{job.location}</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -292,9 +288,7 @@ export const MobileJobCard = ({
       {job.location && (
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
           <MapPin className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">
-            {job.location || "Location not specified"}
-          </span>
+          <span className="truncate">{job.location}</span>
         </div>
       )}
 
