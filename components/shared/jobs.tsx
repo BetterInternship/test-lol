@@ -603,6 +603,46 @@ export const EditableJobDetails = ({
         <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
           Requirements
         </h1>
+        
+        {/* Application Requirements - Checkboxes */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Application Requirements:</h4>
+          <div className="flex flex-wrap gap-4">
+            {/* Resume - Always required */}
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
+                <CheckCircle className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700 font-medium">Resume</span>
+            </div>
+
+            {/* GitHub Requirement */}
+            <div className="flex items-center gap-2">
+              <div className={`w-5 h-5 rounded flex items-center justify-center ${
+                job.require_github ? 'bg-green-500' : 'bg-gray-300'
+              }`}>
+                {job.require_github && <CheckCircle className="w-3 h-3 text-white" />}
+              </div>
+              <span className={`text-sm font-medium ${
+                job.require_github ? 'text-gray-700' : 'text-gray-400'
+              }`}>GitHub Profile</span>
+            </div>
+
+            {/* Portfolio Requirement */}
+            <div className="flex items-center gap-2">
+              <div className={`w-5 h-5 rounded flex items-center justify-center ${
+                job.require_portfolio ? 'bg-green-500' : 'bg-gray-300'
+              }`}>
+                {job.require_portfolio && <CheckCircle className="w-3 h-3 text-white" />}
+              </div>
+              <span className={`text-sm font-medium ${
+                job.require_portfolio ? 'text-gray-700' : 'text-gray-400'
+              }`}>Portfolio</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Requirements Content */}
         {!is_editing ? (
           <div className="markdown">
             <ReactMarkdown>{job.requirements?.replace("/", ";") || "None"}</ReactMarkdown>
@@ -717,6 +757,46 @@ export const JobDetails = ({
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Requirements
         </h2>
+        
+        {/* Application Requirements - Checkboxes */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">Application Requirements:</h4>
+          <div className="flex flex-wrap gap-4">
+            {/* Resume - Always required */}
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
+                <CheckCircle className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700 font-medium">Resume</span>
+            </div>
+
+            {/* GitHub Requirement */}
+            <div className="flex items-center gap-2">
+              <div className={`w-5 h-5 rounded flex items-center justify-center ${
+                job.require_github ? 'bg-green-500' : 'bg-gray-300'
+              }`}>
+                {job.require_github && <CheckCircle className="w-3 h-3 text-white" />}
+              </div>
+              <span className={`text-sm font-medium ${
+                job.require_github ? 'text-gray-700' : 'text-gray-400'
+              }`}>GitHub Profile</span>
+            </div>
+
+            {/* Portfolio Requirement */}
+            <div className="flex items-center gap-2">
+              <div className={`w-5 h-5 rounded flex items-center justify-center ${
+                job.require_portfolio ? 'bg-green-500' : 'bg-gray-300'
+              }`}>
+                {job.require_portfolio && <CheckCircle className="w-3 h-3 text-white" />}
+              </div>
+              <span className={`text-sm font-medium ${
+                job.require_portfolio ? 'text-gray-700' : 'text-gray-400'
+              }`}>Portfolio</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Requirements Content */}
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
           <ReactMarkdown>{job.requirements || "None"}</ReactMarkdown>
         </div>
