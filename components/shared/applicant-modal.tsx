@@ -34,7 +34,7 @@ export const ApplicantModalContent = ({
 }) => {
   const { to_level_name, to_college_name, to_job_type_name } = useRefs();
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 max-h-[80vh]">
       {/* Fixed Header Section - Not Scrollable */}
       <div className="flex-shrink-0 px-4 md:px-8 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2 mb-2">
