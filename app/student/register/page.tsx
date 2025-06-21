@@ -15,13 +15,10 @@ import {
 } from "@/components/ui/dropdown";
 import { useFormData } from "@/lib/form-data";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
-import { ProgramInput } from "@/components/ui/program-input";
-import { departmentOptions } from "@/lib/constants/departments";
 
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
   const defaultCollege = "Select College";
-  const defaultDepartment = "Select Department";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
     ref_is_not_null,
@@ -33,15 +30,10 @@ export default function RegisterPage() {
     get_university_by_domain,
   } = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [takingForCredit, setTakingForCredit] = useState<boolean | undefined>(undefined);
   const { form_data, set_fields, set_field, field_setter } = useFormData<
     PublicUser & {
       college_name: string;
       year_level_name: string;
-      department: string;
-      programs: string[];
-      taking_for_credit?: boolean;
-      linkage_officer: string;
     }
   >();
   const { register, redirect_if_logged_in } = useAuthContext();
@@ -79,15 +71,13 @@ export default function RegisterPage() {
       !form_data.year_level_name ||
       form_data.year_level_name === defaultYearLevel ||
       !form_data.college_name ||
-      form_data.college_name === defaultCollege ||
-      !form_data.department ||
-      form_data.department === defaultDepartment
+      form_data.college_name === defaultCollege
     ) {
       setError("Please fill in all required fields");
       return;
     }
 
-    if (takingForCredit && !form_data.linkage_officer?.trim()) {
+    if (form_data.taking_for_credit && !form_data.linkage_officer?.trim()) {
       setError("Please provide your linkage officer information");
       return;
     }
@@ -106,10 +96,9 @@ export default function RegisterPage() {
 
     if (
       form_data.college_name === defaultCollege ||
-      form_data.year_level_name === defaultYearLevel ||
-      form_data.department === defaultDepartment
+      form_data.year_level_name === defaultYearLevel
     ) {
-      setError("Please fill in all the dropdown fields.");
+      setError("Please fill in the dropdown fields too.");
       return;
     }
 
@@ -120,7 +109,6 @@ export default function RegisterPage() {
       const new_user = {
         ...form_data,
         email: email,
-        taking_for_credit: takingForCredit,
         year_level: get_level_by_name(form_data.year_level_name)?.id,
         college: get_college_by_name(form_data.college_name)?.id,
       };
@@ -243,37 +231,7 @@ export default function RegisterPage() {
                   on_change={(value) => set_field("year_level_name", value)}
                 ></GroupableRadioDropdown>
               </div>
-
-              {/* Department */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Department <span className="text-red-500">*</span>
-                </label>
-                <GroupableRadioDropdown
-                  name="department"
-                  default_value={defaultDepartment}
-                  options={departmentOptions}
-                  on_change={(value) => set_field("department", value)}
-                ></GroupableRadioDropdown>
-              </div>
             </DropdownGroup>
-
-            {/* Program multi-entry field */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Program(s) <span className="text-gray-500 italic">(Optional)</span>
-              </label>
-              <ProgramInput
-                value={form_data.programs || []}
-                onChange={(programs) => set_field("programs", programs)}
-                placeholder="Enter program and press Enter"
-                className="w-full"
-                disabled={loading}
-              />
-              <p className="text-xs text-gray-500 mt-2">
-                Add multiple programs by typing and pressing Enter after each one.
-              </p>
-            </div>
 
             {/* Portfolio Link */}
             <div>
@@ -378,48 +336,31 @@ export default function RegisterPage() {
             {/* Taking for Credit */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-3">
-                Are you taking this internship for academic credit? <span className="text-red-500">*</span>
+                Academic Credit
               </label>
-              <div className="flex items-center space-x-6">
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="takingForCredit"
-                    value="yes"
-                    checked={takingForCredit === true}
-                    onChange={() => {
-                      setTakingForCredit(true);
-                      set_field("taking_for_credit", true);
-                    }}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    disabled={loading}
-                  />
-                  <span className="ml-2 text-sm text-gray-700 font-medium flex items-center gap-2">
-                    <Award className="w-4 h-4 text-blue-600" />
-                    Yes
-                  </span>
-                </label>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="takingForCredit"
-                    value="no"
-                    checked={takingForCredit === false}
-                    onChange={() => {
-                      setTakingForCredit(false);
-                      set_field("taking_for_credit", false);
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  checked={form_data.taking_for_credit}
+                  onCheckedChange={(checked) => {
+                    set_field("taking_for_credit", checked as boolean);
+                    // Clear linkage officer if unchecked
+                    if (!checked) {
                       set_field("linkage_officer", "");
-                    }}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                    disabled={loading}
-                  />
-                  <span className="ml-2 text-sm text-gray-700 font-medium">No</span>
-                </label>
+                    }
+                  }}
+                  className="border-gray-300"
+                />
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-blue-600" />
+                  <span className="text-sm text-gray-700 font-medium">
+                    I am taking this internship for academic credit
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Linkage Officer - Conditional */}
-            {takingForCredit && (
+            {form_data.taking_for_credit && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Linkage Officer <span className="text-red-500">*</span>
@@ -436,10 +377,11 @@ export default function RegisterPage() {
                     " w-full h-12 px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
-                  required={takingForCredit}
+                  required={form_data.taking_for_credit}
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  Please provide the name of your assigned linkage officer from your college.
+                  Please provide the name of your assigned linkage officer from
+                  your college.
                 </p>
               </div>
             )}
