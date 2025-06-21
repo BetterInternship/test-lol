@@ -1,0 +1,35 @@
+/**
+ * Program options for student registration
+ */
+export const programOptions = [
+  "Bachelor of Science in Computer Science",
+  "Bachelor of Science in Information Technology",
+  "Bachelor of Science in Software Engineering",
+  "Bachelor of Engineering in Computer Engineering",
+  "Bachelor of Engineering in Electronics Engineering",
+  "Bachelor of Science in Data Science",
+  "Bachelor of Science in Cybersecurity",
+  "Bachelor of Business Administration",
+  "Bachelor of Science in Business Management",
+  "Bachelor of Science in Marketing",
+  "Bachelor of Science in Finance",
+  "Bachelor of Science in Accounting",
+  "Bachelor of Arts in Liberal Arts",
+  "Bachelor of Arts in Communication",
+  "Bachelor of Arts in Psychology",
+  "Bachelor of Science in Psychology",
+  "Bachelor of Science in Biology",
+  "Bachelor of Science in Chemistry",
+  "Bachelor of Science in Physics",
+  "Bachelor of Science in Mathematics",
+  "Bachelor of Education",
+  "Bachelor of Science in Nursing",
+  "Bachelor of Arts in Fine Arts",
+  "Bachelor of Science in Economics",
+  "Bachelor of Arts in Social Sciences",
+  "Master of Science in Computer Science",
+  "Master of Business Administration",
+  "Master of Engineering",
+  "Master of Arts in Education",
+  "Master of Science in Data Science"
+];
