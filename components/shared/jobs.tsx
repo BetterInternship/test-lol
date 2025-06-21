@@ -605,7 +605,7 @@ export const EditableJobDetails = ({
         </h1>
         {!is_editing ? (
           <div className="markdown">
-            <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
+            <ReactMarkdown>{job.requirements?.replace("/", ";") || "None"}</ReactMarkdown>
           </div>
         ) : (
           <MDXEditor
@@ -718,7 +718,7 @@ export const JobDetails = ({
           Requirements
         </h2>
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          <ReactMarkdown>{job.requirements}</ReactMarkdown>
+          <ReactMarkdown>{job.requirements || "None"}</ReactMarkdown>
         </div>
       </div>
     </div>
