@@ -368,19 +368,23 @@ export const EditableJobDetails = ({
   const {
     job_modes,
     job_types,
+    job_allowances,
     job_pay_freq,
     to_job_mode_name,
     to_job_type_name,
     to_job_pay_freq_name,
+    to_job_allowance_name,
     get_job_mode_by_name,
     get_job_type_by_name,
     get_job_pay_freq_by_name,
+    get_job_allowance_by_name,
   } = useRefs();
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     Job & {
       job_type_name: string | null;
       job_mode_name: string | null;
       job_pay_freq_name: string | null;
+      job_allowance_name: string | null;
       industry_name: string | null;
     }
   >();
@@ -392,6 +396,7 @@ export const EditableJobDetails = ({
         job_type_name: to_job_type_name(job.type),
         job_mode_name: to_job_mode_name(job.mode),
         job_pay_freq_name: to_job_pay_freq_name(job.salary_freq),
+        job_allowance_name: to_job_allowance_name(job.allowance, "Paid"),
       });
     }
   }, [job, is_editing]);
@@ -409,6 +414,9 @@ export const EditableJobDetails = ({
         location: form_data.location ?? "",
         mode: clean_int(`${get_job_mode_by_name(form_data.job_mode_name)?.id}`),
         type: clean_int(`${get_job_type_by_name(form_data.job_type_name)?.id}`),
+        allowance: clean_int(
+          `${get_job_allowance_by_name(form_data.job_allowance_name)?.id}`
+        ),
         salary: form_data.salary ?? null,
         salary_freq: clean_int(
           `${get_job_pay_freq_by_name(form_data.job_pay_freq_name)?.id}`
@@ -451,8 +459,8 @@ export const EditableJobDetails = ({
       {/* Job Details Grid */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-        <div className="grid grid-cols-2 gap-6">
-          {job.location && (
+        <div className="grid grid-cols-3 gap-6">
+          {
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -466,7 +474,7 @@ export const EditableJobDetails = ({
                 <JobPropertyLabel />
               </EditableInput>
             </div>
-          )}
+          }
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -487,40 +495,6 @@ export const EditableJobDetails = ({
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Salary:
-              </label>
-              <div className="flex flex-row space-x-2">
-                <EditableInput
-                  is_editing={is_editing}
-                  value={form_data.salary?.toString() ?? "Not specified"}
-                  setter={field_setter("salary")}
-                >
-                  <JobPropertyLabel />
-                </EditableInput>
-                {form_data.salary && form_data.salary > 0 && (
-                  <EditableGroupableRadioDropdown
-                    name="pay_freq"
-                    is_editing={is_editing}
-                    value={form_data.job_pay_freq_name}
-                    options={[
-                      "Not specified",
-                      ...job_pay_freq.map((jpf) => jpf.name),
-                    ]}
-                    setter={field_setter("job_pay_freq_name")}
-                  >
-                    {form_data.job_pay_freq_name !== "Not specified" ? (
-                      <JobPropertyLabel fallback="" />
-                    ) : (
-                      <></>
-                    )}
-                  </EditableGroupableRadioDropdown>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Employment Type:
               </label>
@@ -534,6 +508,78 @@ export const EditableJobDetails = ({
                 <JobPropertyLabel />
               </EditableGroupableRadioDropdown>
             </div>
+
+            {is_editing ? (
+              <div className="flex flex-col space-y-2">
+                <div className="space-y-2">
+                  <label className="flex items-center text-sm font-semibold text-gray-700">
+                    <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                    Allowance:
+                  </label>
+                  <EditableGroupableRadioDropdown
+                    is_editing={is_editing}
+                    name="allowance"
+                    value={form_data.job_allowance_name}
+                    options={job_allowances.map((ja) => ja.name).reverse()}
+                    setter={field_setter("job_allowance_name")}
+                  >
+                    <JobPropertyLabel />
+                  </EditableGroupableRadioDropdown>
+                </div>
+
+                {form_data.job_allowance_name === "Paid" && (
+                  <div className="flex flex-col items-start gap-3 max-w-prose">
+                    <label className="flex items-center text-sm font-semibold text-gray-700">
+                      <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                      Salary:
+                    </label>
+                    <div className="flex flex-row space-x-2">
+                      <EditableInput
+                        is_editing={is_editing}
+                        value={form_data.salary?.toString() ?? "Not specified"}
+                        setter={field_setter("salary")}
+                      >
+                        <JobPropertyLabel />
+                      </EditableInput>
+                      {form_data.salary && form_data.salary > 0 && (
+                        <EditableGroupableRadioDropdown
+                          name="pay_freq"
+                          is_editing={is_editing}
+                          value={form_data.job_pay_freq_name}
+                          options={[
+                            "Not specified",
+                            ...job_pay_freq.map((jpf) => jpf.name),
+                          ]}
+                          setter={field_setter("job_pay_freq_name")}
+                        >
+                          {form_data.job_pay_freq_name !== "Not specified" ? (
+                            <JobPropertyLabel fallback="" />
+                          ) : (
+                            <></>
+                          )}
+                        </EditableGroupableRadioDropdown>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                  {form_data.allowance ? "Allowance:" : "Salary:"}
+                </label>
+                <JobPropertyLabel
+                  value={
+                    form_data.allowance
+                      ? form_data.job_allowance_name
+                      : (form_data.salary?.toString() ?? "") +
+                        " " +
+                        to_job_pay_freq_name(form_data.salary_freq, "")
+                  }
+                />
+              </div>
+            )}
           </DropdownGroup>
 
           <div className="flex flex-col space-y-2">
@@ -739,7 +785,7 @@ export const JobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          {job.location && (
+          {
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -747,7 +793,7 @@ export const JobDetails = ({
               </label>
               <JobPropertyLabel value={job.location} />
             </div>
-          )}
+          }
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">

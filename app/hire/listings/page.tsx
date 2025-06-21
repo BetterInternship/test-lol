@@ -264,7 +264,7 @@ const CreateModalForm = ({
       salary_freq_name: string;
       mode_name: string;
       type_name: string;
-      allowance_name: string;
+      job_allowance_name: string;
       industry_name: string;
     }
   >();
@@ -289,16 +289,16 @@ const CreateModalForm = ({
       requirements: form_data.requirements ?? "",
       location: form_data.location ?? "",
       allowance: clean_int(
-        `${get_job_mode_by_name(form_data.allowance_name)?.id}`
+        `${get_job_mode_by_name(form_data.job_allowance_name)?.id}`
       ),
       mode: clean_int(`${get_job_mode_by_name(form_data.mode_name)?.id}`),
       type: clean_int(`${get_job_type_by_name(form_data.type_name)?.id}`),
       salary:
-        form_data.allowance_name === job_allowances[1].name
+        form_data.job_allowance_name === job_allowances[1].name
           ? form_data.salary
           : null,
       salary_freq:
-        form_data.allowance_name === job_allowances[1].name
+        form_data.job_allowance_name === job_allowances[1].name
           ? clean_int(
               `${get_job_pay_freq_by_name(form_data.salary_freq_name)?.id}`
             )
@@ -333,7 +333,7 @@ const CreateModalForm = ({
       mode_name: job_modes[0].name,
       type_name: job_types[0].name,
       salary_freq_name: job_pay_freq[0].name,
-      allowance_name: job_allowances[0].name,
+      job_allowance_name: job_allowances[0].name,
     });
   }, []);
 
@@ -437,13 +437,13 @@ const CreateModalForm = ({
                   </Label>
                   <GroupableRadioDropdown
                     name="allowance"
-                    default_value={form_data.allowance_name}
+                    default_value={form_data.job_allowance_name}
                     options={job_allowances.map((ja) => ja.name).reverse()}
-                    on_change={field_setter("allowance_name")}
+                    on_change={field_setter("job_allowance_name")}
                   />
                 </div>
 
-                {form_data.allowance_name === "Paid" && (
+                {form_data.job_allowance_name === "Paid" && (
                   <>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">
