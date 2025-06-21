@@ -205,18 +205,19 @@ export const ApplicantModalContent = ({
           </div>
         </div>
 
-        {/* About the Candidate */}
-        <div className="mb-4">
-          <h3 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">
-            About the Candidate
-          </h3>
-          <div className="bg-white rounded-lg p-3 md:p-4 border border-gray-200">
-            <p className="text-gray-700 text-sm leading-relaxed">
-              {applicant?.bio ||
-                "No bio provided. The candidate has not added any information about themselves yet."}
-            </p>
+        {/* About the Candidate - Only show if bio exists */}
+        {applicant?.bio && applicant.bio.trim() && (
+          <div className="mb-4">
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">
+              About the Candidate
+            </h3>
+            <div className="bg-white rounded-lg p-3 md:p-4 border border-gray-200">
+              <p className="text-gray-700 text-sm leading-relaxed">
+                {applicant.bio}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
