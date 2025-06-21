@@ -161,7 +161,7 @@ export default function HomePage() {
                   <div className="relative">
                     <Button
                       onClick={() => setShowIndustryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
                       <span className="truncate">{filters.industry || "All Industries"}</span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -170,7 +170,7 @@ export default function HomePage() {
                   <div className="relative">
                     <Button
                       onClick={() => setShowCategoryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
                       <span className="truncate">{filters.category || "All categories"}</span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -212,7 +212,7 @@ export default function HomePage() {
                       <div className="w-36">
                         <Button
                           onClick={() => setShowIndustryModal(true)}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-0 hover:bg-gray-50 transition-all duration-200 font-medium text-gray-700"
+                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
                           <span className="truncate text-sm">{filters.industry || "All Industries"}</span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -222,7 +222,7 @@ export default function HomePage() {
                       <div className="w-40">
                         <Button
                           onClick={() => setShowCategoryModal(true)}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-0 hover:bg-gray-50 transition-all duration-200 font-medium text-gray-700"
+                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
                           <span className="truncate text-sm">{filters.category || "All categories"}</span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
