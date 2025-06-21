@@ -25,6 +25,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import ContentLayout from "@/components/features/hire/content-layout";
 
 export default function Page() {
   return (
@@ -386,100 +387,69 @@ function FormDataEditor() {
   );
 
   return (
-    <div className="h-screen bg-white flex">
-      {/* Sidebar */}
-      <div className="w-64 border-r bg-gray-50 flex flex-col">
-        <div className="p-6">
-          <h1 className="text-xl font-bold text-gray-800">BetterInternship</h1>
-        </div>
+    <ContentLayout>
+        <div className="h-screen bg-white flex">
 
-        <div className="px-6">
-          <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
-          <div className="space-y-2">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
-            >
-              <BarChart3 className="h-5 w-5" />
-              My Applications
-            </Link>
-            <Link
-              href="/listings"
-              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
-            >
-              <FileText className="h-5 w-5" />
-              My Listings
-            </Link>
-            <Link
-              href="/forms-automation"
-              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
-            >
-              <FileEdit className="h-5 w-5" />
-              Forms Automation
-            </Link>
-          </div>
-        </div>
-      </div>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col">
+                {/* Header */}
+                <div className="flex justify-between items-center p-6 border-b">
+                    <h1 className="text-2xl font-bold text-gray-800">{getPageTitle()}</h1>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="icon">
+                                <User className="h-5 w-5" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                            <DropdownMenuItem className="cursor-pointer" asChild>
+                                <Link href="/company-profile">
+                                    <Building2 className="mr-2 h-4 w-4" />
+                                    <span>Edit Company Profile</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer" asChild>
+                                <Link href="/add-users">
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    <span>Add Users</span>
+                                </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                className="cursor-pointer text-red-600"
+                                onClick={handleLogout}
+                            >
+                                <LogOut className="mr-2 h-4 w-4" />
+                                <span>Logout</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h1 className="text-2xl font-bold text-gray-800">{getPageTitle()}</h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/company-profile">
-                  <Building2 className="mr-2 h-4 w-4" />
-                  <span>Edit Company Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer" asChild>
-                <Link href="/add-users">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  <span>Add Users</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer text-red-600"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                {/* Content Area */}
+                <div className="flex-1 p-6 overflow-y-auto">
+                    <div className="max-w-4xl mx-auto space-y-8">
+                        {section === "contact" && renderContactDetails()}
+                        {section === "requirements" && renderStandardRequirements()}
 
-        {/* Content Area */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
-            {section === "contact" && renderContactDetails()}
-            {section === "requirements" && renderStandardRequirements()}
-
-            {/* Action Buttons */}
-            <div className="flex justify-between gap-3 pt-6">
-              <Button
-                variant="outline"
-                onClick={() => router.push("/forms-automation")}
-              >
-                Back to Forms Automation
-              </Button>
-              <Button
-                onClick={handleSave}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Save Changes
-              </Button>
+                        {/* Action Buttons */}
+                        <div className="flex justify-between gap-3 pt-6">
+                            <Button
+                                variant="outline"
+                                onClick={() => router.push("/forms-automation")}
+                            >
+                                Back to Forms Automation
+                            </Button>
+                            <Button
+                                onClick={handleSave}
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                Save Changes
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
+    </ContentLayout>
   );
 }
