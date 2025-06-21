@@ -102,14 +102,25 @@ export const JobCard = ({
         </p>
 
         <div className="flex flex-wrap gap-2">
-          {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
+          {job.employer?.has_dlsu_moa && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              DLSU MOA
             </span>
           )}
           {ref_is_not_null(job.type) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
               {to_job_type_name(job.type)}
+            </span>
+          )}
+          {job.salary && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              ₱{job.salary}
+            </span>
+          )}
+          {ref_is_not_null(job.mode) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+              {to_job_mode_name(job.mode)}
             </span>
           )}
         </div>
@@ -209,20 +220,31 @@ export const EmployerJobCard = ({
         </p>
 
         <div className="flex flex-wrap gap-2">
+          {job.employer?.has_dlsu_moa && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              DLSU MOA
+            </span>
+          )}
           {job.is_unlisted && (
             <span className="inline-flex items-center px-2.5 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium border border-orange-200">
               <EyeOff className="w-3 h-3 mr-1" />
               Unlisted
             </span>
           )}
-          {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
-            </span>
-          )}
           {ref_is_not_null(job.type) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
               {to_job_type_name(job.type)}
+            </span>
+          )}
+          {job.salary && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+              ₱{job.salary}
+            </span>
+          )}
+          {ref_is_not_null(job.mode) && (
+            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
+              {to_job_mode_name(job.mode)}
             </span>
           )}
           {!job.is_active && (
@@ -294,6 +316,12 @@ export const MobileJobCard = ({
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
+        {job.employer?.has_dlsu_moa && (
+          <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            DLSU MOA
+          </Badge>
+        )}
         {ref_is_not_null(job.type) && (
           <Badge variant="outline" className="text-xs border-purple-200 bg-purple-50 text-purple-700">
             {to_job_type_name(job.type)}
@@ -301,7 +329,6 @@ export const MobileJobCard = ({
         )}
         {job.salary && (
           <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
-            <PhilippinePeso className="w-3 h-3 mr-1" />
             ₱{job.salary}
           </Badge>
         )}
@@ -417,7 +444,7 @@ export const EditableJobDetails = ({
   }, [saving]);
 
   return (
-    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
+    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto overflow-x-hidden">
       <div className="mb-6">
         <div className="max-w-prose">
           <EditableInput
@@ -567,41 +594,66 @@ export const EditableJobDetails = ({
         </div>
       </div>
 
-      {/* Job Description */}
+      {/* Job Description and Requirements - Side by Side */}
       <hr />
-      <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-          Description
-        </h1>
+      <div className={`mb-6 mt-8 ${is_editing ? 'pb-8' : ''}`}>
         {!is_editing ? (
-          <div className="markdown">
-            <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
-          </div>
+          // Non-editing mode: stack vertically
+          <>
+            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+              Description
+            </h1>
+            <div className="markdown mb-8">
+              <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
+            </div>
+            
+            <hr />
+            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4 mt-8">
+              Requirements
+            </h1>
+            <div className="markdown">
+              <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
+            </div>
+          </>
         ) : (
-          <MDXEditor
-            className="min-h-[300px] border border-gray-200 rounded-lg"
-            markdown={form_data.description ?? ""}
-            onChange={(value) => set_field("description", value)}
-          />
-        )}
-      </div>
+          // Editing mode: side by side layout
+          <div className="flex gap-6 overflow-hidden min-h-[500px] w-full">
+            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  📝
+                </div>
+                Job Description
+              </h3>
+              <div className="relative w-full overflow-hidden">
+                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
+                  <MDXEditor
+                    className="min-h-[300px] max-w-none break-all"
+                    markdown={form_data.description ?? ""}
+                    onChange={(value) => set_field("description", value)}
+                  />
+                </div>
+              </div>
+            </div>
 
-      {/* Job Requirements */}
-      <hr />
-      <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-          Requirements
-        </h1>
-        {!is_editing ? (
-          <div className="markdown">
-            <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
+            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                  📋
+                </div>
+                Requirements
+              </h3>
+              <div className="relative w-full overflow-hidden">
+                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
+                  <MDXEditor
+                    className="min-h-[300px] max-w-none break-all"
+                    markdown={form_data.requirements ?? ""}
+                    onChange={(value) => set_field("requirements", value)}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        ) : (
-          <MDXEditor
-            className="min-h-[300px] border border-gray-200 rounded-lg"
-            markdown={form_data.requirements ?? ""}
-            onChange={(value) => set_field("requirements", value)}
-          />
         )}
       </div>
     </div>
@@ -698,10 +750,10 @@ export const JobDetails = ({
       {/* Job Description */}
       <hr />
       <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Description
-        </h1>
-        <div className="markdown">
+        </h2>
+        <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
           <ReactMarkdown>{job.description}</ReactMarkdown>
         </div>
       </div>
@@ -709,10 +761,10 @@ export const JobDetails = ({
       {/* Job Requirements */}
       <hr />
       <div className="mb-6 mt-8">
-        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Requirements
-        </h1>
-        <div className="markdown">
+        </h2>
+        <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
           <ReactMarkdown>{job.requirements}</ReactMarkdown>
         </div>
       </div>
