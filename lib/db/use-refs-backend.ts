@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-21 17:11:25
+ * @ Modified time: 2025-06-21 20:13:56
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -45,16 +45,43 @@ export interface IRefsContext {
   app_statuses: AppStatus[];
   industries: Industry[];
 
-  to_level_name: (id: number | null | undefined) => string | null;
-  to_college_name: (id: string | null | undefined) => string | null;
-  to_university_name: (id: string | null | undefined) => string | null;
-  to_job_type_name: (id: number | null | undefined) => string | null;
-  to_job_mode_name: (id: number | null | undefined) => string | null;
-  to_job_allowance_name: (id: number | null | undefined) => string | null;
-  to_job_pay_freq_name: (id: number | null | undefined) => string | null;
-  to_app_status_name: (id: number | null | undefined) => string | null;
-  to_industry_name: (id: string | null | undefined) => string | null;
-  to_job_category_name: (id: string | null | undefined) => string | null;
+  to_level_name: (id: number | null | undefined, def?: string) => string | null;
+  to_college_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
+  to_university_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
+  to_job_type_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
+  to_job_mode_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
+  to_job_allowance_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
+  to_job_pay_freq_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
+  to_app_status_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
+  to_industry_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
+  to_job_category_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
 
   get_level: (id: number | null | undefined) => Level | null;
   get_college: (id: string | null | undefined) => College | null;
@@ -125,10 +152,10 @@ const createRefInternalHook = <
    * @returns
    */
   const to_name = useCallback(
-    (id: ID | null | undefined): string => {
-      if (!id && id !== 0) return "Not specified";
+    (id: ID | null | undefined, def: string = "Not specified"): string => {
+      if (!id && id !== 0) return def;
       const f = data?.filter((d) => d.id === id);
-      if (!f.length) return "Not specified";
+      if (!f.length) return def;
       return f[0].name;
     },
     [data]
