@@ -1,8 +1,45 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { job_service, handle_api_error, application_service } from "@/lib/api";
-import { EmployerApplication, Job } from "@/lib/db/db.types";
+import {
+  job_service,
+  handle_api_error,
+  application_service,
+  auth_service,
+} from "@/lib/api";
+import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/app/hire/authctx";
 import { useCache } from "./use-cache";
+
+export function useEmployers() {
+  const [employers, set_employers] = useState<Employer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEmployers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await auth_service.employer.get_all_employers();
+      if (response.success)
+        // @ts-ignore
+        set_employers(response.employers ?? []);
+    } catch (err) {
+      const errorMessage = handle_api_error(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployers();
+  }, []);
+
+  return {
+    employers,
+    loading,
+    error,
+  };
+}
 
 export function useEmployerApplications() {
   const { recheck_authentication } = useAuthContext();
@@ -124,11 +161,14 @@ export function useOwnedJobs(
       setError(null);
 
       // Check cache first
-      const cached_saved_jobs = get_cache_item("_jobs_owned_list") as Job[];
-      if (cached_saved_jobs) {
-        setOwnedJobs(cached_saved_jobs);
-        return;
-      }
+      const cached_saved_jobs = null;
+
+      // ! Disable cache for now so god mode works fine
+      // get_cache_item("_jobs_owned_list") as Job[];
+      // if (cached_saved_jobs) {
+      //   setOwnedJobs(cached_saved_jobs);
+      //   return;
+      // }
 
       // Otherwise, pull from server
       const response = await job_service.get_owned_jobs();

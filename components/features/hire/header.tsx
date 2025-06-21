@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
+import Link from "next/link";
 
 /**
  * The header present on every page
@@ -17,6 +18,7 @@ import { useRoute } from "@/hooks/use-route";
  * @component
  */
 export const Header = () => {
+  const { god } = useAuthContext();
   const { is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
@@ -29,6 +31,14 @@ export const Header = () => {
       )}
     >
       <HeaderTitle />
+      {god && (
+        <Link
+          className="p-2 px-4 border border-gray-300 rounded-sm"
+          href={"/god"}
+        >
+          Select Different Employer
+        </Link>
+      )}
       {route_excluded(header_routes) ? (
         <ProfileButton />
       ) : (
