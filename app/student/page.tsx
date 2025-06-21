@@ -54,6 +54,25 @@ export default function HomePage() {
     router.push(`/search?${params.toString()}`);
   };
 
+  // Helper to apply filter and go to job listings
+  const applyFilterAndGo = (type: "industry" | "category", value: string) => {
+    set_filter(type, value);
+    setTimeout(() => {
+      const params = new URLSearchParams();
+      const newFilters = { ...filters, [type]: value };
+      if (searchTerm.trim()) {
+        params.set("q", searchTerm);
+      }
+      if (newFilters.industry && newFilters.industry !== "All Industries") {
+        params.set("industry", newFilters.industry);
+      }
+      if (newFilters.category && newFilters.category !== "All categories") {
+        params.set("category", newFilters.category);
+      }
+      router.push(`/search?${params.toString()}`);
+    }, 0);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
@@ -142,7 +161,7 @@ export default function HomePage() {
                   <div className="relative">
                     <Button
                       onClick={() => setShowIndustryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
                       <span className="truncate">{filters.industry || "All Industries"}</span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -151,7 +170,7 @@ export default function HomePage() {
                   <div className="relative">
                     <Button
                       onClick={() => setShowCategoryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-white border-0 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-200 font-medium text-gray-700"
+                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
                       <span className="truncate">{filters.category || "All categories"}</span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -193,7 +212,7 @@ export default function HomePage() {
                       <div className="w-36">
                         <Button
                           onClick={() => setShowIndustryModal(true)}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-0 hover:bg-gray-50 transition-all duration-200 font-medium text-gray-700"
+                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
                           <span className="truncate text-sm">{filters.industry || "All Industries"}</span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -203,7 +222,7 @@ export default function HomePage() {
                       <div className="w-40">
                         <Button
                           onClick={() => setShowCategoryModal(true)}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-0 hover:bg-gray-50 transition-all duration-200 font-medium text-gray-700"
+                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
                           <span className="truncate text-sm">{filters.category || "All categories"}</span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -252,8 +271,14 @@ export default function HomePage() {
 
       {/* Category Modal - Both Mobile and Desktop */}
       {showCategoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-x-hidden overflow-y-auto flex flex-col">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowCategoryModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-x-hidden overflow-y-auto flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
                 Select Category
@@ -270,8 +295,8 @@ export default function HomePage() {
               {/* All Categories Option */}
               <button
                 onClick={() => {
-                  set_filter("category", "All categories");
                   setShowCategoryModal(false);
+                  applyFilterAndGo("category", "All categories");
                 }}
                 className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
                   filters.category === "All categories"
@@ -293,8 +318,8 @@ export default function HomePage() {
                   <button
                     key={option}
                     onClick={() => {
-                      set_filter("category", option);
                       setShowCategoryModal(false);
+                      applyFilterAndGo("category", option);
                     }}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
                       filters.category === option
@@ -318,8 +343,8 @@ export default function HomePage() {
                   <button
                     key={option}
                     onClick={() => {
-                      set_filter("category", option);
                       setShowCategoryModal(false);
+                      applyFilterAndGo("category", option);
                     }}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
                       filters.category === option
@@ -343,8 +368,8 @@ export default function HomePage() {
                   <button
                     key={option}
                     onClick={() => {
-                      set_filter("category", option);
                       setShowCategoryModal(false);
+                      applyFilterAndGo("category", option);
                     }}
                     className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
                       filters.category === option
@@ -363,8 +388,14 @@ export default function HomePage() {
 
       {/* Industry Modal - Both Mobile and Desktop */}
       {showIndustryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-hidden flex flex-col">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowIndustryModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-hidden flex flex-col"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-base font-semibold text-gray-900">
                 Select Industry
@@ -381,8 +412,8 @@ export default function HomePage() {
                 <button
                   key={option}
                   onClick={() => {
-                    set_filter("industry", option);
                     setShowIndustryModal(false);
+                    applyFilterAndGo("industry", option);
                   }}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
                     filters.industry === option

@@ -18,6 +18,7 @@ import ReactMarkdown from "react-markdown";
 import { useFormData } from "@/lib/form-data";
 import {
   EditableCheckbox,
+  EditableDatePicker,
   EditableGroupableRadioDropdown,
   EditableInput,
 } from "@/components/ui/editable";
@@ -26,15 +27,6 @@ import { JobBooleanLabel, JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
 import { Button } from "../ui/button";
-
-// Utility function to format dates
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 
 /**
  * The scrollable job card component.
@@ -77,12 +69,6 @@ export const JobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
-              {job.employer?.has_dlsu_moa && (
-                <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  DLSU MOA
-                </span>
-              )}
             </div>
           </div>
           {selected && (
@@ -92,17 +78,15 @@ export const JobCard = ({
           )}
         </div>
 
-        <div className="flex items-center text-sm text-gray-500">
-          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">{job.location || "Location not specified"}</span>
-        </div>
-
-        <p className="text-xs text-gray-500">
-          Updated {formatDate(job.updated_at ?? "")}
-        </p>
+        {job.location && (
+          <div className="flex items-center text-sm text-gray-500">
+            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+            <span className="truncate">{job.location}</span>
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -146,7 +130,6 @@ export const EmployerJobCard = ({
   selected?: boolean;
   disabled?: boolean;
   on_click?: (job: Job) => void;
-  // ! please fucking change the types
   update_job: (
     job_id: string,
     job: Partial<Job>
@@ -176,7 +159,7 @@ export const EmployerJobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
-              {job.employer?.has_dlsu_moa && (
+              {true && (
                 <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   DLSU MOA
@@ -184,7 +167,7 @@ export const EmployerJobCard = ({
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {selected && (
               <div className="w-2 h-2 bg-primary rounded-full"></div>
@@ -212,15 +195,11 @@ export const EmployerJobCard = ({
 
         <div className="flex items-center text-sm text-gray-500">
           <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">{job.location || "Location not specified"}</span>
+          <span className="truncate">{job.location}</span>
         </div>
 
-        <p className="text-xs text-gray-500">
-          Updated {formatDate(job.updated_at ?? "")}
-        </p>
-
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -282,10 +261,7 @@ export const MobileJobCard = ({
 }) => {
   const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
   return (
-    <div
-      className="card hover-lift p-6 animate-fade-in"
-      onClick={on_click}
-    >
+    <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1 min-w-0">
@@ -295,7 +271,7 @@ export const MobileJobCard = ({
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Building className="w-4 h-4 flex-shrink-0" />
             <span className="font-medium truncate">{job.employer?.name}</span>
-            {job.employer?.has_dlsu_moa && (
+            {true && (
               <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 DLSU MOA
@@ -309,31 +285,45 @@ export const MobileJobCard = ({
       </div>
 
       {/* Location */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-        <MapPin className="w-4 h-4 flex-shrink-0" />
-        <span className="truncate">{job.location || "Location not specified"}</span>
-      </div>
+      {job.location && (
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+          <MapPin className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">{job.location}</span>
+        </div>
+      )}
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
         {job.employer?.has_dlsu_moa && (
-          <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
+          <Badge
+            variant="outline"
+            className="text-xs border-green-200 bg-green-50 text-green-700"
+          >
             <CheckCircle className="w-3 h-3 mr-1" />
             DLSU MOA
           </Badge>
         )}
         {ref_is_not_null(job.type) && (
-          <Badge variant="outline" className="text-xs border-purple-200 bg-purple-50 text-purple-700">
+          <Badge
+            variant="outline"
+            className="text-xs border-purple-200 bg-purple-50 text-purple-700"
+          >
             {to_job_type_name(job.type)}
           </Badge>
         )}
         {job.salary && (
-          <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
+          <Badge
+            variant="outline"
+            className="text-xs border-green-200 bg-green-50 text-green-700"
+          >
             ₱{job.salary}
           </Badge>
         )}
         {ref_is_not_null(job.mode) && (
-          <Badge variant="outline" className="text-xs border-blue-200 bg-blue-50 text-blue-700">
+          <Badge
+            variant="outline"
+            className="text-xs border-blue-200 bg-blue-50 text-blue-700"
+          >
             <JobModeIcon mode={job.mode} />
             {to_job_mode_name(job.mode)}
           </Badge>
@@ -347,13 +337,12 @@ export const MobileJobCard = ({
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate">{job.location}</span>
-        </div>
-        <div className="text-xs text-gray-400">
-          Click to view details
-        </div>
+        {job.location && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <MapPin className="w-3 h-3" />
+            <span className="truncate">{job.location}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -376,7 +365,6 @@ export const EditableJobDetails = ({
   is_editing: boolean;
   set_is_editing: (is_editing: boolean) => void;
   saving?: boolean;
-  // ! please fucking change the types
   update_job: (
     job_id: string,
     job: Partial<Job>
@@ -399,6 +387,7 @@ export const EditableJobDetails = ({
       job_type_name: string | null;
       job_mode_name: string | null;
       job_pay_freq_name: string | null;
+      industry_name: string | null;
     }
   >();
 
@@ -432,6 +421,10 @@ export const EditableJobDetails = ({
         ),
         require_github: form_data.require_github,
         require_portfolio: form_data.require_portfolio,
+        is_unlisted: form_data.is_unlisted,
+        start_date: form_data.start_date,
+        end_date: form_data.end_date,
+        is_year_round: form_data.is_year_round,
       };
 
       update_job(edited_job.id ?? "", edited_job).then(
@@ -457,16 +450,7 @@ export const EditableJobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {job.employer?.has_dlsu_moa && (
-            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              DLSU MOA
-            </span>
-          )}
         </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p>
         <div className="flex gap-3">{actions}</div>
       </div>
 
@@ -474,19 +458,21 @@ export const EditableJobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Location:
-            </label>
-            <EditableInput
-              is_editing={is_editing}
-              value={form_data.location ?? "Not specified"}
-              setter={field_setter("location")}
-            >
-              <JobPropertyLabel />
-            </EditableInput>
-          </div>
+          {job.location && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Location:
+              </label>
+              <EditableInput
+                is_editing={is_editing}
+                value={form_data.location ?? "Not specified"}
+                setter={field_setter("location")}
+              >
+                <JobPropertyLabel />
+              </EditableInput>
+            </div>
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -510,15 +496,15 @@ export const EditableJobDetails = ({
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
-              <EditableInput
-                is_editing={is_editing}
-                value={form_data.salary?.toString() ?? "Not specified"}
-                setter={field_setter("salary")}
-              >
-                <JobPropertyLabel />
-              </EditableInput>
-              {form_data.salary_freq ||
-                (form_data.salary_freq === 0 && (
+              <div className="flex flex-row space-x-2">
+                <EditableInput
+                  is_editing={is_editing}
+                  value={form_data.salary?.toString() ?? "Not specified"}
+                  setter={field_setter("salary")}
+                >
+                  <JobPropertyLabel />
+                </EditableInput>
+                {form_data.salary && form_data.salary > 0 && (
                   <EditableGroupableRadioDropdown
                     name="pay_freq"
                     is_editing={is_editing}
@@ -529,9 +515,14 @@ export const EditableJobDetails = ({
                     ]}
                     setter={field_setter("job_pay_freq_name")}
                   >
-                    <JobPropertyLabel fallback="" />
+                    {form_data.job_pay_freq_name !== "Not specified" ? (
+                      <JobPropertyLabel fallback="" />
+                    ) : (
+                      <></>
+                    )}
                   </EditableGroupableRadioDropdown>
-                ))}
+                )}
+              </div>
             </div>
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
@@ -561,7 +552,7 @@ export const EditableJobDetails = ({
                 <JobBooleanLabel />
               </EditableCheckbox>
               <label className="text-sm font-semibold text-gray-700">
-                Require Github
+                Require Github?
               </label>
             </div>
 
@@ -574,7 +565,7 @@ export const EditableJobDetails = ({
                 <JobBooleanLabel />
               </EditableCheckbox>
               <label className="text-sm font-semibold text-gray-700">
-                Require Portfolio
+                Require Portfolio?
               </label>
             </div>
 
@@ -587,73 +578,159 @@ export const EditableJobDetails = ({
                 <JobBooleanLabel />
               </EditableCheckbox>
               <label className="text-sm font-semibold text-gray-700">
-                Unlisted
+                Unlisted?
               </label>
             </div>
+
+            <div className="flex items-center space-x-2">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.is_year_round ?? false}
+                setter={field_setter("is_year_round")}
+              >
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                Year Round?
+              </label>
+            </div>
+            {!form_data.is_year_round && (
+              <>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    Start Date
+                  </label>
+                  <EditableDatePicker
+                    is_editing={is_editing}
+                    value={
+                      form_data.start_date
+                        ? new Date(form_data.start_date)
+                        : new Date()
+                    }
+                    // @ts-ignore
+                    setter={field_setter("start_date")}
+                  >
+                    <JobPropertyLabel />
+                  </EditableDatePicker>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-1 block">
+                    End Date
+                  </label>
+                  <EditableDatePicker
+                    is_editing={is_editing}
+                    value={
+                      form_data.end_date
+                        ? new Date(form_data.end_date)
+                        : new Date()
+                    }
+                    // @ts-ignore
+                    setter={field_setter("end_date")}
+                  >
+                    <JobPropertyLabel />
+                  </EditableDatePicker>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Job Description and Requirements - Side by Side */}
       <hr />
-      <div className={`mb-6 mt-8 ${is_editing ? 'pb-8' : ''}`}>
+      <div className="mb-6 mt-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Description
+        </h1>
         {!is_editing ? (
-          // Non-editing mode: stack vertically
-          <>
-            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
-              Description
-            </h1>
-            <div className="markdown mb-8">
-              <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
-            </div>
-            
-            <hr />
-            <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4 mt-8">
-              Requirements
-            </h1>
-            <div className="markdown">
-              <ReactMarkdown>{job.requirements?.replace("/", ";")}</ReactMarkdown>
-            </div>
-          </>
+          <div className="markdown">
+            <ReactMarkdown>{job.description?.replace("/", ";")}</ReactMarkdown>
+          </div>
         ) : (
-          // Editing mode: side by side layout
-          <div className="flex gap-6 overflow-hidden min-h-[500px] w-full">
-            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                  📝
-                </div>
-                Job Description
-              </h3>
-              <div className="relative w-full overflow-hidden">
-                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
-                  <MDXEditor
-                    className="min-h-[300px] max-w-none break-all"
-                    markdown={form_data.description ?? ""}
-                    onChange={(value) => set_field("description", value)}
-                  />
-                </div>
+          <MDXEditor
+            className="min-h-[300px] border border-gray-200 rounded-lg"
+            markdown={form_data.description ?? ""}
+            onChange={(value) => set_field("description", value)}
+          />
+        )}
+      </div>
+
+      {/* Job Requirements */}
+      <hr />
+      <div className="mb-6 mt-8">
+        <h1 className="text-3xl font-heading font-bold text-gray-700 mb-4">
+          Requirements
+        </h1>
+
+        {/* Application Requirements - Checkboxes */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">
+            Application Requirements:
+          </h4>
+          <div className="flex flex-wrap gap-4">
+            {/* Resume - Always required */}
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
+                <CheckCircle className="w-3 h-3 text-white" />
               </div>
+              <span className="text-sm text-gray-700 font-medium">Resume</span>
             </div>
 
-            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm border border-gray-200 p-6 overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                  📋
-                </div>
-                Requirements
-              </h3>
-              <div className="relative w-full overflow-hidden">
-                <div className="w-full overflow-auto max-h-[400px] border border-gray-200 rounded-lg">
-                  <MDXEditor
-                    className="min-h-[300px] max-w-none break-all"
-                    markdown={form_data.requirements ?? ""}
-                    onChange={(value) => set_field("requirements", value)}
-                  />
-                </div>
+            {/* GitHub Requirement */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-5 h-5 rounded flex items-center justify-center ${
+                  job.require_github ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                {job.require_github && (
+                  <CheckCircle className="w-3 h-3 text-white" />
+                )}
               </div>
+              <span
+                className={`text-sm font-medium ${
+                  job.require_github ? "text-gray-700" : "text-gray-400"
+                }`}
+              >
+                GitHub Profile
+              </span>
+            </div>
+
+            {/* Portfolio Requirement */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-5 h-5 rounded flex items-center justify-center ${
+                  job.require_portfolio ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                {job.require_portfolio && (
+                  <CheckCircle className="w-3 h-3 text-white" />
+                )}
+              </div>
+              <span
+                className={`text-sm font-medium ${
+                  job.require_portfolio ? "text-gray-700" : "text-gray-400"
+                }`}
+              >
+                Portfolio
+              </span>
             </div>
           </div>
+        </div>
+
+        {/* Requirements Content */}
+        {!is_editing ? (
+          <div className="markdown">
+            <ReactMarkdown>
+              {job.requirements?.replace("/", ";") || "None"}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <MDXEditor
+            className="min-h-[300px] border border-gray-200 rounded-lg"
+            markdown={form_data.requirements ?? ""}
+            onChange={(value) => set_field("requirements", value)}
+          />
         )}
       </div>
     </div>
@@ -684,16 +761,8 @@ export const JobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {job.employer?.has_dlsu_moa && (
-            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              DLSU MOA
-            </span>
-          )}
         </div>
-        <p className="text-sm text-gray-500 mb-4">
-          Listed on {formatDate(job.created_at ?? "")}
-        </p>
+
         <div className="flex gap-3">{actions}</div>
       </div>
 
@@ -701,13 +770,15 @@ export const JobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Location:
-            </label>
-            <JobPropertyLabel value={job.location} />
-          </div>
+          {job.location && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Location:
+              </label>
+              <JobPropertyLabel value={job.location} />
+            </div>
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -764,8 +835,66 @@ export const JobDetails = ({
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
           Requirements
         </h2>
+
+        {/* Application Requirements - Checkboxes */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">
+            Application Requirements:
+          </h4>
+          <div className="flex flex-wrap gap-4">
+            {/* Resume - Always required */}
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
+                <CheckCircle className="w-3 h-3 text-white" />
+              </div>
+              <span className="text-sm text-gray-700 font-medium">Resume</span>
+            </div>
+
+            {/* GitHub Requirement */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-5 h-5 rounded flex items-center justify-center ${
+                  job.require_github ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                {job.require_github && (
+                  <CheckCircle className="w-3 h-3 text-white" />
+                )}
+              </div>
+              <span
+                className={`text-sm font-medium ${
+                  job.require_github ? "text-gray-700" : "text-gray-400"
+                }`}
+              >
+                GitHub Profile
+              </span>
+            </div>
+
+            {/* Portfolio Requirement */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-5 h-5 rounded flex items-center justify-center ${
+                  job.require_portfolio ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                {job.require_portfolio && (
+                  <CheckCircle className="w-3 h-3 text-white" />
+                )}
+              </div>
+              <span
+                className={`text-sm font-medium ${
+                  job.require_portfolio ? "text-gray-700" : "text-gray-400"
+                }`}
+              >
+                Portfolio
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Requirements Content */}
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          <ReactMarkdown>{job.requirements}</ReactMarkdown>
+          <ReactMarkdown>{job.requirements || "None"}</ReactMarkdown>
         </div>
       </div>
     </div>

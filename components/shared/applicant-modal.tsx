@@ -34,7 +34,7 @@ export const ApplicantModalContent = ({
 }) => {
   const { to_level_name, to_college_name, to_job_type_name } = useRefs();
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col h-full min-h-0 max-h-[80vh]">
       {/* Fixed Header Section - Not Scrollable */}
       <div className="flex-shrink-0 px-4 md:px-8 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2 mb-2">
@@ -205,18 +205,19 @@ export const ApplicantModalContent = ({
           </div>
         </div>
 
-        {/* About the Candidate */}
-        <div className="mb-4">
-          <h3 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">
-            About the Candidate
-          </h3>
-          <div className="bg-white rounded-lg p-3 md:p-4 border border-gray-200">
-            <p className="text-gray-700 text-sm leading-relaxed">
-              {applicant?.bio ||
-                "No bio provided. The candidate has not added any information about themselves yet."}
-            </p>
+        {/* About the Candidate - Only show if bio exists */}
+        {applicant?.bio && applicant.bio.trim() && (
+          <div className="mb-4">
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">
+              About the Candidate
+            </h3>
+            <div className="bg-white rounded-lg p-3 md:p-4 border border-gray-200">
+              <p className="text-gray-700 text-sm leading-relaxed">
+                {applicant.bio}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

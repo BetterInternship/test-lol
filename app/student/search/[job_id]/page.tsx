@@ -218,12 +218,6 @@ export default function JobPage() {
                           <p className="text-lg text-gray-700 font-medium">
                             {job.employer?.name}
                           </p>
-                          {job.employer?.has_dlsu_moa && (
-                            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1.5 rounded-full font-medium">
-                              <CheckCircle className="w-4 h-4 mr-1.5" />
-                              DLSU MOA
-                            </span>
-                          )}
                         </div>
                         <p className="text-gray-500 text-sm">
                           Listed on {job.created_at ? new Date(job.created_at).toLocaleDateString("en-US", {
@@ -295,6 +289,27 @@ export default function JobPage() {
                           {job.type !== null && job.type !== undefined ? 
                             (job.type === 0 ? "Internship" : job.type === 1 ? "Full-time" : "Part-time") : 
                             "Not specified"}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">Partnership</span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          {job.employer?.has_dlsu_moa ? (
+                            <span className="inline-flex items-center text-green-700 font-medium">
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              DLSU MOA
+                            </span>
+                          ) : (
+                            "No MOA"
+                          )}
                         </p>
                       </div>
                     </div>

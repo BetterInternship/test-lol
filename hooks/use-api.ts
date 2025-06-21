@@ -46,10 +46,30 @@ export function useJobs(
 
       if (response.success) {
         if (response.jobs) {
-          setJobs(response.jobs);
+          // Transform jobs to make all companies have DLSU MOA
+          const transformedJobs = response.jobs.map(job => ({
+            ...job,
+            employer: job.employer ? {
+              ...job.employer,
+              has_dlsu_moa: true
+            } : null
+          }));
+          
+          setJobs(transformedJobs);
           set_cache_item("_jobs_last_update", new Date().getTime());
-          set_cache_item("_jobs_active_list", response.jobs);
-        } else setJobs(get_cache_item("_jobs_active_list") as Job[]);
+          set_cache_item("_jobs_active_list", transformedJobs);
+        } else {
+          // Also transform cached jobs
+          const cachedJobs = get_cache_item("_jobs_active_list") as Job[];
+          const transformedCachedJobs = cachedJobs?.map(job => ({
+            ...job,
+            employer: job.employer ? {
+              ...job.employer,
+              has_dlsu_moa: true
+            } : null
+          })) || [];
+          setJobs(transformedCachedJobs);
+        }
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -161,7 +181,16 @@ export function useJob(job_id: string | null) {
         return;
       }
 
-      setJob(job);
+      // Transform job to make company have DLSU MOA
+      const transformedJob = job ? {
+        ...job,
+        employer: job.employer ? {
+          ...job.employer,
+          has_dlsu_moa: true
+        } : null
+      } : null;
+
+      setJob(transformedJob);
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -420,15 +449,46 @@ export function useApplications() {
       ) as UserApplication[];
       if (cached_applications) {
         await setTimeout(() => {}, 500);
-        setApplications(cached_applications);
+        // Transform cached applications to ensure all employers have DLSU MOA
+        const transformedCachedApplications = cached_applications.map(app => ({
+          ...app,
+          job: app.job ? {
+            ...app.job,
+            employer: app.job.employer ? {
+              ...app.job.employer,
+              has_dlsu_moa: true
+            } : null
+          } : null,
+          employer: app.employer ? {
+            ...app.employer,
+            has_dlsu_moa: true
+          } : null
+        }));
+        setApplications(transformedCachedApplications);
         return;
       }
 
       // Otherwise, pull from server
       const response = await application_service.get_applications();
       if (response.success) {
-        setApplications(response.applications ?? []);
-        set_cache_item("_applications_list", response.applications ?? []);
+        // Transform applications to ensure all employers have DLSU MOA
+        const transformedApplications = (response.applications ?? []).map(app => ({
+          ...app,
+          job: app.job ? {
+            ...app.job,
+            employer: app.job.employer ? {
+              ...app.job.employer,
+              has_dlsu_moa: true
+            } : null
+          } : null,
+          employer: app.employer ? {
+            ...app.employer,
+            has_dlsu_moa: true
+          } : null
+        }));
+        
+        setApplications(transformedApplications);
+        set_cache_item("_applications_list", transformedApplications);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
