@@ -145,8 +145,8 @@ export const EmployerJobCard = ({
         "job-card group relative",
         selected && !disabled
           ? "selected ring-2 ring-primary ring-offset-2"
-          : "hover:shadow-lg hover:border-gray-300",
-        disabled ? "opacity-50 pointer-events-none" : "cursor-pointer"
+          : "hover:shadow-lg border-0 hover:border-0",
+        disabled ? "opacity-50" : "cursor-pointer"
       )}
     >
       <div className="space-y-3">
@@ -159,12 +159,6 @@ export const EmployerJobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
-              {true && (
-                <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  DLSU MOA
-                </span>
-              )}
             </div>
           </div>
 
@@ -199,7 +193,7 @@ export const EmployerJobCard = ({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {true && (
+          {job.employer?.has_dlsu_moa && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -236,7 +230,7 @@ export const EmployerJobCard = ({
       </div>
 
       {!job.is_active && (
-        <div className="absolute inset-0 bg-gray-100 bg-opacity-60 rounded-lg flex items-center justify-center">
+        <div className="absolute inset-0 bg-gray-100 bg-opacity-60 rounded-lg flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <EyeOff className="w-8 h-8 text-gray-400 mx-auto mb-1" />
             <p className="text-xs text-gray-500 font-medium">Inactive</p>
