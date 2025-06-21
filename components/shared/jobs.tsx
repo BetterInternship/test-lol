@@ -342,9 +342,6 @@ export const MobileJobCard = ({
           <MapPin className="w-3 h-3" />
           <span className="truncate">{job.location}</span>
         </div>
-        <div className="text-xs text-gray-400">
-          Click to view details
-        </div>
       </div>
     </div>
   );
