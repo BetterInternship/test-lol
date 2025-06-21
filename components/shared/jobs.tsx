@@ -87,10 +87,12 @@ export const JobCard = ({
           )}
         </div>
 
-        <div className="flex items-center text-sm text-gray-500">
-          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">{job.location || "Location not specified"}</span>
-        </div>
+        {job.location && (
+          <div className="flex items-center text-sm text-gray-500">
+            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+            <span className="truncate">{job.location || "Location not specified"}</span>
+          </div>
+        )}
 
 
         <div className="flex flex-wrap gap-2">
@@ -206,9 +208,7 @@ export const EmployerJobCard = ({
           <span className="truncate">{job.location || "Location not specified"}</span>
         </div>
 
-        <p className="text-xs text-gray-500">
-          Updated {formatDate(job.updated_at ?? "")}
-        </p>
+
 
         <div className="flex flex-wrap gap-2">
           {true && (
@@ -300,10 +300,12 @@ export const MobileJobCard = ({
       </div>
 
       {/* Location */}
-      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-        <MapPin className="w-4 h-4 flex-shrink-0" />
-        <span className="truncate">{job.location || "Location not specified"}</span>
-      </div>
+      {job.location && (
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+          <MapPin className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">{job.location || "Location not specified"}</span>
+        </div>
+      )}
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
@@ -338,10 +340,12 @@ export const MobileJobCard = ({
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate">{job.location}</span>
-        </div>
+        {job.location && (
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <MapPin className="w-3 h-3" />
+            <span className="truncate">{job.location}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -452,19 +456,21 @@ export const EditableJobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Location:
-            </label>
-            <EditableInput
-              is_editing={is_editing}
-              value={form_data.location ?? "Not specified"}
-              setter={field_setter("location")}
-            >
-              <JobPropertyLabel />
-            </EditableInput>
-          </div>
+          {job.location && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Location:
+              </label>
+              <EditableInput
+                is_editing={is_editing}
+                value={form_data.location ?? "Not specified"}
+                setter={field_setter("location")}
+              >
+                <JobPropertyLabel />
+              </EditableInput>
+            </div>
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -637,12 +643,6 @@ export const JobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {true && (
-            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              DLSU MOA
-            </span>
-          )}
         </div>
 
         <div className="flex gap-3">{actions}</div>
@@ -652,13 +652,15 @@ export const JobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          <div className="flex flex-col items-start gap-3 max-w-prose">
-            <label className="flex items-center text-sm font-semibold text-gray-700">
-              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Location:
-            </label>
-            <JobPropertyLabel value={job.location} />
-          </div>
+          {job.location && (
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Location:
+              </label>
+              <JobPropertyLabel value={job.location} />
+            </div>
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
