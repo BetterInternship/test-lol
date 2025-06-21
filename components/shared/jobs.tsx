@@ -77,12 +77,7 @@ export const JobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
-              {job.employer?.has_dlsu_moa && (
-                <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  DLSU MOA
-                </span>
-              )}
+
             </div>
           </div>
           {selected && (
@@ -102,7 +97,7 @@ export const JobCard = ({
         </p>
 
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -146,7 +141,6 @@ export const EmployerJobCard = ({
   selected?: boolean;
   disabled?: boolean;
   on_click?: (job: Job) => void;
-  // ! please fucking change the types
   update_job: (
     job_id: string,
     job: Partial<Job>
@@ -176,7 +170,7 @@ export const EmployerJobCard = ({
               <p className="text-sm text-gray-600 font-medium">
                 {job.employer?.name ?? "Company Name"}
               </p>
-              {job.employer?.has_dlsu_moa && (
+              {true && (
                 <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   DLSU MOA
@@ -220,7 +214,7 @@ export const EmployerJobCard = ({
         </p>
 
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -295,7 +289,7 @@ export const MobileJobCard = ({
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Building className="w-4 h-4 flex-shrink-0" />
             <span className="font-medium truncate">{job.employer?.name}</span>
-            {job.employer?.has_dlsu_moa && (
+            {true && (
               <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
                 <CheckCircle className="w-3 h-3 mr-1" />
                 DLSU MOA
@@ -316,7 +310,7 @@ export const MobileJobCard = ({
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {job.employer?.has_dlsu_moa && (
+        {true && (
           <Badge variant="outline" className="text-xs border-green-200 bg-green-50 text-green-700">
             <CheckCircle className="w-3 h-3 mr-1" />
             DLSU MOA
@@ -376,7 +370,6 @@ export const EditableJobDetails = ({
   is_editing: boolean;
   set_is_editing: (is_editing: boolean) => void;
   saving?: boolean;
-  // ! please fucking change the types
   update_job: (
     job_id: string,
     job: Partial<Job>
@@ -444,7 +437,7 @@ export const EditableJobDetails = ({
   }, [saving]);
 
   return (
-    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
+    <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto overflow-x-hidden">
       <div className="mb-6">
         <div className="max-w-prose">
           <EditableInput
@@ -457,12 +450,6 @@ export const EditableJobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {job.employer?.has_dlsu_moa && (
-            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              DLSU MOA
-            </span>
-          )}
         </div>
         <p className="text-sm text-gray-500 mb-4">
           Listed on {formatDate(job.created_at ?? "")}
@@ -659,7 +646,7 @@ export const JobDetails = ({
         </div>
         <div className="flex items-center gap-2">
           <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
-          {job.employer?.has_dlsu_moa && (
+          {true && (
             <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">
               <CheckCircle className="w-4 h-4 mr-1" />
               DLSU MOA
