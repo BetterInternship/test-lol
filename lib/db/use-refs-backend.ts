@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-21 01:09:06
+ * @ Modified time: 2025-06-21 17:11:25
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -260,7 +260,7 @@ export const useRefsContext = () => {
     to_name: to_job_category_name,
     get_by_name: get_job_category_by_name,
     loading: l10,
-  } = createRefInternalHook<string, JobCategory>("ref_category");
+  } = createRefInternalHook<string, JobCategory>("ref_job_categories");
 
   useEffect(() => {
     setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10);

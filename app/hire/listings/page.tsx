@@ -409,18 +409,6 @@ const CreateModalForm = ({
               <DropdownGroup>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Industry
-                  </Label>
-                  <GroupableRadioDropdown
-                    name="type"
-                    default_value={form_data.industry_name}
-                    options={industries.map((i) => i.name)}
-                    on_change={field_setter("industry_name")}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
                     Work Load
                   </Label>
                   <GroupableRadioDropdown

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-06-20 05:43:48
+ * @ Modified time: 2025-06-21 17:05:01
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -13,6 +13,7 @@ import { GroupableRadioDropdown } from "./dropdown";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import DatePicker from "react-datepicker";
 
 type Value = string | null | undefined;
 
@@ -121,6 +122,45 @@ export const EditableCheckbox = ({
             (React.Children.map(children, (child) => {
               if (React.isValidElement(child))
                 return React.cloneElement(child, { value: value?.toString() });
+              return <></>;
+            }) ?? [<></>])[0]
+          }
+        </span>
+      }
+    </p>
+  );
+};
+
+export const EditableDatePicker = ({
+  is_editing,
+  value,
+  setter,
+  children,
+}: {
+  is_editing: boolean;
+  value: Date | null | undefined;
+  setter: (value: number | null | undefined) => void;
+  children?: React.ReactElement<{ value?: Value }>;
+}) => {
+  return is_editing ? (
+    <div className="relative flex items-center space-x-2">
+      <DatePicker
+        id=""
+        selected={value ? new Date(value) : new Date()}
+        className="input-box"
+        onChange={(date) => setter(date?.getTime())}
+      ></DatePicker>
+    </div>
+  ) : (
+    <p className="text-gray-900 font-medium text-sm">
+      {
+        <span className="inline-flex items-center gap-2 text-green-700">
+          {
+            (React.Children.map(children, (child) => {
+              if (React.isValidElement(child))
+                return React.cloneElement(child, {
+                  value: value?.toLocaleDateString() ?? "",
+                });
               return <></>;
             }) ?? [<></>])[0]
           }
