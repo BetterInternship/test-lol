@@ -117,6 +117,14 @@ export default function MyListings() {
                   ></EmployerJobCard>
                 ))}
               </div>
+              {/* Paginator - following student portal pattern */}
+              <div className="mt-4 flex-shrink-0">
+                <Paginator
+                  totalItems={filteredJobs.length}
+                  itemsPerPage={jobs_page_size}
+                  onPageChange={(page) => setJobsPage(page)}
+                />
+              </div>
             </div>
 
             {/* Right Panel - Job Details */}
