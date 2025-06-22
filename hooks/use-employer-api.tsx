@@ -42,7 +42,6 @@ export function useEmployers() {
 }
 
 export function useEmployerApplications() {
-  const { recheck_authentication } = useAuthContext();
   const { get, set } = useCache<EmployerApplication[]>();
   const [employerApplications, setEmployerApplications] = useState<
     EmployerApplication[]
@@ -114,9 +113,8 @@ export function useEmployerApplications() {
   };
 
   useEffect(() => {
-    recheck_authentication().then((r) =>
-      r ? fetchEmployerApplications() : setLoading(false)
-    );
+    fetchEmployerApplications();
+    setLoading(false);
   }, [fetchEmployerApplications]);
 
   return {
@@ -142,7 +140,6 @@ export function useOwnedJobs(
     industry?: string;
   } = {}
 ) {
-  const { recheck_authentication } = useAuthContext();
   const { get, set } = useCache<Job[]>();
   const [ownedJobs, setOwnedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -196,9 +193,8 @@ export function useOwnedJobs(
   };
 
   useEffect(() => {
-    recheck_authentication().then((r) =>
-      r ? fetchOwnedJobs() : setLoading(false)
-    );
+    fetchOwnedJobs();
+    setLoading(false);
   }, [fetchOwnedJobs]);
 
   // Client-side filtering

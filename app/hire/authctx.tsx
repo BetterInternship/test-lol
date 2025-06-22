@@ -8,7 +8,6 @@ import { employer_auth_service } from "@/lib/api/employer.api";
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
   god: boolean;
-  recheck_authentication: () => Promise<Partial<PublicEmployerUser | null>>;
   register: (
     user: Partial<PublicEmployerUser>
   ) => Promise<Partial<PublicEmployerUser> | null>;
@@ -16,18 +15,17 @@ interface IAuthContext {
     user_id: string,
     key: string
   ) => Promise<Partial<PublicEmployerUser> | null>;
-  send_otp_request: (email: string) => Promise<{ email: string }>;
-  resend_otp_request: (email: string) => Promise<{ email: string }>;
-  verify_otp: (
+  login: (
     email: string,
-    otp: string
+    password: string
   ) => Promise<Partial<PublicEmployerUser> | null>;
   email_status: (
     email: string
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
-  redirect_if_not_loggedin: () => void;
+  redirect_if_not_logged_in: () => void;
+  redirect_if_logged_in: () => void;
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
@@ -45,7 +43,8 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+  const [is_loading, set_is_loading] = useState(true);
+  const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("isAuthenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
@@ -62,37 +61,32 @@ export const AuthContextProvider = ({
     if (user) sessionStorage.setItem("user", JSON.stringify(user));
     else sessionStorage.removeItem("user");
 
-    if (isAuthenticated)
+    if (is_authenticated)
       sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
     else sessionStorage.removeItem("isAuthenticated");
-  }, [user, isAuthenticated]);
+  }, [user, is_authenticated]);
 
   const recheck_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
       const response = await employer_auth_service.loggedin();
-      if (!response.success) return null;
+
+      if (!response.success) {
+        set_is_loading(false);
+        return null;
+      }
 
       setUser(response.user as PublicEmployerUser);
-      setIsAuthenticated(true);
+      set_is_authenticated(true);
+      set_is_loading(false);
       return response.user as PublicEmployerUser;
     };
 
-  const send_otp_request = async (email: string) => {
-    const response = await employer_auth_service.send_otp_request(email);
-    return response;
-  };
-
-  const resend_otp_request = async (email: string) => {
-    const response = await employer_auth_service.send_otp_request(email);
-    return response;
-  };
-
-  const verify_otp = async (email: string, otp: string) => {
-    const response = await employer_auth_service.verify_otp(email, otp);
+  const login = async (email: string, password: string) => {
+    const response = await employer_auth_service.login(email, password);
     if (!response.success) return null;
 
     setUser(response.user as PublicEmployerUser);
-    setIsAuthenticated(true);
+    set_is_authenticated(true);
 
     // @ts-ignore
     if (response.god) setGod(true);
@@ -109,31 +103,35 @@ export const AuthContextProvider = ({
     employer_auth_service.logout();
     router.push("/login");
     setUser(null);
-    setIsAuthenticated(false);
+    set_is_authenticated(false);
   };
 
-  const is_authenticated = () => {
-    return isAuthenticated;
-  };
+  const redirect_if_not_logged_in = () =>
+    useEffect(() => {
+      if (!is_loading && !is_authenticated) router.push("/login");
+    }, [is_authenticated, is_loading]);
 
-  const redirect_if_not_loggedin = () => {
-    if (!isAuthenticated) router.push("/login");
-  };
+  const redirect_if_logged_in = () =>
+    useEffect(() => {
+      if (!is_loading && is_authenticated) router.push("/dashboard");
+    }, [is_authenticated, is_loading]);
+
+  useEffect(() => {
+    recheck_authentication();
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         god,
-        recheck_authentication,
-        send_otp_request,
-        resend_otp_request,
         // @ts-ignore
-        verify_otp,
+        login,
         email_status,
         logout,
-        is_authenticated,
-        redirect_if_not_loggedin,
+        is_authenticated: () => is_authenticated,
+        redirect_if_not_logged_in,
+        redirect_if_logged_in,
       }}
     >
       {children}

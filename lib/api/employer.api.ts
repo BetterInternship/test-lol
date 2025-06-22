@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-06-22 19:47:04
+ * @ Modified time: 2025-06-23 05:29:38
  * @ Description:
  *
  * Routes used by employers
@@ -39,17 +39,10 @@ export const employer_auth_service = {
     );
   },
 
-  async send_otp_request(email: string) {
-    return APIClient.post<OTPRequestResponse>(
-      APIRoute("auth").r("hire", "send-new-otp").build(),
-      { email }
-    );
-  },
-
-  async verify_otp(email: string, otp: string) {
+  async login(email: string, password: string) {
     return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("hire", "verify-otp").build(),
-      { email, otp }
+      APIRoute("auth").r("hire", "login").build(),
+      { email, password }
     );
   },
 

@@ -31,7 +31,8 @@ import { useRefs } from "@/lib/db/use-refs";
 import { useMoa } from "@/lib/db/use-moa";
 
 export default function ApplicationsPage() {
-  const { redirect_if_not_loggedin } = useAuthContext();
+  const { redirect_if_not_logged_in: redirect_if_not_logged_in } =
+    useAuthContext();
   const { check } = useMoa();
   const { applications, loading, error, refetch } = useApplications();
   const {
@@ -41,7 +42,7 @@ export default function ApplicationsPage() {
     to_job_allowance_name,
   } = useRefs();
 
-  redirect_if_not_loggedin();
+  redirect_if_not_logged_in();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {

@@ -323,7 +323,6 @@ export const useSavedJobs = () => {
 
 // Saved Jobs Hook
 export function useApplications() {
-  const { recheck_authentication } = useAuthContext();
   const { get, set } = useCache<UserApplication[]>();
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
@@ -393,9 +392,8 @@ export function useApplications() {
   };
 
   useEffect(() => {
-    recheck_authentication().then((r) =>
-      r ? fetchApplications() : setLoading(false)
-    );
+    fetchApplications();
+    setLoading(false);
   }, [fetchApplications]);
 
   return {

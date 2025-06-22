@@ -39,7 +39,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 export default function Dashboard() {
   const { employer_applications, review: review_app } =
     useEmployerApplications();
-  const { redirect_if_not_loggedin } = useAuthContext();
+  const { redirect_if_not_logged_in } = useAuthContext();
   const { client_width, client_height } = useClientDimensions();
   const {
     app_statuses,
@@ -67,7 +67,7 @@ export default function Dashboard() {
     Modal: ReviewModal,
   } = useModal("review-modal");
 
-  redirect_if_not_loggedin();
+  redirect_if_not_logged_in();
 
   // Sorting and filtering states
   const [sortField, setSortField] = useState<string>("");

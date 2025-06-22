@@ -32,9 +32,7 @@ interface ResourceHashResponse {
 
 export const auth_service = {
   async loggedin() {
-    return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("hire", "loggedin").build()
-    );
+    return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
   },
 
   async register(user: Partial<PublicUser>) {

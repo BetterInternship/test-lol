@@ -19,14 +19,16 @@ import { useAuthContext } from "../../../lib/ctx-auth";
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function SavedJobsPage() {
-  const { is_authenticated, recheck_authentication, redirect_if_not_loggedin } =
-    useAuthContext();
+  const {
+    is_authenticated,
+    redirect_if_not_logged_in: redirect_if_not_logged_in,
+  } = useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
   const router = useRouter();
   const { is_mobile } = useAppContext();
 
-  redirect_if_not_loggedin();
+  redirect_if_not_logged_in();
 
   const handleUnsaveJob = async (job_id: string) => {
     try {
