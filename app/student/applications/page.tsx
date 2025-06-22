@@ -28,17 +28,17 @@ import { StatusBadge } from "@/components/common";
 import { useApplications } from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
-import { useAppContext } from "@/lib/ctx-app";
+import { useMoa } from "@/lib/db/use-moa";
 
 export default function ApplicationsPage() {
   const { redirect_if_not_loggedin } = useAuthContext();
-  const { is_mobile } = useAppContext();
+  const { check } = useMoa();
   const { applications, loading, error, refetch } = useApplications();
   const {
+    universities,
     to_job_mode_name,
     to_job_type_name,
     to_job_allowance_name,
-    to_app_status_name,
   } = useRefs();
 
   redirect_if_not_loggedin();
@@ -168,8 +168,10 @@ export default function ApplicationsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {(application.job?.employer?.has_dlsu_moa ||
-                    application.employer?.has_dlsu_moa) && (
+                  {check(
+                    application.job?.employer?.id ?? "",
+                    universities[0]?.id
+                  ) && (
                     <Badge
                       variant="outline"
                       className="text-xs flex items-center px-3 py-1 bg-green-50 border-green-200 text-green-700"

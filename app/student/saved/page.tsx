@@ -19,15 +19,14 @@ import { useAuthContext } from "../../../lib/ctx-auth";
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function SavedJobsPage() {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const { is_authenticated, recheck_authentication, redirect_if_not_loggedin } =
+    useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
   const router = useRouter();
   const { is_mobile } = useAppContext();
 
-  useEffect(() => {
-    recheck_authentication().then((r) => !r && router.push("/login"));
-  }, [is_authenticated(), router]);
+  redirect_if_not_loggedin();
 
   const handleUnsaveJob = async (job_id: string) => {
     try {

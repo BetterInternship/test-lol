@@ -44,11 +44,8 @@ export function useJobs(
       setLoading(true);
       setError(null);
       const jobs = await fetch_all_active_jobs();
-      if (jobs) {
-        setJobs(jobs);
-      } else {
-        setError("Could not load jobs.");
-      }
+      if (jobs) setJobs(jobs);
+      else setError("Could not load jobs.");
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -61,77 +58,15 @@ export function useJobs(
     fetchAllActiveJobs();
   }, [fetchAllActiveJobs]);
 
-  // Client-side filtering
-  const filteredJobs = useMemo(() => {
-    let filtered = [...jobs];
-    const { type, mode, search, location, industry } = params;
-
-    // Apply type filter
-    if (type && type !== "All types") {
-      filtered = filtered.filter((job) => {
-        if (type === "Internships") return job.type === 0;
-        if (type === "Full-time") return job.type === 1;
-        if (type === "Part-time") return job.type === 2;
-        return false;
-      });
-    }
-
-    // Apply mode filter
-    if (mode && mode !== "Any location") {
-      filtered = filtered.filter((job) => {
-        if (mode === "In-Person") return job.mode === 0;
-        return job.mode === 1 || job.mode === 2;
-      });
-    }
-
-    // Apply industry filter
-    if (industry && industry !== "All industries") {
-      filtered = filtered.filter((job) => {
-        return job.employer?.industry
-          ?.toLowerCase()
-          .includes(industry.toLowerCase());
-      });
-    }
-
-    // Apply search filter
-    if (search && search.trim()) {
-      const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter((job) => {
-        // Search in multiple fields
-        const searchableText = [
-          job.title,
-          job.description,
-          job.employer?.name,
-          job.employer?.industry,
-          job.location,
-          ...(job.requirements || []),
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return searchableText.includes(searchLower);
-      });
-    }
-
-    // Apply location filter
-    if (location && location.trim()) {
-      filtered = filtered.filter((job) =>
-        job.location?.toLowerCase().includes(location.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [jobs, params]);
-
   const getJobsPage = ({ page = 1, limit = 10 }) => {
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    return filteredJobs.slice(startIndex, endIndex);
+    return jobs.slice(startIndex, endIndex);
   };
 
   return {
     getJobsPage,
-    jobs: filteredJobs, // Expose filtered jobs for search components
+    jobs: jobs, // Expose filtered jobs for search components
     loading,
     error,
     refetch: fetchAllActiveJobs,
@@ -140,7 +75,6 @@ export function useJobs(
 
 // Single Job Hook
 export function useJob(job_id: string | null) {
-  const { is_authenticated } = useAuthContext();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,20 +92,7 @@ export function useJob(job_id: string | null) {
         return;
       }
 
-      // Transform job to make company have DLSU MOA
-      const transformedJob = job
-        ? {
-            ...job,
-            employer: job.employer
-              ? {
-                  ...job.employer,
-                  has_dlsu_moa: true,
-                }
-              : null,
-          }
-        : null;
-
-      setJob(transformedJob);
+      setJob(job);
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -426,63 +347,15 @@ export function useApplications() {
         "_applications_list"
       ) as UserApplication[];
       if (cached_applications) {
-        await setTimeout(() => {}, 500);
-        // Transform cached applications to ensure all employers have DLSU MOA
-        const transformedCachedApplications = cached_applications.map(
-          (app) => ({
-            ...app,
-            job: app.job
-              ? {
-                  ...app.job,
-                  employer: app.job.employer
-                    ? {
-                        ...app.job.employer,
-                        has_dlsu_moa: true,
-                      }
-                    : null,
-                }
-              : null,
-            employer: app.employer
-              ? {
-                  ...app.employer,
-                  has_dlsu_moa: true,
-                }
-              : null,
-          })
-        );
-        setApplications(transformedCachedApplications);
+        setApplications(cached_applications);
         return;
       }
 
       // Otherwise, pull from server
       const response = await application_service.get_applications();
       if (response.success) {
-        // Transform applications to ensure all employers have DLSU MOA
-        const transformedApplications = (response.applications ?? []).map(
-          (app) => ({
-            ...app,
-            job: app.job
-              ? {
-                  ...app.job,
-                  employer: app.job.employer
-                    ? {
-                        ...app.job.employer,
-                        has_dlsu_moa: true,
-                      }
-                    : null,
-                }
-              : null,
-            employer: app.employer
-              ? {
-                  ...app.employer,
-                  has_dlsu_moa: true,
-                }
-              : null,
-          })
-        );
-
-        setApplications(transformedApplications);
-        set("_applications_list", transformedApplications);
+        setApplications(applications);
+        set("_applications_list", applications);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);

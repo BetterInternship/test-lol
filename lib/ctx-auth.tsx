@@ -54,7 +54,6 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [should_redirect, set_should_redirect] = useState(false);
   const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("isAuthenticated");
@@ -131,19 +130,12 @@ export const AuthContextProvider = ({
   };
 
   const redirect_if_not_loggedin = () => {
-    if (!is_authenticated) set_should_redirect(true);
+    if (!is_authenticated) router.push("/login");
   };
 
   const redirect_if_logged_in = () => {
-    if (is_authenticated) set_should_redirect(true);
+    if (is_authenticated) router.push("/");
   };
-
-  useEffect(() => {
-    if (should_redirect) {
-      if (!is_authenticated) router.push("/login");
-      else router.push("/");
-    }
-  }, [should_redirect]);
 
   return (
     <AuthContext.Provider

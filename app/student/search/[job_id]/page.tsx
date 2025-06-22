@@ -22,8 +22,8 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
-import { JobDetails } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import { useMoa } from "@/lib/db/use-moa";
 
 /**
  * The individual job page.
@@ -45,8 +45,9 @@ export default function JobPage() {
     close: close_success_modal,
     Modal: SuccessModal,
   } = useModal("success-modal");
+  const { check } = useMoa();
   const { profile } = useProfile();
-  const { ref_is_not_null } = useRefs();
+  const { universities, ref_is_not_null } = useRefs();
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
 
@@ -384,7 +385,10 @@ export default function JobPage() {
                           </span>
                         </div>
                         <p className="text-gray-900 font-medium">
-                          {job.employer?.has_dlsu_moa ? (
+                          {check(
+                            job.employer?.id ?? "",
+                            universities[0]?.id
+                          ) ? (
                             <span className="inline-flex items-center text-green-700 font-medium">
                               <CheckCircle className="w-4 h-4 mr-1" />
                               DLSU MOA

@@ -137,7 +137,9 @@ export const EmployerJobCard = ({
     job: Partial<Job>
   ) => Promise<{ success: boolean }>;
 }) => {
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
+  const { check } = useMoa();
+  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name } =
+    useRefs();
 
   return (
     <div
@@ -198,7 +200,7 @@ export const EmployerJobCard = ({
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {job.employer?.has_dlsu_moa && (
+          {check(job.employer?.id ?? "", universities[0]?.id) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -258,7 +260,9 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
+  const { check } = useMoa();
+  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name } =
+    useRefs();
   return (
     <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
       {/* Header */}
@@ -284,7 +288,7 @@ export const MobileJobCard = ({
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {job.employer?.has_dlsu_moa && (
+        {check(job.employer?.id ?? "", universities[0]?.id) && (
           <Badge
             variant="outline"
             className="text-xs border-green-200 bg-green-50 text-green-700"
