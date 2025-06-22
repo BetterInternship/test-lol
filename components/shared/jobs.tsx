@@ -800,14 +800,12 @@ export const JobDetails = ({
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
-              <JobPropertyLabel value={job.salary?.toString()} />{" "}
-              <JobPropertyLabel
+              <JobPropertyLabel 
                 value={
-                  job.salary_freq !== null && job.salary_freq !== undefined
-                    ? to_job_pay_freq_name(job.salary_freq)
-                    : null
-                }
-                fallback=""
+                  job.salary 
+                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                    : "Not specified"
+                } 
               />
             </div>
 
