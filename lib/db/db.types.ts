@@ -11,6 +11,7 @@ export type JobPayFreq = Tables<"ref_job_pay_freq">;
 export type JobMode = Tables<"ref_job_modes">;
 export type AppStatus = Tables<"ref_app_statuses">;
 export type Industry = Tables<"ref_industries">;
+export type Moa = Tables<"moa">;
 export type PrivateUser = Tables<"users">;
 export type PublicUser = Omit<Tables<"users">, "verification_hash">;
 export type Employer = Partial<Tables<"employers">>;

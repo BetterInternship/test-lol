@@ -26,7 +26,7 @@ import { useEffect } from "react";
 import { JobBooleanLabel, JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
-import { Button } from "../ui/button";
+import { useMoa } from "@/lib/db/use-moa";
 
 /**
  * The scrollable job card component.
@@ -45,7 +45,9 @@ export const JobCard = ({
   disabled?: boolean;
   on_click?: (job: Job) => void;
 }) => {
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
+  const { check } = useMoa();
+  const { ref_is_not_null, to_job_mode_name, to_job_type_name, universities } =
+    useRefs();
 
   return (
     <div
@@ -86,7 +88,7 @@ export const JobCard = ({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {true && (
+          {check(job.employer?.id ?? "", universities[0]?.id) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -177,12 +179,12 @@ export const EmployerJobCard = ({
                   });
                 }}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-30 ${
-                  job.is_active ? 'bg-green-600' : 'bg-gray-300'
+                  job.is_active ? "bg-green-600" : "bg-gray-300"
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    job.is_active ? 'translate-x-6' : 'translate-x-1'
+                    job.is_active ? "translate-x-6" : "translate-x-1"
                   }`}
                 />
               </button>
@@ -571,7 +573,9 @@ export const EditableJobDetails = ({
                   form_data.allowance
                     ? form_data.job_allowance_name
                     : form_data.salary
-                    ? `${form_data.salary}/${to_job_pay_freq_name(form_data.salary_freq)}`
+                    ? `${form_data.salary}/${to_job_pay_freq_name(
+                        form_data.salary_freq
+                      )}`
                     : "Not specified"
                 }
               />
@@ -628,6 +632,7 @@ export const EditableJobDetails = ({
                             ? new Date(form_data.start_date)
                             : new Date()
                         }
+                        // @ts-ignore
                         setter={field_setter("start_date")}
                       >
                         <JobPropertyLabel />
@@ -644,6 +649,7 @@ export const EditableJobDetails = ({
                             ? new Date(form_data.end_date)
                             : new Date()
                         }
+                        // @ts-ignore
                         setter={field_setter("end_date")}
                       >
                         <JobPropertyLabel />
@@ -829,12 +835,12 @@ export const JobDetails = ({
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
-              <JobPropertyLabel 
+              <JobPropertyLabel
                 value={
-                  job.salary 
+                  job.salary
                     ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
                     : "Not specified"
-                } 
+                }
               />
             </div>
 
