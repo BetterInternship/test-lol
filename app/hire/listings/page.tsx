@@ -23,6 +23,7 @@ import {
 import { useAuthContext } from "../authctx";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
+import ContentLayout from "@/components/features/hire/content-layout";
 
 export default function MyListings() {
   const { redirect_if_not_loggedin } = useAuthContext();
@@ -69,171 +70,145 @@ export default function MyListings() {
   }, [is_editing]);
 
   return (
-    <>
-      {/* Sidebar */}
-      <div className="w-64 border-r bg-gray-50 flex flex-col">
-        <div className="p-6">
-          <h2 className="text-sm font-semibold text-gray-600 mb-4">Pages</h2>
-          <div className="space-y-2">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
-            >
-              <BarChart3 className="h-5 w-5" />
-              My Applications
-            </Link>
-            <div className="flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium">
-              <FileText className="h-5 w-5" />
-              My Listings
-            </div>
-            <Link
-              href="/forms-automation"
-              className="flex items-center gap-3 text-gray-700 hover:text-gray-900 p-3 rounded-lg hover:bg-white transition-colors"
-            >
-              <FileEdit className="h-5 w-5" />
-              Forms Automation
-            </Link>
-          </div>
-        </div>
-      </div>
+    <ContentLayout>
+      <>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Content Area */}
+          <div className="flex-1 p-6 flex gap-6 overflow-hidden">
+            {/* Left Panel - Job List */}
+            <div className="w-96 flex flex-col h-full">
+              {/* Search Bar and Filter Button - Fixed */}
+              <div
+                className="flex gap-3 mb-4 flex-shrink-0"
+                data-tour="job-filters"
+              >
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Search listings..."
+                    className="pl-12 pr-4 h-12 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  />
+                </div>
+                <Button
+                  className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+                  size="icon"
+                  onClick={() => open_create_modal()}
+                  data-tour="add-job-btn"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Content Area */}
-        <div className="flex-1 p-6 flex gap-6 overflow-hidden">
-          {/* Left Panel - Job List */}
-          <div className="w-96 flex flex-col h-full">
-            {/* Search Bar and Filter Button - Fixed */}
-            <div
-              className="flex gap-3 mb-4 flex-shrink-0"
-              data-tour="job-filters"
-            >
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Search listings..."
-                  className="pl-12 pr-4 h-12 bg-white border border-gray-200 rounded-xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+              {/* Job Cards - Scrollable */}
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r pt-4">
+                {filteredJobs.map((job) => (
+                  <EmployerJobCard
+                    key={job.id}
+                    job={job}
+                    disabled={is_editing}
+                    update_job={update_job}
+                    on_click={() => setSelectedJob(job)}
+                    selected={job.id === selectedJob.id}
+                  ></EmployerJobCard>
+                ))}
+              </div>
+              {/* Paginator - following student portal pattern */}
+              <div className="mt-4 flex-shrink-0">
+                <Paginator
+                  totalItems={filteredJobs.length}
+                  itemsPerPage={jobs_page_size}
+                  onPageChange={(page) => setJobsPage(page)}
                 />
               </div>
-              <Button
-                className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
-                size="icon"
-                onClick={() => open_create_modal()}
-                data-tour="add-job-btn"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
 
-            {/* Job Cards - Scrollable */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r pt-4">
-              {filteredJobs.map((job) => (
-                <EmployerJobCard
-                  key={job.id}
-                  job={job}
-                  disabled={is_editing}
-                  update_job={update_job}
-                  on_click={() => setSelectedJob(job)}
-                  selected={job.id === selectedJob.id}
-                ></EmployerJobCard>
-              ))}
-            </div>
-
-            {/* Paginator - following student portal pattern */}
-            <div className="mt-4 flex-shrink-0">
-              <Paginator
-                totalItems={filteredJobs.length}
-                itemsPerPage={jobs_page_size}
-                onPageChange={(page) => setJobsPage(page)}
+            {/* Right Panel - Job Details */}
+            {selectedJob?.id ? (
+              <EditableJobDetails
+                is_editing={is_editing}
+                set_is_editing={set_is_editing}
+                job={selectedJob}
+                saving={saving}
+                update_job={update_job}
+                actions={[
+                  !is_editing ? (
+                    <Button
+                      key="1"
+                      variant="outline"
+                      disabled={saving}
+                      onClick={() => set_is_editing(true)}
+                    >
+                      Edit
+                    </Button>
+                  ) : (
+                    <></>
+                  ),
+                  is_editing ? (
+                    <Button
+                      key="2"
+                      variant="default"
+                      className="bg-blue-600 text-white"
+                      disabled={saving}
+                      onClick={() => set_saving(true)}
+                    >
+                      {saving ? "Saving..." : "Save"}
+                    </Button>
+                  ) : (
+                    <></>
+                  ),
+                  is_editing ? (
+                    <Button
+                      key="3"
+                      variant="outline"
+                      className="text-red-500"
+                      disabled={saving}
+                      onClick={() => set_is_editing(false)}
+                    >
+                      Cancel
+                    </Button>
+                  ) : (
+                    <></>
+                  ),
+                ]}
               />
-            </div>
-          </div>
-
-          {/* Right Panel - Job Details */}
-          {selectedJob?.id ? (
-            <EditableJobDetails
-              is_editing={is_editing}
-              set_is_editing={set_is_editing}
-              job={selectedJob}
-              saving={saving}
-              update_job={update_job}
-              actions={[
-                !is_editing ? (
-                  <Button
-                    key="1"
-                    variant="outline"
-                    disabled={saving}
-                    onClick={() => set_is_editing(true)}
-                  >
-                    Edit
-                  </Button>
-                ) : (
-                  <></>
-                ),
-                is_editing ? (
-                  <Button
-                    key="2"
-                    variant="default"
-                    className="bg-blue-600 text-white"
-                    disabled={saving}
-                    onClick={() => set_saving(true)}
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </Button>
-                ) : (
-                  <></>
-                ),
-                is_editing ? (
-                  <Button
-                    key="3"
-                    variant="outline"
-                    className="text-red-500"
-                    disabled={saving}
-                    onClick={() => set_is_editing(false)}
-                  >
-                    Cancel
-                  </Button>
-                ) : (
-                  <></>
-                ),
-              ]}
-            />
-          ) : (
-            <div className="h-full m-auto">
-              <div className="flex flex-col items-center pt-[25vh] h-screen">
-                <div className="opacity-35 mb-10">
-                  <div className="flex flex-row justify-center w-full mb-4">
-                    <h1 className="block text-6xl font-heading font-bold ">
-                      BetterInternship
-                    </h1>
+            ) : (
+              <div className="h-full m-auto">
+                <div className="flex flex-col items-center pt-[25vh] h-screen">
+                  <div className="opacity-35 mb-10">
+                    <div className="flex flex-row justify-center w-full mb-4">
+                      <h1 className="block text-6xl font-heading font-bold ">
+                        BetterInternship
+                      </h1>
+                    </div>
+                    <div className="flex flex-row justify-center w-full">
+                      <p className="block text-2xl">
+                        Better Internships Start Here
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex flex-row justify-center w-full">
-                    <p className="block text-2xl">
-                      Better Internships Start Here
-                    </p>
+                  <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
+                    Click on a job listing to view more details!
                   </div>
-                </div>
-                <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
-                  Click on a job listing to view more details!
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Edit Job Modal */}
-      <CreateModal>
-        <CreateModalForm
-          create_job={create_job}
-          close={() => close_create_modal()}
-        ></CreateModalForm>
-      </CreateModal>
-    </>
+        {/* Edit Job Modal */}
+        <CreateModal>
+          <CreateModalForm
+            create_job={create_job}
+            close={() => close_create_modal()}
+          ></CreateModalForm>
+        </CreateModal>
+      </>
+    </ContentLayout>
   );
 }
 
