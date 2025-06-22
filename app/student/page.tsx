@@ -8,13 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JobScroller from "@/app/student/landing/job-scroller";
 import MobileJobScroller from "@/app/student/landing/mobile-job-scroller";
-import {
-  DropdownGroup,
-  GroupableRadioDropdown,
-} from "@/components/ui/dropdown";
+import { DropdownGroup } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
-import { industriesOptions, allCategories, categoryGroups } from "@/lib/utils/job-options";
+import { industriesOptions, categoryGroups } from "@/lib/utils/job-options";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +26,7 @@ export default function HomePage() {
       set_filter("industry", "All Industries");
     }
     if (!filters.category) {
-      set_filter("category", "All categories");
+      set_filter("category", "All Categories");
     }
   }, [filters.industry, filters.category, set_filter]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -48,7 +45,7 @@ export default function HomePage() {
     if (industry && industry !== "All Industries") {
       params.set("industry", industry);
     }
-    if (category && category !== "All categories") {
+    if (category && category !== "All Categories") {
       params.set("category", category);
     }
     router.push(`/search?${params.toString()}`);
@@ -66,14 +63,14 @@ export default function HomePage() {
       if (newFilters.industry && newFilters.industry !== "All Industries") {
         params.set("industry", newFilters.industry);
       }
-      if (newFilters.category && newFilters.category !== "All categories") {
+      if (newFilters.category && newFilters.category !== "All Categories") {
         params.set("category", newFilters.category);
       }
       router.push(`/search?${params.toString()}`);
     }, 0);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
     }
@@ -149,9 +146,9 @@ export default function HomePage() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Job Title, keywords, Company"
-                  className="pl-12 pr-4 w-full h-14 bg-white border-0 rounded-2xl shadow-sm text-gray-900 placeholder:text-gray-400 text-base font-medium focus:ring-2 focus:ring-blue-500 focus:shadow-lg transition-all duration-200"
+                  onKeyPress={handleKeyDown}
+                  placeholder="Job Title, Keywords, Company..."
+                  className="pl-12 pr-4 w-full h-14 bg-white border-0 rounded-md shadow-sm text-gray-900 placeholder:text-gray-400 text-base font-medium focus:shadow-md focus:outline-none focus:ring-opacity-50 transition-all duration-200"
                 />
               </div>
 
@@ -163,7 +160,9 @@ export default function HomePage() {
                       onClick={() => setShowIndustryModal(true)}
                       className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
-                      <span className="truncate">{filters.industry || "All Industries"}</span>
+                      <span className="truncate">
+                        {filters.industry || "All Industries"}
+                      </span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </Button>
                   </div>
@@ -172,7 +171,9 @@ export default function HomePage() {
                       onClick={() => setShowCategoryModal(true)}
                       className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
-                      <span className="truncate">{filters.category || "All categories"}</span>
+                      <span className="truncate">
+                        {filters.category || "All Categories"}
+                      </span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </Button>
                   </div>
@@ -182,7 +183,7 @@ export default function HomePage() {
               {/* Search Button */}
               <Button
                 onClick={handleSearch}
-                className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-md font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 Find Jobs
               </Button>
@@ -199,9 +200,9 @@ export default function HomePage() {
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Job title, keywords, or company"
-                      className="w-full py-3 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
+                      onKeyDown={handleKeyDown}
+                      placeholder="Job Title, Keywords, Company..."
+                      className="w-full py-3 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-transparent text-base"
                     />
                   </div>
 
@@ -214,7 +215,9 @@ export default function HomePage() {
                           onClick={() => setShowIndustryModal(true)}
                           className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
-                          <span className="truncate text-sm">{filters.industry || "All Industries"}</span>
+                          <span className="truncate text-sm">
+                            {filters.industry || "All Industries"}
+                          </span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
                         </Button>
                       </div>
@@ -224,7 +227,9 @@ export default function HomePage() {
                           onClick={() => setShowCategoryModal(true)}
                           className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
-                          <span className="truncate text-sm">{filters.category || "All categories"}</span>
+                          <span className="truncate text-sm">
+                            {filters.category || "All Categories"}
+                          </span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
                         </Button>
                       </div>
@@ -277,7 +282,7 @@ export default function HomePage() {
         >
           <div
             className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-x-hidden overflow-y-auto flex flex-col"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -290,21 +295,21 @@ export default function HomePage() {
                 <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>
-            
+
             <div className="overflow-y-auto overflow-x-hidden flex-1 space-y-4">
               {/* All Categories Option */}
               <button
                 onClick={() => {
                   setShowCategoryModal(false);
-                  applyFilterAndGo("category", "All categories");
+                  applyFilterAndGo("category", "All Categories");
                 }}
                 className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                  filters.category === "All categories"
+                  filters.category === "All Categories"
                     ? "bg-blue-50 text-blue-600 border border-blue-200"
                     : "hover:bg-gray-50 text-gray-700"
                 }`}
               >
-                All categories
+                All Categories
               </button>
 
               {/* Tech Category Group */}
@@ -394,7 +399,7 @@ export default function HomePage() {
         >
           <div
             className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-hidden flex flex-col"
-            onClick={e => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-base font-semibold text-gray-900">
