@@ -291,6 +291,7 @@ const CreateModalForm = ({
           : null,
       require_github: form_data.require_github,
       require_portfolio: form_data.require_portfolio,
+      require_cover_letter: form_data.require_cover_letter,
       is_unlisted: form_data.is_unlisted,
       start_date: form_data.start_date,
       end_date: form_data.end_date,
@@ -570,6 +571,24 @@ const CreateModalForm = ({
                   checked={form_data.require_portfolio ?? false}
                   onCheckedChange={(value) => {
                     set_field("require_portfolio", value);
+                  }}
+                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                <div>
+                  <Label className="text-sm font-medium text-gray-900">
+                    Cover Letter Required
+                  </Label>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Applicants must provide a cover letter
+                  </p>
+                </div>
+                <Checkbox
+                  checked={form_data.require_cover_letter ?? false}
+                  onCheckedChange={(value) => {
+                    set_field("require_cover_letter", value);
                   }}
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
