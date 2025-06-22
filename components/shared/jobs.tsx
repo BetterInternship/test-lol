@@ -26,7 +26,7 @@ import { useEffect } from "react";
 import { JobBooleanLabel, JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
-import { Button } from "../ui/button";
+import { useMoa } from "@/lib/db/use-moa";
 
 /**
  * The scrollable job card component.
@@ -45,7 +45,9 @@ export const JobCard = ({
   disabled?: boolean;
   on_click?: (job: Job) => void;
 }) => {
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name } = useRefs();
+  const { check } = useMoa();
+  const { ref_is_not_null, to_job_mode_name, to_job_type_name, universities } =
+    useRefs();
 
   return (
     <div
@@ -86,7 +88,7 @@ export const JobCard = ({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {true && (
+          {check(job.employer?.id ?? "", universities[0]?.id) && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
@@ -162,28 +164,31 @@ export const EmployerJobCard = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 relative z-20">
             {selected && (
               <div className="w-2 h-2 bg-primary rounded-full"></div>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-              onClick={async (e) => {
-                e.stopPropagation();
-                if (!job.id) return;
-                await update_job(job.id, {
-                  is_active: !job.is_active,
-                });
-              }}
-            >
-              {job.is_active ? (
-                <Globe className="w-4 h-4 text-green-600" />
-              ) : (
-                <Lock className="w-4 h-4 text-gray-400" />
-              )}
-            </Button>
+            {/* Toggle Slider for Active/Inactive */}
+            <div className="flex items-center">
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (!job.id) return;
+                  await update_job(job.id, {
+                    is_active: !job.is_active,
+                  });
+                }}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-30 ${
+                  job.is_active ? "bg-green-600" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    job.is_active ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -264,17 +269,8 @@ export const MobileJobCard = ({
           </h3>
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Building className="w-4 h-4 flex-shrink-0" />
-            <span className="font-medium truncate">{job.employer?.name}</span>
-            {true && (
-              <span className="inline-flex items-center bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0">
-                <CheckCircle className="w-3 h-3 mr-1" />
-                DLSU MOA
-              </span>
-            )}
+            <span className="font-medium">{job.employer?.name}</span>
           </div>
-        </div>
-        <div className="text-xs text-gray-500 ml-3 flex-shrink-0">
-          {formatDate(job.created_at ?? "")}
         </div>
       </div>
 
@@ -459,58 +455,60 @@ export const EditableJobDetails = ({
       {/* Job Details Grid */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-        <div className="grid grid-cols-3 gap-6">
-          {
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Location:
-              </label>
-              <EditableInput
-                is_editing={is_editing}
-                value={form_data.location ?? "Not specified"}
-                setter={field_setter("location")}
-              >
-                <JobPropertyLabel />
-              </EditableInput>
-            </div>
-          }
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Location */}
+          <div className="flex flex-col items-start gap-3 max-w-prose">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              Location:
+            </label>
+            <EditableInput
+              is_editing={is_editing}
+              value={form_data.location ?? "Not specified"}
+              setter={field_setter("location")}
+            >
+              <JobPropertyLabel />
+            </EditableInput>
+          </div>
 
-          <DropdownGroup>
-            <div className="flex flex-col items-start gap-3">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Mode:
-              </label>
-              <EditableGroupableRadioDropdown
-                is_editing={is_editing}
-                name={"job_mode"}
-                value={form_data.job_mode_name}
-                setter={field_setter("job_mode_name")}
-                options={["Not specified", ...job_modes.map((jm) => jm.name)]}
-              >
-                <JobPropertyLabel />
-              </EditableGroupableRadioDropdown>
-            </div>
+          {/* Mode */}
+          <div className="flex flex-col items-start gap-3">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              Mode:
+            </label>
+            <EditableGroupableRadioDropdown
+              is_editing={is_editing}
+              name={"job_mode"}
+              value={form_data.job_mode_name}
+              setter={field_setter("job_mode_name")}
+              options={["Not specified", ...job_modes.map((jm) => jm.name)]}
+            >
+              <JobPropertyLabel />
+            </EditableGroupableRadioDropdown>
+          </div>
 
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Employment Type:
-              </label>
-              <EditableGroupableRadioDropdown
-                is_editing={is_editing}
-                value={form_data.job_type_name}
-                setter={field_setter("job_type_name")}
-                name={"job_type"}
-                options={["Not specified", ...job_types.map((jt) => jt.name)]}
-              >
-                <JobPropertyLabel />
-              </EditableGroupableRadioDropdown>
-            </div>
+          {/* Employment Type */}
+          <div className="flex flex-col items-start gap-3 max-w-prose">
+            <label className="flex items-center text-sm font-semibold text-gray-700">
+              <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+              Employment Type:
+            </label>
+            <EditableGroupableRadioDropdown
+              is_editing={is_editing}
+              value={form_data.job_type_name}
+              setter={field_setter("job_type_name")}
+              name={"job_type"}
+              options={["Not specified", ...job_types.map((jt) => jt.name)]}
+            >
+              <JobPropertyLabel />
+            </EditableGroupableRadioDropdown>
+          </div>
 
-            {is_editing ? (
-              <div className="flex flex-col space-y-2">
+          {/* Salary Section */}
+          {is_editing ? (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-semibold text-gray-700">
                     <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -528,12 +526,12 @@ export const EditableJobDetails = ({
                 </div>
 
                 {form_data.job_allowance_name === "Paid" && (
-                  <div className="flex flex-col items-start gap-3 max-w-prose">
-                    <label className="flex items-center text-sm font-semibold text-gray-700">
-                      <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                      Salary:
-                    </label>
-                    <div className="flex flex-row space-x-2">
+                  <>
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm font-semibold text-gray-700">
+                        <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                        Salary Amount:
+                      </label>
                       <EditableInput
                         is_editing={is_editing}
                         value={form_data.salary?.toString() ?? "Not specified"}
@@ -541,111 +539,125 @@ export const EditableJobDetails = ({
                       >
                         <JobPropertyLabel />
                       </EditableInput>
-                      {form_data.salary && form_data.salary > 0 && (
-                        <EditableGroupableRadioDropdown
-                          name="pay_freq"
-                          is_editing={is_editing}
-                          value={form_data.job_pay_freq_name}
-                          options={[
-                            "Not specified",
-                            ...job_pay_freq.map((jpf) => jpf.name),
-                          ]}
-                          setter={field_setter("job_pay_freq_name")}
-                        >
-                          {form_data.job_pay_freq_name !== "Not specified" ? (
-                            <JobPropertyLabel fallback="" />
-                          ) : (
-                            <></>
-                          )}
-                        </EditableGroupableRadioDropdown>
-                      )}
                     </div>
-                  </div>
+                    <div className="space-y-2">
+                      <label className="flex items-center text-sm font-semibold text-gray-700">
+                        Pay Frequency:
+                      </label>
+                      <EditableGroupableRadioDropdown
+                        name="pay_freq"
+                        is_editing={is_editing}
+                        value={form_data.job_pay_freq_name}
+                        options={[
+                          "Not specified",
+                          ...job_pay_freq.map((jpf) => jpf.name),
+                        ]}
+                        setter={field_setter("job_pay_freq_name")}
+                      >
+                        <JobPropertyLabel fallback="" />
+                      </EditableGroupableRadioDropdown>
+                    </div>
+                  </>
                 )}
               </div>
-            ) : (
-              <div className="space-y-2">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                  {form_data.allowance ? "Allowance:" : "Salary:"}
-                </label>
-                <JobPropertyLabel
-                  value={
-                    form_data.allowance
-                      ? form_data.job_allowance_name
-                      : (form_data.salary?.toString() ?? "") +
-                        " " +
-                        to_job_pay_freq_name(form_data.salary_freq, "")
-                  }
-                />
-              </div>
-            )}
-          </DropdownGroup>
-
-          <div className="flex flex-col space-y-2">
-            <div className="flex flex-row items-start gap-3 max-w-prose">
-              <EditableCheckbox
-                is_editing={is_editing}
-                value={form_data.is_unlisted}
-                setter={field_setter("is_unlisted")}
-              >
-                <JobBooleanLabel />
-              </EditableCheckbox>
-              <label className="text-sm font-semibold text-gray-700">
-                Unlisted?
-              </label>
             </div>
-
-            <div className="flex items-center space-x-2">
-              <EditableCheckbox
-                is_editing={is_editing}
-                value={form_data.is_year_round ?? false}
-                setter={field_setter("is_year_round")}
-              >
-                <JobBooleanLabel />
-              </EditableCheckbox>
+          ) : (
+            <div className="space-y-2">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                Year Round?
+                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                {form_data.allowance ? "Allowance:" : "Salary:"}
               </label>
+              <JobPropertyLabel
+                value={
+                  form_data.allowance
+                    ? form_data.job_allowance_name
+                    : form_data.salary
+                    ? `${form_data.salary}/${to_job_pay_freq_name(
+                        form_data.salary_freq
+                      )}`
+                    : "Not specified"
+                }
+              />
             </div>
-            {!form_data.is_year_round && (
-              <>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Start Date
-                  </label>
-                  <EditableDatePicker
+          )}
+
+          {/* Settings Section */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Unlisted */}
+              <div className="flex flex-col space-y-2">
+                <div className="flex flex-row items-start gap-3">
+                  <EditableCheckbox
                     is_editing={is_editing}
-                    value={
-                      form_data.start_date
-                        ? new Date(form_data.start_date)
-                        : new Date()
-                    }
-                    // @ts-ignore
-                    setter={field_setter("start_date")}
+                    value={form_data.is_unlisted}
+                    setter={field_setter("is_unlisted")}
                   >
-                    <JobPropertyLabel />
-                  </EditableDatePicker>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    End Date
+                    <JobBooleanLabel />
+                  </EditableCheckbox>
+                  <label className="text-sm font-semibold text-gray-700">
+                    Unlisted?
                   </label>
-                  <EditableDatePicker
-                    is_editing={is_editing}
-                    value={
-                      form_data.end_date
-                        ? new Date(form_data.end_date)
-                        : new Date()
-                    }
-                    // @ts-ignore
-                    setter={field_setter("end_date")}
-                  >
-                    <JobPropertyLabel />
-                  </EditableDatePicker>
                 </div>
-              </>
-            )}
+              </div>
+
+              {/* Year Round */}
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-2">
+                  <EditableCheckbox
+                    is_editing={is_editing}
+                    value={form_data.is_year_round ?? false}
+                    setter={field_setter("is_year_round")}
+                  >
+                    <JobBooleanLabel />
+                  </EditableCheckbox>
+                  <label className="flex items-center text-sm font-semibold text-gray-700">
+                    Year Round?
+                  </label>
+                </div>
+              </div>
+
+              {/* Dates (when not year round) */}
+              {!form_data.is_year_round && (
+                <div className="col-span-1 md:col-span-2 lg:col-span-1">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        Start Date
+                      </label>
+                      <EditableDatePicker
+                        is_editing={is_editing}
+                        value={
+                          form_data.start_date
+                            ? new Date(form_data.start_date)
+                            : new Date()
+                        }
+                        // @ts-ignore
+                        setter={field_setter("start_date")}
+                      >
+                        <JobPropertyLabel />
+                      </EditableDatePicker>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 mb-1 block">
+                        End Date
+                      </label>
+                      <EditableDatePicker
+                        is_editing={is_editing}
+                        value={
+                          form_data.end_date
+                            ? new Date(form_data.end_date)
+                            : new Date()
+                        }
+                        // @ts-ignore
+                        setter={field_setter("end_date")}
+                      >
+                        <JobPropertyLabel />
+                      </EditableDatePicker>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -809,14 +821,12 @@ export const JobDetails = ({
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
-              <JobPropertyLabel value={job.salary?.toString()} />{" "}
               <JobPropertyLabel
                 value={
-                  job.salary_freq !== null && job.salary_freq !== undefined
-                    ? to_job_pay_freq_name(job.salary_freq)
-                    : null
+                  job.salary
+                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                    : "Not specified"
                 }
-                fallback=""
               />
             </div>
 

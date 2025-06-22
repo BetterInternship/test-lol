@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-21 20:13:56
+ * @ Modified time: 2025-06-22 14:34:17
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -90,7 +90,7 @@ export interface IRefsContext {
   get_job_mode: (id: number | null | undefined) => JobMode | null;
   get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
   get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
-  get_app_status: (id: number | null | undefined) => JobPayFreq | null;
+  get_app_status: (id: number | null | undefined) => AppStatus | null;
   get_industry: (id: string | null | undefined) => Industry | null;
   get_job_category: (id: string | null | undefined) => JobCategory | null;
 
@@ -111,9 +111,7 @@ export interface IRefsContext {
   get_job_category_by_name: (
     name: string | null | undefined
   ) => JobCategory | null;
-  get_app_status_by_name: (
-    name: string | null | undefined
-  ) => JobPayFreq | null;
+  get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
   get_industry_by_name: (name: string | null | undefined) => Industry | null;
 
   ref_is_not_null: (ref: any) => boolean;
@@ -207,7 +205,7 @@ const createRefInternalHook = <
   };
 };
 
-export const useRefsContext = () => {
+export const createRefsContext = () => {
   const [loading, setLoading] = useState(true);
   const {
     data: levels,

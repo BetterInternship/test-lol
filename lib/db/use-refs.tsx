@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-10 04:31:46
- * @ Modified time: 2025-06-16 05:22:22
+ * @ Modified time: 2025-06-22 14:34:06
  * @ Description:
  *
  * Accesses refs directly from the database.
@@ -10,7 +10,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { IRefsContext, useRefsContext } from "./use-refs-backend";
+import { IRefsContext, createRefsContext } from "./use-refs-backend";
 
 // The context template
 const RefsContext = createContext<IRefsContext>({} as IRefsContext);
@@ -25,8 +25,10 @@ export const RefsContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const refs_context = useRefsContext();
-  return <RefsContext value={refs_context}>{children}</RefsContext>;
+  const refs_context = createRefsContext();
+  return (
+    <RefsContext.Provider value={refs_context}>{children}</RefsContext.Provider>
+  );
 };
 
 /**

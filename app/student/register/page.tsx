@@ -30,6 +30,7 @@ export default function RegisterPage() {
     get_university_by_domain,
   } = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [takingForCredit, setTakingForCredit] = useState(false);
   const { form_data, set_fields, set_field, field_setter } = useFormData<
     PublicUser & {
       college_name: string;
@@ -47,6 +48,14 @@ export default function RegisterPage() {
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
   redirect_if_logged_in();
+
+  // Initialize form fields with default values
+  useEffect(() => {
+    if (form_data.taking_for_credit === undefined) {
+      set_field("taking_for_credit", false);
+    }
+  }, [form_data.taking_for_credit, set_field]);
+
 
   // Pre-fill email if coming from login redirect
   useEffect(() => {
@@ -77,7 +86,7 @@ export default function RegisterPage() {
       return;
     }
 
-    if (form_data.taking_for_credit && !form_data.linkage_officer?.trim()) {
+    if (takingForCredit && !form_data.linkage_officer?.trim()) {
       setError("Please provide your linkage officer information");
       return;
     }
@@ -339,28 +348,33 @@ export default function RegisterPage() {
                 Academic Credit
               </label>
               <div className="flex items-center space-x-3">
-                <Checkbox
-                  checked={form_data.taking_for_credit}
-                  onCheckedChange={(checked) => {
-                    set_field("taking_for_credit", checked as boolean);
+                <input
+                  type="checkbox"
+                  id="academic-credit-checkbox"
+                  checked={takingForCredit}
+                  onChange={(e) => {
+                    const newValue = e.target.checked;
+                    setTakingForCredit(newValue);
+                    set_field("taking_for_credit", newValue);
                     // Clear linkage officer if unchecked
-                    if (!checked) {
+                    if (!newValue) {
                       set_field("linkage_officer", "");
                     }
                   }}
-                  className="border-gray-300"
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                 />
-                <div className="flex items-center gap-2">
+                
+                <label htmlFor="academic-credit-checkbox" className="flex items-center gap-2 cursor-pointer">
                   <Award className="w-4 h-4 text-blue-600" />
                   <span className="text-sm text-gray-700 font-medium">
                     I am taking this internship for academic credit
                   </span>
-                </div>
+                </label>
               </div>
             </div>
 
             {/* Linkage Officer - Conditional */}
-            {form_data.taking_for_credit && (
+            {takingForCredit && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Linkage Officer <span className="text-red-500">*</span>
@@ -377,7 +391,7 @@ export default function RegisterPage() {
                     " w-full h-12 px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
-                  required={form_data.taking_for_credit}
+                  required={takingForCredit}
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Please provide the name of your assigned linkage officer from

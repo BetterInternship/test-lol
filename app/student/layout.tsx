@@ -5,6 +5,7 @@ import { RefsContextProvider } from "@/lib/db/use-refs";
 import Header from "@/components/features/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { Footer } from "@/components/shared/footer";
+import { MoaContextProvider } from "@/lib/db/use-moa";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -25,9 +26,11 @@ export const RootLayout = ({
     <AppContextProvider>
       <AuthContextProvider>
         <RefsContextProvider>
-          <AuthContextInitter>
-            <HTMLContent>{children}</HTMLContent>
-          </AuthContextInitter>
+          <MoaContextProvider>
+            <AuthContextInitter>
+              <HTMLContent>{children}</HTMLContent>
+            </AuthContextInitter>
+          </MoaContextProvider>
         </RefsContextProvider>
       </AuthContextProvider>
     </AppContextProvider>

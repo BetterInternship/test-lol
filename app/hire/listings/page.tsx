@@ -130,21 +130,7 @@ export default function MyListings() {
             </div>
 
             {/* Job Cards - Scrollable */}
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r">
-              <div className="p-0 border-2 rounded-lg cursor-pointer transition-colors">
-                <Button
-                  variant="ghost"
-                  className="w-full m-0 h-24"
-                  onClick={() => open_create_modal()}
-                >
-                  <div className="h-full text-bold flex flex-row items-center text-xl text-blue-600">
-                    <div className="4xl">
-                      <Plus className="w-10 h-10 mr-2"></Plus>
-                    </div>
-                    Add Listing
-                  </div>
-                </Button>
-              </div>
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r pt-4">
               {filteredJobs.map((job) => (
                 <EmployerJobCard
                   key={job.id}

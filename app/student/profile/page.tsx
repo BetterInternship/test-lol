@@ -618,23 +618,35 @@ export default function ProfilePage() {
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <iframe
-              allowTransparency={true}
-              style={{
-                width: client_width * 0.4,
-                height: client_height * 0.8,
-                background: "#FFFFFF",
-              }}
-              src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
-            >
-              Resume could not be loaded.
-            </iframe>
+            <div className="px-6 pb-6">
+              <iframe
+                allowTransparency={true}
+                className="w-full border border-gray-200 rounded-lg"
+                style={{
+                  width: "100%",
+                  height: client_height * 0.75,
+                  minHeight: "600px",
+                  maxHeight: "800px",
+                  background: "#FFFFFF",
+                }}
+                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+              >
+                Resume could not be loaded.
+              </iframe>
+            </div>
           </div>
         </ResumeModal>
       )}
 
       <EmployerModal>
-        <ApplicantModalContent applicant={profile} />
+        <ApplicantModalContent 
+          applicant={profile} 
+          open_resume_modal={async () => {
+            close_employer_modal();
+            await sync_resume_url();
+            open_resume_modal();
+          }}
+        />
       </EmployerModal>
     </>
   );
