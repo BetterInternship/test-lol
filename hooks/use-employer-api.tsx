@@ -3,11 +3,11 @@ import {
   job_service,
   handle_api_error,
   application_service,
-} from "@/lib/api/api";@/lib/api/employer.api
+} from "@/lib/api/api";
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useAuthContext } from "@/app/hire/authctx";
 import { useCache } from "./use-cache";
-import { employer_auth_service } from "@/lib/employer.api";
+import { employer_auth_service } from "@/lib/api/employer.api";
 
 export function useEmployers() {
   const [employers, set_employers] = useState<Employer[]>([]);
@@ -81,9 +81,7 @@ export function useEmployerApplications() {
     app_id: string,
     review_options: { review?: string; notes?: string; status?: number }
   ) => {
-    const cache = get(
-      "_apps_employer_list"
-    ) as EmployerApplication[];
+    const cache = get("_apps_employer_list") as EmployerApplication[];
     const response = await application_service.review_application(
       app_id,
       review_options
