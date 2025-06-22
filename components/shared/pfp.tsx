@@ -1,5 +1,5 @@
 import { useFile } from "@/hooks/use-file";
-import { user_service } from "@/lib/api";
+import { user_service } from "@/lib/api/api";
 import { useCallback, useEffect } from "react";
 
 /**

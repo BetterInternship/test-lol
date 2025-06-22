@@ -7,7 +7,14 @@ import React from "react";
 import Link from "next/link";
 
 // Third-party imports
-import { BookA, Calendar, Clock, Clipboard, CheckCircle, Building } from "lucide-react";
+import {
+  BookA,
+  Calendar,
+  Clock,
+  Clipboard,
+  CheckCircle,
+  Building,
+} from "lucide-react";
 
 // UI components
 import { Button } from "@/components/ui/button";
@@ -18,7 +25,7 @@ import { JobTypeIcon, JobModeIcon, SalaryIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/common";
 
 // Hooks (preserving existing implementations)
-import { useApplications } from "@/hooks/use-api";
+import { useApplications } from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
 import { useAppContext } from "@/lib/ctx-app";
@@ -55,13 +62,16 @@ export default function ApplicationsPage() {
             </div>
             <div>
               <h1 className="text-h2">My Applications</h1>
-              <p className="text-gray-600">Track your internship applications and their status</p>
+              <p className="text-gray-600">
+                Track your internship applications and their status
+              </p>
             </div>
           </div>
           {!loading && (
             <div className="flex items-center gap-3 mt-4">
               <div className="badge badge-info">
-                {applications.length} {applications.length === 1 ? 'application' : 'applications'}
+                {applications.length}{" "}
+                {applications.length === 1 ? "application" : "applications"}
               </div>
               <div className="text-sm text-gray-500">
                 Keep track of your submissions and updates
@@ -74,7 +84,9 @@ export default function ApplicationsPage() {
           <div className="flex items-center justify-center py-16">
             <div className="text-center animate-scale-in">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600 font-medium">Loading your applications...</p>
+              <p className="text-gray-600 font-medium">
+                Loading your applications...
+              </p>
             </div>
           </div>
         ) : error ? (
@@ -83,7 +95,9 @@ export default function ApplicationsPage() {
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <BookA className="w-6 h-6 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load applications</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Failed to load applications
+              </h3>
               <p className="text-red-600 mb-4">{error}</p>
               <Button onClick={refetch} className="bg-red-600 hover:bg-red-700">
                 Try Again
@@ -96,9 +110,12 @@ export default function ApplicationsPage() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <BookA className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No applications yet</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No applications yet
+              </h3>
               <p className="text-gray-500 mb-6 leading-relaxed">
-                Ready to start your internship journey? Browse our job listings and submit your first application.
+                Ready to start your internship journey? Browse our job listings
+                and submit your first application.
               </p>
               <Link href="/search">
                 <Button className="bg-primary hover:bg-primary/90">
@@ -122,24 +139,27 @@ export default function ApplicationsPage() {
                           <h3 className="text-xl font-semibold text-gray-900 leading-tight">
                             {application.job?.title}
                           </h3>
-                          <StatusBadge 
+                          <StatusBadge
                             status={application.status ?? 0}
                             variant="with-icon"
                             size="md"
                           />
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-gray-700 mb-3">
                           <Building className="w-4 h-4" />
                           <span className="font-medium">
-                            {application.job?.employer?.name || application.employer?.name || "Company Name"}
+                            {application.job?.employer?.name ||
+                              application.employer?.name ||
+                              "Company Name"}
                           </span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <Calendar className="w-4 h-4" />
                           <span className="text-sm">
-                            Applied on {formatDate(application.applied_at ?? "")}
+                            Applied on{" "}
+                            {formatDate(application.applied_at ?? "")}
                           </span>
                         </div>
                       </div>
@@ -148,7 +168,8 @@ export default function ApplicationsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {(application.job?.employer?.has_dlsu_moa || application.employer?.has_dlsu_moa) && (
+                  {(application.job?.employer?.has_dlsu_moa ||
+                    application.employer?.has_dlsu_moa) && (
                     <Badge
                       variant="outline"
                       className="text-xs flex items-center px-3 py-1 bg-green-50 border-green-200 text-green-700"
@@ -190,8 +211,7 @@ export default function ApplicationsPage() {
                       variant="outline"
                       className="text-xs flex items-center px-3 py-1"
                     >
-                      <SalaryIcon />
-                      ₱{application.job.salary}
+                      <SalaryIcon />₱{application.job.salary}
                     </Badge>
                   )}
                   {application.job?.duration && (
@@ -214,7 +234,10 @@ export default function ApplicationsPage() {
                     Application ID: {application.id?.slice(0, 8)}...
                   </div>
                   <Link href={`/search/${application.job?.id}`}>
-                    <Button size="sm" className="px-4 py-2 font-medium hover:shadow-sm">
+                    <Button
+                      size="sm"
+                      className="px-4 py-2 font-medium hover:shadow-sm"
+                    >
                       View Job Details
                     </Button>
                   </Link>

@@ -4,18 +4,11 @@ import {
   user_service,
   application_service,
   handle_api_error,
-} from "@/lib/api";
-import {
-  Job,
-  PublicUser,
-  UserApplication,
-  SavedJob,
-  Employer,
-  EmployerApplication,
-} from "@/lib/db/db.types";
+} from "@/lib/api/api";
+import { Job, PublicUser, UserApplication } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useCache } from "./use-cache";
-import { FetchResponse } from "./use-fetch";
+import { useCache } from "../../hooks/use-cache";
+import { create_cached_fetcher, FetchResponse } from "./use-fetch";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -28,48 +21,33 @@ export function useJobs(
     industry?: string;
   } = {}
 ) {
-  const { get_cache_item, set_cache_item } = useCache();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // ! make sure last update depends on last update sent by server (should be a cookie instead, dont let client handle it on its own)
+  const fetcher = async () => {
+    const response = await job_service.get_jobs({
+      last_update: new Date(0).getTime(),
+    });
+    if (!response.success) setError(response.message ?? "");
+    return response.jobs;
+  };
+  const { do_fetch: fetch_all_active_jobs } = create_cached_fetcher<Job[]>(
+    "active-jobs",
+    fetcher
+  );
 
   // Load all jobs initially
   const fetchAllActiveJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await job_service.get_jobs({
-        last_update:
-          (get_cache_item("_jobs_last_update") as number) ??
-          new Date(0).getTime(),
-      });
-
-      if (response.success) {
-        if (response.jobs) {
-          // Transform jobs to make all companies have DLSU MOA
-          const transformedJobs = response.jobs.map(job => ({
-            ...job,
-            employer: job.employer ? {
-              ...job.employer,
-              has_dlsu_moa: true
-            } : null
-          }));
-          
-          setJobs(transformedJobs);
-          set_cache_item("_jobs_last_update", new Date().getTime());
-          set_cache_item("_jobs_active_list", transformedJobs);
-        } else {
-          // Also transform cached jobs
-          const cachedJobs = get_cache_item("_jobs_active_list") as Job[];
-          const transformedCachedJobs = cachedJobs?.map(job => ({
-            ...job,
-            employer: job.employer ? {
-              ...job.employer,
-              has_dlsu_moa: true
-            } : null
-          })) || [];
-          setJobs(transformedCachedJobs);
-        }
+      const jobs = await fetch_all_active_jobs();
+      if (jobs) {
+        setJobs(jobs);
+      } else {
+        setError("Could not load jobs.");
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -126,7 +104,6 @@ export function useJobs(
           job.employer?.name,
           job.employer?.industry,
           job.location,
-          ...(job.keywords || []),
           ...(job.requirements || []),
         ]
           .join(" ")
@@ -182,13 +159,17 @@ export function useJob(job_id: string | null) {
       }
 
       // Transform job to make company have DLSU MOA
-      const transformedJob = job ? {
-        ...job,
-        employer: job.employer ? {
-          ...job.employer,
-          has_dlsu_moa: true
-        } : null
-      } : null;
+      const transformedJob = job
+        ? {
+            ...job,
+            employer: job.employer
+              ? {
+                  ...job.employer,
+                  has_dlsu_moa: true,
+                }
+              : null,
+          }
+        : null;
 
       setJob(transformedJob);
     } catch (err) {
@@ -288,7 +269,7 @@ const listFromDBInternalHook = <
   };
 }) => {
   const cache_key = `__${name}__cache`;
-  const { get_cache_item, set_cache_item } = useCache();
+  const { get, set } = useCache<T[]>();
   const [data, setData] = useState<T[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -308,21 +289,18 @@ const listFromDBInternalHook = <
       // We added an item
       if (added_data) {
         console.log("[DBLISTHOOK] Toggling on; table " + name);
-        if (!get_cache_item(cache_key)) set_cache_item(cache_key, []);
-        const new_data = [
-          ...(get_cache_item(cache_key) as T[]),
-          { ...added_data },
-        ] as T[];
-        set_cache_item(cache_key, new_data);
+        if (!get(cache_key)) set(cache_key, []);
+        const new_data = [...(get(cache_key) as T[]), { ...added_data }] as T[];
+        set(cache_key, new_data);
         setData(new_data);
 
         // We unadded an item, for toggle routes
       } else if (response.success) {
         console.log("[DBLISTHOOK] Toggling off; table " + name);
-        const new_data = (get_cache_item(cache_key) as T[]).filter(
+        const new_data = (get(cache_key) as T[]).filter(
           (old_data) => old_data.id !== id
         );
-        set_cache_item(cache_key, new_data);
+        set(cache_key, new_data);
         setData(new_data);
       }
       return response;
@@ -343,7 +321,7 @@ const listFromDBInternalHook = <
       setError("");
 
       // Check cache first
-      const cache_data = get_cache_item(cache_key) as T[];
+      const cache_data = get(cache_key) as T[];
       if (cache_data) {
         setData(cache_data);
         return;
@@ -355,7 +333,7 @@ const listFromDBInternalHook = <
 
       if (response.success) {
         setData(gotten_data);
-        set_cache_item(cache_key, gotten_data);
+        set(cache_key, gotten_data);
       }
     } catch (err) {
       setError(handle_api_error(err));
@@ -425,7 +403,7 @@ export const useSavedJobs = () => {
 // Saved Jobs Hook
 export function useApplications() {
   const { recheck_authentication } = useAuthContext();
-  const { get_cache_item, set_cache_item } = useCache();
+  const { get, set } = useCache<UserApplication[]>();
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   const [loading, setLoading] = useState(true);
@@ -444,26 +422,34 @@ export function useApplications() {
       setError(null);
 
       // Check cache first
-      const cached_applications = get_cache_item(
+      const cached_applications = get(
         "_applications_list"
       ) as UserApplication[];
       if (cached_applications) {
         await setTimeout(() => {}, 500);
         // Transform cached applications to ensure all employers have DLSU MOA
-        const transformedCachedApplications = cached_applications.map(app => ({
-          ...app,
-          job: app.job ? {
-            ...app.job,
-            employer: app.job.employer ? {
-              ...app.job.employer,
-              has_dlsu_moa: true
-            } : null
-          } : null,
-          employer: app.employer ? {
-            ...app.employer,
-            has_dlsu_moa: true
-          } : null
-        }));
+        const transformedCachedApplications = cached_applications.map(
+          (app) => ({
+            ...app,
+            job: app.job
+              ? {
+                  ...app.job,
+                  employer: app.job.employer
+                    ? {
+                        ...app.job.employer,
+                        has_dlsu_moa: true,
+                      }
+                    : null,
+                }
+              : null,
+            employer: app.employer
+              ? {
+                  ...app.employer,
+                  has_dlsu_moa: true,
+                }
+              : null,
+          })
+        );
         setApplications(transformedCachedApplications);
         return;
       }
@@ -472,23 +458,31 @@ export function useApplications() {
       const response = await application_service.get_applications();
       if (response.success) {
         // Transform applications to ensure all employers have DLSU MOA
-        const transformedApplications = (response.applications ?? []).map(app => ({
-          ...app,
-          job: app.job ? {
-            ...app.job,
-            employer: app.job.employer ? {
-              ...app.job.employer,
-              has_dlsu_moa: true
-            } : null
-          } : null,
-          employer: app.employer ? {
-            ...app.employer,
-            has_dlsu_moa: true
-          } : null
-        }));
-        
+        const transformedApplications = (response.applications ?? []).map(
+          (app) => ({
+            ...app,
+            job: app.job
+              ? {
+                  ...app.job,
+                  employer: app.job.employer
+                    ? {
+                        ...app.job.employer,
+                        has_dlsu_moa: true,
+                      }
+                    : null,
+                }
+              : null,
+            employer: app.employer
+              ? {
+                  ...app.employer,
+                  has_dlsu_moa: true,
+                }
+              : null,
+          })
+        );
+
         setApplications(transformedApplications);
-        set_cache_item("_applications_list", transformedApplications);
+        set("_applications_list", transformedApplications);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -505,13 +499,12 @@ export function useApplications() {
       });
 
       if (response.application) {
-        if (!get_cache_item("_applications_list"))
-          set_cache_item("_applications_list", []);
+        if (!get("_applications_list")) set("_applications_list", []);
         const new_applications = [
-          ...(get_cache_item("_applications_list") as UserApplication[]),
+          ...(get("_applications_list") as UserApplication[]),
           { ...response.application },
         ] as UserApplication[];
-        set_cache_item("_applications_list", new_applications);
+        set("_applications_list", new_applications);
         setApplications(new_applications);
       }
 

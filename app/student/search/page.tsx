@@ -26,7 +26,7 @@ import {
   useSavedJobs,
   useProfile,
   useApplications,
-} from "@/hooks/use-api";
+} from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { UserApplication, Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
@@ -67,15 +67,15 @@ export default function SearchPage() {
     industry: string;
     category: string;
   }>();
-  
+
   // Initialize default filter values
   useEffect(() => {
     if (!filters.job_type) set_filter("job_type", "All types");
-    if (!filters.location) set_filter("location", "Any location");  
+    if (!filters.location) set_filter("location", "Any location");
     if (!filters.industry) set_filter("industry", "All industries");
     if (!filters.category) set_filter("category", "All categories");
   }, []);
-  
+
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -106,10 +106,15 @@ export default function SearchPage() {
     close: close_profile_preview_modal,
     Modal: ProfilePreviewModal,
   } = useModal("profile-preview-modal");
-  
+
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } = useRefs();
+  const {
+    ref_is_not_null,
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+  } = useRefs();
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -180,13 +185,13 @@ export default function SearchPage() {
     const category = searchParams.get("category");
     const jobType = searchParams.get("jobType");
     const location = searchParams.get("location");
-    
+
     // Initialize filters with proper defaults
     set_filter("category", category ?? "All categories");
     set_filter("job_type", jobType ?? "All types");
     set_filter("location", location ?? "Any location");
     set_filter("industry", "All industries");
-    
+
     setSelectedJob(jobs.filter((job) => job.id === jobId)[0] ?? {});
   }, [searchParams, jobs]);
 
@@ -212,7 +217,7 @@ export default function SearchPage() {
 
   const handleApply = () => {
     console.log("handleApply called");
-    
+
     if (!is_authenticated()) {
       console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";
@@ -231,7 +236,7 @@ export default function SearchPage() {
     const profileComplete = isProfileComplete();
     console.log("Profile complete:", profileComplete);
     console.log("Profile:", profile);
-    
+
     if (!profileComplete) {
       console.log("Profile not complete, redirecting to profile page");
       alert("Please complete your profile before applying.");
@@ -271,7 +276,7 @@ export default function SearchPage() {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    
+
     // If search is cleared (empty), refresh results by clearing all filters
     if (value.trim() === "") {
       set_filter("job_type", "All types");
@@ -515,7 +520,9 @@ export default function SearchPage() {
               </h1>
               <div className="flex items-center gap-2 text-gray-600 mb-1">
                 <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">{selectedJob.employer?.name}</span>
+                <span className="truncate text-sm">
+                  {selectedJob.employer?.name}
+                </span>
               </div>
               <p className="text-xs text-gray-500">
                 Listed on {formatDate(selectedJob.created_at ?? "")}
@@ -561,7 +568,8 @@ export default function SearchPage() {
                         <p className="text-sm">
                           <span className="font-medium">Salary: </span>
                           <span className="opacity-80">
-                            {selectedJob.salary || "Not specified"}{"/"}
+                            {selectedJob.salary || "Not specified"}
+                            {"/"}
                             {to_job_pay_freq_name(selectedJob.salary_freq)}
                           </span>
                         </p>
@@ -602,7 +610,6 @@ export default function SearchPage() {
 
                 {/* Bottom padding for scroll area */}
                 <div className="pb-4"></div>
-
               </div>
             )}
           </div>
@@ -625,7 +632,7 @@ export default function SearchPage() {
                 )}
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
@@ -834,7 +841,7 @@ export default function SearchPage() {
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>
-        <motion.div 
+        <motion.div
           className="max-w-lg mx-auto p-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -850,7 +857,7 @@ export default function SearchPage() {
             >
               <Clipboard className="w-8 h-8 text-blue-600" />
             </motion.div>
-            <motion.h2 
+            <motion.h2
               className="text-2xl font-bold text-gray-900 mb-3"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -858,7 +865,7 @@ export default function SearchPage() {
             >
               Ready to Apply?
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="text-gray-600 leading-relaxed"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -870,7 +877,8 @@ export default function SearchPage() {
               </span>
               {selectedJob?.employer?.name && (
                 <>
-                  {" "}at{" "}
+                  {" "}
+                  at{" "}
                   <span className="font-semibold text-gray-900">
                     {selectedJob.employer.name}
                   </span>
@@ -880,7 +888,7 @@ export default function SearchPage() {
           </div>
 
           {/* Job Summary Card */}
-          <motion.div 
+          <motion.div
             className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -916,7 +924,7 @@ export default function SearchPage() {
           </motion.div>
 
           {/* Profile Preview Section */}
-          <motion.div 
+          <motion.div
             className="mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -943,7 +951,7 @@ export default function SearchPage() {
           </motion.div>
 
           {/* Cover Letter Section */}
-          <motion.div 
+          <motion.div
             className="mb-8"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -954,7 +962,10 @@ export default function SearchPage() {
                 <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
                   <Clipboard className="w-4 h-4 text-amber-600" />
                 </div>
-                <label htmlFor="add-cover-letter" className="font-medium text-gray-900">
+                <label
+                  htmlFor="add-cover-letter"
+                  className="font-medium text-gray-900"
+                >
                   Cover Letter
                 </label>
               </div>
@@ -976,7 +987,7 @@ export default function SearchPage() {
             </div>
 
             {showCoverLetterInput && (
-              <motion.div 
+              <motion.div
                 className="space-y-3"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
@@ -995,10 +1006,14 @@ export default function SearchPage() {
                   <span className="text-gray-500 flex items-center gap-1">
                     💡 <span>Mention specific skills and enthusiasm</span>
                   </span>
-                  <span className={cn(
-                    "font-medium",
-                    coverLetter.length > 450 ? "text-red-500" : "text-gray-500"
-                  )}>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      coverLetter.length > 450
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    )}
+                  >
                     {coverLetter.length}/500
                   </span>
                 </div>
@@ -1007,7 +1022,7 @@ export default function SearchPage() {
           </motion.div>
 
           {/* Action Buttons */}
-          <motion.div 
+          <motion.div
             className="flex gap-3"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1065,9 +1080,9 @@ export default function SearchPage() {
               <X className="h-4 w-4 text-gray-500" />
             </Button>
           </div>
-          
+
           {profile && (
-            <ApplicantModalContent 
+            <ApplicantModalContent
               applicant={profile}
               open_resume_modal={() => {}} // Optional: Add resume preview functionality
             />

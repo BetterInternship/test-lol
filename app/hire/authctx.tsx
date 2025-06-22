@@ -1,9 +1,9 @@
 "use client";
 
-import { PublicEmployerUser } from "@/lib/db/db.types";
-import { auth_service } from "@/lib/api";
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
+import { employer_auth_service } from "@/lib/api/employer.api";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
@@ -69,7 +69,7 @@ export const AuthContextProvider = ({
 
   const recheck_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
-      const response = await auth_service.employer.loggedin();
+      const response = await employer_auth_service.loggedin();
       if (!response.success) return null;
 
       setUser(response.user as PublicEmployerUser);
@@ -78,17 +78,17 @@ export const AuthContextProvider = ({
     };
 
   const send_otp_request = async (email: string) => {
-    const response = await auth_service.employer.send_otp_request(email);
+    const response = await employer_auth_service.send_otp_request(email);
     return response;
   };
 
   const resend_otp_request = async (email: string) => {
-    const response = await auth_service.employer.send_otp_request(email);
+    const response = await employer_auth_service.send_otp_request(email);
     return response;
   };
 
   const verify_otp = async (email: string, otp: string) => {
-    const response = await auth_service.employer.verify_otp(email, otp);
+    const response = await employer_auth_service.verify_otp(email, otp);
     if (!response.success) return null;
 
     setUser(response.user as PublicEmployerUser);
@@ -101,12 +101,12 @@ export const AuthContextProvider = ({
   };
 
   const email_status = async (email: string) => {
-    const response = await auth_service.employer.email_status(email);
+    const response = await employer_auth_service.email_status(email);
     return response;
   };
 
   const logout = async () => {
-    auth_service.employer.logout();
+    employer_auth_service.logout();
     router.push("/login");
     setUser(null);
     setIsAuthenticated(false);

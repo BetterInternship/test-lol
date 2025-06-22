@@ -17,7 +17,7 @@ import {
   Camera,
   GraduationCap,
 } from "lucide-react";
-import { useProfile } from "@/hooks/use-api";
+import { useProfile } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/editable";
 import { UserPropertyLabel, UserLinkLabel } from "@/components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
-import { user_service } from "@/lib/api";
+import { user_service } from "@/lib/api/api";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -277,10 +277,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold font-heading mb-1">{profile.full_name}</h1>
+              <h1 className="text-3xl font-bold font-heading mb-1">
+                {profile.full_name}
+              </h1>
               <p className="text-muted-foreground text-sm">
-                {profile.college && to_college_name(profile.college)} 
-                {profile.college && profile.year_level && " • "} 
+                {profile.college && to_college_name(profile.college)}
+                {profile.college && profile.year_level && " • "}
                 {profile.year_level && to_level_name(profile.year_level)}
               </p>
             </div>
@@ -297,7 +299,12 @@ export default function ProfilePage() {
               </Button>
               {isEditing ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
                     Cancel
                   </Button>
                   <Button size="sm" onClick={handleSave} disabled={saving}>
@@ -337,7 +344,9 @@ export default function ProfilePage() {
                     </h2>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Full Name</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Full Name
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.full_name}
@@ -348,7 +357,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Phone Number</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Phone Number
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.phone_number}
@@ -360,26 +371,36 @@ export default function ProfilePage() {
 
                       <DropdownGroup>
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">College</label>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            College
+                          </label>
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="college"
                             value={form_data.college_name}
                             setter={field_setter("college_name")}
-                            options={["Not specified", ...colleges.map((c) => c.name)]}
+                            options={[
+                              "Not specified",
+                              ...colleges.map((c) => c.name),
+                            ]}
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
                         </div>
 
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">Year Level</label>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Year Level
+                          </label>
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="year_level"
                             value={form_data.year_level_name}
                             setter={field_setter("year_level_name")}
-                            options={["Not specified", ...levels.map((l) => l.name)]}
+                            options={[
+                              "Not specified",
+                              ...levels.map((l) => l.name),
+                            ]}
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
@@ -387,7 +408,9 @@ export default function ProfilePage() {
                       </DropdownGroup>
 
                       <div className="sm:col-span-2">
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Internship for Credit</label>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          Internship for Credit
+                        </label>
                         {isEditing ? (
                           <div className="space-y-3">
                             <div className="flex items-center space-x-2">
@@ -396,7 +419,9 @@ export default function ProfilePage() {
                                 onCheckedChange={(value) => {
                                   set_fields({
                                     taking_for_credit: !!value,
-                                    linkage_officer: !!value ? form_data.linkage_officer : "",
+                                    linkage_officer: !!value
+                                      ? form_data.linkage_officer
+                                      : "",
                                   });
                                 }}
                               />
@@ -404,7 +429,9 @@ export default function ProfilePage() {
                             </div>
                             {form_data.taking_for_credit && (
                               <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Linkage Officer</label>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                  Linkage Officer
+                                </label>
                                 <EditableInput
                                   is_editing={isEditing}
                                   value={form_data.linkage_officer}
@@ -421,17 +448,25 @@ export default function ProfilePage() {
                               <div className="space-y-2">
                                 <div className="inline-flex items-center gap-2 text-green-700">
                                   <Award className="h-4 w-4" />
-                                  <span className="text-sm font-medium">Taking for credit</span>
+                                  <span className="text-sm font-medium">
+                                    Taking for credit
+                                  </span>
                                 </div>
                                 {profile.linkage_officer && (
                                   <div>
-                                    <label className="text-sm font-medium text-gray-700 mb-1 block">Linkage Officer</label>
-                                    <UserPropertyLabel value={profile.linkage_officer} />
+                                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                      Linkage Officer
+                                    </label>
+                                    <UserPropertyLabel
+                                      value={profile.linkage_officer}
+                                    />
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-muted-foreground italic text-sm">Not taking for credit</span>
+                              <span className="text-muted-foreground italic text-sm">
+                                Not taking for credit
+                              </span>
                             )}
                           </div>
                         )}
@@ -447,7 +482,9 @@ export default function ProfilePage() {
                     </h2>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Portfolio Website</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Portfolio Website
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.portfolio_link}
@@ -459,7 +496,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">GitHub Profile</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          GitHub Profile
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.github_link}
@@ -471,7 +510,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">LinkedIn Profile</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          LinkedIn Profile
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.linkedin_link}
@@ -483,7 +524,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Calendly Link</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Calendly Link
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.calendly_link}
@@ -530,7 +573,9 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium text-green-800">Uploaded</span>
+                          <span className="text-sm font-medium text-green-800">
+                            Uploaded
+                          </span>
                         </div>
                         <div className="flex gap-1">
                           <Button
@@ -567,7 +612,9 @@ export default function ProfilePage() {
                         <Upload className="h-4 w-4 mr-1" />
                         {uploading ? "Uploading..." : "Upload"}
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-1">PDF up to 3MB</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PDF up to 3MB
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -600,7 +647,8 @@ export default function ProfilePage() {
                       <p className="text-sm leading-relaxed">
                         {profile.bio || (
                           <span className="text-muted-foreground italic">
-                            No bio provided. Click "Edit" to add information about yourself.
+                            No bio provided. Click "Edit" to add information
+                            about yourself.
                           </span>
                         )}
                       </p>
@@ -639,8 +687,8 @@ export default function ProfilePage() {
       )}
 
       <EmployerModal>
-        <ApplicantModalContent 
-          applicant={profile} 
+        <ApplicantModalContent
+          applicant={profile}
           open_resume_modal={async () => {
             close_employer_modal();
             await sync_resume_url();

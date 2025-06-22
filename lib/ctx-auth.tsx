@@ -1,10 +1,10 @@
 "use client";
 
 import { PublicUser } from "@/lib/db/db.types";
-import { auth_service } from "@/lib/api";
+import { auth_service } from "@/lib/api/api";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FetchResponse } from "@/hooks/use-fetch";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface IAuthContext {
   user: (Partial<PublicUser> & FetchResponse) | null;

@@ -13,7 +13,7 @@ import {
   Briefcase,
   PhilippinePeso,
 } from "lucide-react";
-import { useSavedJobs } from "@/hooks/use-api";
+import { useSavedJobs } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useAppContext } from "@/lib/ctx-app";
