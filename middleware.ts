@@ -32,7 +32,7 @@ export function middleware(request: NextRequest) {
   );
 
   // Lol
-  if (process.env.DEVELOPMENT) return NextResponse.next();
+  //if (process.env.DEVELOPMENT) return NextResponse.next();
 
   // There's a matching school
   if (school.length) {

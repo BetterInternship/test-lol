@@ -419,6 +419,7 @@ export const EditableJobDetails = ({
         ),
         require_github: form_data.require_github,
         require_portfolio: form_data.require_portfolio,
+        require_cover_letter: form_data.require_cover_letter,
         is_unlisted: form_data.is_unlisted,
         start_date: form_data.start_date,
         end_date: form_data.end_date,
@@ -737,6 +738,19 @@ export const EditableJobDetails = ({
                 Require Portfolio?
               </label>
             </div>
+
+            <div className="flex flex-row items-start gap-3 max-w-prose">
+              <EditableCheckbox
+                is_editing={is_editing}
+                value={form_data.require_cover_letter}
+                setter={field_setter("require_cover_letter")}
+              >
+                <JobBooleanLabel />
+              </EditableCheckbox>
+              <label className="text-sm font-semibold text-gray-700">
+                Require Cover Letter?
+              </label>
+            </div>
           </div>
           {is_editing && (
             <p className="text-sm text-gray-700 my-3">
@@ -912,6 +926,26 @@ export const JobDetails = ({
                 }`}
               >
                 Portfolio
+              </span>
+            </div>
+
+            {/* Cover Letter Requirement */}
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-5 h-5 rounded flex items-center justify-center ${
+                  job.require_cover_letter ? "bg-green-500" : "bg-gray-300"
+                }`}
+              >
+                {job.require_cover_letter && (
+                  <CheckCircle className="w-3 h-3 text-white" />
+                )}
+              </div>
+              <span
+                className={`text-sm font-medium ${
+                  job.require_cover_letter ? "text-gray-700" : "text-gray-400"
+                }`}
+              >
+                Cover Letter
               </span>
             </div>
           </div>

@@ -87,11 +87,11 @@
   * {
     @apply border-border;
   }
-  
+
   html {
     @apply scroll-smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     @apply text-base leading-normal;
@@ -498,18 +498,18 @@ button[role="checkbox"]:checked {
   .no-print {
     display: none !important;
   }
-  
+
   .print-break {
     page-break-after: always;
   }
-  
+
   body {
     font-size: 12pt;
     line-height: 1.4;
     color: black !important;
     background: white !important;
   }
-  
+
   .card {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
