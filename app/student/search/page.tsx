@@ -20,6 +20,7 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useJobs,
   useSavedJobs,
@@ -41,6 +42,7 @@ import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -57,6 +59,8 @@ export default function SearchPage() {
   const { is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+  const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
   const { filters, set_filter, filter_setter } = useFilter<{
     job_type: string;
     location: string;
@@ -71,6 +75,7 @@ export default function SearchPage() {
     if (!filters.industry) set_filter("industry", "All industries");
     if (!filters.category) set_filter("category", "All categories");
   }, []);
+  
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -91,6 +96,17 @@ export default function SearchPage() {
     close: close_job_modal,
     Modal: JobModal,
   } = useModal("job-modal", { showCloseButton: false });
+  const {
+    open: open_application_confirmation_modal,
+    close: close_application_confirmation_modal,
+    Modal: ApplicationConfirmationModal,
+  } = useModal("application-confirmation-modal");
+  const {
+    open: open_profile_preview_modal,
+    close: close_profile_preview_modal,
+    Modal: ProfilePreviewModal,
+  } = useModal("profile-preview-modal");
+  
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
   const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } = useRefs();
@@ -195,7 +211,10 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
+    console.log("handleApply called");
+    
     if (!is_authenticated()) {
+      console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";
       return;
     }
@@ -203,25 +222,26 @@ export default function SearchPage() {
     // Check if already applied
     const applicationStatus = appliedJob(selectedJob?.id ?? "");
     if (applicationStatus) {
+      console.log("Already applied to this job");
       alert("You have already applied to this job!");
       return;
     }
 
     // Check if profile is complete
-    if (!isProfileComplete()) {
+    const profileComplete = isProfileComplete();
+    console.log("Profile complete:", profileComplete);
+    console.log("Profile:", profile);
+    
+    if (!profileComplete) {
+      console.log("Profile not complete, redirecting to profile page");
       alert("Please complete your profile before applying.");
       router.push("/profile");
       return;
     }
 
-    // Check if job requirements are met
-    if (!areJobRequirementsMet()) {
-      open_application_modal();
-      return;
-    }
-
-    // If everything is complete, apply directly
-    handleDirectApplication();
+    // If profile is complete, show confirmation modal
+    console.log("Opening application confirmation modal");
+    open_application_confirmation_modal();
   };
 
   const handleDirectApplication = async () => {
@@ -413,9 +433,7 @@ export default function SearchPage() {
                     <Button
                       key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
-                      onClick={() =>
-                        !appliedJob(selectedJob.id ?? "") && handleApply()
-                      }
+                      onClick={handleApply}
                       className={cn(
                         appliedJob(selectedJob.id ?? "")
                           ? "bg-green-600 text-white"
@@ -594,7 +612,7 @@ export default function SearchPage() {
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
-                onClick={() => !appliedJob(selectedJob?.id ?? "") && handleApply()}
+                onClick={handleApply}
                 className={cn(
                   "flex-1 h-12 font-semibold rounded-xl transition-all duration-200",
                   appliedJob(selectedJob?.id ?? "")
@@ -813,6 +831,261 @@ export default function SearchPage() {
           </div>
         </div>
       </FilterModal>
+
+      {/* Application Confirmation Modal - Redesigned */}
+      <ApplicationConfirmationModal>
+        <motion.div 
+          className="max-w-lg mx-auto p-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <motion.div
+              className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.3, type: "spring" }}
+            >
+              <Clipboard className="w-8 h-8 text-blue-600" />
+            </motion.div>
+            <motion.h2 
+              className="text-2xl font-bold text-gray-900 mb-3"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+            >
+              Ready to Apply?
+            </motion.h2>
+            <motion.p 
+              className="text-gray-600 leading-relaxed"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+            >
+              You're applying for{" "}
+              <span className="font-semibold text-gray-900">
+                {selectedJob?.title}
+              </span>
+              {selectedJob?.employer?.name && (
+                <>
+                  {" "}at{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedJob.employer.name}
+                  </span>
+                </>
+              )}
+            </motion.p>
+          </div>
+
+          {/* Job Summary Card */}
+          <motion.div 
+            className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+          >
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Building className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 mb-1 text-lg truncate">
+                  {selectedJob?.title}
+                </h3>
+                <p className="text-gray-600 mb-3 text-sm">
+                  {selectedJob?.employer?.name}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedJob?.location && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
+                      <MapPin className="w-3 h-3" />
+                      {selectedJob.location}
+                    </span>
+                  )}
+                  {selectedJob?.mode !== undefined && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
+                      <Monitor className="w-3 h-3" />
+                      {to_job_mode_name(selectedJob.mode)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Profile Preview Section */}
+          <motion.div 
+            className="mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
+          >
+            <Button
+              variant="outline"
+              onClick={() => {
+                close_application_confirmation_modal();
+                open_profile_preview_modal();
+              }}
+              className="w-full h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium group transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span>Preview Your Profile</span>
+              </div>
+            </Button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              See how employers will view your application
+            </p>
+          </motion.div>
+
+          {/* Cover Letter Section */}
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.3 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Clipboard className="w-4 h-4 text-amber-600" />
+                </div>
+                <label htmlFor="add-cover-letter" className="font-medium text-gray-900">
+                  Cover Letter
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="add-cover-letter"
+                  checked={showCoverLetterInput}
+                  onChange={(e) => {
+                    setShowCoverLetterInput(e.target.checked);
+                    if (!e.target.checked) {
+                      setCoverLetter("");
+                    }
+                  }}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-500">Optional</span>
+              </div>
+            </div>
+
+            {showCoverLetterInput && (
+              <motion.div 
+                className="space-y-3"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Textarea
+                  value={coverLetter}
+                  onChange={(e) => setCoverLetter(e.target.value)}
+                  placeholder="Dear Hiring Manager,&#10;&#10;I am excited to apply for this position because...&#10;&#10;Best regards,&#10;[Your name]"
+                  className="w-full min-h-32 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm"
+                  rows={5}
+                  maxLength={500}
+                />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500 flex items-center gap-1">
+                    💡 <span>Mention specific skills and enthusiasm</span>
+                  </span>
+                  <span className={cn(
+                    "font-medium",
+                    coverLetter.length > 450 ? "text-red-500" : "text-gray-500"
+                  )}>
+                    {coverLetter.length}/500
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+
+          {/* Action Buttons */}
+          <motion.div 
+            className="flex gap-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.3 }}
+          >
+            <Button
+              variant="outline"
+              onClick={() => {
+                close_application_confirmation_modal();
+                setCoverLetter("");
+                setShowCoverLetterInput(false);
+              }}
+              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                close_application_confirmation_modal();
+                handleDirectApplication();
+                setCoverLetter("");
+                setShowCoverLetterInput(false);
+              }}
+              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <motion.div
+                className="flex items-center justify-center gap-2"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <CheckCircle className="w-4 h-4" />
+                Submit Application
+              </motion.div>
+            </Button>
+          </motion.div>
+        </motion.div>
+      </ApplicationConfirmationModal>
+
+      {/* Profile Preview Modal */}
+      <ProfilePreviewModal>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              Your Profile Preview
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </Button>
+          </div>
+          
+          {profile && (
+            <ApplicantModalContent 
+              applicant={profile}
+              open_resume_modal={() => {}} // Optional: Add resume preview functionality
+            />
+          )}
+
+          <div className="mt-6">
+            <Button
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+            >
+              Back to Application
+            </Button>
+          </div>
+        </div>
+      </ProfilePreviewModal>
     </>
   );
 }
