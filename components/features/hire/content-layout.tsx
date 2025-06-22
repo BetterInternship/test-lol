@@ -48,8 +48,9 @@ function SideNav({ items }: { items: NavItem[] }) {
           key={label}
           href={href}
           className={cn(
-            "flex items-center gap-3 text-gray-900 bg-white p-3 rounded-lg font-medium cursor-default",
-            pathname === href && "bg-muted text-primary"
+            "flex border border-opacity-0 text-sm items-center gap-3 text-gray-900 p-3 mx-1 rounded-sm font-medium hover:cursor-pointer",
+            pathname === href &&
+              "bg-muted text-primary border-opacity-80 bg-white"
           )}
         >
           {icon}
