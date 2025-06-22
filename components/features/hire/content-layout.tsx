@@ -34,7 +34,7 @@ const navItems: NavItem[] = [
   {
     href: "/forms-management",
     icon: <FileUser className="h-5 w-5" />,
-    label: "Internship Forms Automation",
+    label: "Forms Automation",
   },
 ];
 
@@ -48,7 +48,7 @@ function SideNav({ items }: { items: NavItem[] }) {
           key={label}
           href={href}
           className={cn(
-            "flex border border-opacity-0 text-sm items-center gap-3 text-gray-900 p-3 mx-1 rounded-sm font-medium hover:cursor-pointer",
+            "flex border border-opacity-0 items-center gap-3 text-gray-900 p-3 mx-1 rounded-sm font-medium hover:cursor-pointer",
             pathname === href &&
               "bg-muted text-primary border-opacity-80 bg-white"
           )}
