@@ -128,6 +128,7 @@ export default function SearchPage() {
       profile.last_name &&
       profile.phone_number &&
       ref_is_not_null(profile.college) &&
+      ref_is_not_null(profile.department) &&
       ref_is_not_null(profile.year_level)
     );
   };
