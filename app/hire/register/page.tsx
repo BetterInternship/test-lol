@@ -95,7 +95,7 @@ export default function LoginPage() {
           <div className="text-center mb-10">
             {step === "email" ? (
               <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                Future interns are waiting!
+                Coming soon.
               </h2>
             ) : (
               <div>
@@ -115,45 +115,15 @@ export default function LoginPage() {
             )}
 
             {/* Login Form */}
-            {step === "email" ? (
-              <form onSubmit={handle_email_submit} className="space-y-6">
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Email Address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading || !email}
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "Verifying email..." : "Continue"}
-                </Button>
-              </form>
-            ) : (
-              <form onSubmit={handle_password_submit} className="space-y-6">
-                {/* OTP Input Boxes */}
-                <Input
-                  className="w-full h-12 input-box hover:cursor-text"
-                  placeholder="Password..."
-                  onChange={(e) => setPassword(e.target.value)}
-                ></Input>
-
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? "Logging in..." : "Login"}
-                </Button>
-              </form>
-            )}
+            <form onSubmit={handle_password_submit} className="space-y-6">
+              <Button
+                type="submit"
+                disabled={true}
+                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Logging in..." : "Register"}
+              </Button>
+            </form>
           </div>
         </div>
       </div>
