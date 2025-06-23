@@ -16,8 +16,9 @@ import {
   Hash,
   Camera,
   GraduationCap,
+  AlertCircle,
 } from "lucide-react";
-import { useProfile } from "@/hooks/use-api";
+import { useProfile } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/editable";
 import { UserPropertyLabel, UserLinkLabel } from "@/components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
-import { user_service } from "@/lib/api";
+import { user_service } from "@/lib/api/api";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -69,6 +70,122 @@ export default function ProfilePage() {
   >();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [linkErrors, setLinkErrors] = useState<{
+    portfolio_link?: string;
+    github_link?: string;
+    linkedin_link?: string;
+    calendly_link?: string;
+  }>({});
+
+  // URL validation functions
+  const isValidURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true; // Empty URLs are allowed
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidGitHubURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true;
+    try {
+      const urlObj = new URL(url);
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname === 'github.com';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidLinkedInURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true;
+    try {
+      const urlObj = new URL(url);
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname === 'linkedin.com' || urlObj.hostname === 'www.linkedin.com';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidCalendlyURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true;
+    try {
+      const urlObj = new URL(url);
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname === 'calendly.com';
+    } catch {
+      return false;
+    }
+  };
+
+  const validateLinks = () => {
+    const errors: typeof linkErrors = {};
+    
+    if (form_data.portfolio_link && !isValidURL(form_data.portfolio_link)) {
+      errors.portfolio_link = 'Please enter a valid URL (e.g., https://example.com)';
+    }
+    
+    if (form_data.github_link && !isValidGitHubURL(form_data.github_link)) {
+      errors.github_link = 'Please enter a valid GitHub URL (e.g., https://github.com/username)';
+    }
+    
+    if (form_data.linkedin_link && !isValidLinkedInURL(form_data.linkedin_link)) {
+      errors.linkedin_link = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+    }
+    
+    if (form_data.calendly_link && !isValidCalendlyURL(form_data.calendly_link)) {
+      errors.calendly_link = 'Please enter a valid Calendly URL (e.g., https://calendly.com/username)';
+    }
+
+    setLinkErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Enhanced field setters with validation
+  const validatedFieldSetter = (field: string) => (value: string) => {
+    field_setter(field)(value);
+    
+    // Validate specific fields on change
+    setTimeout(() => {
+      const errors = { ...linkErrors };
+      
+      switch (field) {
+        case 'portfolio_link':
+          if (value && !isValidURL(value)) {
+            errors.portfolio_link = 'Please enter a valid URL (e.g., https://example.com)';
+          } else {
+            delete errors.portfolio_link;
+          }
+          break;
+        case 'github_link':
+          if (value && !isValidGitHubURL(value)) {
+            errors.github_link = 'Please enter a valid GitHub URL (e.g., https://github.com/username)';
+          } else {
+            delete errors.github_link;
+          }
+          break;
+        case 'linkedin_link':
+          if (value && !isValidLinkedInURL(value)) {
+            errors.linkedin_link = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+          } else {
+            delete errors.linkedin_link;
+          }
+          break;
+        case 'calendly_link':
+          if (value && !isValidCalendlyURL(value)) {
+            errors.calendly_link = 'Please enter a valid Calendly URL (e.g., https://calendly.com/username)';
+          } else {
+            delete errors.calendly_link;
+          }
+          break;
+      }
+      
+      setLinkErrors(errors);
+    }, 500); // Debounce validation by 500ms
+  };
   const {
     open: open_employer_modal,
     close: close_employer_modal,
@@ -186,6 +303,12 @@ export default function ProfilePage() {
   }, [profile]);
 
   const handleSave = async () => {
+    // Validate links before saving
+    if (!validateLinks()) {
+      alert('Please fix the invalid URLs before saving.');
+      return;
+    }
+
     try {
       setSaving(true);
       const dataToSend = {
@@ -204,6 +327,7 @@ export default function ProfilePage() {
       };
       await updateProfile(dataToSend);
       setIsEditing(false);
+      setLinkErrors({}); // Clear errors on successful save
     } catch (error) {
       console.error("Failed to update profile:", error);
       alert("Failed to update profile. Please try again.");
@@ -215,6 +339,7 @@ export default function ProfilePage() {
   const handleCancel = () => {
     if (profile) set_fields({ ...profile });
     setIsEditing(false);
+    setLinkErrors({}); // Clear errors when cancelling
   };
 
   if (!is_authenticated()) {
@@ -277,10 +402,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold font-heading mb-1">{profile.full_name}</h1>
+              <h1 className="text-3xl font-bold font-heading mb-1">
+                {profile.full_name}
+              </h1>
               <p className="text-muted-foreground text-sm">
-                {profile.college && to_college_name(profile.college)} 
-                {profile.college && profile.year_level && " • "} 
+                {profile.college && to_college_name(profile.college)}
+                {profile.college && profile.year_level && " • "}
                 {profile.year_level && to_level_name(profile.year_level)}
               </p>
             </div>
@@ -297,12 +424,28 @@ export default function ProfilePage() {
               </Button>
               {isEditing ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleSave} disabled={saving}>
+                  <Button 
+                    size="sm" 
+                    onClick={handleSave} 
+                    disabled={saving || Object.keys(linkErrors).length > 0}
+                    className={Object.keys(linkErrors).length > 0 ? "opacity-50 cursor-not-allowed" : ""}
+                  >
                     {saving ? "Saving..." : "Save"}
                   </Button>
+                  {Object.keys(linkErrors).length > 0 && (
+                    <div className="flex items-center gap-1 text-red-600 text-xs">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Fix invalid URLs to save</span>
+                    </div>
+                  )}
                 </>
               ) : (
                 <Button
@@ -337,7 +480,9 @@ export default function ProfilePage() {
                     </h2>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Full Name</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Full Name
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.full_name}
@@ -348,7 +493,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Phone Number</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Phone Number
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.phone_number}
@@ -360,26 +507,36 @@ export default function ProfilePage() {
 
                       <DropdownGroup>
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">College</label>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            College
+                          </label>
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="college"
                             value={form_data.college_name}
                             setter={field_setter("college_name")}
-                            options={["Not specified", ...colleges.map((c) => c.name)]}
+                            options={[
+                              "Not specified",
+                              ...colleges.map((c) => c.name),
+                            ]}
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
                         </div>
 
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-1 block">Year Level</label>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Year Level
+                          </label>
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="year_level"
                             value={form_data.year_level_name}
                             setter={field_setter("year_level_name")}
-                            options={["Not specified", ...levels.map((l) => l.name)]}
+                            options={[
+                              "Not specified",
+                              ...levels.map((l) => l.name),
+                            ]}
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
@@ -387,7 +544,9 @@ export default function ProfilePage() {
                       </DropdownGroup>
 
                       <div className="sm:col-span-2">
-                        <label className="text-sm font-medium text-gray-700 mb-2 block">Internship for Credit</label>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          Internship for Credit
+                        </label>
                         {isEditing ? (
                           <div className="space-y-3">
                             <div className="flex items-center space-x-2">
@@ -396,7 +555,9 @@ export default function ProfilePage() {
                                 onCheckedChange={(value) => {
                                   set_fields({
                                     taking_for_credit: !!value,
-                                    linkage_officer: !!value ? form_data.linkage_officer : "",
+                                    linkage_officer: !!value
+                                      ? form_data.linkage_officer
+                                      : "",
                                   });
                                 }}
                               />
@@ -404,7 +565,9 @@ export default function ProfilePage() {
                             </div>
                             {form_data.taking_for_credit && (
                               <div>
-                                <label className="text-sm font-medium text-gray-700 mb-1 block">Linkage Officer</label>
+                                <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                  Linkage Officer
+                                </label>
                                 <EditableInput
                                   is_editing={isEditing}
                                   value={form_data.linkage_officer}
@@ -421,17 +584,25 @@ export default function ProfilePage() {
                               <div className="space-y-2">
                                 <div className="inline-flex items-center gap-2 text-green-700">
                                   <Award className="h-4 w-4" />
-                                  <span className="text-sm font-medium">Taking for credit</span>
+                                  <span className="text-sm font-medium">
+                                    Taking for credit
+                                  </span>
                                 </div>
                                 {profile.linkage_officer && (
                                   <div>
-                                    <label className="text-sm font-medium text-gray-700 mb-1 block">Linkage Officer</label>
-                                    <UserPropertyLabel value={profile.linkage_officer} />
+                                    <label className="text-sm font-medium text-gray-700 mb-1 block">
+                                      Linkage Officer
+                                    </label>
+                                    <UserPropertyLabel
+                                      value={profile.linkage_officer}
+                                    />
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-muted-foreground italic text-sm">Not taking for credit</span>
+                              <span className="text-muted-foreground italic text-sm">
+                                Not taking for credit
+                              </span>
                             )}
                           </div>
                         )}
@@ -447,51 +618,83 @@ export default function ProfilePage() {
                     </h2>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Portfolio Website</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Portfolio Website
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.portfolio_link}
-                          setter={field_setter("portfolio_link")}
+                          setter={validatedFieldSetter("portfolio_link")}
                           placeholder="https://yourportfolio.com"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.portfolio_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.portfolio_link}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">GitHub Profile</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          GitHub Profile
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.github_link}
-                          setter={field_setter("github_link")}
+                          setter={validatedFieldSetter("github_link")}
                           placeholder="https://github.com/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.github_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.github_link}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">LinkedIn Profile</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          LinkedIn Profile
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.linkedin_link}
-                          setter={field_setter("linkedin_link")}
+                          setter={validatedFieldSetter("linkedin_link")}
                           placeholder="https://linkedin.com/in/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.linkedin_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.linkedin_link}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">Calendly Link</label>
+                        <label className="text-sm font-medium text-gray-700 mb-1 block">
+                          Calendly Link
+                        </label>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.calendly_link}
-                          setter={field_setter("calendly_link")}
+                          setter={validatedFieldSetter("calendly_link")}
                           placeholder="https://calendly.com/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.calendly_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.calendly_link}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -530,7 +733,9 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <FileText className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-medium text-green-800">Uploaded</span>
+                          <span className="text-sm font-medium text-green-800">
+                            Uploaded
+                          </span>
                         </div>
                         <div className="flex gap-1">
                           <Button
@@ -567,7 +772,9 @@ export default function ProfilePage() {
                         <Upload className="h-4 w-4 mr-1" />
                         {uploading ? "Uploading..." : "Upload"}
                       </Button>
-                      <p className="text-xs text-muted-foreground mt-1">PDF up to 3MB</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PDF up to 3MB
+                      </p>
                     </div>
                   )}
                 </CardContent>
@@ -600,7 +807,8 @@ export default function ProfilePage() {
                       <p className="text-sm leading-relaxed">
                         {profile.bio || (
                           <span className="text-muted-foreground italic">
-                            No bio provided. Click "Edit" to add information about yourself.
+                            No bio provided. Click "Edit" to add information
+                            about yourself.
                           </span>
                         )}
                       </p>
@@ -639,8 +847,8 @@ export default function ProfilePage() {
       )}
 
       <EmployerModal>
-        <ApplicantModalContent 
-          applicant={profile} 
+        <ApplicantModalContent
+          applicant={profile}
           open_resume_modal={async () => {
             close_employer_modal();
             await sync_resume_url();

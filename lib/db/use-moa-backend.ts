@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 14:37:59
- * @ Modified time: 2025-06-22 14:39:37
+ * @ Modified time: 2025-06-23 06:22:08
  * @ Description:
  *
  * Separates out the server component of the context.
@@ -47,7 +47,6 @@ export const createMoaContext = () => {
   const check = useCallback(
     (employer_id: string, university_id: string) => {
       if (loading) return false;
-      console.log(moa, employer_id, university_id);
       return moa.some(
         (m) =>
           m.employer_id === employer_id &&

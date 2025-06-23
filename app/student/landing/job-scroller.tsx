@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useJobs } from "@/hooks/use-api";
+import { useJobs } from "@/lib/api/use-api";
 import { BasicRectangularTag } from "../../../components/ui/tags";
 
 export default function JobScroller() {

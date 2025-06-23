@@ -5,7 +5,10 @@ import Link from "next/link";
 export const HeaderTitle = () => {
   const { is_mobile } = useAppContext();
   return (
-    <Link href="/" className="block">
+    <Link
+      href="/"
+      className="block outline-none focus:outline-none border-none"
+    >
       <h1
         className={cn(
           "font-display font-bold text-gray-900",

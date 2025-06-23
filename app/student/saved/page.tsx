@@ -13,21 +13,22 @@ import {
   Briefcase,
   PhilippinePeso,
 } from "lucide-react";
-import { useSavedJobs } from "@/hooks/use-api";
+import { useSavedJobs } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function SavedJobsPage() {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const {
+    is_authenticated,
+    redirect_if_not_logged_in: redirect_if_not_logged_in,
+  } = useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
   const router = useRouter();
   const { is_mobile } = useAppContext();
 
-  useEffect(() => {
-    recheck_authentication().then((r) => !r && router.push("/login"));
-  }, [is_authenticated(), router]);
+  redirect_if_not_logged_in();
 
   const handleUnsaveJob = async (job_id: string) => {
     try {

@@ -1,7 +1,8 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
+import React from "react";
+import type { ChangeEvent } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -20,12 +21,13 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useJobs,
   useSavedJobs,
   useProfile,
   useApplications,
-} from "@/hooks/use-api";
+} from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { UserApplication, Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
@@ -41,6 +43,7 @@ import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -57,20 +60,23 @@ export default function SearchPage() {
   const { is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [coverLetter, setCoverLetter] = useState("");
+  const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
   const { filters, set_filter, filter_setter } = useFilter<{
     job_type: string;
     location: string;
     industry: string;
     category: string;
   }>();
-  
+
   // Initialize default filter values
   useEffect(() => {
     if (!filters.job_type) set_filter("job_type", "All types");
-    if (!filters.location) set_filter("location", "Any location");  
+    if (!filters.location) set_filter("location", "Any location");
     if (!filters.industry) set_filter("industry", "All industries");
     if (!filters.category) set_filter("category", "All categories");
   }, []);
+
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -91,9 +97,25 @@ export default function SearchPage() {
     close: close_job_modal,
     Modal: JobModal,
   } = useModal("job-modal", { showCloseButton: false });
+  const {
+    open: open_application_confirmation_modal,
+    close: close_application_confirmation_modal,
+    Modal: ApplicationConfirmationModal,
+  } = useModal("application-confirmation-modal");
+  const {
+    open: open_profile_preview_modal,
+    close: close_profile_preview_modal,
+    Modal: ProfilePreviewModal,
+  } = useModal("profile-preview-modal");
+
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } = useRefs();
+  const {
+    ref_is_not_null,
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+  } = useRefs();
 
   // Check if profile is complete
   const isProfileComplete = () => {
@@ -149,37 +171,32 @@ export default function SearchPage() {
 
   useEffect(() => {
     const jobId = searchParams.get("jobId");
-    if (jobId && jobs.length > 0) {
-      const targetJob = jobs.find((job) => job.id === jobId);
-      if (targetJob) {
-        setSelectedJob(targetJob);
-      }
-    } else if (jobs.length > 0 && !selectedJob) {
-      setSelectedJob(jobs[0]);
-    }
-  }, []);
-
-  useEffect(() => {
-    const jobId = searchParams.get("jobId");
     const category = searchParams.get("category");
     const jobType = searchParams.get("jobType");
     const location = searchParams.get("location");
-    
+
     // Initialize filters with proper defaults
     set_filter("category", category ?? "All categories");
     set_filter("job_type", jobType ?? "All types");
     set_filter("location", location ?? "Any location");
     set_filter("industry", "All industries");
-    
+
     setSelectedJob(jobs.filter((job) => job.id === jobId)[0] ?? {});
   }, [searchParams, jobs]);
 
   // Set first job as selected when jobs load
   useEffect(() => {
-    if (jobs.length > 0 && !selectedJob) {
+    const jobId = searchParams.get("jobId");
+    
+    if (jobId && jobs.length > 0) {
+      const targetJob = jobs.find((job) => job.id === jobId);
+      if (targetJob && targetJob.id !== selectedJob?.id) {
+        setSelectedJob(targetJob);
+      }
+    } else if (jobs.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobs[0]);
     }
-  }, [jobs, selectedJob]);
+  }, [jobs.length, searchParams]); // Stable dependencies only
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
@@ -195,7 +212,10 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
+    console.log("handleApply called");
+
     if (!is_authenticated()) {
+      console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";
       return;
     }
@@ -203,25 +223,26 @@ export default function SearchPage() {
     // Check if already applied
     const applicationStatus = appliedJob(selectedJob?.id ?? "");
     if (applicationStatus) {
+      console.log("Already applied to this job");
       alert("You have already applied to this job!");
       return;
     }
 
     // Check if profile is complete
-    if (!isProfileComplete()) {
+    const profileComplete = isProfileComplete();
+    console.log("Profile complete:", profileComplete);
+    console.log("Profile:", profile);
+
+    if (!profileComplete) {
+      console.log("Profile not complete, redirecting to profile page");
       alert("Please complete your profile before applying.");
       router.push("/profile");
       return;
     }
 
-    // Check if job requirements are met
-    if (!areJobRequirementsMet()) {
-      open_application_modal();
-      return;
-    }
-
-    // If everything is complete, apply directly
-    handleDirectApplication();
+    // If profile is complete, show confirmation modal
+    console.log("Opening application confirmation modal");
+    open_application_confirmation_modal();
   };
 
   const handleDirectApplication = async () => {
@@ -251,7 +272,7 @@ export default function SearchPage() {
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    
+
     // If search is cleared (empty), refresh results by clearing all filters
     if (value.trim() === "") {
       set_filter("job_type", "All types");
@@ -284,7 +305,6 @@ export default function SearchPage() {
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
         {jobs_loading ? (
-          /* Loading State */
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -292,7 +312,6 @@ export default function SearchPage() {
             </div>
           </div>
         ) : is_mobile ? (
-          /* Mobile Layout - Fixed Search Bar with Scrollable Job Cards */
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
@@ -413,9 +432,7 @@ export default function SearchPage() {
                     <Button
                       key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
-                      onClick={() =>
-                        !appliedJob(selectedJob.id ?? "") && handleApply()
-                      }
+                      onClick={handleApply}
                       className={cn(
                         appliedJob(selectedJob.id ?? "")
                           ? "bg-green-600 text-white"
@@ -497,7 +514,9 @@ export default function SearchPage() {
               </h1>
               <div className="flex items-center gap-2 text-gray-600 mb-1">
                 <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">{selectedJob.employer?.name}</span>
+                <span className="truncate text-sm">
+                  {selectedJob.employer?.name}
+                </span>
               </div>
               <p className="text-xs text-gray-500">
                 Listed on {formatDate(selectedJob.created_at ?? "")}
@@ -539,14 +558,18 @@ export default function SearchPage() {
 
                     <div className="flex items-start gap-3">
                       <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-medium">Salary: </span>
-                          <span className="opacity-80">
-                            {selectedJob.salary || "Not specified"}{"/"}
-                            {to_job_pay_freq_name(selectedJob.salary_freq)}
-                          </span>
-                        </p>
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                          Salary:
+                        </label>
+                        <span>
+                          {!selectedJob.allowance && selectedJob.salary
+                            ? `${selectedJob.salary}/${to_job_pay_freq_name(
+                                selectedJob.salary_freq
+                              )}`
+                            : "None"}
+                        </span>
                       </div>
                     </div>
 
@@ -584,7 +607,6 @@ export default function SearchPage() {
 
                 {/* Bottom padding for scroll area */}
                 <div className="pb-4"></div>
-
               </div>
             )}
           </div>
@@ -594,7 +616,7 @@ export default function SearchPage() {
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
-                onClick={() => !appliedJob(selectedJob?.id ?? "") && handleApply()}
+                onClick={handleApply}
                 className={cn(
                   "flex-1 h-12 font-semibold rounded-xl transition-all duration-200",
                   appliedJob(selectedJob?.id ?? "")
@@ -607,7 +629,7 @@ export default function SearchPage() {
                 )}
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
@@ -813,6 +835,223 @@ export default function SearchPage() {
           </div>
         </div>
       </FilterModal>
+
+      {/* Application Confirmation Modal - Redesigned */}
+      <ApplicationConfirmationModal>
+        <div className="max-w-lg mx-auto p-6">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <Clipboard className="w-8 h-8 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Ready to Apply?
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
+              You're applying for{" "}
+              <span className="font-semibold text-gray-900">
+                {selectedJob?.title}
+              </span>
+              {selectedJob?.employer?.name && (
+                <>
+                  {" "}
+                  at{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedJob.employer.name}
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+
+          {/* Job Summary Card */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Building className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 mb-1 text-lg truncate">
+                  {selectedJob?.title}
+                </h3>
+                <p className="text-gray-600 mb-3 text-sm">
+                  {selectedJob?.employer?.name}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedJob?.location && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
+                      <MapPin className="w-3 h-3" />
+                      {selectedJob.location}
+                    </span>
+                  )}
+                  {selectedJob?.mode !== undefined && (
+                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
+                      <Monitor className="w-3 h-3" />
+                      {to_job_mode_name(selectedJob.mode)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Preview Section */}
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                close_application_confirmation_modal();
+                open_profile_preview_modal();
+              }}
+              className="w-full h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium group transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span>Preview Your Profile</span>
+              </div>
+            </Button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              See how employers will view your application
+            </p>
+          </div>
+
+          {/* Cover Letter Section */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Clipboard className="w-4 h-4 text-amber-600" />
+                </div>
+                <label
+                  htmlFor="add-cover-letter"
+                  className="font-medium text-gray-900"
+                >
+                  Cover Letter
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="add-cover-letter"
+                  checked={showCoverLetterInput}
+                  onChange={(e) => {
+                    setShowCoverLetterInput(e.target.checked);
+                    if (!e.target.checked) {
+                      setCoverLetter("");
+                    }
+                  }}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-500">Optional</span>
+              </div>
+            </div>
+
+            {showCoverLetterInput && (
+              <div className="space-y-3">
+                <Textarea
+                  value={coverLetter}
+                  onChange={(e) => setCoverLetter(e.target.value)}
+                  placeholder="Dear Hiring Manager,
+
+I am excited to apply for this position because...
+
+Best regards,
+[Your name]"
+                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
+                  maxLength={500}
+                />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500 flex items-center gap-1">
+                    💡 <span>Mention specific skills and enthusiasm</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      coverLetter.length > 450
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    )}
+                  >
+                    {coverLetter.length}/500
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                close_application_confirmation_modal();
+                setCoverLetter("");
+                setShowCoverLetterInput(false);
+              }}
+              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                close_application_confirmation_modal();
+                handleDirectApplication();
+                setCoverLetter("");
+                setShowCoverLetterInput(false);
+              }}
+              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Submit Application
+              </div>
+            </Button>
+          </div>
+        </div>
+      </ApplicationConfirmationModal>
+
+      {/* Profile Preview Modal */}
+      <ProfilePreviewModal>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              Your Profile Preview
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </Button>
+          </div>
+
+          {profile && (
+            <ApplicantModalContent
+              applicant={profile as any}
+              open_resume_modal={() => {}} // Optional: Add resume preview functionality
+            />
+          )}
+
+          <div className="mt-6">
+            <Button
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+            >
+              Back to Application
+            </Button>
+          </div>
+        </div>
+      </ProfilePreviewModal>
     </>
   );
 }

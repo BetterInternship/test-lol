@@ -26,7 +26,7 @@ import DatePicker from "react-datepicker";
 import ContentLayout from "@/components/features/hire/content-layout";
 
 export default function MyListings() {
-  const { redirect_if_not_loggedin } = useAuthContext();
+  const { redirect_if_not_logged_in } = useAuthContext();
   const { ownedJobs, create_job, update_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +40,7 @@ export default function MyListings() {
     Modal: CreateModal,
   } = useModal("create-modal");
 
-  redirect_if_not_loggedin();
+  redirect_if_not_logged_in();
 
   // Filter jobs based on search term
   const filteredJobs = useMemo(() => {
@@ -266,7 +266,7 @@ const CreateModalForm = ({
           : null,
       require_github: form_data.require_github,
       require_portfolio: form_data.require_portfolio,
-      require_cover_letter: form_data.require_cover_letter,
+      // require_cover_letter: form_data.require_cover_letter, // TODO: Add to database schema
       is_unlisted: form_data.is_unlisted,
       start_date: form_data.start_date,
       end_date: form_data.end_date,
@@ -551,6 +551,7 @@ const CreateModalForm = ({
                 />
               </div>
 
+              {/* TODO: Add require_cover_letter to database schema
               <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                 <div>
                   <Label className="text-sm font-medium text-gray-900">
@@ -568,6 +569,7 @@ const CreateModalForm = ({
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
               </div>
+              */}
             </div>
           </div>
 

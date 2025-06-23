@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-22 14:34:17
+ * @ Modified time: 2025-06-22 21:18:55
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -45,74 +45,81 @@ export interface IRefsContext {
   app_statuses: AppStatus[];
   industries: Industry[];
 
+  get_level: (id: number | null | undefined) => Level | null;
   to_level_name: (id: number | null | undefined, def?: string) => string | null;
+  get_level_by_name: (name: string | null | undefined) => Level | null;
+
+  get_college: (id: string | null | undefined) => College | null;
   to_college_name: (
     id: string | null | undefined,
     def?: string
   ) => string | null;
+  get_college_by_name: (name: string | null | undefined) => College | null;
+
+  get_university: (id: string | null | undefined) => University | null;
   to_university_name: (
     id: string | null | undefined,
     def?: string
   ) => string | null;
-  to_job_type_name: (
-    id: number | null | undefined,
-    def?: string
-  ) => string | null;
-  to_job_mode_name: (
-    id: number | null | undefined,
-    def?: string
-  ) => string | null;
-  to_job_allowance_name: (
-    id: number | null | undefined,
-    def?: string
-  ) => string | null;
-  to_job_pay_freq_name: (
-    id: number | null | undefined,
-    def?: string
-  ) => string | null;
-  to_app_status_name: (
-    id: number | null | undefined,
-    def?: string
-  ) => string | null;
-  to_industry_name: (
-    id: string | null | undefined,
-    def?: string
-  ) => string | null;
-  to_job_category_name: (
-    id: string | null | undefined,
-    def?: string
-  ) => string | null;
-
-  get_level: (id: number | null | undefined) => Level | null;
-  get_college: (id: string | null | undefined) => College | null;
-  get_university: (id: string | null | undefined) => University | null;
-  get_job_type: (id: number | null | undefined) => JobType | null;
-  get_job_mode: (id: number | null | undefined) => JobMode | null;
-  get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
-  get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
-  get_app_status: (id: number | null | undefined) => AppStatus | null;
-  get_industry: (id: string | null | undefined) => Industry | null;
-  get_job_category: (id: string | null | undefined) => JobCategory | null;
-
-  get_level_by_name: (name: string | null | undefined) => Level | null;
-  get_college_by_name: (name: string | null | undefined) => College | null;
   get_university_by_name: (
     name: string | null | undefined
   ) => University | null;
   get_university_by_domain: (name: string) => University | null;
+
+  get_job_type: (id: number | null | undefined) => JobType | null;
+  to_job_type_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
   get_job_type_by_name: (name: string | null | undefined) => JobType | null;
+
+  get_job_mode: (id: number | null | undefined) => JobMode | null;
+  to_job_mode_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
   get_job_mode_by_name: (name: string | null | undefined) => JobMode | null;
+
+  get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
+  to_job_allowance_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
   get_job_allowance_by_name: (
     name: string | null | undefined
   ) => JobAllowance | null;
+
+  get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
+  to_job_pay_freq_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
   get_job_pay_freq_by_name: (
     name: string | null | undefined
   ) => JobPayFreq | null;
+
+  get_app_status: (id: number | null | undefined) => AppStatus | null;
+  to_app_status_name: (
+    id: number | null | undefined,
+    def?: string
+  ) => string | null;
+  get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
+
+  get_industry: (id: string | null | undefined) => Industry | null;
+  to_industry_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
+  get_industry_by_name: (name: string | null | undefined) => Industry | null;
+
+  get_job_category: (id: string | null | undefined) => JobCategory | null;
+  to_job_category_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
   get_job_category_by_name: (
     name: string | null | undefined
   ) => JobCategory | null;
-  get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
-  get_industry_by_name: (name: string | null | undefined) => Industry | null;
 
   ref_is_not_null: (ref: any) => boolean;
 }
