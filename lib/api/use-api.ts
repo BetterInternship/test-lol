@@ -641,15 +641,6 @@ export function useApplications() {
       setLoading(true);
       setError(null);
 
-      // Check cache first
-      const cached_applications = get_cache();
-      console.log("cached", cached_applications);
-
-      if (cached_applications) {
-        setApplications(cached_applications);
-        return;
-      }
-
       // Otherwise, pull from server
       const response = await application_service.get_applications();
       if (response.success) {
