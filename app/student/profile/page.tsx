@@ -131,7 +131,7 @@ export default function ProfilePage() {
       const urlObj = new URL(url);
       return (
         (urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
-        urlObj.hostname === "calendly.com"
+        urlObj.hostname === "calendar.app.google"
       );
     } catch {
       return false;
@@ -164,7 +164,7 @@ export default function ProfilePage() {
       !isValidCalendarURL(form_data.calendar_link)
     ) {
       errors.calendar_link =
-        "Please enter a valid Google Calendar URL (e.g., https://calendly.com/username)";
+        "Please enter a valid Google Calendar URL (e.g., https://calendar.app.google/link)";
     }
 
     setLinkErrors(errors);
