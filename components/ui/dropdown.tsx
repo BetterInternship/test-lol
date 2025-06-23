@@ -171,7 +171,7 @@ export const GroupableRadioDropdown = ({
         className={cn(
           "flex items-center input-box justify-between",
           is_mobile
-            ? "h-12 px-4 gap-2 w-full text-left bg-white rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 font-medium"
+            ? "h-12 px-4 gap-2 w-full text-left bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 font-medium"
             : "h-auto py-3 px-3 gap-1 bg-transparent font-normal text-sm w-full",
           button_class
         )}
@@ -195,7 +195,8 @@ export const GroupableRadioDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute top-full mt-2 bg-white rounded-md shadow-xl min-w-[200px] z-50 overflow-hidden border border-gray-100",
+            "absolute top-full mt-2 bg-white rounded-md shadow-xl z-50 overflow-hidden border border-gray-100",
+            is_mobile ? "min-w-full" : "min-w-[200px]",
             className
           )}
         >

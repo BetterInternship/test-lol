@@ -156,7 +156,9 @@ export default function HomePage() {
                   <div className="relative">
                     <Button
                       onClick={() => openIndustryModal()}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      className={`h-12 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
+                        is_mobile ? 'bg-white' : 'bg-transparent'
+                      }`}
                     >
                       <span className="truncate">
                         {filters.industry || "All industries"}
@@ -167,7 +169,10 @@ export default function HomePage() {
                   <div className="relative">
                     <Button
                       onClick={() => openCategoryModal()}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      className={`h-12 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
+                        is_mobile ? 'bg-white' : 'bg-transparent'
+                      }`}
+                    >
                     >
                       <span className="truncate">
                         {filters.category || "All categories"}
@@ -211,7 +216,9 @@ export default function HomePage() {
                       <div className="w-36">
                         <Button
                           onClick={() => openIndustryModal()}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                          className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
+                            is_mobile ? 'bg-white' : 'bg-transparent'
+                          }`}
                         >
                           <span className="truncate text-sm">
                             {filters.industry || "All industries"}
@@ -223,7 +230,10 @@ export default function HomePage() {
                       <div className="w-40">
                         <Button
                           onClick={() => openCategoryModal()}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                          className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
+                            is_mobile ? 'bg-white' : 'bg-transparent'
+                          }`}
+                        >
                         >
                           <span className="truncate text-sm">
                             {filters.category || "All categories"}
