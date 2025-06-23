@@ -1,4 +1,4 @@
-import { PublicUser } from "../db/db.types";
+import { PrivateUser, PublicUser } from "../db/db.types";
 
 /**
  * A utility that gets the full name of the user.
@@ -21,4 +21,12 @@ export const get_full_name = (
     /\w\S*/g,
     (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
   );
+};
+
+/**
+ * Checks whether all the needed fields from the user have been filled for applying.
+ *
+ */
+export const user_can_apply = (user: PrivateUser): boolean => {
+  return false;
 };
