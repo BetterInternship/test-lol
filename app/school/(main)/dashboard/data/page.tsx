@@ -1,20 +1,17 @@
 import React from "react";
 import { ContentLayout } from "@/components/features/school/ui/admin-panel/content-layout";
-import { CompanyData, Department, FeedbackData, HiringData } from "@/types";
+import { CompanyData, FeedbackData, HiringData } from "@/types";
+import { ACADEMIC_YEARS, DEPARTMENTS, MOCK_COMPANIES } from "@/lib/utils";
 import { InternshipDataTable } from "@/components/features/school/dashboard/data/internship-data-table";
-import { Employer } from "@/lib/db/db.types";
-import { ACADEMIC_YEARS } from "@/lib/utils";
 
 const generateMockHiringData = (count: number): HiringData[] => {
   const data: HiringData[] = [];
-  const DEPARTMENTS: Department[] = [];
-  const MOCK_COMPANIES: Employer[] = [];
   for (let i = 1; i <= count; i++) {
     data.push({
       id: `hiring-${i}`,
       studentName: `Student ${String.fromCharCode(65 + (i % 26))}${i}`,
       program: DEPARTMENTS[i % DEPARTMENTS.length],
-      companyName: MOCK_COMPANIES[i % MOCK_COMPANIES.length].name ?? "",
+      companyName: MOCK_COMPANIES[i % MOCK_COMPANIES.length],
       jobTitle: `Intern Developer ${i}`,
       jobPosition: "Intern",
       jobPay:
@@ -67,7 +64,6 @@ const generateMockHiringData = (count: number): HiringData[] => {
 
 const generateMockFeedbackData = (count: number): FeedbackData[] => {
   const data: FeedbackData[] = [];
-  const DEPARTMENTS: Department[] = [];
   for (let i = 1; i <= count; i++) {
     const weeklyFeedbacks = [];
     for (let w = 1; w <= 12; w++) {
@@ -100,13 +96,12 @@ const generateMockFeedbackData = (count: number): FeedbackData[] => {
 
 const generateMockCompanyData = (count: number): CompanyData[] => {
   const data: CompanyData[] = [];
-  const MOCK_COMPANIES: Employer[] = [];
   for (let i = 1; i <= count; i++) {
     const activeStudentCount = Math.floor(Math.random() * 5);
     const pastStudentCount = Math.floor(Math.random() * 10);
     data.push({
       id: `company-${i}`,
-      companyName: MOCK_COMPANIES[i % MOCK_COMPANIES.length].name ?? "",
+      companyName: MOCK_COMPANIES[i % MOCK_COMPANIES.length],
       address: `${i * 100} Innovation Drive, Tech City, TC 12345`,
       phone: Math.random() > 0.4 ? `(555) 123-${1000 + i}` : undefined,
       moaDate:
@@ -139,9 +134,6 @@ const Page = () => {
   const hiringData = generateMockHiringData(50);
   const feedbackData = generateMockFeedbackData(30);
   const companyData = generateMockCompanyData(15);
-  const DEPARTMENTS: Department[] = [];
-  const MOCK_COMPANIES: Employer[] = [];
-  const ACADEMIC_YEARS: any = [];
   return (
     <ContentLayout title={"Internship Data"}>
       <InternshipDataTable
