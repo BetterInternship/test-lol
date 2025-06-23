@@ -291,8 +291,8 @@ export default function ProfilePage() {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("Image size must be less than 2MB");
+    if (file.size > 1 * 1024 * 1024) {
+      alert("Image size must be less than 1MB");
       return;
     }
 
@@ -359,6 +359,7 @@ export default function ProfilePage() {
             form_data.degree_name?.split(" - ")[0],
             form_data.degree_name?.split(" - ")[1]
           )?.id ?? undefined,
+        degree_notes: form_data.degree_notes,
         portfolio_link: form_data.portfolio_link ?? "",
         github_link: form_data.github_link ?? "",
         linkedin_link: form_data.linkedin_link ?? "",
@@ -639,6 +640,20 @@ export default function ProfilePage() {
                           >
                             <UserPropertyLabel />
                           </EditableGroupableRadioDropdown>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Degree Notes
+                          </label>
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.degree_notes}
+                            setter={field_setter("degree_notes")}
+                            placeholder="Major in Electronics, Minor in Robotics"
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
                         </div>
 
                         <div>
