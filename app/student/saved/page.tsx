@@ -17,6 +17,7 @@ import { useSavedJobs } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useAppContext } from "@/lib/ctx-app";
+import { useRefs } from "@/lib/db/use-refs";
 
 export default function SavedJobsPage() {
   const {
@@ -27,6 +28,7 @@ export default function SavedJobsPage() {
     useSavedJobs();
   const router = useRouter();
   const { is_mobile } = useAppContext();
+  const { to_job_pay_freq_name } = useRefs();
 
   redirect_if_not_logged_in();
 
@@ -248,7 +250,7 @@ export default function SavedJobsPage() {
                               className={is_mobile ? "px-3 py-1" : ""}
                             >
                               <PhilippinePeso className="w-3 h-3 mr-1" />
-                              {savedJob.salary}
+                              {savedJob.salary}/{to_job_pay_freq_name(savedJob.salary_freq)}
                             </Badge>
                           )}
                         </div>

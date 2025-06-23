@@ -40,6 +40,7 @@ export default function ApplicationsPage() {
     to_job_mode_name,
     to_job_type_name,
     to_job_allowance_name,
+    to_job_pay_freq_name,
   } = useRefs();
 
   redirect_if_not_logged_in();
@@ -214,7 +215,7 @@ export default function ApplicationsPage() {
                       variant="outline"
                       className="text-xs flex items-center px-3 py-1"
                     >
-                      <SalaryIcon />₱{application.job.salary}
+                      <SalaryIcon />₱{application.job.salary}/{to_job_pay_freq_name(application.job.salary_freq)}
                     </Badge>
                   )}
                   {application.job?.duration && (
