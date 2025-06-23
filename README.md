@@ -6,3 +6,4 @@ A comprehensive internship platform connecting students with employers.
 ```bash
 npm run dev
 ```
+
