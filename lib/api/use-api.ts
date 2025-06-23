@@ -76,89 +76,238 @@ export function useJobs(
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
-        
+
         if (!searchableText.includes(searchTerm)) return false;
       }
 
       // Industry filter (through employer.industry)
-      if (params.industry && 
-          !params.industry.toLowerCase().includes('all') && 
-          !params.industry.toLowerCase().includes('industries')) {
+      if (
+        params.industry &&
+        !params.industry.toLowerCase().includes("all") &&
+        !params.industry.toLowerCase().includes("industries")
+      ) {
         const jobIndustry = job.employer?.industry?.toLowerCase();
         const filterIndustry = params.industry.toLowerCase();
-        
+
         // Handle partial matches for industry names
-        if (!jobIndustry?.includes(filterIndustry) && 
-            !filterIndustry.includes(jobIndustry || '')) {
+        if (
+          !jobIndustry?.includes(filterIndustry) &&
+          !filterIndustry.includes(jobIndustry || "")
+        ) {
           return false;
         }
       }
 
       // Category filter - Improved logic with better keyword matching and potential field matching
-      if (params.category && 
-          !params.category.toLowerCase().includes('all') && 
-          !params.category.toLowerCase().includes('categories')) {
+      if (
+        params.category &&
+        !params.category.toLowerCase().includes("all") &&
+        !params.category.toLowerCase().includes("categories")
+      ) {
         const categoryTerm = params.category.toLowerCase();
-        const jobTitle = (job.title || '').toLowerCase();
-        const jobDescription = (job.description || '').toLowerCase();
-        
+        const jobTitle = (job.title || "").toLowerCase();
+        const jobDescription = (job.description || "").toLowerCase();
+
         // First, check if job has a direct category field (if it exists)
         // Note: This would need to be implemented when the actual job category field is identified
         // if (job.category_id && to_job_category_name) {
         //   const jobCategoryName = to_job_category_name(job.category_id)?.toLowerCase();
         //   if (jobCategoryName === categoryTerm) return true;
         // }
-        
+
         // Define category-specific keywords and patterns for smart matching
         const categoryPatterns: { [key: string]: string[] } = {
-          'frontend': ['frontend', 'front-end', 'front end', 'react', 'vue', 'angular', 'javascript', 'html', 'css', 'ui developer'],
-          'backend': ['backend', 'back-end', 'back end', 'server', 'api', 'database', 'node.js', 'python', 'java', 'php'],
-          'mobile': ['mobile', 'ios', 'android', 'react native', 'flutter', 'swift', 'kotlin', 'app development'],
-          'ai/ml': ['ai', 'ml', 'machine learning', 'artificial intelligence', 'data science', 'tensorflow', 'pytorch'],
-          'ui/ux': ['ui', 'ux', 'user interface', 'user experience', 'design', 'figma', 'adobe', 'prototype'],
-          'product management': ['product manager', 'product management', 'pm', 'product owner', 'roadmap'],
-          'project management': ['project manager', 'project management', 'scrum', 'agile', 'coordinator'],
-          'devops': ['devops', 'dev ops', 'infrastructure', 'deployment', 'docker', 'kubernetes', 'ci/cd'],
-          'qa': ['qa', 'quality assurance', 'testing', 'test', 'automation', 'selenium'],
-          'design': ['design', 'graphic', 'visual', 'creative', 'adobe', 'photoshop', 'illustrator'],
-          'sales': ['sales', 'business development', 'account manager', 'revenue'],
-          'marketing': ['marketing', 'digital marketing', 'social media', 'content marketing', 'seo'],
-          'finance': ['finance', 'financial', 'accounting', 'budget', 'analyst'],
-          'hr': ['hr', 'human resources', 'recruitment', 'talent', 'people'],
-          'data analysis': ['data analyst', 'data analysis', 'analytics', 'sql', 'excel', 'tableau'],
-          'business development': ['business development', 'bd', 'partnerships', 'growth'],
-          'content': ['content', 'writing', 'copywriting', 'editorial', 'blog'],
-          'administrative': ['administrative', 'admin', 'assistant', 'coordinator', 'support'],
-          'operations': ['operations', 'ops', 'logistics', 'supply chain', 'process'],
-          'it': ['it', 'information technology', 'tech support', 'helpdesk', 'systems'],
-          'legal': ['legal', 'law', 'compliance', 'contract', 'attorney', 'paralegal'],
-          'support': ['support', 'customer service', 'help desk', 'client'],
-          'engineering': ['engineering', 'engineer', 'technical', 'software engineer'],
-          'research': ['research', 'researcher', 'analyst', 'study'],
-          'teaching': ['teaching', 'teacher', 'education', 'tutor', 'instructor']
+          frontend: [
+            "frontend",
+            "front-end",
+            "front end",
+            "react",
+            "vue",
+            "angular",
+            "javascript",
+            "html",
+            "css",
+            "ui developer",
+          ],
+          backend: [
+            "backend",
+            "back-end",
+            "back end",
+            "server",
+            "api",
+            "database",
+            "node.js",
+            "python",
+            "java",
+            "php",
+          ],
+          mobile: [
+            "mobile",
+            "ios",
+            "android",
+            "react native",
+            "flutter",
+            "swift",
+            "kotlin",
+            "app development",
+          ],
+          "ai/ml": [
+            "ai",
+            "ml",
+            "machine learning",
+            "artificial intelligence",
+            "data science",
+            "tensorflow",
+            "pytorch",
+          ],
+          "ui/ux": [
+            "ui",
+            "ux",
+            "user interface",
+            "user experience",
+            "design",
+            "figma",
+            "adobe",
+            "prototype",
+          ],
+          "product management": [
+            "product manager",
+            "product management",
+            "pm",
+            "product owner",
+            "roadmap",
+          ],
+          "project management": [
+            "project manager",
+            "project management",
+            "scrum",
+            "agile",
+            "coordinator",
+          ],
+          devops: [
+            "devops",
+            "dev ops",
+            "infrastructure",
+            "deployment",
+            "docker",
+            "kubernetes",
+            "ci/cd",
+          ],
+          qa: [
+            "qa",
+            "quality assurance",
+            "testing",
+            "test",
+            "automation",
+            "selenium",
+          ],
+          design: [
+            "design",
+            "graphic",
+            "visual",
+            "creative",
+            "adobe",
+            "photoshop",
+            "illustrator",
+          ],
+          sales: [
+            "sales",
+            "business development",
+            "account manager",
+            "revenue",
+          ],
+          marketing: [
+            "marketing",
+            "digital marketing",
+            "social media",
+            "content marketing",
+            "seo",
+          ],
+          finance: ["finance", "financial", "accounting", "budget", "analyst"],
+          hr: ["hr", "human resources", "recruitment", "talent", "people"],
+          "data analysis": [
+            "data analyst",
+            "data analysis",
+            "analytics",
+            "sql",
+            "excel",
+            "tableau",
+          ],
+          "business development": [
+            "business development",
+            "bd",
+            "partnerships",
+            "growth",
+          ],
+          content: ["content", "writing", "copywriting", "editorial", "blog"],
+          administrative: [
+            "administrative",
+            "admin",
+            "assistant",
+            "coordinator",
+            "support",
+          ],
+          operations: [
+            "operations",
+            "ops",
+            "logistics",
+            "supply chain",
+            "process",
+          ],
+          it: [
+            "it",
+            "information technology",
+            "tech support",
+            "helpdesk",
+            "systems",
+          ],
+          legal: [
+            "legal",
+            "law",
+            "compliance",
+            "contract",
+            "attorney",
+            "paralegal",
+          ],
+          support: ["support", "customer service", "help desk", "client"],
+          engineering: [
+            "engineering",
+            "engineer",
+            "technical",
+            "software engineer",
+          ],
+          research: ["research", "researcher", "analyst", "study"],
+          teaching: ["teaching", "teacher", "education", "tutor", "instructor"],
         };
-        
+
         // Get patterns for the selected category
         const patterns = categoryPatterns[categoryTerm] || [categoryTerm];
-        
+
         // Check if any pattern matches the job title (stronger weight) or description
-        const titleMatch = patterns.some(pattern => jobTitle.includes(pattern));
-        const descriptionMatch = patterns.some(pattern => jobDescription.includes(pattern));
-        
+        const titleMatch = patterns.some((pattern) =>
+          jobTitle.includes(pattern)
+        );
+        const descriptionMatch = patterns.some((pattern) =>
+          jobDescription.includes(pattern)
+        );
+
         // If no matches found, filter out this job
         if (!titleMatch && !descriptionMatch) {
           return false;
         }
-        
+
         // Additional filtering: if title doesn't match but description does,
         // be more strict about the match quality for better precision
         if (!titleMatch && descriptionMatch) {
           // Only include if it's a very specific match in description
-          const strongDescriptionMatch = patterns.some(pattern => {
+          const strongDescriptionMatch = patterns.some((pattern) => {
             const words = jobDescription.split(/\s+/);
-            return words.includes(pattern) || words.includes(pattern.replace(/\s+/g, ''));
+            return (
+              words.includes(pattern) ||
+              words.includes(pattern.replace(/\s+/g, ""))
+            );
           });
-          
+
           if (!strongDescriptionMatch) {
             return false;
           }
@@ -166,44 +315,53 @@ export function useJobs(
       }
 
       // Job type filter
-      if (params.type && 
-          !params.type.toLowerCase().includes('all') && 
-          !params.type.toLowerCase().includes('types')) {
+      if (
+        params.type &&
+        !params.type.toLowerCase().includes("all") &&
+        !params.type.toLowerCase().includes("types")
+      ) {
         // Map filter values to job type values
         const typeMapping: { [key: string]: number } = {
-          'Internships': 0,
-          'Part-time': 1,
-          'Full-time': 2
+          Internships: 0,
+          "Part-time": 1,
+          "Full-time": 2,
         };
-        
+
         const expectedType = typeMapping[params.type];
-        if (expectedType !== undefined && job.type !== expectedType) return false;
+        if (expectedType !== undefined && job.type !== expectedType)
+          return false;
       }
 
-      // Location/Mode filter  
-      if (params.mode && 
-          !params.mode.toLowerCase().includes('any') && 
-          !params.mode.toLowerCase().includes('location')) {
+      // Location/Mode filter
+      if (
+        params.mode &&
+        !params.mode.toLowerCase().includes("any") &&
+        !params.mode.toLowerCase().includes("location")
+      ) {
         // Map filter values to job mode values
         const modeMapping: { [key: string]: number } = {
-          'In-Person': 0,
-          'Remote': 1,
-          'Hybrid': 2
+          "In-Person": 0,
+          Remote: 1,
+          Hybrid: 2,
         };
-        
+
         const expectedMode = modeMapping[params.mode];
-        if (expectedMode !== undefined && job.mode !== expectedMode) return false;
+        if (expectedMode !== undefined && job.mode !== expectedMode)
+          return false;
       }
 
       return true;
     });
   }, [allJobs, params]);
 
-  const getJobsPage = useCallback(({ page = 1, limit = 10 }) => {
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    return filteredJobs.slice(startIndex, endIndex);
-  }, [filteredJobs]);
+  const getJobsPage = useCallback(
+    ({ page = 1, limit = 10 }) => {
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      return filteredJobs.slice(startIndex, endIndex);
+    },
+    [filteredJobs]
+  );
 
   return {
     getJobsPage,
@@ -331,8 +489,7 @@ const listFromDBInternalHook = <
     ) => Promise<{ data?: T } & FetchResponse>;
   };
 }) => {
-  const cache_key = `__${name}__cache`;
-  const { get, set } = useCache<T[]>();
+  const { get_cache, set_cache } = useCache<T[]>(`__${name}__cache`);
   const [data, setData] = useState<T[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -352,18 +509,18 @@ const listFromDBInternalHook = <
       // We added an item
       if (added_data) {
         console.log("[DBLISTHOOK] Toggling on; table " + name);
-        if (!get(cache_key)) set(cache_key, []);
-        const new_data = [...(get(cache_key) as T[]), { ...added_data }] as T[];
-        set(cache_key, new_data);
+        if (!get_cache()) set_cache([]);
+        const new_data = [...(get_cache() as T[]), { ...added_data }] as T[];
+        set_cache(new_data);
         setData(new_data);
 
         // We unadded an item, for toggle routes
       } else if (response.success) {
         console.log("[DBLISTHOOK] Toggling off; table " + name);
-        const new_data = (get(cache_key) as T[]).filter(
+        const new_data = (get_cache() as T[]).filter(
           (old_data) => old_data.id !== id
         );
-        set(cache_key, new_data);
+        set_cache(new_data);
         setData(new_data);
       }
       return response;
@@ -384,7 +541,7 @@ const listFromDBInternalHook = <
       setError("");
 
       // Check cache first
-      const cache_data = get(cache_key) as T[];
+      const cache_data = get_cache() as T[];
       if (cache_data) {
         setData(cache_data);
         return;
@@ -396,7 +553,7 @@ const listFromDBInternalHook = <
 
       if (response.success) {
         setData(gotten_data);
-        set(cache_key, gotten_data);
+        set_cache(gotten_data);
       }
     } catch (err) {
       setError(handle_api_error(err));
@@ -465,7 +622,8 @@ export const useSavedJobs = () => {
 
 // Saved Jobs Hook
 export function useApplications() {
-  const { get, set } = useCache<UserApplication[]>();
+  const { get_cache, set_cache } =
+    useCache<UserApplication[]>("_applications_list");
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   const [loading, setLoading] = useState(true);
@@ -478,15 +636,15 @@ export function useApplications() {
     );
   }, [applications]);
 
-  const fetchApplications = useCallback(async () => {
+  const fetch_applications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       // Check cache first
-      const cached_applications = get(
-        "_applications_list"
-      ) as UserApplication[];
+      const cached_applications = get_cache();
+      console.log("cached", cached_applications);
+
       if (cached_applications) {
         setApplications(cached_applications);
         return;
@@ -495,8 +653,8 @@ export function useApplications() {
       // Otherwise, pull from server
       const response = await application_service.get_applications();
       if (response.success) {
-        setApplications(applications);
-        set("_applications_list", applications);
+        setApplications(response.applications);
+        set_cache(applications);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -513,12 +671,12 @@ export function useApplications() {
       });
 
       if (response.application) {
-        if (!get("_applications_list")) set("_applications_list", []);
+        if (!get_cache()) set_cache([]);
         const new_applications = [
-          ...(get("_applications_list") as UserApplication[]),
+          ...(get_cache() ?? []),
           { ...response.application },
         ] as UserApplication[];
-        set("_applications_list", new_applications);
+        set_cache(new_applications);
         setApplications(new_applications);
       }
 
@@ -534,9 +692,9 @@ export function useApplications() {
   };
 
   useEffect(() => {
-    fetchApplications();
+    fetch_applications();
     setLoading(false);
-  }, [fetchApplications]);
+  }, [fetch_applications]);
 
   return {
     apply,
@@ -548,6 +706,6 @@ export function useApplications() {
     appliedJobs,
     appliedJob: (job_id: string) =>
       appliedJobs.map((aj) => aj.id).includes(job_id),
-    refetch: fetchApplications,
+    refetch: fetch_applications,
   };
 }

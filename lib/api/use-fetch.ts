@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 18:04:08
- * @ Modified time: 2025-06-22 21:05:49
+ * @ Modified time: 2025-06-24 05:06:07
  * @ Description:
  *
  * Feature for abstracting fetches on component mount.
@@ -32,17 +32,17 @@ export const create_cached_fetcher = <T>(
   id: string,
   fetcher: () => Promise<T | null | undefined>
 ) => {
-  const { get, set, del } = useCache<T>();
   const hash = uuidv5(id, process.env.NEXT_PUBLIC_CACHE_KEY ?? "");
+  const { get_cache, set_cache, del_cache } = useCache<T>(hash);
 
   return {
     do_fetch: async (): Promise<T | null> => {
-      if (get(hash)) return get(hash);
+      if (get_cache()) return get_cache();
       const data = await fetcher();
       if (!data) return null;
-      set(hash, data);
+      set_cache(data);
       return data;
     },
-    do_clear: () => del(hash),
+    do_clear: () => del_cache(),
   };
 };

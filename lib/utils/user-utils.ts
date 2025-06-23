@@ -29,21 +29,21 @@ export const get_full_name = (
  *
  */
 export const user_can_apply = (user: PublicUser | null): boolean => {
-  const { ref_is_not_null } = useRefs();
+  const not_null = (ref: any) => ref || ref === 0;
   if (!user) return false;
   if (
-    !user.calendar_link ||
-    !ref_is_not_null(user.college) ||
-    !ref_is_not_null(user.degree) ||
-    !ref_is_not_null(user.department) ||
-    !user.email ||
-    !user.first_name ||
-    !user.last_name ||
-    !user.phone_number ||
-    !user.profile_picture ||
-    !user.resume ||
-    !ref_is_not_null(user.university) ||
-    !ref_is_not_null(user.year_level)
+    !not_null(user.calendar_link) ||
+    !not_null(user.college) ||
+    !not_null(user.degree) ||
+    !not_null(user.department) ||
+    !not_null(user.email) ||
+    !not_null(user.first_name) ||
+    !not_null(user.last_name) ||
+    !not_null(user.phone_number) ||
+    !not_null(user.profile_picture) ||
+    !not_null(user.resume) ||
+    !not_null(user.university) ||
+    !not_null(user.year_level)
   )
     return false;
   return true;

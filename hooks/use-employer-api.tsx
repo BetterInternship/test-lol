@@ -42,7 +42,9 @@ export function useEmployers() {
 }
 
 export function useEmployerApplications() {
-  const { get, set } = useCache<EmployerApplication[]>();
+  const { get_cache, set_cache } = useCache<EmployerApplication[]>(
+    "_apps_employer_list"
+  );
   const [employerApplications, setEmployerApplications] = useState<
     EmployerApplication[]
   >([]);
@@ -66,7 +68,7 @@ export function useEmployerApplications() {
       const response = await application_service.get_employer_applications();
       if (response.success) {
         setEmployerApplications(response.applications ?? []);
-        set("_apps_employer_list", response.applications ?? []);
+        set_cache(response.applications ?? []);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -80,7 +82,7 @@ export function useEmployerApplications() {
     app_id: string,
     review_options: { review?: string; notes?: string; status?: number }
   ) => {
-    const cache = get("_apps_employer_list") as EmployerApplication[];
+    const cache = get_cache() as EmployerApplication[];
     const response = await application_service.review_application(
       app_id,
       review_options
@@ -99,13 +101,11 @@ export function useEmployerApplications() {
         (a, b) =>
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       );
-      set("_apps_employer_list", new_apps);
-      setEmployerApplications(
-        get("_apps_employer_list") as EmployerApplication[]
-      );
+      set_cache(new_apps);
+      setEmployerApplications(get_cache() as EmployerApplication[]);
     } else {
       // @ts-ignore
-      set("_apps_employer_list", [response.application]);
+      set_cache([response.application]);
       // @ts-ignore
       setEmployerApplications([response.application]);
     }
@@ -140,7 +140,7 @@ export function useOwnedJobs(
     industry?: string;
   } = {}
 ) {
-  const { get, set } = useCache<Job[]>();
+  const { get_cache, set_cache } = useCache<Job[]>("_jobs_owned_list");
   const [ownedJobs, setOwnedJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +157,7 @@ export function useOwnedJobs(
       const response = await job_service.get_owned_jobs();
       if (response.success) {
         setOwnedJobs(response.jobs ?? []);
-        set("_jobs_owned_list", response.jobs ?? []);
+        set_cache(response.jobs ?? []);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -173,11 +173,11 @@ export function useOwnedJobs(
       // @ts-ignore
       const job = response.job;
       const old_job = ownedJobs.filter((oj) => oj.id === job.id)[0] ?? {};
-      set("_jobs_owned_list", [
+      set_cache([
         { ...old_job, ...job },
         ...ownedJobs.filter((oj) => oj.id !== job.id),
       ]);
-      setOwnedJobs(get("_jobs_owned_list") as Job[]);
+      setOwnedJobs(get_cache() ?? []);
     }
     return response;
   };
@@ -187,8 +187,8 @@ export function useOwnedJobs(
     if (response.success) {
       // @ts-ignore
       const job = response.job;
-      set("_jobs_owned_list", [job, ...ownedJobs]);
-      setOwnedJobs(get("_jobs_owned_list") as Job[]);
+      set_cache([job, ...ownedJobs]);
+      setOwnedJobs(get_cache() ?? []);
     }
     return response;
   };
@@ -196,11 +196,8 @@ export function useOwnedJobs(
   const delete_job = async (job_id: string) => {
     const response = await job_service.delete_job(job_id);
     if (response.success) {
-      set(
-        "_jobs_owned_list",
-        ownedJobs.filter((job) => job.id !== job_id)
-      );
-      setOwnedJobs(get("_jobs_owned_list") as Job[]);
+      set_cache(ownedJobs.filter((job) => job.id !== job_id));
+      setOwnedJobs(get_cache() ?? []);
     }
   };
 
