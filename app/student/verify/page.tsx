@@ -9,7 +9,7 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { verify } = useAuthContext();
+  const { verify, refresh_authentication } = useAuthContext();
 
   // Redirect to home page when verified
   useEffect(() => {
@@ -29,6 +29,7 @@ export default function VerifyPage() {
         .then((r) => {
           if (r && r.success) {
             setVerified(true);
+            refresh_authentication();
             setTimeout(() => router.push("/"), 2000);
           }
         })

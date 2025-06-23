@@ -24,6 +24,7 @@ interface IAuthContext {
   ) => Promise<{ existing_user: boolean; verified_user: boolean }>;
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
+  refresh_authentication: () => void;
   redirect_if_not_logged_in: () => void;
   redirect_if_logged_in: () => void;
 }
@@ -66,7 +67,7 @@ export const AuthContextProvider = ({
     else sessionStorage.removeItem("isAuthenticated");
   }, [user, is_authenticated]);
 
-  const recheck_authentication =
+  const refresh_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
       const response = await employer_auth_service.loggedin();
 
@@ -117,7 +118,7 @@ export const AuthContextProvider = ({
     }, [is_authenticated, is_loading]);
 
   useEffect(() => {
-    recheck_authentication();
+    refresh_authentication();
   }, []);
 
   return (
@@ -129,6 +130,7 @@ export const AuthContextProvider = ({
         login,
         email_status,
         logout,
+        refresh_authentication,
         is_authenticated: () => is_authenticated,
         redirect_if_not_logged_in,
         redirect_if_logged_in,

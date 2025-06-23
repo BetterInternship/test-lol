@@ -63,11 +63,11 @@ export default function ProfilePage() {
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
   const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetch: user_service.get_my_resume_url,
+    fetcher: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
-    fetch: user_service.get_my_pfp_url,
+    fetcher: user_service.get_my_pfp_url,
     route: "/users/me/pic",
   });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
