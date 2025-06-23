@@ -24,6 +24,7 @@ import { useRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import { useMoa } from "@/lib/db/use-moa";
+import { user_can_apply } from "@/lib/utils/user-utils";
 
 /**
  * The individual job page.
@@ -47,23 +48,9 @@ export default function JobPage() {
   } = useModal("success-modal");
   const { check } = useMoa();
   const { profile } = useProfile();
-  const { universities, ref_is_not_null, to_job_pay_freq_name } = useRefs();
+  const { universities, to_job_pay_freq_name } = useRefs();
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
-
-  // Check if profile is complete
-  const isProfileComplete = () => {
-    if (!profile) return false;
-    return !!(
-      profile.first_name &&
-      profile.last_name &&
-      profile.phone_number &&
-      ref_is_not_null(profile.college) &&
-      ref_is_not_null(profile.department) &&
-      ref_is_not_null(profile.degree) &&
-      ref_is_not_null(profile.year_level)
-    );
-  };
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
@@ -103,7 +90,7 @@ export default function JobPage() {
     }
 
     // Check if profile is complete
-    if (!isProfileComplete()) {
+    if (!user_can_apply(profile)) {
       alert("Please complete your profile before applying.");
       router.push("/profile");
       return;
@@ -332,7 +319,11 @@ export default function JobPage() {
                           <span className="text-sm font-medium">Salary</span>
                         </div>
                         <p className="text-gray-900 font-medium">
-                          {job.salary ? `₱${job.salary}/${to_job_pay_freq_name(job.salary_freq)}` : "Not specified"}
+                          {job.salary
+                            ? `₱${job.salary}/${to_job_pay_freq_name(
+                                job.salary_freq
+                              )}`
+                            : "Not specified"}
                         </p>
                       </div>
 

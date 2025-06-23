@@ -45,6 +45,7 @@ import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { industriesOptions, allCategories } from "@/lib/utils/job-options";
+import { user_can_apply } from "@/lib/utils/user-utils";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -119,19 +120,6 @@ export default function SearchPage() {
     to_job_type_name,
     to_job_pay_freq_name,
   } = useRefs();
-
-  // Check if profile is complete
-  const isProfileComplete = () => {
-    if (!profile) return false;
-    return !!(
-      profile.first_name &&
-      profile.last_name &&
-      profile.phone_number &&
-      ref_is_not_null(profile.college) &&
-      ref_is_not_null(profile.department) &&
-      ref_is_not_null(profile.year_level)
-    );
-  };
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
@@ -229,7 +217,7 @@ export default function SearchPage() {
     }
 
     // Check if profile is complete
-    const profileComplete = isProfileComplete();
+    const profileComplete = user_can_apply(profile);
     console.log("Profile complete:", profileComplete);
     console.log("Profile:", profile);
 
