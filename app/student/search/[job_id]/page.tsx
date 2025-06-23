@@ -55,7 +55,8 @@ export default function JobPage() {
   const isProfileComplete = () => {
     if (!profile) return false;
     return !!(
-      profile.full_name &&
+      profile.first_name &&
+      profile.last_name &&
       profile.phone_number &&
       ref_is_not_null(profile.college) &&
       ref_is_not_null(profile.year_level)

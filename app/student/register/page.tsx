@@ -56,7 +56,6 @@ export default function RegisterPage() {
     }
   }, [form_data.taking_for_credit, set_field]);
 
-
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get("email");
@@ -75,7 +74,8 @@ export default function RegisterPage() {
     const domain = email.split("@")[1];
 
     if (
-      !form_data.full_name ||
+      !form_data.first_name ||
+      !form_data.last_name ||
       !form_data.phone_number ||
       !form_data.year_level_name ||
       form_data.year_level_name === defaultYearLevel ||
@@ -169,20 +169,50 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name <span className="text-red-500">*</span>
               </label>
-              <Input
-                type="text"
-                value={form_data.full_name}
-                onChange={(e) => set_field("full_name", e.target.value)}
-                placeholder="Enter Full Name"
-                className={
-                  (form_data.full_name === ""
-                    ? "border-gray-300"
-                    : validFieldClassName) +
-                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
-                }
-                disabled={loading}
-                required
-              />
+              <div className="w-full flex flex-row space-x-2">
+                <Input
+                  type="text"
+                  value={form_data.first_name ?? undefined}
+                  onChange={(e) => set_field("first_name", e.target.value)}
+                  placeholder="First Name..."
+                  className={
+                    (form_data.first_name === ""
+                      ? "border-gray-300"
+                      : validFieldClassName) +
+                    " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  }
+                  disabled={loading}
+                  required
+                />
+                <Input
+                  type="text"
+                  value={form_data.middle_name ?? undefined}
+                  onChange={(e) => set_field("middle_name", e.target.value)}
+                  placeholder="Middle Name..."
+                  className={
+                    (form_data.middle_name === ""
+                      ? "border-gray-300"
+                      : validFieldClassName) +
+                    " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  }
+                  disabled={loading}
+                  required
+                />
+                <Input
+                  type="text"
+                  value={form_data.last_name ?? undefined}
+                  onChange={(e) => set_field("last_name", e.target.value)}
+                  placeholder="Last Name..."
+                  className={
+                    (form_data.last_name === ""
+                      ? "border-gray-300"
+                      : validFieldClassName) +
+                    " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  }
+                  disabled={loading}
+                  required
+                />
+              </div>
             </div>
 
             {/* Phone Number */}
@@ -363,8 +393,11 @@ export default function RegisterPage() {
                   }}
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                 />
-                
-                <label htmlFor="academic-credit-checkbox" className="flex items-center gap-2 cursor-pointer">
+
+                <label
+                  htmlFor="academic-credit-checkbox"
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <Award className="w-4 h-4 text-blue-600" />
                   <span className="text-sm text-gray-700 font-medium">
                     I am taking this internship for academic credit
