@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -35,6 +34,8 @@ import { Pfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
 import ContentLayout from "@/components/features/hire/content-layout";
+import { get_full_name } from "@/lib/utils/user-utils";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { employer_applications, review: review_app } =
@@ -57,8 +58,8 @@ export default function Dashboard() {
     close: close_applicant_modal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-  const { open: open_calendly_modal, Modal: CalendlyModal } =
-    useModal("calendly-modal");
+  const { open: open_calendar_modal, Modal: CalendarModal } =
+    useModal("calendar-modal");
   const { open: open_resume_modal, Modal: ResumeModal } =
     useModal("resume-modal");
   const {
@@ -446,7 +447,7 @@ export default function Dashboard() {
                               )}
                               <div>
                                 <p className="font-medium text-gray-900">
-                                  {application.user?.full_name}
+                                  {get_full_name(application.user)}
                                 </p>
                                 <p className="text-sm text-gray-500">
                                   {to_university_name(
@@ -493,7 +494,7 @@ export default function Dashboard() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 set_application(application);
-                                open_calendly_modal();
+                                open_calendar_modal();
                               }}
                             >
                               <Calendar className="h-4 w-4" />
@@ -537,9 +538,9 @@ export default function Dashboard() {
           <ApplicantModalContent
             clickable={true}
             applicant={selected_application?.user}
-            open_calendly_modal={async () => {
+            open_calendar_modal={async () => {
               close_applicant_modal();
-              open_calendly_modal();
+              open_calendar_modal();
             }}
             open_resume_modal={async () => {
               close_applicant_modal();
@@ -560,15 +561,15 @@ export default function Dashboard() {
           )}
         </ReviewModal>
 
-        <CalendlyModal>
-          {selected_application?.user?.calendly_link ? (
+        <CalendarModal>
+          {selected_application?.user?.calendar_link ? (
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
                 Schedule Interview
               </h2>
               <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                 <iframe
-                  src={`${selected_application?.user?.calendly_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
+                  src={`${selected_application?.user?.calendar_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
                   allowTransparency={true}
                   className="w-full border-0 rounded-lg"
                   style={{
@@ -577,7 +578,7 @@ export default function Dashboard() {
                     background: "#FFFFFF",
                   }}
                 >
-                  Calendly could not be loaded.
+                  Calendar could not be loaded.
                 </iframe>
               </div>
             </div>
@@ -585,17 +586,17 @@ export default function Dashboard() {
             <div className="h-48 px-8">
               <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
               <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
-                This applicant does not have a calendly link.
+                This applicant does not have a calendar link.
               </div>
             </div>
           )}
-        </CalendlyModal>
+        </CalendarModal>
 
         <ResumeModal>
           {selected_application?.user?.resume ? (
             <div className="p-6">
               <h1 className="font-bold font-heading text-3xl pb-6 text-gray-900">
-                {selected_application?.user?.full_name} - Resume
+                get_full_name(selected_application?.user) - Resume
               </h1>
               <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                 <iframe
@@ -660,7 +661,7 @@ const ReviewModalContent = ({
     <>
       <div className="flex flex-col">
         <h1 className="font-bold font-heading text-4xl px-8 pb-4">
-          {application?.user?.full_name} - Review
+          {get_full_name(application.user)} - Review
         </h1>
         <div className="flex flex-row">
           <Button

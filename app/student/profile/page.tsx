@@ -40,6 +40,7 @@ import { Button } from "@/components/ui/button";
 import { useFile } from "@/hooks/use-file";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { get_full_name } from "@/lib/utils/user-utils";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
@@ -74,48 +75,55 @@ export default function ProfilePage() {
     portfolio_link?: string;
     github_link?: string;
     linkedin_link?: string;
-    calendly_link?: string;
+    calendar_link?: string;
   }>({});
 
   // URL validation functions
   const isValidURL = (url: string): boolean => {
-    if (!url || url.trim() === '') return true; // Empty URLs are allowed
+    if (!url || url.trim() === "") return true; // Empty URLs are allowed
     try {
       const urlObj = new URL(url);
-      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+      return urlObj.protocol === "http:" || urlObj.protocol === "https:";
     } catch {
       return false;
     }
   };
 
   const isValidGitHubURL = (url: string): boolean => {
-    if (!url || url.trim() === '') return true;
+    if (!url || url.trim() === "") return true;
     try {
       const urlObj = new URL(url);
-      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
-             urlObj.hostname === 'github.com';
+      return (
+        (urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
+        urlObj.hostname === "github.com"
+      );
     } catch {
       return false;
     }
   };
 
   const isValidLinkedInURL = (url: string): boolean => {
-    if (!url || url.trim() === '') return true;
+    if (!url || url.trim() === "") return true;
     try {
       const urlObj = new URL(url);
-      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
-             urlObj.hostname === 'linkedin.com' || urlObj.hostname === 'www.linkedin.com';
+      return (
+        ((urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
+          urlObj.hostname === "linkedin.com") ||
+        urlObj.hostname === "www.linkedin.com"
+      );
     } catch {
       return false;
     }
   };
 
-  const isValidCalendlyURL = (url: string): boolean => {
-    if (!url || url.trim() === '') return true;
+  const isValidCalendarURL = (url: string): boolean => {
+    if (!url || url.trim() === "") return true;
     try {
       const urlObj = new URL(url);
-      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
-             urlObj.hostname === 'calendly.com';
+      return (
+        (urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
+        urlObj.hostname === "calendly.com"
+      );
     } catch {
       return false;
     }
@@ -123,21 +131,31 @@ export default function ProfilePage() {
 
   const validateLinks = () => {
     const errors: typeof linkErrors = {};
-    
+
     if (form_data.portfolio_link && !isValidURL(form_data.portfolio_link)) {
-      errors.portfolio_link = 'Please enter a valid URL (e.g., https://example.com)';
+      errors.portfolio_link =
+        "Please enter a valid URL (e.g., https://example.com)";
     }
-    
+
     if (form_data.github_link && !isValidGitHubURL(form_data.github_link)) {
-      errors.github_link = 'Please enter a valid GitHub URL (e.g., https://github.com/username)';
+      errors.github_link =
+        "Please enter a valid GitHub URL (e.g., https://github.com/username)";
     }
-    
-    if (form_data.linkedin_link && !isValidLinkedInURL(form_data.linkedin_link)) {
-      errors.linkedin_link = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+
+    if (
+      form_data.linkedin_link &&
+      !isValidLinkedInURL(form_data.linkedin_link)
+    ) {
+      errors.linkedin_link =
+        "Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)";
     }
-    
-    if (form_data.calendly_link && !isValidCalendlyURL(form_data.calendly_link)) {
-      errors.calendly_link = 'Please enter a valid Calendly URL (e.g., https://calendly.com/username)';
+
+    if (
+      form_data.calendar_link &&
+      !isValidCalendarURL(form_data.calendar_link)
+    ) {
+      errors.calendar_link =
+        "Please enter a valid Google Calendar URL (e.g., https://calendly.com/username)";
     }
 
     setLinkErrors(errors);
@@ -145,44 +163,48 @@ export default function ProfilePage() {
   };
 
   // Enhanced field setters with validation
-  const validatedFieldSetter = (field: string) => (value: string) => {
+  const validatedFieldSetter = (field: keyof PublicUser) => (value: string) => {
     field_setter(field)(value);
-    
+
     // Validate specific fields on change
     setTimeout(() => {
       const errors = { ...linkErrors };
-      
+
       switch (field) {
-        case 'portfolio_link':
+        case "portfolio_link":
           if (value && !isValidURL(value)) {
-            errors.portfolio_link = 'Please enter a valid URL (e.g., https://example.com)';
+            errors.portfolio_link =
+              "Please enter a valid URL (e.g., https://example.com)";
           } else {
             delete errors.portfolio_link;
           }
           break;
-        case 'github_link':
+        case "github_link":
           if (value && !isValidGitHubURL(value)) {
-            errors.github_link = 'Please enter a valid GitHub URL (e.g., https://github.com/username)';
+            errors.github_link =
+              "Please enter a valid GitHub URL (e.g., https://github.com/username)";
           } else {
             delete errors.github_link;
           }
           break;
-        case 'linkedin_link':
+        case "linkedin_link":
           if (value && !isValidLinkedInURL(value)) {
-            errors.linkedin_link = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+            errors.linkedin_link =
+              "Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)";
           } else {
             delete errors.linkedin_link;
           }
           break;
-        case 'calendly_link':
-          if (value && !isValidCalendlyURL(value)) {
-            errors.calendly_link = 'Please enter a valid Calendly URL (e.g., https://calendly.com/username)';
+        case "calendar_link":
+          if (value && !isValidCalendarURL(value)) {
+            errors.calendar_link =
+              "Please enter a valid Calendar URL (e.g., https://calendly.com/username)";
           } else {
-            delete errors.calendly_link;
+            delete errors.calendar_link;
           }
           break;
       }
-      
+
       setLinkErrors(errors);
     }, 500); // Debounce validation by 500ms
   };
@@ -305,14 +327,16 @@ export default function ProfilePage() {
   const handleSave = async () => {
     // Validate links before saving
     if (!validateLinks()) {
-      alert('Please fix the invalid URLs before saving.');
+      alert("Please fix the invalid URLs before saving.");
       return;
     }
 
     try {
       setSaving(true);
       const dataToSend = {
-        full_name: form_data.full_name ?? "",
+        first_name: form_data.first_name ?? "",
+        middle_name: form_data.middle_name ?? "",
+        last_name: form_data.last_name ?? "",
         phone_number: form_data.phone_number ?? "",
         college: get_college_by_name(form_data.college_name)?.id ?? undefined,
         year_level:
@@ -320,7 +344,7 @@ export default function ProfilePage() {
         portfolio_link: form_data.portfolio_link ?? "",
         github_link: form_data.github_link ?? "",
         linkedin_link: form_data.linkedin_link ?? "",
-        calendly_link: form_data.calendly_link ?? "",
+        calendar_link: form_data.calendar_link ?? "",
         bio: form_data.bio ?? "",
         taking_for_credit: form_data.taking_for_credit,
         linkage_officer: form_data.linkage_officer ?? "",
@@ -386,7 +410,8 @@ export default function ProfilePage() {
                   <AvatarImage src={pfp_url} alt="Profile picture" />
                 ) : (
                   <AvatarFallback className="text-lg font-semibold">
-                    {profile.full_name?.[0]?.toUpperCase() || "U"}
+                    {profile.first_name?.[0]?.toUpperCase()}
+                    {profile.last_name?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -403,7 +428,7 @@ export default function ProfilePage() {
 
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold font-heading mb-1">
-                {profile.full_name}
+                {get_full_name(profile)}
               </h1>
               <p className="text-muted-foreground text-sm">
                 {profile.college && to_college_name(profile.college)}
@@ -432,11 +457,15 @@ export default function ProfilePage() {
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    size="sm" 
-                    onClick={handleSave} 
+                  <Button
+                    size="sm"
+                    onClick={handleSave}
                     disabled={saving || Object.keys(linkErrors).length > 0}
-                    className={Object.keys(linkErrors).length > 0 ? "opacity-50 cursor-not-allowed" : ""}
+                    className={
+                      Object.keys(linkErrors).length > 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }
                   >
                     {saving ? "Saving..." : "Save"}
                   </Button>
@@ -481,15 +510,31 @@ export default function ProfilePage() {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          Full Name
+                          Full Name, Middle Name, Last Name
                         </label>
-                        <EditableInput
-                          is_editing={isEditing}
-                          value={form_data.full_name}
-                          setter={field_setter("full_name")}
-                        >
-                          <UserPropertyLabel />
-                        </EditableInput>
+                        <div className="flex flex-row space-x-2">
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.first_name}
+                            setter={field_setter("first_name")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.middle_name}
+                            setter={field_setter("middle_name")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
+                          <EditableInput
+                            is_editing={isEditing}
+                            value={form_data.last_name}
+                            setter={field_setter("last_name")}
+                          >
+                            <UserPropertyLabel />
+                          </EditableInput>
+                        </div>
                       </div>
 
                       <div>
@@ -679,20 +724,20 @@ export default function ProfilePage() {
 
                       <div>
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          Calendly Link
+                          Calendar Link
                         </label>
                         <EditableInput
                           is_editing={isEditing}
-                          value={form_data.calendly_link}
-                          setter={validatedFieldSetter("calendly_link")}
+                          value={form_data.calendar_link}
+                          setter={validatedFieldSetter("calendar_link")}
                           placeholder="https://calendly.com/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
-                        {linkErrors.calendly_link && (
+                        {linkErrors.calendar_link && (
                           <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
                             <AlertCircle className="h-3 w-3" />
-                            <span>{linkErrors.calendly_link}</span>
+                            <span>{linkErrors.calendar_link}</span>
                           </div>
                         )}
                       </div>
