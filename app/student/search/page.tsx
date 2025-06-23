@@ -564,15 +564,18 @@ export default function SearchPage() {
 
                     <div className="flex items-start gap-3">
                       <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-medium">Salary: </span>
-                          <span className="opacity-80">
-                            {selectedJob.salary || "Not specified"}
-                            {"/"}
-                            {to_job_pay_freq_name(selectedJob.salary_freq)}
-                          </span>
-                        </p>
+                      <div className="space-y-2">
+                        <label className="flex items-center text-sm font-semibold text-gray-700">
+                          <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                          Salary:
+                        </label>
+                        <span>
+                          {!selectedJob.allowance && selectedJob.salary
+                            ? `${selectedJob.salary}/${to_job_pay_freq_name(
+                                selectedJob.salary_freq
+                              )}`
+                            : "None"}
+                        </span>
                       </div>
                     </div>
 

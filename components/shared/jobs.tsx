@@ -580,7 +580,7 @@ export const EditableJobDetails = ({
                     ? `${form_data.salary}/${to_job_pay_freq_name(
                         form_data.salary_freq
                       )}`
-                    : "Not specified"
+                    : "None"
                 }
               />
             </div>
@@ -815,7 +815,7 @@ export const JobDetails = ({
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-2 gap-6">
-          {
+          {job.location && (
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
@@ -823,7 +823,7 @@ export const JobDetails = ({
               </label>
               <JobPropertyLabel value={job.location} />
             </div>
-          }
+          )}
 
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
@@ -834,20 +834,21 @@ export const JobDetails = ({
               <JobPropertyLabel value={to_job_mode_name(job.mode)} />
             </div>
 
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Salary:
-              </label>
-              <JobPropertyLabel
-                value={
-                  job.salary
-                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                    : "Not specified"
-                }
-              />
-            </div>
-
+            {job.salary && (
+              <div className="flex flex-col items-start gap-3 max-w-prose">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                  Salary:
+                </label>
+                <JobPropertyLabel
+                  value={
+                    job.salary
+                      ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                      : "None"
+                  }
+                />
+              </div>
+            )}
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
