@@ -305,7 +305,6 @@ export default function SearchPage() {
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
         {jobs_loading ? (
-          /* Loading State */
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -313,7 +312,6 @@ export default function SearchPage() {
             </div>
           </div>
         ) : is_mobile ? (
-          /* Mobile Layout - Fixed Search Bar with Scrollable Job Cards */
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
@@ -840,31 +838,16 @@ export default function SearchPage() {
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>
-        <motion.div
-          className="max-w-lg mx-auto p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="max-w-lg mx-auto p-6">
           {/* Header Section */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
               <Clipboard className="w-8 h-8 text-blue-600" />
-            </motion.div>
-            <motion.h2
-              className="text-2xl font-bold text-gray-900 mb-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-            >
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Ready to Apply?
-            </motion.h2>
-            <motion.p
-              className="text-gray-600 leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.3 }}
-            >
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
               You're applying for{" "}
               <span className="font-semibold text-gray-900">
                 {selectedJob?.title}
@@ -878,16 +861,11 @@ export default function SearchPage() {
                   </span>
                 </>
               )}
-            </motion.p>
+            </p>
           </div>
 
           {/* Job Summary Card */}
-          <motion.div
-            className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-          >
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Building className="w-6 h-6 text-white" />
@@ -915,15 +893,10 @@ export default function SearchPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Profile Preview Section */}
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-          >
+          <div className="mb-6">
             <Button
               variant="outline"
               onClick={() => {
@@ -945,12 +918,7 @@ export default function SearchPage() {
           </div>
 
           {/* Cover Letter Section */}
-          <motion.div
-            className="mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.3 }}
-          >
+          <div className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
@@ -981,13 +949,7 @@ export default function SearchPage() {
             </div>
 
             {showCoverLetterInput && (
-              <motion.div
-                className="space-y-3"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <div className="space-y-3">
                 <Textarea
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
@@ -1018,15 +980,9 @@ Best regards,
               </div>
             )}
           </div>
-          </div>
 
           {/* Action Buttons */}
-          <motion.div
-            className="flex gap-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.3 }}
-          >
+          <div className="flex gap-3">
             <Button
               variant="outline"
               onClick={() => {
@@ -1045,19 +1001,15 @@ Best regards,
                 setCoverLetter("");
                 setShowCoverLetterInput(false);
               }}
-              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
             >
-              <motion.div
-                className="flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <div className="flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4" />
                 Submit Application
-              </motion.div>
+              </div>
             </Button>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </ApplicationConfirmationModal>
 
       {/* Profile Preview Modal */}
@@ -1082,7 +1034,7 @@ Best regards,
 
           {profile && (
             <ApplicantModalContent
-              applicant={profile}
+              applicant={profile as any}
               open_resume_modal={() => {}} // Optional: Add resume preview functionality
             />
           )}
