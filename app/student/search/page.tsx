@@ -155,7 +155,6 @@ export default function SearchPage() {
   } = useJobs({
     search: searchTerm.trim() || undefined,
     category: filters.category,
-    type: filters.job_type,
     mode: filters.location,
     industry: filters.industry,
   });
@@ -776,12 +775,6 @@ export default function SearchPage() {
           </div>
           <DropdownGroup>
             <GroupableRadioDropdown
-              name="jobType"
-              options={["All types", "Internships", "Full-time", "Part-time"]}
-              on_change={filter_setter("job_type")}
-              default_value={filters.job_type}
-            />
-            <GroupableRadioDropdown
               name="location"
               options={["Any location", "In-Person", "Remote", "Hybrid"]}
               on_change={filter_setter("location")}
@@ -808,7 +801,6 @@ export default function SearchPage() {
               variant="outline"
               onClick={() => {
                 clear_filters({
-                  job_type: "All types",
                   location: "Any location",
                   industry: "All industries",
                   category: "All categories",
