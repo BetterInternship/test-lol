@@ -419,7 +419,7 @@ export const EditableJobDetails = ({
         ),
         require_github: form_data.require_github,
         require_portfolio: form_data.require_portfolio,
-        require_cover_letter: form_data.require_cover_letter,
+        // require_cover_letter: form_data.require_cover_letter, // TODO: Add to database schema
         is_unlisted: form_data.is_unlisted,
         start_date: form_data.start_date,
         end_date: form_data.end_date,
@@ -739,6 +739,7 @@ export const EditableJobDetails = ({
               </label>
             </div>
 
+            {/* TODO: Add require_cover_letter to database schema
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
@@ -751,6 +752,7 @@ export const EditableJobDetails = ({
                 Require Cover Letter?
               </label>
             </div>
+            */}
           </div>
           {is_editing && (
             <p className="text-sm text-gray-700 my-3">
@@ -929,7 +931,7 @@ export const JobDetails = ({
               </span>
             </div>
 
-            {/* Cover Letter Requirement */}
+            {/* Cover Letter Requirement - TODO: Add require_cover_letter to database schema
             <div className="flex items-center gap-2">
               <div
                 className={`w-5 h-5 rounded flex items-center justify-center ${
@@ -948,6 +950,7 @@ export const JobDetails = ({
                 Cover Letter
               </span>
             </div>
+            */}
           </div>
         </div>
 

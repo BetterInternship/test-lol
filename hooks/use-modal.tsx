@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { useAppContext } from "@/lib/ctx-app";
@@ -19,33 +18,25 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
     open: () => set_is_open(true),
     close: () => set_is_open(false),
     Modal: ({ children }: { children: React.ReactNode }) => (
-      <AnimatePresence>
+      <>
         {is_open && (
-          <motion.div
+          <div
             className={`fixed inset-0 bg-black bg-opacity-50 flex z-[100] p-4 backdrop-blur-sm ${
               is_mobile ? 'items-start pt-16' : 'items-center justify-center'
             }`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
             onClick={() => set_is_open(false)}
           >
-            <motion.div
+            <div
               className={`bg-white rounded-lg overflow-hidden shadow-2xl w-full ${
                 is_mobile 
-                  ? 'max-w-full mx-0 h-[85vh] flex flex-col' 
-                  : 'max-w-4xl max-h-[90vh]'
+                  ? 'max-w-full mx-0 max-h-[85vh] flex flex-col' 
+                  : 'max-w-4xl max-h-[85vh]'
               }`}
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
               onClick={(e) => e.stopPropagation()}
               style={{
-                // Ensure modal never exceeds this height on mobile
-                maxHeight: is_mobile ? '85vh' : '90vh',
-                height: is_mobile ? '85vh' : 'auto'
+                // Dynamic height with reasonable limits
+                maxHeight: is_mobile ? '80vh' : '85vh',
+                height: 'auto'
               }}
             >
               {showCloseButton && (
@@ -61,10 +52,10 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
                 </div>
               )}
               {children}
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </>
     ),
   };
 };

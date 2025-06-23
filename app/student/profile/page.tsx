@@ -16,6 +16,7 @@ import {
   Hash,
   Camera,
   GraduationCap,
+  AlertCircle,
 } from "lucide-react";
 import { useProfile } from "@/hooks/use-api";
 import { useRouter } from "next/navigation";
@@ -69,6 +70,122 @@ export default function ProfilePage() {
   >();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [linkErrors, setLinkErrors] = useState<{
+    portfolio_link?: string;
+    github_link?: string;
+    linkedin_link?: string;
+    calendly_link?: string;
+  }>({});
+
+  // URL validation functions
+  const isValidURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true; // Empty URLs are allowed
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidGitHubURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true;
+    try {
+      const urlObj = new URL(url);
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname === 'github.com';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidLinkedInURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true;
+    try {
+      const urlObj = new URL(url);
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname === 'linkedin.com' || urlObj.hostname === 'www.linkedin.com';
+    } catch {
+      return false;
+    }
+  };
+
+  const isValidCalendlyURL = (url: string): boolean => {
+    if (!url || url.trim() === '') return true;
+    try {
+      const urlObj = new URL(url);
+      return (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') && 
+             urlObj.hostname === 'calendly.com';
+    } catch {
+      return false;
+    }
+  };
+
+  const validateLinks = () => {
+    const errors: typeof linkErrors = {};
+    
+    if (form_data.portfolio_link && !isValidURL(form_data.portfolio_link)) {
+      errors.portfolio_link = 'Please enter a valid URL (e.g., https://example.com)';
+    }
+    
+    if (form_data.github_link && !isValidGitHubURL(form_data.github_link)) {
+      errors.github_link = 'Please enter a valid GitHub URL (e.g., https://github.com/username)';
+    }
+    
+    if (form_data.linkedin_link && !isValidLinkedInURL(form_data.linkedin_link)) {
+      errors.linkedin_link = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+    }
+    
+    if (form_data.calendly_link && !isValidCalendlyURL(form_data.calendly_link)) {
+      errors.calendly_link = 'Please enter a valid Calendly URL (e.g., https://calendly.com/username)';
+    }
+
+    setLinkErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Enhanced field setters with validation
+  const validatedFieldSetter = (field: string) => (value: string) => {
+    field_setter(field)(value);
+    
+    // Validate specific fields on change
+    setTimeout(() => {
+      const errors = { ...linkErrors };
+      
+      switch (field) {
+        case 'portfolio_link':
+          if (value && !isValidURL(value)) {
+            errors.portfolio_link = 'Please enter a valid URL (e.g., https://example.com)';
+          } else {
+            delete errors.portfolio_link;
+          }
+          break;
+        case 'github_link':
+          if (value && !isValidGitHubURL(value)) {
+            errors.github_link = 'Please enter a valid GitHub URL (e.g., https://github.com/username)';
+          } else {
+            delete errors.github_link;
+          }
+          break;
+        case 'linkedin_link':
+          if (value && !isValidLinkedInURL(value)) {
+            errors.linkedin_link = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)';
+          } else {
+            delete errors.linkedin_link;
+          }
+          break;
+        case 'calendly_link':
+          if (value && !isValidCalendlyURL(value)) {
+            errors.calendly_link = 'Please enter a valid Calendly URL (e.g., https://calendly.com/username)';
+          } else {
+            delete errors.calendly_link;
+          }
+          break;
+      }
+      
+      setLinkErrors(errors);
+    }, 500); // Debounce validation by 500ms
+  };
   const {
     open: open_employer_modal,
     close: close_employer_modal,
@@ -186,6 +303,12 @@ export default function ProfilePage() {
   }, [profile]);
 
   const handleSave = async () => {
+    // Validate links before saving
+    if (!validateLinks()) {
+      alert('Please fix the invalid URLs before saving.');
+      return;
+    }
+
     try {
       setSaving(true);
       const dataToSend = {
@@ -204,6 +327,7 @@ export default function ProfilePage() {
       };
       await updateProfile(dataToSend);
       setIsEditing(false);
+      setLinkErrors({}); // Clear errors on successful save
     } catch (error) {
       console.error("Failed to update profile:", error);
       alert("Failed to update profile. Please try again.");
@@ -215,6 +339,7 @@ export default function ProfilePage() {
   const handleCancel = () => {
     if (profile) set_fields({ ...profile });
     setIsEditing(false);
+    setLinkErrors({}); // Clear errors when cancelling
   };
 
   if (!is_authenticated()) {
@@ -300,9 +425,20 @@ export default function ProfilePage() {
                   <Button variant="outline" size="sm" onClick={handleCancel} disabled={saving}>
                     Cancel
                   </Button>
-                  <Button size="sm" onClick={handleSave} disabled={saving}>
+                  <Button 
+                    size="sm" 
+                    onClick={handleSave} 
+                    disabled={saving || Object.keys(linkErrors).length > 0}
+                    className={Object.keys(linkErrors).length > 0 ? "opacity-50 cursor-not-allowed" : ""}
+                  >
                     {saving ? "Saving..." : "Save"}
                   </Button>
+                  {Object.keys(linkErrors).length > 0 && (
+                    <div className="flex items-center gap-1 text-red-600 text-xs">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Fix invalid URLs to save</span>
+                    </div>
+                  )}
                 </>
               ) : (
                 <Button
@@ -451,11 +587,17 @@ export default function ProfilePage() {
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.portfolio_link}
-                          setter={field_setter("portfolio_link")}
+                          setter={validatedFieldSetter("portfolio_link")}
                           placeholder="https://yourportfolio.com"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.portfolio_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.portfolio_link}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -463,11 +605,17 @@ export default function ProfilePage() {
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.github_link}
-                          setter={field_setter("github_link")}
+                          setter={validatedFieldSetter("github_link")}
                           placeholder="https://github.com/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.github_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.github_link}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -475,11 +623,17 @@ export default function ProfilePage() {
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.linkedin_link}
-                          setter={field_setter("linkedin_link")}
+                          setter={validatedFieldSetter("linkedin_link")}
                           placeholder="https://linkedin.com/in/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.linkedin_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.linkedin_link}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -487,11 +641,17 @@ export default function ProfilePage() {
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.calendly_link}
-                          setter={field_setter("calendly_link")}
+                          setter={validatedFieldSetter("calendly_link")}
                           placeholder="https://calendly.com/yourusername"
                         >
                           <UserLinkLabel />
                         </EditableInput>
+                        {linkErrors.calendly_link && (
+                          <div className="flex items-center gap-1 mt-1 text-red-600 text-xs">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{linkErrors.calendly_link}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

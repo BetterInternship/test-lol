@@ -1,7 +1,8 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
+import React from "react";
+import type { ChangeEvent } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -165,18 +166,6 @@ export default function SearchPage() {
 
   useEffect(() => {
     const jobId = searchParams.get("jobId");
-    if (jobId && jobs.length > 0) {
-      const targetJob = jobs.find((job) => job.id === jobId);
-      if (targetJob) {
-        setSelectedJob(targetJob);
-      }
-    } else if (jobs.length > 0 && !selectedJob) {
-      setSelectedJob(jobs[0]);
-    }
-  }, []);
-
-  useEffect(() => {
-    const jobId = searchParams.get("jobId");
     const category = searchParams.get("category");
     const jobType = searchParams.get("jobType");
     const location = searchParams.get("location");
@@ -186,16 +175,21 @@ export default function SearchPage() {
     set_filter("job_type", jobType ?? "All types");
     set_filter("location", location ?? "Any location");
     set_filter("industry", "All industries");
-    
-    setSelectedJob(jobs.filter((job) => job.id === jobId)[0] ?? {});
-  }, [searchParams, jobs]);
+  }, [searchParams]);
 
-  // Set first job as selected when jobs load
+  // Handle selectedJob logic in a single, stable useEffect
   useEffect(() => {
-    if (jobs.length > 0 && !selectedJob) {
+    const jobId = searchParams.get("jobId");
+    
+    if (jobId && jobs.length > 0) {
+      const targetJob = jobs.find((job) => job.id === jobId);
+      if (targetJob && targetJob.id !== selectedJob?.id) {
+        setSelectedJob(targetJob);
+      }
+    } else if (jobs.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobs[0]);
     }
-  }, [jobs, selectedJob]);
+  }, [jobs.length, searchParams]); // Stable dependencies only
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
@@ -834,36 +828,17 @@ export default function SearchPage() {
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>
-        <motion.div 
-          className="max-w-lg mx-auto p-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="flex flex-col h-full max-h-[85vh]">
+          <div className="max-w-lg mx-auto p-6 flex-1 overflow-y-auto scroll-smooth min-h-0">
           {/* Header Section */}
           <div className="text-center mb-8">
-            <motion.div
-              className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.3, type: "spring" }}
-            >
+            <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
               <Clipboard className="w-8 h-8 text-blue-600" />
-            </motion.div>
-            <motion.h2 
-              className="text-2xl font-bold text-gray-900 mb-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-            >
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Ready to Apply?
-            </motion.h2>
-            <motion.p 
-              className="text-gray-600 leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.3 }}
-            >
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
               You're applying for{" "}
               <span className="font-semibold text-gray-900">
                 {selectedJob?.title}
@@ -876,52 +851,11 @@ export default function SearchPage() {
                   </span>
                 </>
               )}
-            </motion.p>
+            </p>
           </div>
 
-          {/* Job Summary Card */}
-          <motion.div 
-            className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.3 }}
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Building className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 mb-1 text-lg truncate">
-                  {selectedJob?.title}
-                </h3>
-                <p className="text-gray-600 mb-3 text-sm">
-                  {selectedJob?.employer?.name}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedJob?.location && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
-                      <MapPin className="w-3 h-3" />
-                      {selectedJob.location}
-                    </span>
-                  )}
-                  {selectedJob?.mode !== undefined && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
-                      <Monitor className="w-3 h-3" />
-                      {to_job_mode_name(selectedJob.mode)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
           {/* Profile Preview Section */}
-          <motion.div 
-            className="mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.3 }}
-          >
+          <div className="mb-6">
             <Button
               variant="outline"
               onClick={() => {
@@ -940,15 +874,10 @@ export default function SearchPage() {
             <p className="text-xs text-gray-500 text-center mt-2">
               See how employers will view your application
             </p>
-          </motion.div>
+          </div>
 
           {/* Cover Letter Section */}
-          <motion.div 
-            className="mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.3 }}
-          >
+          <div className="mb-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
@@ -976,19 +905,17 @@ export default function SearchPage() {
             </div>
 
             {showCoverLetterInput && (
-              <motion.div 
-                className="space-y-3"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
+              <div className="space-y-3">
                 <Textarea
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
-                  placeholder="Dear Hiring Manager,&#10;&#10;I am excited to apply for this position because...&#10;&#10;Best regards,&#10;[Your name]"
-                  className="w-full min-h-32 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm"
-                  rows={5}
+                  placeholder="Dear Hiring Manager,
+
+I am excited to apply for this position because...
+
+Best regards,
+[Your name]"
+                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
                   maxLength={500}
                 />
                 <div className="flex justify-between items-center text-xs">
@@ -1002,48 +929,42 @@ export default function SearchPage() {
                     {coverLetter.length}/500
                   </span>
                 </div>
-              </motion.div>
+              </div>
             )}
-          </motion.div>
+          </div>
+          </div>
 
-          {/* Action Buttons */}
-          <motion.div 
-            className="flex gap-3"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.3 }}
-          >
-            <Button
-              variant="outline"
-              onClick={() => {
-                close_application_confirmation_modal();
-                setCoverLetter("");
-                setShowCoverLetterInput(false);
-              }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                close_application_confirmation_modal();
-                handleDirectApplication();
-                setCoverLetter("");
-                setShowCoverLetterInput(false);
-              }}
-              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <motion.div
-                className="flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+          {/* Fixed Action Buttons */}
+          <div className="border-t border-gray-100 px-6 py-4 bg-gray-50/50">
+            <div className="flex gap-3 max-w-lg mx-auto">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  close_application_confirmation_modal();
+                  setCoverLetter("");
+                  setShowCoverLetterInput(false);
+                }}
+                className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
               >
-                <CheckCircle className="w-4 h-4" />
-                Submit Application
-              </motion.div>
-            </Button>
-          </motion.div>
-        </motion.div>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  close_application_confirmation_modal();
+                  handleDirectApplication();
+                  setCoverLetter("");
+                  setShowCoverLetterInput(false);
+                }}
+                className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  Submit Application
+                </div>
+              </Button>
+            </div>
+          </div>
+        </div>
       </ApplicationConfirmationModal>
 
       {/* Profile Preview Modal */}
