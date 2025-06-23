@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-23 23:35:26
+ * @ Modified time: 2025-06-24 01:19:37
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -139,7 +139,15 @@ export interface IRefsContext {
     id: string | null | undefined,
     def?: string
   ) => string | null;
+  to_degree_full_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
   get_degree_by_name: (name: string | null | undefined) => Degree | null;
+  get_degree_by_type_and_name: (
+    type: string | null | undefined,
+    name: string | null | undefined
+  ) => Degree | null;
 
   ref_is_not_null: (ref: any) => boolean;
 }
@@ -342,13 +350,50 @@ export const createRefsContext = () => {
    * @param domain
    * @returns
    */
-  function get_university_by_domain(domain: string) {
-    const f = universities.filter(
-      (u) => u.domains.includes(domain) || u.domains.includes("@" + domain)
-    );
-    if (!f.length) return null;
-    return f[0];
-  }
+  const get_university_by_domain = useCallback(
+    (domain: string) => {
+      const f = universities.filter(
+        (u) => u.domains.includes(domain) || u.domains.includes("@" + domain)
+      );
+      if (!f.length) return null;
+      return f[0];
+    },
+    [universities]
+  );
+
+  /**
+   * An additional helper for grabbing uni from email
+   *
+   * @param domain
+   * @returns
+   */
+  const get_degree_by_type_and_name = useCallback(
+    (type: string, name: string) => {
+      const f = degrees.filter((d) => d.type === type && d.name === name);
+      if (!f.length) return null;
+      return f[0];
+    },
+    [degrees]
+  );
+
+  /**
+   * Degree name and type combined.
+   *
+   * @param id
+   * @returns
+   */
+  const to_degree_full_name = useCallback(
+    (
+      id: string | null | undefined,
+      def: string = "Not specified"
+    ): string | null => {
+      if (!id) return def;
+      const f = degrees?.filter((d) => d.id === id);
+      if (!f.length) return def;
+      return `${f[0].type} - ${f[0].name}`;
+    },
+    [degrees]
+  );
 
   // The API to provide to the app
   const refs_context = {
@@ -379,6 +424,7 @@ export const createRefsContext = () => {
     to_job_pay_freq_name,
     to_app_status_name,
     to_industry_name,
+    to_degree_full_name,
 
     get_level,
     get_college,
@@ -406,6 +452,7 @@ export const createRefsContext = () => {
     get_job_pay_freq_by_name,
     get_app_status_by_name,
     get_industry_by_name,
+    get_degree_by_type_and_name,
 
     ref_is_not_null: (ref: any) => ref || ref === 0,
   };

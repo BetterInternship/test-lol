@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Edit2,
   Upload,
@@ -41,12 +40,14 @@ import { useFile } from "@/hooks/use-file";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { get_full_name } from "@/lib/utils/user-utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
   const { client_width, client_height } = useClientDimensions();
   const {
+    ref_loading,
     colleges,
     levels,
     degrees,
@@ -54,11 +55,11 @@ export default function ProfilePage() {
     to_college_name,
     to_level_name,
     to_department_name,
-    to_degree_name,
+    to_degree_full_name,
     get_college_by_name,
     get_level_by_name,
     get_department_by_name,
-    get_degree_by_name,
+    get_degree_by_type_and_name,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
   const { url: resume_url, sync: sync_resume_url } = useFile({
@@ -327,12 +328,12 @@ export default function ProfilePage() {
     if (profile)
       set_fields({
         ...(profile as PublicUser),
+        degree_name: to_degree_full_name(profile.degree),
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
         department_name: to_department_name(profile.department),
-        degree_name: to_degree_name(profile.degree),
       });
-  }, [profile]);
+  }, [profile, ref_loading]);
 
   const handleSave = async () => {
     // Validate links before saving
@@ -353,7 +354,11 @@ export default function ProfilePage() {
           get_level_by_name(form_data.year_level_name)?.id ?? undefined,
         department:
           get_department_by_name(form_data.department_name)?.id ?? undefined,
-        degree: get_degree_by_name(form_data.degree_name)?.id ?? undefined,
+        degree:
+          get_degree_by_type_and_name(
+            form_data.degree_name?.split(" - ")[0],
+            form_data.degree_name?.split(" - ")[1]
+          )?.id ?? undefined,
         portfolio_link: form_data.portfolio_link ?? "",
         github_link: form_data.github_link ?? "",
         linkedin_link: form_data.linkedin_link ?? "",
@@ -629,7 +634,7 @@ export default function ProfilePage() {
                                     form_data.university &&
                                     d.university_id === form_data.university
                                 )
-                                .map((d) => d.name),
+                                .map((d) => `${d.type} - ${d.name}`),
                             ]}
                           >
                             <UserPropertyLabel />

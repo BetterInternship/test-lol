@@ -21,7 +21,6 @@ export default function RegisterPage() {
   const defaultCollege = "Select College";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
-    ref_is_not_null,
     levels,
     colleges,
     universities,
