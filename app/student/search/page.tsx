@@ -514,18 +514,25 @@ export default function SearchPage() {
           )}
 
           {/* Scrollable Content Area - MUST be properly configured */}
-          <div className="flex-1 overflow-y-scroll overscroll-contain pb-24" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+          <div
+            className="flex-1 overflow-y-scroll overscroll-contain pb-24"
+            style={{ maxHeight: "calc(100vh - 200px)" }}
+          >
             {selectedJob && (
               <div className="p-4">
                 {/* Mobile Job Details Grid */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">Job Details</h3>
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                    Job Details
+                  </h3>
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
                       <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-semibold text-gray-900">Location: </span>
+                          <span className="font-semibold text-gray-900">
+                            Location:{" "}
+                          </span>
                           <span className="text-gray-700">
                             {selectedJob.location || "Not specified"}
                           </span>
@@ -537,7 +544,9 @@ export default function SearchPage() {
                       <Monitor className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-semibold text-gray-900">Mode: </span>
+                          <span className="font-semibold text-gray-900">
+                            Mode:{" "}
+                          </span>
                           <span className="text-gray-700">
                             {to_job_mode_name(selectedJob.mode)}
                           </span>
@@ -549,7 +558,9 @@ export default function SearchPage() {
                       <PhilippinePeso className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-semibold text-gray-900">Salary: </span>
+                          <span className="font-semibold text-gray-900">
+                            Salary:{" "}
+                          </span>
                           <span className="text-gray-700">
                             {!selectedJob.allowance && selectedJob.salary
                               ? `${selectedJob.salary}/${to_job_pay_freq_name(
@@ -565,7 +576,9 @@ export default function SearchPage() {
                       <Clock className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-semibold text-gray-900">Work Schedule: </span>
+                          <span className="font-semibold text-gray-900">
+                            Work Schedule:{" "}
+                          </span>
                           <span className="text-gray-700">
                             {to_job_type_name(selectedJob.type)}
                           </span>
@@ -577,7 +590,9 @@ export default function SearchPage() {
 
                 {/* Job Description */}
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-3 text-gray-900">Description</h2>
+                  <h2 className="text-lg font-semibold mb-3 text-gray-900">
+                    Description
+                  </h2>
                   <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                     <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
                   </div>
@@ -586,7 +601,9 @@ export default function SearchPage() {
                 {/* Job Requirements */}
                 {selectedJob.requirements && (
                   <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-3 text-gray-900">Requirements</h2>
+                    <h2 className="text-lg font-semibold mb-3 text-gray-900">
+                      Requirements
+                    </h2>
                     <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                       <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                     </div>

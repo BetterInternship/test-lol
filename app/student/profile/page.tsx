@@ -131,7 +131,7 @@ export default function ProfilePage() {
       const urlObj = new URL(url);
       return (
         (urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
-        urlObj.hostname === "calendly.com"
+        urlObj.hostname === "calendar.app.google"
       );
     } catch {
       return false;
