@@ -68,38 +68,41 @@ export const ProfileButton = () => {
   };
 
   return is_authenticated() ? (
-    <GroupableNavDropdown
-      display={
-        <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
-          <User className="w-4 h-4 text-gray-600" />
-        </div>
-      }
-      content={
-        <div className="px-4 py-3 border-b border-gray-200">
-          <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
-          <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
-            {user?.email}
-          </p>
-        </div>
-      }
-    >
-      <DropdownOption href="/profile">
-        <Settings className="w-4 h-4 inline-block m-1 mr-2" />
-        Profile Settings
-      </DropdownOption>
-      <DropdownOption href="/applications">
-        <BookA className="w-4 h-4 inline-block m-1 mr-2" />
-        Applications
-      </DropdownOption>
-      <DropdownOption href="/saved">
-        <Heart className="w-4 h-4 inline-block m-1 mr-2" />
-        Saved Jobs
-      </DropdownOption>
-      <DropdownOption href="/login" on_click={handle_logout}>
-        <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
-        <span className="text-red-500">Sign Out</span>
-      </DropdownOption>
-    </GroupableNavDropdown>
+    <div className="relative">
+      <GroupableNavDropdown
+        display={
+          <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
+            <User className="w-4 h-4 text-gray-600" />
+          </div>
+        }
+        content={
+          <div className="px-4 py-3 border-b border-gray-200">
+            <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
+            <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
+              {user?.email}
+            </p>
+          </div>
+        }
+        className="z-[200]" // Higher z-index for mobile
+      >
+        <DropdownOption href="/profile">
+          <Settings className="w-4 h-4 inline-block m-1 mr-2" />
+          Profile Settings
+        </DropdownOption>
+        <DropdownOption href="/applications">
+          <BookA className="w-4 h-4 inline-block m-1 mr-2" />
+          Applications
+        </DropdownOption>
+        <DropdownOption href="/saved">
+          <Heart className="w-4 h-4 inline-block m-1 mr-2" />
+          Saved Jobs
+        </DropdownOption>
+        <DropdownOption href="/login" on_click={handle_logout}>
+          <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
+          <span className="text-red-500">Sign Out</span>
+        </DropdownOption>
+      </GroupableNavDropdown>
+    </div>
   ) : (
     <Button
       type="button"

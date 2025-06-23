@@ -423,7 +423,7 @@ export const EditableJobDetails = ({
         ),
         require_github: form_data.require_github,
         require_portfolio: form_data.require_portfolio,
-        // require_cover_letter: form_data.require_cover_letter, // TODO: Add to database schema
+        require_cover_letter: form_data.require_cover_letter,
         is_unlisted: form_data.is_unlisted,
         start_date: form_data.start_date,
         end_date: form_data.end_date,
@@ -493,11 +493,11 @@ export const EditableJobDetails = ({
             </EditableGroupableRadioDropdown>
           </div>
 
-          {/* Employment Type */}
+          {/* Work Schedule */}
           <div className="flex flex-col items-start gap-3 max-w-prose">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Employment Type:
+              Work Schedule:
             </label>
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
@@ -716,7 +716,6 @@ export const EditableJobDetails = ({
                 Require Resume?
               </label>
             </div>
-
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
@@ -729,7 +728,6 @@ export const EditableJobDetails = ({
                 Require Github?
               </label>
             </div>
-
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
@@ -742,8 +740,6 @@ export const EditableJobDetails = ({
                 Require Portfolio?
               </label>
             </div>
-
-            {/* TODO: Add require_cover_letter to database schema
             <div className="flex flex-row items-start gap-3 max-w-prose">
               <EditableCheckbox
                 is_editing={is_editing}
@@ -756,7 +752,6 @@ export const EditableJobDetails = ({
                 Require Cover Letter?
               </label>
             </div>
-            */}
           </div>
           {is_editing && (
             <p className="text-sm text-gray-700 my-3">
@@ -854,7 +849,7 @@ export const JobDetails = ({
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Employment Type:
+                Work Schedule:
               </label>
               <JobPropertyLabel value={to_job_type_name(job.type)} />
             </div>
@@ -895,7 +890,6 @@ export const JobDetails = ({
               </div>
               <span className="text-sm text-gray-700 font-medium">Resume</span>
             </div>
-
             {/* GitHub Requirement */}
             <div className="flex items-center gap-2">
               <div
@@ -915,7 +909,6 @@ export const JobDetails = ({
                 GitHub Profile
               </span>
             </div>
-
             {/* Portfolio Requirement */}
             <div className="flex items-center gap-2">
               <div
@@ -935,8 +928,6 @@ export const JobDetails = ({
                 Portfolio
               </span>
             </div>
-
-            {/* Cover Letter Requirement - TODO: Add require_cover_letter to database schema
             <div className="flex items-center gap-2">
               <div
                 className={`w-5 h-5 rounded flex items-center justify-center ${
@@ -955,13 +946,14 @@ export const JobDetails = ({
                 Cover Letter
               </span>
             </div>
-            */}
           </div>
         </div>
 
         {/* Requirements Content */}
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          <ReactMarkdown>{job.requirements || "None"}</ReactMarkdown>
+          {job.requirements && (
+            <ReactMarkdown>{job.requirements}</ReactMarkdown>
+          )}
         </div>
       </div>
     </div>

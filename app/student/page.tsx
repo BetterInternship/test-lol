@@ -11,63 +11,61 @@ import MobileJobScroller from "@/app/student/landing/mobile-job-scroller";
 import { DropdownGroup } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
+import { useModal } from "@/hooks/use-modal";
 import { industriesOptions, categoryGroups } from "@/lib/utils/job-options";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { filters, set_filter, filter_setter } = useFilter<{
+  const { filters, set_filter, filter_setter, applyFiltersAndNavigate } = useFilter<{
     industry: string;
     category: string;
-  }>();
+  }>({
+    industry: "All industries",
+    category: "All categories"
+  });
 
-  // Set default values on mount if not already set
-  useEffect(() => {
-    if (!filters.industry) {
-      set_filter("industry", "All Industries");
-    }
-    if (!filters.category) {
-      set_filter("category", "All Categories");
-    }
-  }, [filters.industry, filters.category, set_filter]);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
-  const [showIndustryModal, setShowIndustryModal] = useState(false);
+  // Use standardized modal hooks
+  const {
+    open: openCategoryModal,
+    close: closeCategoryModal,
+    Modal: CategoryModal,
+  } = useModal("category-modal");
+  
+  const {
+    open: openIndustryModal,
+    close: closeIndustryModal,
+    Modal: IndustryModal,
+  } = useModal("industry-modal");
   const { is_mobile } = useAppContext();
   const router = useRouter();
   const justBetterRef = useRef<HTMLSpanElement>(null);
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    const { industry, category } = filters;
-
-    if (searchTerm.trim()) {
-      params.set("q", searchTerm);
-    }
-    if (industry && industry !== "All Industries") {
-      params.set("industry", industry);
-    }
-    if (category && category !== "All Categories") {
-      params.set("category", category);
-    }
-    router.push(`/search?${params.toString()}`);
+    applyFiltersAndNavigate(searchTerm);
   };
 
   // Helper to apply filter and go to job listings
   const applyFilterAndGo = (type: "industry" | "category", value: string) => {
-    set_filter(type, value);
-    setTimeout(() => {
-      const params = new URLSearchParams();
-      const newFilters = { ...filters, [type]: value };
-      if (searchTerm.trim()) {
-        params.set("q", searchTerm);
+    // Create updated filters
+    const updatedFilters = { ...filters, [type]: value };
+    
+    // Build URL parameters
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) {
+      params.set('q', searchTerm);
+    }
+    
+    // Add non-default filters to URL
+    Object.entries(updatedFilters).forEach(([key, filterValue]) => {
+      const isDefaultValue = filterValue.toLowerCase().includes('all') || 
+                            filterValue.toLowerCase().includes('any');
+      if (!isDefaultValue) {
+        params.set(key, filterValue);
       }
-      if (newFilters.industry && newFilters.industry !== "All Industries") {
-        params.set("industry", newFilters.industry);
-      }
-      if (newFilters.category && newFilters.category !== "All Categories") {
-        params.set("category", newFilters.category);
-      }
-      router.push(`/search?${params.toString()}`);
-    }, 0);
+    });
+    
+    // Navigate immediately
+    router.push(`/search?${params.toString()}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -157,22 +155,27 @@ export default function HomePage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="relative">
                     <Button
-                      onClick={() => setShowIndustryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      onClick={() => openIndustryModal()}
+                      className={`h-12 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
+                        is_mobile ? 'bg-white' : 'bg-transparent'
+                      }`}
                     >
                       <span className="truncate">
-                        {filters.industry || "All Industries"}
+                        {filters.industry || "All industries"}
                       </span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </Button>
                   </div>
                   <div className="relative">
                     <Button
-                      onClick={() => setShowCategoryModal(true)}
-                      className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                      onClick={() => openCategoryModal()}
+                      className={`h-12 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
+                        is_mobile ? 'bg-white' : 'bg-transparent'
+                      }`}
+                    >
                     >
                       <span className="truncate">
-                        {filters.category || "All Categories"}
+                        {filters.category || "All categories"}
                       </span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </Button>
@@ -212,11 +215,13 @@ export default function HomePage() {
                     <DropdownGroup>
                       <div className="w-36">
                         <Button
-                          onClick={() => setShowIndustryModal(true)}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                          onClick={() => openIndustryModal()}
+                          className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
+                            is_mobile ? 'bg-white' : 'bg-transparent'
+                          }`}
                         >
                           <span className="truncate text-sm">
-                            {filters.industry || "All Industries"}
+                            {filters.industry || "All industries"}
                           </span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
                         </Button>
@@ -224,11 +229,14 @@ export default function HomePage() {
                       <div className="h-8 w-px bg-gray-300 mx-1" />
                       <div className="w-40">
                         <Button
-                          onClick={() => setShowCategoryModal(true)}
-                          className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                          onClick={() => openCategoryModal()}
+                          className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
+                            is_mobile ? 'bg-white' : 'bg-transparent'
+                          }`}
+                        >
                         >
                           <span className="truncate text-sm">
-                            {filters.category || "All Categories"}
+                            {filters.category || "All categories"}
                           </span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
                         </Button>
@@ -274,165 +282,140 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Category Modal - Both Mobile and Desktop */}
-      {showCategoryModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowCategoryModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-x-hidden overflow-y-auto flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Select Category
-              </h3>
-              <button
-                onClick={() => setShowCategoryModal(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-
-            <div className="overflow-y-auto overflow-x-hidden flex-1 space-y-4">
-              {/* All Categories Option */}
-              <button
-                onClick={() => {
-                  setShowCategoryModal(false);
-                  applyFilterAndGo("category", "All Categories");
-                }}
-                className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                  filters.category === "All Categories"
-                    ? "bg-blue-50 text-blue-600 border border-blue-200"
-                    : "hover:bg-gray-50 text-gray-700"
-                }`}
-              >
-                All Categories
-              </button>
-
-              {/* Tech Category Group */}
-              <div className="space-y-2">
-                <div className="px-2 py-1">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Tech
-                  </h4>
-                </div>
-                {categoryGroups.Tech.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setShowCategoryModal(false);
-                      applyFilterAndGo("category", option);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
-                      filters.category === option
-                        ? "bg-blue-50 text-blue-600 border border-blue-200"
-                        : "hover:bg-gray-50 text-gray-700"
-                    }`}
-                  >
-                    <span className="block truncate">{option}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Non-Tech Category Group */}
-              <div className="space-y-2">
-                <div className="px-2 py-1">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Non-Tech
-                  </h4>
-                </div>
-                {categoryGroups["Non-Tech"].map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setShowCategoryModal(false);
-                      applyFilterAndGo("category", option);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
-                      filters.category === option
-                        ? "bg-blue-50 text-blue-600 border border-blue-200"
-                        : "hover:bg-gray-50 text-gray-700"
-                    }`}
-                  >
-                    <span className="block truncate">{option}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Specialized Category Group */}
-              <div className="space-y-2">
-                <div className="px-2 py-1">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    Specialized
-                  </h4>
-                </div>
-                {categoryGroups.Specialized.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => {
-                      setShowCategoryModal(false);
-                      applyFilterAndGo("category", option);
-                    }}
-                    className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
-                      filters.category === option
-                        ? "bg-blue-50 text-blue-600 border border-blue-200"
-                        : "hover:bg-gray-50 text-gray-700"
-                    }`}
-                  >
-                    <span className="block truncate">{option}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+      {/* Category Modal - Standardized Implementation */}
+      <CategoryModal>
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Select Category
+            </h3>
           </div>
-        </div>
-      )}
 
-      {/* Industry Modal - Both Mobile and Desktop */}
-      {showIndustryModal && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowIndustryModal(false)}
-        >
-          <div
-            className="bg-white rounded-2xl w-full max-w-sm mx-auto p-6 animate-in fade-in zoom-in-95 duration-200 max-h-[80vh] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-base font-semibold text-gray-900">
-                Select Industry
-              </h3>
-              <button
-                onClick={() => setShowIndustryModal(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                <X className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-            <div className="space-y-2 overflow-y-auto flex-1">
-              {industriesOptions.map((option) => (
+          <div className="overflow-y-auto overflow-x-hidden flex-1 space-y-4 max-h-[60vh]">
+            {/* All Categories Option */}
+            <button
+              onClick={() => {
+                closeCategoryModal();
+                applyFilterAndGo("category", "All categories");
+              }}
+              className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
+                filters.category === "All categories"
+                  ? "bg-blue-50 text-blue-600 border border-blue-200"
+                  : "hover:bg-gray-50 text-gray-700"
+              }`}
+            >
+              All categories
+            </button>
+
+            {/* Tech Category Group */}
+            <div className="space-y-2">
+              <div className="px-2 py-1">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Tech
+                </h4>
+              </div>
+              {categoryGroups.Tech.map((option) => (
                 <button
                   key={option}
                   onClick={() => {
-                    setShowIndustryModal(false);
-                    applyFilterAndGo("industry", option);
+                    closeCategoryModal();
+                    applyFilterAndGo("category", option);
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                    filters.industry === option
+                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
+                    filters.category === option
                       ? "bg-blue-50 text-blue-600 border border-blue-200"
                       : "hover:bg-gray-50 text-gray-700"
                   }`}
                 >
-                  {option}
+                  <span className="block truncate">{option}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Non-Tech Category Group */}
+            <div className="space-y-2">
+              <div className="px-2 py-1">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Non-Tech
+                </h4>
+              </div>
+              {categoryGroups["Non-Tech"].map((option) => (
+                <button
+                  key={option}
+                  onClick={() => {
+                    closeCategoryModal();
+                    applyFilterAndGo("category", option);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
+                    filters.category === option
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "hover:bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  <span className="block truncate">{option}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Specialized Category Group */}
+            <div className="space-y-2">
+              <div className="px-2 py-1">
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Specialized
+                </h4>
+              </div>
+              {categoryGroups.Specialized.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => {
+                    closeCategoryModal();
+                    applyFilterAndGo("category", option);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
+                    filters.category === option
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "hover:bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  <span className="block truncate">{option}</span>
                 </button>
               ))}
             </div>
           </div>
         </div>
-      )}
+      </CategoryModal>
+
+      {/* Industry Modal - Standardized Implementation */}
+      <IndustryModal>
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-base font-semibold text-gray-900">
+              Select Industry
+            </h3>
+          </div>
+          <div className="space-y-2 overflow-y-auto flex-1 max-h-[60vh]">
+            {industriesOptions.map((option) => {
+              const normalizedOption = option === "All Industries" ? "All industries" : option;
+              return (
+                <button
+                  key={option}
+                  onClick={() => {
+                    closeIndustryModal();
+                    applyFilterAndGo("industry", normalizedOption);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
+                    filters.industry === normalizedOption
+                      ? "bg-blue-50 text-blue-600 border border-blue-200"
+                      : "hover:bg-gray-50 text-gray-700"
+                  }`}
+                >
+                  {normalizedOption}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </IndustryModal>
     </>
   );
 }
