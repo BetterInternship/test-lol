@@ -21,7 +21,7 @@ export function useJobs(
     industry?: string;
   } = {}
 ) {
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,7 +44,7 @@ export function useJobs(
       setLoading(true);
       setError(null);
       const jobs = await fetch_all_active_jobs();
-      if (jobs) setJobs(jobs);
+      if (jobs) setAllJobs(jobs);
       else setError("Could not load jobs.");
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -58,15 +58,157 @@ export function useJobs(
     fetchAllActiveJobs();
   }, [fetchAllActiveJobs]);
 
-  const getJobsPage = ({ page = 1, limit = 10 }) => {
+  // Client-side filtering logic
+  const filteredJobs = useMemo(() => {
+    if (!allJobs.length) return [];
+
+    return allJobs.filter((job) => {
+      // Search filter
+      if (params.search?.trim()) {
+        const searchTerm = params.search.toLowerCase();
+        const searchableText = [
+          job.title,
+          job.description,
+          job.employer?.name,
+          job.employer?.industry,
+          job.location,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        
+        if (!searchableText.includes(searchTerm)) return false;
+      }
+
+      // Industry filter (through employer.industry)
+      if (params.industry && 
+          !params.industry.toLowerCase().includes('all') && 
+          !params.industry.toLowerCase().includes('industries')) {
+        const jobIndustry = job.employer?.industry?.toLowerCase();
+        const filterIndustry = params.industry.toLowerCase();
+        
+        // Handle partial matches for industry names
+        if (!jobIndustry?.includes(filterIndustry) && 
+            !filterIndustry.includes(jobIndustry || '')) {
+          return false;
+        }
+      }
+
+      // Category filter - Improved logic with better keyword matching and potential field matching
+      if (params.category && 
+          !params.category.toLowerCase().includes('all') && 
+          !params.category.toLowerCase().includes('categories')) {
+        const categoryTerm = params.category.toLowerCase();
+        const jobTitle = (job.title || '').toLowerCase();
+        const jobDescription = (job.description || '').toLowerCase();
+        
+        // First, check if job has a direct category field (if it exists)
+        // Note: This would need to be implemented when the actual job category field is identified
+        // if (job.category_id && to_job_category_name) {
+        //   const jobCategoryName = to_job_category_name(job.category_id)?.toLowerCase();
+        //   if (jobCategoryName === categoryTerm) return true;
+        // }
+        
+        // Define category-specific keywords and patterns for smart matching
+        const categoryPatterns: { [key: string]: string[] } = {
+          'frontend': ['frontend', 'front-end', 'front end', 'react', 'vue', 'angular', 'javascript', 'html', 'css', 'ui developer'],
+          'backend': ['backend', 'back-end', 'back end', 'server', 'api', 'database', 'node.js', 'python', 'java', 'php'],
+          'mobile': ['mobile', 'ios', 'android', 'react native', 'flutter', 'swift', 'kotlin', 'app development'],
+          'ai/ml': ['ai', 'ml', 'machine learning', 'artificial intelligence', 'data science', 'tensorflow', 'pytorch'],
+          'ui/ux': ['ui', 'ux', 'user interface', 'user experience', 'design', 'figma', 'adobe', 'prototype'],
+          'product management': ['product manager', 'product management', 'pm', 'product owner', 'roadmap'],
+          'project management': ['project manager', 'project management', 'scrum', 'agile', 'coordinator'],
+          'devops': ['devops', 'dev ops', 'infrastructure', 'deployment', 'docker', 'kubernetes', 'ci/cd'],
+          'qa': ['qa', 'quality assurance', 'testing', 'test', 'automation', 'selenium'],
+          'design': ['design', 'graphic', 'visual', 'creative', 'adobe', 'photoshop', 'illustrator'],
+          'sales': ['sales', 'business development', 'account manager', 'revenue'],
+          'marketing': ['marketing', 'digital marketing', 'social media', 'content marketing', 'seo'],
+          'finance': ['finance', 'financial', 'accounting', 'budget', 'analyst'],
+          'hr': ['hr', 'human resources', 'recruitment', 'talent', 'people'],
+          'data analysis': ['data analyst', 'data analysis', 'analytics', 'sql', 'excel', 'tableau'],
+          'business development': ['business development', 'bd', 'partnerships', 'growth'],
+          'content': ['content', 'writing', 'copywriting', 'editorial', 'blog'],
+          'administrative': ['administrative', 'admin', 'assistant', 'coordinator', 'support'],
+          'operations': ['operations', 'ops', 'logistics', 'supply chain', 'process'],
+          'it': ['it', 'information technology', 'tech support', 'helpdesk', 'systems'],
+          'legal': ['legal', 'law', 'compliance', 'contract', 'attorney', 'paralegal'],
+          'support': ['support', 'customer service', 'help desk', 'client'],
+          'engineering': ['engineering', 'engineer', 'technical', 'software engineer'],
+          'research': ['research', 'researcher', 'analyst', 'study'],
+          'teaching': ['teaching', 'teacher', 'education', 'tutor', 'instructor']
+        };
+        
+        // Get patterns for the selected category
+        const patterns = categoryPatterns[categoryTerm] || [categoryTerm];
+        
+        // Check if any pattern matches the job title (stronger weight) or description
+        const titleMatch = patterns.some(pattern => jobTitle.includes(pattern));
+        const descriptionMatch = patterns.some(pattern => jobDescription.includes(pattern));
+        
+        // If no matches found, filter out this job
+        if (!titleMatch && !descriptionMatch) {
+          return false;
+        }
+        
+        // Additional filtering: if title doesn't match but description does,
+        // be more strict about the match quality for better precision
+        if (!titleMatch && descriptionMatch) {
+          // Only include if it's a very specific match in description
+          const strongDescriptionMatch = patterns.some(pattern => {
+            const words = jobDescription.split(/\s+/);
+            return words.includes(pattern) || words.includes(pattern.replace(/\s+/g, ''));
+          });
+          
+          if (!strongDescriptionMatch) {
+            return false;
+          }
+        }
+      }
+
+      // Job type filter
+      if (params.type && 
+          !params.type.toLowerCase().includes('all') && 
+          !params.type.toLowerCase().includes('types')) {
+        // Map filter values to job type values
+        const typeMapping: { [key: string]: number } = {
+          'Internships': 0,
+          'Part-time': 1,
+          'Full-time': 2
+        };
+        
+        const expectedType = typeMapping[params.type];
+        if (expectedType !== undefined && job.type !== expectedType) return false;
+      }
+
+      // Location/Mode filter  
+      if (params.mode && 
+          !params.mode.toLowerCase().includes('any') && 
+          !params.mode.toLowerCase().includes('location')) {
+        // Map filter values to job mode values
+        const modeMapping: { [key: string]: number } = {
+          'In-Person': 0,
+          'Remote': 1,
+          'Hybrid': 2
+        };
+        
+        const expectedMode = modeMapping[params.mode];
+        if (expectedMode !== undefined && job.mode !== expectedMode) return false;
+      }
+
+      return true;
+    });
+  }, [allJobs, params]);
+
+  const getJobsPage = useCallback(({ page = 1, limit = 10 }) => {
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
-    return jobs.slice(startIndex, endIndex);
-  };
+    return filteredJobs.slice(startIndex, endIndex);
+  }, [filteredJobs]);
 
   return {
     getJobsPage,
-    jobs: jobs, // Expose filtered jobs for search components
+    jobs: filteredJobs, // Return filtered jobs
+    allJobs, // Also expose unfiltered jobs for total count
     loading,
     error,
     refetch: fetchAllActiveJobs,

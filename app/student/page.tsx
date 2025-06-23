@@ -15,20 +15,14 @@ import { industriesOptions, categoryGroups } from "@/lib/utils/job-options";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { filters, set_filter, filter_setter } = useFilter<{
+  const { filters, set_filter, filter_setter, applyFiltersAndNavigate } = useFilter<{
     industry: string;
     category: string;
-  }>();
+  }>({
+    industry: "All industries",
+    category: "All categories"
+  });
 
-  // Set default values on mount if not already set
-  useEffect(() => {
-    if (!filters.industry) {
-      set_filter("industry", "All Industries");
-    }
-    if (!filters.category) {
-      set_filter("category", "All Categories");
-    }
-  }, [filters.industry, filters.category, set_filter]);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showIndustryModal, setShowIndustryModal] = useState(false);
   const { is_mobile } = useAppContext();
@@ -36,38 +30,31 @@ export default function HomePage() {
   const justBetterRef = useRef<HTMLSpanElement>(null);
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    const { industry, category } = filters;
-
-    if (searchTerm.trim()) {
-      params.set("q", searchTerm);
-    }
-    if (industry && industry !== "All Industries") {
-      params.set("industry", industry);
-    }
-    if (category && category !== "All Categories") {
-      params.set("category", category);
-    }
-    router.push(`/search?${params.toString()}`);
+    applyFiltersAndNavigate(searchTerm);
   };
 
   // Helper to apply filter and go to job listings
   const applyFilterAndGo = (type: "industry" | "category", value: string) => {
-    set_filter(type, value);
-    setTimeout(() => {
-      const params = new URLSearchParams();
-      const newFilters = { ...filters, [type]: value };
-      if (searchTerm.trim()) {
-        params.set("q", searchTerm);
+    // Create updated filters
+    const updatedFilters = { ...filters, [type]: value };
+    
+    // Build URL parameters
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) {
+      params.set('q', searchTerm);
+    }
+    
+    // Add non-default filters to URL
+    Object.entries(updatedFilters).forEach(([key, filterValue]) => {
+      const isDefaultValue = filterValue.toLowerCase().includes('all') || 
+                            filterValue.toLowerCase().includes('any');
+      if (!isDefaultValue) {
+        params.set(key, filterValue);
       }
-      if (newFilters.industry && newFilters.industry !== "All Industries") {
-        params.set("industry", newFilters.industry);
-      }
-      if (newFilters.category && newFilters.category !== "All Categories") {
-        params.set("category", newFilters.category);
-      }
-      router.push(`/search?${params.toString()}`);
-    }, 0);
+    });
+    
+    // Navigate immediately
+    router.push(`/search?${params.toString()}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -161,7 +148,7 @@ export default function HomePage() {
                       className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
                       <span className="truncate">
-                        {filters.industry || "All Industries"}
+                        {filters.industry || "All industries"}
                       </span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </Button>
@@ -172,7 +159,7 @@ export default function HomePage() {
                       className="h-12 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                     >
                       <span className="truncate">
-                        {filters.category || "All Categories"}
+                        {filters.category || "All categories"}
                       </span>
                       <ChevronDown className="w-4 h-4 text-gray-400" />
                     </Button>
@@ -216,7 +203,7 @@ export default function HomePage() {
                           className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
                           <span className="truncate text-sm">
-                            {filters.industry || "All Industries"}
+                            {filters.industry || "All industries"}
                           </span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
                         </Button>
@@ -228,7 +215,7 @@ export default function HomePage() {
                           className="h-14 px-4 flex items-center gap-2 w-full justify-between text-left bg-transparent border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200"
                         >
                           <span className="truncate text-sm">
-                            {filters.category || "All Categories"}
+                            {filters.category || "All categories"}
                           </span>
                           <ChevronDown className="w-4 h-4 text-gray-400" />
                         </Button>
@@ -301,15 +288,15 @@ export default function HomePage() {
               <button
                 onClick={() => {
                   setShowCategoryModal(false);
-                  applyFilterAndGo("category", "All Categories");
+                  applyFilterAndGo("category", "All categories");
                 }}
                 className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                  filters.category === "All Categories"
+                  filters.category === "All categories"
                     ? "bg-blue-50 text-blue-600 border border-blue-200"
                     : "hover:bg-gray-50 text-gray-700"
                 }`}
               >
-                All Categories
+                All categories
               </button>
 
               {/* Tech Category Group */}
@@ -413,22 +400,25 @@ export default function HomePage() {
               </button>
             </div>
             <div className="space-y-2 overflow-y-auto flex-1">
-              {industriesOptions.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => {
-                    setShowIndustryModal(false);
-                    applyFilterAndGo("industry", option);
-                  }}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                    filters.industry === option
-                      ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  {option}
-                </button>
-              ))}
+              {industriesOptions.map((option) => {
+                const normalizedOption = option === "All Industries" ? "All industries" : option;
+                return (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setShowIndustryModal(false);
+                      applyFilterAndGo("industry", normalizedOption);
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
+                      filters.industry === normalizedOption
+                        ? "bg-blue-50 text-blue-600 border border-blue-200"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    {normalizedOption}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>

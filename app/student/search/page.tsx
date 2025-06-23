@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { industriesOptions, allCategories } from "@/lib/utils/job-options";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -62,20 +63,19 @@ export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
-  const { filters, set_filter, filter_setter } = useFilter<{
+  
+  // Initialize filters with URL synchronization and proper defaults
+  const { filters, set_filter, filter_setter, clear_filters } = useFilter<{
     job_type: string;
     location: string;
     industry: string;
     category: string;
-  }>();
-
-  // Initialize default filter values
-  useEffect(() => {
-    if (!filters.job_type) set_filter("job_type", "All types");
-    if (!filters.location) set_filter("location", "Any location");
-    if (!filters.industry) set_filter("industry", "All industries");
-    if (!filters.category) set_filter("category", "All categories");
-  }, []);
+  }>({
+    job_type: searchParams.get("jobType") || "All types",
+    location: searchParams.get("location") || "Any location", 
+    industry: searchParams.get("industry") || "All industries",
+    category: searchParams.get("category") || "All categories"
+  }, true); // Enable URL synchronization
 
   const {
     open: open_application_modal,
@@ -139,13 +139,13 @@ export default function SearchPage() {
     return [];
   };
 
-  // API hooks
+  // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
-  const [jobs, setJobs] = useState<Job[]>([]);
   const {
     getJobsPage,
-    jobs: allJobs,
+    jobs: filteredJobs,
+    allJobs,
     loading: jobs_loading,
     error: jobs_error,
     refetch,
@@ -157,32 +157,22 @@ export default function SearchPage() {
     industry: filters.industry,
   });
 
-  useEffect(() => {
-    setJobs(getJobsPage({ page: jobs_page, limit: jobs_page_size }));
-  }, [jobs_page, jobs_loading]);
+  // Get paginated jobs directly from getJobsPage
+  const jobs = getJobsPage({ page: jobs_page, limit: jobs_page_size });
 
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
 
+  // Initialize search term from URL
   useEffect(() => {
     const query = searchParams.get("q") || "";
     setSearchTerm(query);
   }, [searchParams]);
 
+  // Reset to page 1 when filters or search term change
   useEffect(() => {
-    const jobId = searchParams.get("jobId");
-    const category = searchParams.get("category");
-    const jobType = searchParams.get("jobType");
-    const location = searchParams.get("location");
-
-    // Initialize filters with proper defaults
-    set_filter("category", category ?? "All categories");
-    set_filter("job_type", jobType ?? "All types");
-    set_filter("location", location ?? "Any location");
-    set_filter("industry", "All industries");
-
-    setSelectedJob(jobs.filter((job) => job.id === jobId)[0] ?? {});
-  }, [searchParams, jobs]);
+    setJobsPage(1);
+  }, [searchTerm, filters.job_type, filters.location, filters.industry, filters.category]);
 
   // Set first job as selected when jobs load
   useEffect(() => {
@@ -196,7 +186,7 @@ export default function SearchPage() {
     } else if (jobs.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobs[0]);
     }
-  }, [jobs.length, searchParams]); // Stable dependencies only
+  }, [jobs.length, searchParams]);
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
@@ -261,27 +251,16 @@ export default function SearchPage() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      // Apply current search term along with active filters
-      // The useJobs hook will automatically filter based on both search and filters
-      // @ts-ignore
-      e.currentTarget.blur();
+      // Reset to page 1 and trigger re-filter with current search term
       setJobsPage(1);
-      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }));
+      // The useJobs hook will automatically re-filter based on the searchTerm
+      (e.currentTarget as HTMLInputElement).blur();
     }
   };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-
-    // If search is cleared (empty), refresh results by clearing all filters
-    if (value.trim() === "") {
-      set_filter("job_type", "All types");
-      set_filter("location", "Any location");
-      set_filter("industry", "All industries");
-      set_filter("category", "All categories");
-      setJobsPage(1);
-      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }));
-    }
+    setJobsPage(1); // Reset to first page when search changes
   };
 
   const handleJobCardClick = (job: Job) => {
@@ -360,7 +339,7 @@ export default function SearchPage() {
               {/* Mobile Paginator */}
               <div className="mt-6">
                 <Paginator
-                  totalItems={allJobs.length}
+                  totalItems={filteredJobs.length}
                   itemsPerPage={jobs_page_size}
                   onPageChange={(page) => setJobsPage(page)}
                 />
@@ -417,7 +396,7 @@ export default function SearchPage() {
 
               {/* Desktop Paginator */}
               <Paginator
-                totalItems={allJobs.length}
+                totalItems={filteredJobs.length}
                 itemsPerPage={jobs_page_size}
                 onPageChange={(page) => setJobsPage(page)}
               />
@@ -801,15 +780,18 @@ export default function SearchPage() {
               default_value={filters.location}
             />
             <GroupableRadioDropdown
-              name="category"
-              options={[
-                "All industries",
-                "Technology",
-                "Creative Services",
-                "Consumer Goods",
-              ]}
+              name="industry"
+              options={industriesOptions.map(industry => 
+                industry === "All Industries" ? "All industries" : industry
+              )}
               on_change={filter_setter("industry")}
               default_value={filters.industry}
+            />
+            <GroupableRadioDropdown
+              name="category"
+              options={allCategories}
+              on_change={filter_setter("category")}
+              default_value={filters.category}
             />
           </DropdownGroup>
 
@@ -817,10 +799,12 @@ export default function SearchPage() {
             <Button
               variant="outline"
               onClick={() => {
-                // Clear temp filters but keep search term
-                set_filter("job_type", "All types");
-                set_filter("location", "Any location");
-                set_filter("industry", "All industries");
+                clear_filters({
+                  job_type: "All types",
+                  location: "Any location",
+                  industry: "All industries",
+                  category: "All categories"
+                });
               }}
               className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
             >
