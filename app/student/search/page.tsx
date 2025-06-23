@@ -124,7 +124,8 @@ export default function SearchPage() {
   const isProfileComplete = () => {
     if (!profile) return false;
     return !!(
-      profile.full_name &&
+      profile.first_name &&
+      profile.last_name &&
       profile.phone_number &&
       ref_is_not_null(profile.college) &&
       ref_is_not_null(profile.year_level)
@@ -155,7 +156,6 @@ export default function SearchPage() {
   } = useJobs({
     search: searchTerm.trim() || undefined,
     category: filters.category,
-    type: filters.job_type,
     mode: filters.location,
     industry: filters.industry,
   });
@@ -512,10 +512,10 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Scrollable Content Area - Takes remaining space */}
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
+          {/* Scrollable Content Area - Takes remaining space with improved mobile scrolling */}
+          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 scroll-smooth webkit-overflow-scrolling-touch">
             {selectedJob && (
-              <div className="p-4">
+              <div className="p-4 pb-8">
                 {/* Mobile Job Details Grid */}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold mb-4">Job Details</h3>
@@ -546,18 +546,17 @@ export default function SearchPage() {
 
                     <div className="flex items-start gap-3">
                       <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                      <div className="space-y-2">
-                        <label className="flex items-center text-sm font-semibold text-gray-700">
-                          <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                          Salary:
-                        </label>
-                        <span>
-                          {!selectedJob.allowance && selectedJob.salary
-                            ? `${selectedJob.salary}/${to_job_pay_freq_name(
-                                selectedJob.salary_freq
-                              )}`
-                            : "None"}
-                        </span>
+                      <div>
+                        <p className="text-sm">
+                          <span className="font-medium">Salary: </span>
+                          <span className="opacity-80">
+                            {!selectedJob.allowance && selectedJob.salary
+                              ? `${selectedJob.salary}/${to_job_pay_freq_name(
+                                  selectedJob.salary_freq
+                                )}`
+                              : "None"}
+                          </span>
+                        </p>
                       </div>
                     </div>
 
@@ -593,8 +592,8 @@ export default function SearchPage() {
                   </div>
                 )}
 
-                {/* Bottom padding for scroll area */}
-                <div className="pb-4"></div>
+                {/* Bottom padding for scroll area - Enhanced for mobile */}
+                <div className="pb-8"></div>
               </div>
             )}
           </div>
@@ -777,12 +776,6 @@ export default function SearchPage() {
           </div>
           <DropdownGroup>
             <GroupableRadioDropdown
-              name="jobType"
-              options={["All types", "Internships", "Full-time", "Part-time"]}
-              on_change={filter_setter("job_type")}
-              default_value={filters.job_type}
-            />
-            <GroupableRadioDropdown
               name="location"
               options={["Any location", "In-Person", "Remote", "Hybrid"]}
               on_change={filter_setter("location")}
@@ -809,7 +802,6 @@ export default function SearchPage() {
               variant="outline"
               onClick={() => {
                 clear_filters({
-                  job_type: "All types",
                   location: "Any location",
                   industry: "All industries",
                   category: "All categories",

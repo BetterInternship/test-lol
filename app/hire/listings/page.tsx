@@ -310,7 +310,6 @@ const CreateModalForm = ({
     get_job_mode_by_name,
     get_job_type_by_name,
     get_job_pay_freq_by_name,
-    industries,
     job_types,
     job_modes,
     job_pay_freq,
