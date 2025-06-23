@@ -21,7 +21,6 @@ export default function RegisterPage() {
   const defaultCollege = "Select College";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
-    ref_is_not_null,
     levels,
     colleges,
     universities,
@@ -167,7 +166,8 @@ export default function RegisterPage() {
             {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name <span className="text-red-500">*</span>
+                First Name <span className="text-red-500">*</span>, Middle Name,
+                Last Name <span className="text-red-500">*</span>
               </label>
               <div className="w-full flex flex-row space-x-2">
                 <Input
@@ -196,7 +196,6 @@ export default function RegisterPage() {
                     " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
                   }
                   disabled={loading}
-                  required
                 />
                 <Input
                   type="text"
@@ -410,7 +409,7 @@ export default function RegisterPage() {
             {takingForCredit && (
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Linkage Officer <span className="text-red-500">*</span>
+                  Linkage Officer
                 </label>
                 <Input
                   type="text"
@@ -424,7 +423,6 @@ export default function RegisterPage() {
                     " w-full h-12 px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
-                  required={takingForCredit}
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Please provide the name of your assigned linkage officer from

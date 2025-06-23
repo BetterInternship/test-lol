@@ -98,7 +98,7 @@ export default function Dashboard() {
   );
 
   const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetch: get_user_resume_url,
+    fetcher: get_user_resume_url,
     route: selected_resume,
   });
 

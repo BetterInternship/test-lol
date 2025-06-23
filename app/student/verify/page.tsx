@@ -9,7 +9,11 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { verify } = useAuthContext();
+  const { verify, refresh_authentication, redirect_if_logged_in } =
+    useAuthContext();
+
+  // Redirect if logged in
+  redirect_if_logged_in();
 
   // Redirect to home page when verified
   useEffect(() => {
@@ -29,6 +33,7 @@ export default function VerifyPage() {
         .then((r) => {
           if (r && r.success) {
             setVerified(true);
+            refresh_authentication();
             setTimeout(() => router.push("/"), 2000);
           }
         })
@@ -43,9 +48,8 @@ export default function VerifyPage() {
   }, [searchParams, router, verify]);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
+    <div className="h-full bg-white flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-4xl">
-        {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {loading

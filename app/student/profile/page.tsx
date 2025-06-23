@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Edit2,
   Upload,
@@ -41,31 +40,41 @@ import { useFile } from "@/hooks/use-file";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { get_full_name } from "@/lib/utils/user-utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
   const { client_width, client_height } = useClientDimensions();
   const {
+    ref_loading,
     colleges,
     levels,
+    degrees,
+    departments,
     to_college_name,
     to_level_name,
+    to_department_name,
+    to_degree_full_name,
     get_college_by_name,
     get_level_by_name,
+    get_department_by_name,
+    get_degree_by_type_and_name,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
   const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetch: user_service.get_my_resume_url,
+    fetcher: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
-    fetch: user_service.get_my_pfp_url,
+    fetcher: user_service.get_my_pfp_url,
     route: "/users/me/pic",
   });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     PublicUser & {
       college_name: string | null;
+      department_name: string | null;
+      degree_name: string | null;
       year_level_name: string | null;
     }
   >();
@@ -319,10 +328,12 @@ export default function ProfilePage() {
     if (profile)
       set_fields({
         ...(profile as PublicUser),
+        degree_name: to_degree_full_name(profile.degree),
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
+        department_name: to_department_name(profile.department),
       });
-  }, [profile]);
+  }, [profile, ref_loading]);
 
   const handleSave = async () => {
     // Validate links before saving
@@ -341,6 +352,13 @@ export default function ProfilePage() {
         college: get_college_by_name(form_data.college_name)?.id ?? undefined,
         year_level:
           get_level_by_name(form_data.year_level_name)?.id ?? undefined,
+        department:
+          get_department_by_name(form_data.department_name)?.id ?? undefined,
+        degree:
+          get_degree_by_type_and_name(
+            form_data.degree_name?.split(" - ")[0],
+            form_data.degree_name?.split(" - ")[1]
+          )?.id ?? undefined,
         portfolio_link: form_data.portfolio_link ?? "",
         github_link: form_data.github_link ?? "",
         linkedin_link: form_data.linkedin_link ?? "",
@@ -559,10 +577,64 @@ export default function ProfilePage() {
                             is_editing={isEditing}
                             name="college"
                             value={form_data.college_name}
-                            setter={field_setter("college_name")}
+                            setter={(value) => {
+                              set_fields({
+                                college_name: value,
+                                college: get_college_by_name(value)?.id,
+                                department_name: "Not specified",
+                              });
+                            }}
                             options={[
                               "Not specified",
                               ...colleges.map((c) => c.name),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Department
+                          </label>
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="department"
+                            value={form_data.department_name}
+                            setter={field_setter("department_name")}
+                            options={[
+                              "Not specified",
+                              ...departments
+                                .filter(
+                                  (d) =>
+                                    form_data.college &&
+                                    d.college_id === form_data.college
+                                )
+                                .map((d) => d.name),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Degree
+                          </label>
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="department"
+                            value={form_data.degree_name}
+                            setter={field_setter("degree_name")}
+                            options={[
+                              "Not specified",
+                              ...degrees
+                                .filter(
+                                  (d) =>
+                                    form_data.university &&
+                                    d.university_id === form_data.university
+                                )
+                                .map((d) => `${d.type} - ${d.name}`),
                             ]}
                           >
                             <UserPropertyLabel />

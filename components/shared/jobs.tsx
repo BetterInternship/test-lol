@@ -46,7 +46,7 @@ export const JobCard = ({
   on_click?: (job: Job) => void;
 }) => {
   const { check } = useMoa();
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name, universities } =
+  const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name, universities } =
     useRefs();
 
   return (
@@ -101,7 +101,7 @@ export const JobCard = ({
           )}
           {job.salary && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
-              ₱{job.salary}
+              ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
             </span>
           )}
           {ref_is_not_null(job.mode) && (
@@ -219,7 +219,7 @@ export const EmployerJobCard = ({
           )}
           {job.salary && (
             <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
-              ₱{job.salary}
+              ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
             </span>
           )}
           {ref_is_not_null(job.mode) && (
@@ -261,7 +261,7 @@ export const MobileJobCard = ({
   on_click: () => void;
 }) => {
   const { check } = useMoa();
-  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name } =
+  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
     useRefs();
   return (
     <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
@@ -310,7 +310,7 @@ export const MobileJobCard = ({
             variant="outline"
             className="text-xs border-green-200 bg-green-50 text-green-700"
           >
-            ₱{job.salary}
+            ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
           </Badge>
         )}
         {ref_is_not_null(job.mode) && (

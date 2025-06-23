@@ -128,6 +128,7 @@ export default function SearchPage() {
       profile.last_name &&
       profile.phone_number &&
       ref_is_not_null(profile.college) &&
+      ref_is_not_null(profile.department) &&
       ref_is_not_null(profile.year_level)
     );
   };
@@ -512,44 +513,44 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Scrollable Content Area - Takes remaining space with improved mobile scrolling */}
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 scroll-smooth webkit-overflow-scrolling-touch">
+          {/* Scrollable Content Area - MUST be properly configured */}
+          <div className="flex-1 overflow-y-scroll overscroll-contain pb-24" style={{ maxHeight: 'calc(100vh - 200px)' }}>
             {selectedJob && (
-              <div className="p-4 pb-8">
+              <div className="p-4">
                 {/* Mobile Job Details Grid */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900">Job Details</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Location: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">Location: </span>
+                          <span className="text-gray-700">
                             {selectedJob.location || "Not specified"}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <Monitor className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <Monitor className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Mode: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">Mode: </span>
+                          <span className="text-gray-700">
                             {to_job_mode_name(selectedJob.mode)}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <PhilippinePeso className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Salary: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">Salary: </span>
+                          <span className="text-gray-700">
                             {!selectedJob.allowance && selectedJob.salary
                               ? `${selectedJob.salary}/${to_job_pay_freq_name(
                                   selectedJob.salary_freq
@@ -560,12 +561,12 @@ export default function SearchPage() {
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <Clock className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Work Schedule: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">Work Schedule: </span>
+                          <span className="text-gray-700">
                             {to_job_type_name(selectedJob.type)}
                           </span>
                         </p>
@@ -576,7 +577,7 @@ export default function SearchPage() {
 
                 {/* Job Description */}
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-3">Description</h2>
+                  <h2 className="text-lg font-semibold mb-3 text-gray-900">Description</h2>
                   <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                     <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
                   </div>
@@ -585,34 +586,34 @@ export default function SearchPage() {
                 {/* Job Requirements */}
                 {selectedJob.requirements && (
                   <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-3">Requirements</h2>
+                    <h2 className="text-lg font-semibold mb-3 text-gray-900">Requirements</h2>
                     <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                       <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                     </div>
                   </div>
                 )}
 
-                {/* Bottom padding for scroll area - Enhanced for mobile */}
-                <div className="pb-8"></div>
+                {/* Extra bottom padding to ensure content isn't hidden behind buttons */}
+                <div className="pb-20"></div>
               </div>
             )}
           </div>
 
-          {/* Fixed Action Buttons at Bottom - Always Visible */}
-          <div className="bg-white border-t p-4 flex-shrink-0 safe-area-bottom mb-4">
+          {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 border-blue-200 p-4 shadow-lg">
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
                 onClick={handleApply}
                 className={cn(
-                  "flex-1 h-12 font-semibold rounded-xl transition-all duration-200",
+                  "flex-1 h-14 font-bold rounded-2xl transition-all duration-300 shadow-lg text-base",
                   appliedJob(selectedJob?.id ?? "")
-                    ? "bg-green-600 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                    ? "bg-green-600 hover:bg-green-700 text-white shadow-green-200"
+                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:shadow-xl active:scale-95"
                 )}
               >
                 {appliedJob(selectedJob?.id ?? "") && (
-                  <CheckCircle className="w-4 h-4 mr-2" />
+                  <CheckCircle className="w-5 h-5 mr-2" />
                 )}
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
               </Button>
@@ -621,15 +622,15 @@ export default function SearchPage() {
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
                 className={cn(
-                  "h-12 w-12 rounded-xl border-2 transition-all duration-200",
+                  "h-14 w-14 rounded-2xl border-2 transition-all duration-300 shadow-lg active:scale-95",
                   is_saved(selectedJob?.id ?? "")
-                    ? "bg-red-50 border-red-200 text-red-600"
-                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    ? "bg-red-50 border-red-300 text-red-600 shadow-red-200 hover:bg-red-100"
+                    : "border-gray-300 text-gray-600 hover:border-gray-400 bg-white shadow-gray-200 hover:shadow-xl"
                 )}
               >
                 <Heart
                   className={cn(
-                    "w-5 h-5",
+                    "w-6 h-6",
                     is_saved(selectedJob?.id ?? "") ? "fill-current" : ""
                   )}
                 />
@@ -847,37 +848,6 @@ export default function SearchPage() {
                 </>
               )}
             </p>
-          </div>
-
-          {/* Job Summary Card */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Building className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 mb-1 text-lg truncate">
-                  {selectedJob?.title}
-                </h3>
-                <p className="text-gray-600 mb-3 text-sm">
-                  {selectedJob?.employer?.name}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {selectedJob?.location && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
-                      <MapPin className="w-3 h-3" />
-                      {selectedJob.location}
-                    </span>
-                  )}
-                  {selectedJob?.mode !== undefined && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/70 rounded-lg text-xs font-medium text-gray-600">
-                      <Monitor className="w-3 h-3" />
-                      {to_job_mode_name(selectedJob.mode)}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Profile Preview Section */}

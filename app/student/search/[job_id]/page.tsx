@@ -47,7 +47,7 @@ export default function JobPage() {
   } = useModal("success-modal");
   const { check } = useMoa();
   const { profile } = useProfile();
-  const { universities, ref_is_not_null } = useRefs();
+  const { universities, ref_is_not_null, to_job_pay_freq_name } = useRefs();
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
 
@@ -59,6 +59,8 @@ export default function JobPage() {
       profile.last_name &&
       profile.phone_number &&
       ref_is_not_null(profile.college) &&
+      ref_is_not_null(profile.department) &&
+      ref_is_not_null(profile.degree) &&
       ref_is_not_null(profile.year_level)
     );
   };
@@ -330,7 +332,7 @@ export default function JobPage() {
                           <span className="text-sm font-medium">Salary</span>
                         </div>
                         <p className="text-gray-900 font-medium">
-                          {job.salary ? `₱${job.salary}` : "Not specified"}
+                          {job.salary ? `₱${job.salary}/${to_job_pay_freq_name(job.salary_freq)}` : "Not specified"}
                         </p>
                       </div>
 

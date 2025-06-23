@@ -32,6 +32,7 @@ interface IAuthContext {
   >;
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
+  refresh_authentication: () => void;
   redirect_if_not_logged_in: () => void;
   redirect_if_logged_in: () => void;
 }
@@ -73,7 +74,7 @@ export const AuthContextProvider = ({
     else sessionStorage.removeItem("is_authenticated");
   }, [user, is_authenticated]);
 
-  const recheck_authentication = async () => {
+  const refresh_authentication = async () => {
     const response = await auth_service.loggedin();
 
     if (!response.success) {
@@ -88,7 +89,7 @@ export const AuthContextProvider = ({
   };
 
   useEffect(() => {
-    recheck_authentication();
+    refresh_authentication();
   }, []);
 
   const register = async (user: Partial<PublicUser>) => {
@@ -160,6 +161,7 @@ export const AuthContextProvider = ({
         verify_otp,
         email_status,
         logout,
+        refresh_authentication,
         is_authenticated: () => is_authenticated,
         redirect_if_not_logged_in,
         redirect_if_logged_in,

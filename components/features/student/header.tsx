@@ -27,11 +27,11 @@ export const Header = () => {
         "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
         is_mobile ? "px-6 py-4" : "py-4 px-8"
       )}
-      style={{ 
+      style={{
         // Ensure dropdown can escape overflow constraints
-        overflow: 'visible',
-        position: 'relative',
-        zIndex: 100
+        overflow: "visible",
+        position: "relative",
+        zIndex: 100,
       }}
     >
       <HeaderTitle />
@@ -59,14 +59,6 @@ export const ProfileButton = () => {
     });
   };
 
-  const get_display_name = () => {
-    if (!user?.full_name) return "User";
-    const names = user.full_name.split(" ");
-    if (names.length > 1)
-      return `${names[0]} ${names[names.length - 1].charAt(0)}.`;
-    return names[0];
-  };
-
   return is_authenticated() ? (
     <div className="relative">
       <GroupableNavDropdown
@@ -77,7 +69,9 @@ export const ProfileButton = () => {
         }
         content={
           <div className="px-4 py-3 border-b border-gray-200">
-            <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
+            <p className="text-sm font-medium text-gray-900">
+              {user?.full_name}
+            </p>
             <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
               {user?.email}
             </p>
