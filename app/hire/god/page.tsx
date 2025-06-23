@@ -2,9 +2,8 @@
 
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
-import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { useEmployers } from "@/hooks/use-employer-api";
-import { auth_service } from "@/lib/api";
+import { employer_auth_service } from "@/lib/api/employer.api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -36,7 +35,7 @@ export default function GodLandingPage() {
     }
 
     // Login as that employer
-    const response = await auth_service.employer.login_as_employer(employer_id);
+    const response = await employer_auth_service.login_as_employer(employer_id);
     if (!response.success) {
       alert("Error logging in by proxy.");
       return;

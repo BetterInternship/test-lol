@@ -1,16 +1,13 @@
 "use client";
 
 import { PublicUser } from "@/lib/db/db.types";
-import { auth_service } from "@/lib/api";
+import { auth_service } from "@/lib/api/api";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FetchResponse } from "@/hooks/use-fetch";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface IAuthContext {
   user: (Partial<PublicUser> & FetchResponse) | null;
-  recheck_authentication: () => Promise<
-    (Partial<PublicUser> & FetchResponse) | null
-  >;
   register: (
     user: Partial<PublicUser>
   ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
@@ -35,7 +32,7 @@ interface IAuthContext {
   >;
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
-  redirect_if_not_loggedin: () => void;
+  redirect_if_not_logged_in: () => void;
   redirect_if_logged_in: () => void;
 }
 
@@ -54,11 +51,11 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [should_redirect, set_should_redirect] = useState(false);
+  const [is_loading, set_is_loading] = useState(true);
   const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
-    const isAuthed = sessionStorage.getItem("isAuthenticated");
-    return isAuthed ? JSON.parse(isAuthed) : false;
+    const is_authed = sessionStorage.getItem("is_authenticated");
+    return is_authed ? JSON.parse(is_authed) : false;
   });
   const [user, set_user] = useState<Partial<PublicUser> | null>(() => {
     if (typeof window === "undefined") return null;
@@ -72,18 +69,27 @@ export const AuthContextProvider = ({
     else sessionStorage.removeItem("user");
 
     if (is_authenticated)
-      sessionStorage.setItem("isAuthenticated", JSON.stringify(true));
-    else sessionStorage.removeItem("isAuthenticated");
+      sessionStorage.setItem("is_authenticated", JSON.stringify(true));
+    else sessionStorage.removeItem("is_authenticated");
   }, [user, is_authenticated]);
 
   const recheck_authentication = async () => {
     const response = await auth_service.loggedin();
-    if (!response.success) return null;
+
+    if (!response.success) {
+      set_is_loading(false);
+      return null;
+    }
 
     set_user(response.user as PublicUser);
     set_is_authenticated(true);
+    set_is_loading(false);
     return response.user;
   };
+
+  useEffect(() => {
+    recheck_authentication();
+  }, []);
 
   const register = async (user: Partial<PublicUser>) => {
     const response = await auth_service.register(user);
@@ -130,27 +136,20 @@ export const AuthContextProvider = ({
     set_is_authenticated(false);
   };
 
-  const redirect_if_not_loggedin = () => {
-    if (!is_authenticated) set_should_redirect(true);
-  };
+  const redirect_if_not_logged_in = () =>
+    useEffect(() => {
+      if (!is_loading && !is_authenticated) router.push("/login");
+    }, [is_authenticated, is_loading]);
 
-  const redirect_if_logged_in = () => {
-    if (is_authenticated) set_should_redirect(true);
-  };
-
-  useEffect(() => {
-    if (should_redirect) {
-      if (!is_authenticated) router.push("/login");
-      else router.push("/");
-    }
-  }, [should_redirect]);
+  const redirect_if_logged_in = () =>
+    useEffect(() => {
+      if (!is_loading && is_authenticated) router.push("/");
+    }, [is_authenticated, is_loading]);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        // @ts-ignore
-        recheck_authentication,
         // @ts-ignore
         register,
         // @ts-ignore
@@ -162,31 +161,11 @@ export const AuthContextProvider = ({
         email_status,
         logout,
         is_authenticated: () => is_authenticated,
-        redirect_if_not_loggedin,
+        redirect_if_not_logged_in,
         redirect_if_logged_in,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
-};
-
-/**
- * Automatically checks whether or not the user is authed when page loaded
- * Calls recheck_authentication
- *
- * @component
- */
-export const AuthContextInitter = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
-
-  useEffect(() => {
-    if (!is_authenticated()) recheck_authentication();
-  }, []);
-
-  return <>{children}</>;
 };

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "../globals.css";
-import { AuthContextInitter, AuthContextProvider } from "@/lib/ctx-auth";
+import { AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import Header from "@/components/features/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
@@ -27,9 +27,7 @@ export const RootLayout = ({
       <AuthContextProvider>
         <RefsContextProvider>
           <MoaContextProvider>
-            <AuthContextInitter>
-              <HTMLContent>{children}</HTMLContent>
-            </AuthContextInitter>
+            <HTMLContent>{children}</HTMLContent>
           </MoaContextProvider>
         </RefsContextProvider>
       </AuthContextProvider>

@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useJobs } from "@/hooks/use-api";
+import { useJobs } from "@/lib/api/use-api";
 import { BasicRectangularTag } from "../../../components/ui/tags";
 
 /**
  * Mobile-optimized job scroller with grid layout instead of horizontal scroll
  * Reuses existing job data and tag components following established patterns
- * 
+ *
  * @component
  */
 export default function MobileJobScroller() {
@@ -28,9 +28,7 @@ export default function MobileJobScroller() {
   if (jobs.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 text-sm">
-          No jobs available at the moment
-        </p>
+        <p className="text-gray-500 text-sm">No jobs available at the moment</p>
       </div>
     );
   }

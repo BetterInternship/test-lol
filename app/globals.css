@@ -84,10 +84,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
   html {
     @apply scroll-smooth;
   }
@@ -155,14 +151,13 @@
   /* Enhanced link styles */
   a {
     @apply text-primary hover:text-primary/80 transition-colors duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded-sm;
+    @apply focus:outline-none rounded-sm;
   }
 
   /* Form elements */
   input, textarea, select {
     @apply border border-gray-300 rounded-lg px-3 py-2;
     @apply text-gray-900 placeholder-gray-500;
-    @apply focus:ring-2 focus:ring-primary focus:border-primary;
     @apply transition-colors duration-200;
   }
 

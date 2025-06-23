@@ -26,7 +26,7 @@ import DatePicker from "react-datepicker";
 import ContentLayout from "@/components/features/hire/content-layout";
 
 export default function MyListings() {
-  const { redirect_if_not_loggedin } = useAuthContext();
+  const { redirect_if_not_logged_in } = useAuthContext();
   const { ownedJobs, create_job, update_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,7 +40,7 @@ export default function MyListings() {
     Modal: CreateModal,
   } = useModal("create-modal");
 
-  redirect_if_not_loggedin();
+  redirect_if_not_logged_in();
 
   // Filter jobs based on search term
   const filteredJobs = useMemo(() => {
