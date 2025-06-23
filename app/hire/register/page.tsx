@@ -11,7 +11,6 @@ export default function LoginPage() {
   const { email_status, login, redirect_if_logged_in } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [new_account, set_new_account] = useState(false);
   const [step, setStep] = useState<"email" | "password">("email");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -33,7 +32,7 @@ export default function LoginPage() {
     await email_status(email).then(async (r) => {
       if (!r.existing_user) {
         setIsLoading(false);
-        set_new_account(true);
+        setError("Account does not exist in our database.");
         return;
       }
 
@@ -44,7 +43,7 @@ export default function LoginPage() {
         alert(r.message);
         return;
       }
-
+      console.log("lol what");
       setIsLoading(false);
       setStep("password");
     });
@@ -95,18 +94,9 @@ export default function LoginPage() {
           {/* Welcome Message */}
           <div className="text-center mb-10">
             {step === "email" ? (
-              !new_account ? (
-                <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                  Future interns are waiting!
-                </h2>
-              ) : (
-                <>
-                  <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                    First time here?
-                  </h2>
-                  <p className="">Don't miss out, sign up with us now!</p>
-                </>
-              )
+              <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+                Future interns are waiting!
+              </h2>
             ) : (
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -138,24 +128,13 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {!new_account ? (
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !email}
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? "Verifying email..." : "Continue"}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    disabled={isLoading || !email}
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => router.push("/register")}
-                  >
-                    {isLoading ? "Loading..." : "Set Up Account"}
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  disabled={isLoading || !email}
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Verifying email..." : "Continue"}
+                </Button>
               </form>
             ) : (
               <form onSubmit={handle_password_submit} className="space-y-6">
