@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-22 21:18:55
+ * @ Modified time: 2025-06-23 23:35:26
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -19,6 +19,8 @@ import {
   AppStatus,
   Industry,
   JobCategory,
+  Department,
+  Degree,
 } from "./db.types";
 import { createClient } from "@supabase/supabase-js";
 
@@ -36,6 +38,8 @@ export interface IRefsContext {
 
   levels: Level[];
   colleges: College[];
+  degrees: Degree[];
+  departments: Department[];
   universities: University[];
   job_types: JobType[];
   job_modes: JobMode[];
@@ -120,6 +124,22 @@ export interface IRefsContext {
   get_job_category_by_name: (
     name: string | null | undefined
   ) => JobCategory | null;
+
+  get_department: (id: string | null | undefined) => Department | null;
+  to_department_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
+  get_department_by_name: (
+    name: string | null | undefined
+  ) => Department | null;
+
+  get_degree: (id: string | null | undefined) => Degree | null;
+  to_degree_name: (
+    id: string | null | undefined,
+    def?: string
+  ) => string | null;
+  get_degree_by_name: (name: string | null | undefined) => Degree | null;
 
   ref_is_not_null: (ref: any) => boolean;
 }
@@ -294,9 +314,27 @@ export const createRefsContext = () => {
     loading: l10,
   } = createRefInternalHook<string, JobCategory>("ref_job_categories");
 
+  const {
+    data: departments,
+    get: get_department,
+    to_name: to_department_name,
+    get_by_name: get_department_by_name,
+    loading: l11,
+  } = createRefInternalHook<string, Department>("ref_departments");
+
+  const {
+    data: degrees,
+    get: get_degree,
+    to_name: to_degree_name,
+    get_by_name: get_degree_by_name,
+    loading: l12,
+  } = createRefInternalHook<string, Degree>("ref_degrees");
+
   useEffect(() => {
-    setLoading(l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10);
-  }, [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10]);
+    setLoading(
+      l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10 || l11 || l12
+    );
+  }, [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12]);
 
   /**
    * An additional helper for grabbing uni from email
@@ -318,6 +356,8 @@ export const createRefsContext = () => {
 
     levels,
     colleges,
+    degrees,
+    departments,
     universities,
     job_types,
     job_modes,
@@ -329,6 +369,8 @@ export const createRefsContext = () => {
 
     to_level_name,
     to_college_name,
+    to_degree_name,
+    to_department_name,
     to_university_name,
     to_job_type_name,
     to_job_mode_name,
@@ -340,6 +382,8 @@ export const createRefsContext = () => {
 
     get_level,
     get_college,
+    get_degree,
+    get_department,
     get_university,
     get_job_type,
     get_job_mode,
@@ -351,6 +395,8 @@ export const createRefsContext = () => {
 
     get_level_by_name,
     get_college_by_name,
+    get_degree_by_name,
+    get_department_by_name,
     get_university_by_name,
     get_university_by_domain,
     get_job_type_by_name,
