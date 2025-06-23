@@ -7,9 +7,8 @@
  * Stateful dropdown group component.
  */
 
-import React, { useEffect, createContext, useContext, useState } from "react";
+import React, { useEffect, createContext, useContext, useState, useRef, useCallback } from "react";
 import { ChevronDown, Search } from "lucide-react";
-import { useDetectClickOutside } from "react-detect-click-outside";
 import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
@@ -44,7 +43,7 @@ export const DropdownOption = ({ children }: IDropdownOptionProps) => {
 };
 
 /**
- * Creates a standard button dropdowns must use.
+ * Creates a standard button dropdowns must use with mobile optimization.
  * Not meant to be used elsewhere.
  *
  * @component
@@ -57,23 +56,34 @@ const DropdownOptionButton = ({
   set_is_open: (is_open: boolean) => void;
 }) => {
   const router = useRouter();
+  const { is_mobile } = useAppContext();
+
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    set_is_open(false);
+    children.props.on_click && children.props.on_click();
+    children.props.href && router.push(children.props.href);
+  }, [children.props, router, set_is_open]);
+
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.stopPropagation();
+    set_is_open(false);
+    children.props.on_click && children.props.on_click();
+    children.props.href && router.push(children.props.href);
+  }, [children.props, router, set_is_open]);
 
   return (
     <button
-      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
-      onClick={(e) => {
-        e.stopPropagation();
-        set_is_open(false);
-        children.props.on_click && children.props.on_click();
-        children.props.href && router.push(children.props.href);
-      }}
+      className={cn(
+        "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
+        is_mobile ? "py-3 active:bg-gray-200" : "", // Larger touch targets on mobile
+        children.props.highlighted ? "text-blue-500" : ""
+      )}
+      onClick={handleClick}
+      onTouchEnd={handleTouchEnd}
+      onTouchStart={(e) => e.stopPropagation()}
     >
-      <div
-        className={cn(
-          "w-full",
-          children.props.highlighted ? "text-blue-500" : ""
-        )}
-      >
+      <div className="w-full">
         {children}
       </div>
     </button>
@@ -102,7 +112,7 @@ export const DropdownGroup = ({ children }: { children: React.ReactNode }) => {
 };
 
 /**
- * This represents a single dropdown inside the group.
+ * This represents a single dropdown inside the group with mobile optimization.
  * Inherits the provided context (if there is none, that's fine).
  *
  * @component
@@ -122,52 +132,127 @@ export const GroupableRadioDropdown = ({
   button_class?: string;
   className?: string;
 }) => {
-  const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
   const { is_mobile } = useAppContext();
   const { active_dropdown, set_active_dropdown } =
     useContext(DropdownGroupContext);
   const [is_open, set_is_open] = useState(false);
   const [value, set_value] = useState(default_value);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number; target: EventTarget | null } | null>(null);
 
   // Just so it's not stuck at the first default when the default changes
   useEffect(() => {
     set_value(default_value);
   }, [default_value]);
 
+  // Close dropdown handler
+  const closeDropdown = useCallback(() => {
+    set_is_open(false);
+  }, []);
+
+  // Handle clicks outside dropdown for desktop
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!is_mobile && 
+          dropdownRef.current && 
+          !dropdownRef.current.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    };
+
+    if (is_open && !is_mobile) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [is_open, is_mobile, closeDropdown]);
+
+  // Mobile touch handlers
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (!is_mobile || !is_open) return;
+    
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      target: e.target
+    };
+  }, [is_mobile, is_open]);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (!is_mobile || !is_open || !touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const startTouch = touchStartRef.current;
+    
+    // Calculate touch movement
+    const deltaX = Math.abs(touch.clientX - startTouch.x);
+    const deltaY = Math.abs(touch.clientY - startTouch.y);
+    const isSwipe = deltaX > 10 || deltaY > 10;
+    
+    // Check if touch is outside dropdown area
+    const target = e.target as Element;
+    const isOutsideDropdown = dropdownRef.current && 
+                             !dropdownRef.current.contains(target);
+    
+    // Close if touch ended outside and wasn't a swipe
+    if (!isSwipe && isOutsideDropdown) {
+      closeDropdown();
+    }
+    
+    touchStartRef.current = null;
+  }, [is_mobile, is_open, closeDropdown]);
+
+  // Set up mobile touch listeners
+  useEffect(() => {
+    if (is_mobile && is_open) {
+      document.addEventListener('touchstart', handleTouchStart);
+      document.addEventListener('touchend', handleTouchEnd);
+      
+      return () => {
+        document.removeEventListener('touchstart', handleTouchStart);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [is_mobile, is_open, handleTouchStart, handleTouchEnd]);
+
   /**
    * Activates dropdown
-   * @param e
    */
-  const handle_click: React.MouseEventHandler = (e) => {
+  const handle_click = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
     set_is_open(!is_open);
     set_active_dropdown(name);
-  };
+  }, [is_open, name, set_active_dropdown]);
 
   /**
    * Changes dropdown value
-   * @param option
    */
-  const handle_change = (option: (typeof options)[number]) => {
+  const handle_change = useCallback((option: (typeof options)[number]) => {
     set_value(option);
     on_change(option);
     set_is_open(false);
-  };
+  }, [on_change]);
 
   // Check if it's still the active dropdown
   useEffect(() => {
     if (active_dropdown !== name) set_is_open(false);
-  }, [active_dropdown]);
+  }, [active_dropdown, name]);
+
+  // Prevent event propagation for dropdown content
+  const handleDropdownInteraction = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+  }, []);
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative", className)} ref={dropdownRef}>
       <Button
-        ref={ref}
+        ref={buttonRef}
         type="button"
         variant="ghost"
-        onClick={(e) => {
-          e.stopPropagation();
-          handle_click(e);
-        }}
+        onClick={handle_click}
+        onTouchEnd={(e) => e.stopPropagation()}
         className={cn(
           "flex items-center input-box justify-between",
           is_mobile
@@ -199,6 +284,9 @@ export const GroupableRadioDropdown = ({
             is_mobile ? "min-w-full" : "min-w-[200px]",
             className
           )}
+          onClick={handleDropdownInteraction}
+          onTouchStart={handleDropdownInteraction}
+          onTouchEnd={handleDropdownInteraction}
         >
           {options.map((option, index) => (
             <DropdownOptionButton key={index} set_is_open={set_is_open}>
@@ -217,7 +305,7 @@ export const GroupableRadioDropdown = ({
 };
 
 /**
- * This creates a dropdown menu for navigating.
+ * This creates a dropdown menu for navigating with improved mobile support.
  *
  * @component
  */
@@ -236,17 +324,106 @@ export const GroupableNavDropdown = ({
   className?: string;
   showArrow?: boolean;
 }) => {
-  const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
+  const { is_mobile } = useAppContext();
   const [is_open, set_is_open] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number; target: EventTarget | null } | null>(null);
+
+  // Close dropdown handler
+  const closeDropdown = useCallback(() => {
+    set_is_open(false);
+  }, []);
+
+  // Handle clicks outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!is_mobile && 
+          dropdownRef.current && 
+          !dropdownRef.current.contains(event.target as Node) &&
+          buttonRef.current &&
+          !buttonRef.current.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    };
+
+    if (is_open && !is_mobile) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [is_open, is_mobile, closeDropdown]);
+
+  // Mobile touch handlers
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (!is_mobile || !is_open) return;
+    
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      target: e.target
+    };
+  }, [is_mobile, is_open]);
+
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (!is_mobile || !is_open || !touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const startTouch = touchStartRef.current;
+    
+    // Calculate touch movement
+    const deltaX = Math.abs(touch.clientX - startTouch.x);
+    const deltaY = Math.abs(touch.clientY - startTouch.y);
+    const isSwipe = deltaX > 10 || deltaY > 10;
+    
+    // Check if touch is outside dropdown area
+    const target = e.target as Element;
+    const isOutsideDropdown = dropdownRef.current && 
+                             !dropdownRef.current.contains(target) &&
+                             buttonRef.current &&
+                             !buttonRef.current.contains(target);
+    
+    // Close if touch ended outside and wasn't a swipe
+    if (!isSwipe && isOutsideDropdown) {
+      closeDropdown();
+    }
+    
+    touchStartRef.current = null;
+  }, [is_mobile, is_open, closeDropdown]);
+
+  // Set up mobile touch listeners
+  useEffect(() => {
+    if (is_mobile && is_open) {
+      document.addEventListener('touchstart', handleTouchStart);
+      document.addEventListener('touchend', handleTouchEnd);
+      
+      return () => {
+        document.removeEventListener('touchstart', handleTouchStart);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [is_mobile, is_open, handleTouchStart, handleTouchEnd]);
+
+  // Prevent event propagation for dropdown content
+  const handleDropdownInteraction = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+  }, []);
+
+  // Toggle dropdown
+  const handleButtonClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    set_is_open(!is_open);
+  }, [is_open]);
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative", className)} ref={dropdownRef}>
       <Button
-        ref={ref}
+        ref={buttonRef}
         type="button"
         variant="outline"
         className="flex items-center gap-2 h-10 px-4 bg-white border-gray-300 hover:bg-gray-50"
-        onClick={() => set_is_open(!is_open)}
+        onClick={handleButtonClick}
+        onTouchEnd={(e) => e.stopPropagation()}
       >
         {display}
         {/* Conditionally render the chevron arrow */}
@@ -263,9 +440,13 @@ export const GroupableNavDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50",
+            "absolute right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg z-50",
+            is_mobile ? "w-56" : "w-48", // Slightly wider on mobile for better touch targets
             className
           )}
+          onClick={handleDropdownInteraction}
+          onTouchStart={handleDropdownInteraction}
+          onTouchEnd={handleDropdownInteraction}
         >
           <div className="py-1">
             {content}
