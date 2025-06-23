@@ -190,6 +190,18 @@ export function useOwnedJobs(
       set("_jobs_owned_list", [job, ...ownedJobs]);
       setOwnedJobs(get("_jobs_owned_list") as Job[]);
     }
+    return response;
+  };
+
+  const delete_job = async (job_id: string) => {
+    const response = await job_service.delete_job(job_id);
+    if (response.success) {
+      set(
+        "_jobs_owned_list",
+        ownedJobs.filter((job) => job.id !== job_id)
+      );
+      setOwnedJobs(get("_jobs_owned_list") as Job[]);
+    }
   };
 
   useEffect(() => {
@@ -263,6 +275,7 @@ export function useOwnedJobs(
     ownedJobs: filteredJobs,
     update_job,
     create_job,
+    delete_job,
     loading,
     error,
     refetch: fetchOwnedJobs,

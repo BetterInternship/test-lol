@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { BarChart3, Search, FileText, FileEdit, Plus } from "lucide-react";
-import Link from "next/link";
+import { Search, FileText, FileEdit, Plus } from "lucide-react";
 import { useOwnedJobs } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
@@ -27,7 +26,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 
 export default function MyListings() {
   const { redirect_if_not_logged_in } = useAuthContext();
-  const { ownedJobs, create_job, update_job } = useOwnedJobs();
+  const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
@@ -39,6 +38,11 @@ export default function MyListings() {
     close: close_create_modal,
     Modal: CreateModal,
   } = useModal("create-modal");
+  const {
+    open: open_delete_modal,
+    close: close_delete_modal,
+    Modal: DeleteModal,
+  } = useModal("delete-modal");
 
   redirect_if_not_logged_in();
 
@@ -111,6 +115,7 @@ export default function MyListings() {
                     key={job.id}
                     job={job}
                     disabled={is_editing}
+                    // @ts-ignore
                     update_job={update_job}
                     on_click={() => setSelectedJob(job)}
                     selected={job.id === selectedJob.id}
@@ -134,23 +139,35 @@ export default function MyListings() {
                 set_is_editing={set_is_editing}
                 job={selectedJob}
                 saving={saving}
+                // @ts-ignore
                 update_job={update_job}
                 actions={[
                   !is_editing ? (
-                    <Button
-                      key="1"
-                      variant="outline"
-                      disabled={saving}
-                      onClick={() => set_is_editing(true)}
-                    >
-                      Edit
-                    </Button>
+                    [
+                      <Button
+                        key="1"
+                        variant="outline"
+                        disabled={saving}
+                        onClick={() => set_is_editing(true)}
+                      >
+                        Edit
+                      </Button>,
+                      <Button
+                        key="2"
+                        variant="outline"
+                        disabled={saving}
+                        className="text-red-500 border border-red-300 hover:bg-red-50 hover:text-red-500"
+                        onClick={() => open_delete_modal()}
+                      >
+                        Delete
+                      </Button>,
+                    ]
                   ) : (
                     <></>
                   ),
                   is_editing ? (
                     <Button
-                      key="2"
+                      key="3"
                       variant="default"
                       className="bg-blue-600 text-white"
                       disabled={saving}
@@ -163,7 +180,7 @@ export default function MyListings() {
                   ),
                   is_editing ? (
                     <Button
-                      key="3"
+                      key="4"
                       variant="outline"
                       className="text-red-500"
                       disabled={saving}
@@ -200,17 +217,77 @@ export default function MyListings() {
           </div>
         </div>
 
-        {/* Edit Job Modal */}
+        {/* Create Job Modal */}
         <CreateModal>
           <CreateModalForm
             create_job={create_job}
             close={() => close_create_modal()}
           ></CreateModalForm>
         </CreateModal>
+
+        {/* Delete Job Modal */}
+        <DeleteModal>
+          <DeleteModalForm
+            job={selectedJob}
+            delete_job={delete_job}
+            clear_job={() => setSelectedJob({} as Partial<Job>)}
+            close={() => close_delete_modal()}
+          ></DeleteModalForm>
+        </DeleteModal>
       </>
     </ContentLayout>
   );
 }
+
+const DeleteModalForm = ({
+  job,
+  delete_job,
+  clear_job,
+  close,
+}: {
+  job: Job;
+  delete_job: (job_id: string) => Promise<void>;
+  clear_job: () => void;
+  close: () => void;
+}) => {
+  const [deleting, set_deleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!job.id) return close();
+    set_deleting(true);
+    await delete_job(job.id);
+    clear_job();
+    set_deleting(false);
+    close();
+  };
+
+  return (
+    <div className="p-8 pt-0 h-full">
+      <div className="text-lg mb-4">
+        Are you sure you want to delete <br />
+        <span className="font-bold">"{job.title}"</span>?
+      </div>
+      <div className="w-full flex flex-row items-end justify-end space-x-2">
+        <Button
+          variant="outline"
+          disabled={deleting}
+          className="text-red-500 border border-red-300 hover:bg-red-50 hover:text-red-500"
+          onClick={handleDelete}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={deleting}
+          className="input-box"
+          onClick={close}
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const CreateModalForm = ({
   create_job,
@@ -219,7 +296,7 @@ const CreateModalForm = ({
   create_job: (job: Partial<Job>) => Promise<any>;
   close: () => void;
 }) => {
-  const [creating, setCreating] = useState(false);
+  const [creating, set_creating] = useState(false);
   const { form_data, set_field, set_fields, field_setter } = useFormData<
     Job & {
       salary_freq_name: string;
@@ -275,17 +352,18 @@ const CreateModalForm = ({
 
     console.log(form_data.start_date, form_data.end_date);
 
-    setCreating(true);
+    set_creating(true);
     try {
       const response = await create_job(job);
       if (!response?.success) {
         alert("Could not create job");
+        set_creating(false);
         return;
       }
-      setCreating(false);
+      set_creating(false);
       close(); // Ensure modal closes after successful creation
     } catch (error) {
-      setCreating(false);
+      set_creating(false);
       alert("Error creating job");
     }
   };

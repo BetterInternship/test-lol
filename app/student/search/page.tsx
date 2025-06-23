@@ -63,19 +63,22 @@ export default function SearchPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
-  
+
   // Initialize filters with URL synchronization and proper defaults
   const { filters, set_filter, filter_setter, clear_filters } = useFilter<{
     job_type: string;
     location: string;
     industry: string;
     category: string;
-  }>({
-    job_type: searchParams.get("jobType") || "All types",
-    location: searchParams.get("location") || "Any location", 
-    industry: searchParams.get("industry") || "All industries",
-    category: searchParams.get("category") || "All categories"
-  }, true); // Enable URL synchronization
+  }>(
+    {
+      job_type: searchParams.get("jobType") || "All types",
+      location: searchParams.get("location") || "Any location",
+      industry: searchParams.get("industry") || "All industries",
+      category: searchParams.get("category") || "All categories",
+    },
+    true
+  ); // Enable URL synchronization
 
   const {
     open: open_application_modal,
@@ -172,12 +175,18 @@ export default function SearchPage() {
   // Reset to page 1 when filters or search term change
   useEffect(() => {
     setJobsPage(1);
-  }, [searchTerm, filters.job_type, filters.location, filters.industry, filters.category]);
+  }, [
+    searchTerm,
+    filters.job_type,
+    filters.location,
+    filters.industry,
+    filters.category,
+  ]);
 
   // Set first job as selected when jobs load
   useEffect(() => {
     const jobId = searchParams.get("jobId");
-    
+
     if (jobId && jobs.length > 0) {
       const targetJob = jobs.find((job) => job.id === jobId);
       if (targetJob && targetJob.id !== selectedJob?.id) {
@@ -556,7 +565,7 @@ export default function SearchPage() {
                       <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Employment Type: </span>
+                          <span className="font-medium">Work Schedule: </span>
                           <span className="opacity-80">
                             {to_job_type_name(selectedJob.type)}
                           </span>
@@ -781,7 +790,7 @@ export default function SearchPage() {
             />
             <GroupableRadioDropdown
               name="industry"
-              options={industriesOptions.map(industry => 
+              options={industriesOptions.map((industry) =>
                 industry === "All Industries" ? "All industries" : industry
               )}
               on_change={filter_setter("industry")}
@@ -803,7 +812,7 @@ export default function SearchPage() {
                   job_type: "All types",
                   location: "Any location",
                   industry: "All industries",
-                  category: "All categories"
+                  category: "All categories",
                 });
               }}
               className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"

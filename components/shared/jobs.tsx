@@ -493,11 +493,11 @@ export const EditableJobDetails = ({
             </EditableGroupableRadioDropdown>
           </div>
 
-          {/* Employment Type */}
+          {/* Work Schedule */}
           <div className="flex flex-col items-start gap-3 max-w-prose">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Employment Type:
+              Work Schedule:
             </label>
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
@@ -849,7 +849,7 @@ export const JobDetails = ({
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Employment Type:
+                Work Schedule:
               </label>
               <JobPropertyLabel value={to_job_type_name(job.type)} />
             </div>
@@ -951,7 +951,9 @@ export const JobDetails = ({
 
         {/* Requirements Content */}
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-          <ReactMarkdown>{job.requirements || "None"}</ReactMarkdown>
+          {job.requirements && (
+            <ReactMarkdown>{job.requirements}</ReactMarkdown>
+          )}
         </div>
       </div>
     </div>

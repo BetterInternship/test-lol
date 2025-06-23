@@ -210,6 +210,10 @@ export const job_service = {
       job
     );
   },
+
+  async delete_job(job_id: string) {
+    return APIClient.delete<FetchResponse>(APIRoute("jobs").r(job_id).build());
+  },
 };
 
 // Application Services
