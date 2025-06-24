@@ -138,7 +138,7 @@ export const EmployerJobCard = ({
   ) => Promise<{ success: boolean }>;
 }) => {
   const { check } = useMoa();
-  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name } =
+  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
     useRefs();
 
   return (
