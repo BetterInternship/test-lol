@@ -779,9 +779,11 @@ export default function ProfilePage() {
                                 get_department_by_name(value)
                               );
                               set_field("department_name", value);
-                              setFieldErrors({
-                                ...fieldErrors,
-                                department: "",
+                              setFieldErrors((prev) => {
+                                const newErrors = { ...prev };
+                                if (value && value !== "Not specified")
+                                  delete newErrors.department;
+                                return newErrors;
                               });
                             }}
                             options={[
