@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-06-20 05:44:22
+ * @ Modified time: 2025-06-24 21:17:30
  * @ Description:
  *
  * Commonly used label components
@@ -23,10 +23,15 @@ export type LabelComponent = React.FC<LabelComponentProps>;
  */
 export const UserPropertyLabel: LabelComponent = ({
   value,
+  fallback,
 }: LabelComponentProps) => {
   return (
     <p className="text-gray-500 font-medium text-sm">
-      {value || <span className="text-gray-400 italic">{DEFAULT_LABEL}</span>}
+      {value || (
+        <span className="text-gray-400 italic">
+          {fallback ?? DEFAULT_LABEL}
+        </span>
+      )}
     </p>
   );
 };

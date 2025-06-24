@@ -24,8 +24,17 @@ import { useRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import { useMoa } from "@/lib/db/use-moa";
-import { user_can_apply, get_missing_profile_fields } from "@/lib/utils/user-utils";
-import { areApplicationsEnabled, getMaintenanceTitle, getMaintenanceMessage, getMaintenanceSubMessage, getAvailableActions } from "@/lib/config/application-config";
+import {
+  user_can_apply,
+  get_missing_profile_fields,
+} from "@/lib/utils/user-utils";
+import {
+  areApplicationsEnabled,
+  getMaintenanceTitle,
+  getMaintenanceMessage,
+  getMaintenanceSubMessage,
+  getAvailableActions,
+} from "@/lib/config/application-config";
 
 /**
  * The individual job page.
@@ -339,7 +348,7 @@ export default function JobPage() {
                             ? `₱${job.salary}/${to_job_pay_freq_name(
                                 job.salary_freq
                               )}`
-                            : "Not specified"}
+                            : "None"}
                         </p>
                       </div>
 
@@ -642,7 +651,7 @@ export default function JobPage() {
           {(() => {
             const { missing, labels } = get_missing_profile_fields(profile);
             const missingCount = missing.length;
-            
+
             return (
               <>
                 {/* Header */}
@@ -654,11 +663,10 @@ export default function JobPage() {
                     Complete Your Profile
                   </h2>
                   <p className="text-gray-600 leading-relaxed">
-                    You need to complete your profile before applying to jobs. 
-                    {missingCount === 1 
+                    You need to complete your profile before applying to jobs.
+                    {missingCount === 1
                       ? "There is 1 required field missing."
-                      : `There are ${missingCount} required fields missing.`
-                    }
+                      : `There are ${missingCount} required fields missing.`}
                   </p>
                 </div>
 
@@ -669,7 +677,7 @@ export default function JobPage() {
                   </h3>
                   <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
                     {missing.map((field) => (
-                      <div 
+                      <div
                         key={field}
                         className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg"
                       >
@@ -706,7 +714,7 @@ export default function JobPage() {
                 </div>
               </>
             );
-          })()} 
+          })()}
         </div>
       </IncompleteProfileModal>
 
@@ -717,7 +725,12 @@ export default function JobPage() {
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
               <div className="w-8 h-8 text-blue-600">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <svg
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -739,34 +752,59 @@ export default function JobPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
               {getMaintenanceSubMessage()}
             </h3>
-            
+
             <div className="space-y-3">
               {getAvailableActions().map((action, index) => {
                 const getIcon = (iconName: string) => {
                   switch (iconName) {
-                    case 'heart':
+                    case "heart":
                       return <Heart className="w-5 h-5" />;
-                    case 'user':
+                    case "user":
                       return <User className="w-5 h-5" />;
-                    case 'search':
+                    case "search":
                       return (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
                         </svg>
                       );
-                    case 'calendar':
+                    case "calendar":
                       return (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
                         </svg>
                       );
                     default:
-                      return <div className="w-5 h-5 bg-blue-500 rounded-full" />;
+                      return (
+                        <div className="w-5 h-5 bg-blue-500 rounded-full" />
+                      );
                   }
                 };
-                
+
                 return (
-                  <div key={index} className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div
+                    key={index}
+                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
                     <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
                       {getIcon(action.icon)}
                     </div>

@@ -46,8 +46,13 @@ export const JobCard = ({
   on_click?: (job: Job) => void;
 }) => {
   const { check } = useMoa();
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name, universities } =
-    useRefs();
+  const {
+    ref_is_not_null,
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+    universities,
+  } = useRefs();
 
   return (
     <div
@@ -138,8 +143,13 @@ export const EmployerJobCard = ({
   ) => Promise<{ success: boolean }>;
 }) => {
   const { check } = useMoa();
-  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useRefs();
+  const {
+    universities,
+    ref_is_not_null,
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+  } = useRefs();
 
   return (
     <div
@@ -261,8 +271,13 @@ export const MobileJobCard = ({
   on_click: () => void;
 }) => {
   const { check } = useMoa();
-  const { universities, ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useRefs();
+  const {
+    universities,
+    ref_is_not_null,
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+  } = useRefs();
   return (
     <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
       {/* Header */}
@@ -831,21 +846,19 @@ export const JobDetails = ({
               <JobPropertyLabel value={to_job_mode_name(job.mode)} />
             </div>
 
-            {job.salary && (
-              <div className="flex flex-col items-start gap-3 max-w-prose">
-                <label className="flex items-center text-sm font-semibold text-gray-700">
-                  <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                  Salary:
-                </label>
-                <JobPropertyLabel
-                  value={
-                    job.salary
-                      ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
-                      : "None"
-                  }
-                />
-              </div>
-            )}
+            <div className="flex flex-col items-start gap-3 max-w-prose">
+              <label className="flex items-center text-sm font-semibold text-gray-700">
+                <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
+                Salary:
+              </label>
+              <JobPropertyLabel
+                value={
+                  job.salary
+                    ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
+                    : "None"
+                }
+              />
+            </div>
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />

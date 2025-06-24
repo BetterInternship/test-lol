@@ -709,7 +709,7 @@ export default function ProfilePage() {
                             )}
                           </div>
                         )}
-                        <div className="flex flex-row space-x-2">
+                        <div className="flex flex-row space-x-1">
                           <EditableInput
                             is_editing={isEditing}
                             value={form_data.first_name}
@@ -724,7 +724,7 @@ export default function ProfilePage() {
                             setter={field_setter("middle_name")}
                             placeholder="Middle name"
                           >
-                            <UserPropertyLabel />
+                            <UserPropertyLabel fallback="" />
                           </EditableInput>
                           <EditableInput
                             is_editing={isEditing}
