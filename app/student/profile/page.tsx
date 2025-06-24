@@ -779,6 +779,7 @@ export default function ProfilePage() {
                                 get_department_by_name(value)
                               );
                               set_field("department_name", value);
+                              setFieldErrors({ department: "" });
                             }}
                             options={[
                               "Not specified",
