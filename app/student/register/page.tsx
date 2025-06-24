@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Upload, Award } from "lucide-react";
+import { Upload, Award, AlertCircle } from "lucide-react";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser, University } from "@/lib/db/db.types";
@@ -42,11 +42,101 @@ export default function RegisterPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState<{
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
+    phone_number?: string;
+    linkage_officer?: string;
+  }>({});
   const router = useRouter();
   const searchParams = useSearchParams();
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
   redirect_if_logged_in();
+
+  // Validation functions - reusing patterns from profile page
+  const isValidName = (name: string): boolean => {
+    if (!name || name.trim() === "") return false;
+    return name.trim().length >= 2 && name.trim().length <= 32 && /^[a-zA-Z\s.-]+$/.test(name.trim());
+  };
+
+  const isValidPhoneNumber = (phone: string): boolean => {
+    if (!phone || phone.trim() === "") return false;
+    const cleanPhone = phone.replace(/\D/g, ""); // Remove non-digits
+    return cleanPhone.length === 11 && /^09\d{9}$/.test(cleanPhone); // Philippine format: 09XXXXXXXXX
+  };
+
+  const isValidLinkageOfficer = (name: string): boolean => {
+    if (!name || name.trim() === "") return false;
+    return name.trim().length <= 40 && /^[a-zA-Z\s.-]+$/.test(name.trim());
+  };
+
+  // Validation function
+  const validateFields = () => {
+    const errors: typeof validationErrors = {};
+
+    // First name validation
+    if (!form_data.first_name || !isValidName(form_data.first_name)) {
+      errors.first_name = !form_data.first_name?.trim()
+        ? "First name is required"
+        : form_data.first_name.trim().length < 2
+        ? "First name must be at least 2 characters"
+        : form_data.first_name.trim().length > 32
+        ? "First name must be 32 characters or less"
+        : "First name must contain only letters, spaces, dots, and hyphens";
+    }
+
+    // Middle name validation (optional but must be valid if provided)
+    if (form_data.middle_name && form_data.middle_name.trim()) {
+      if (form_data.middle_name.trim().length > 32 || !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())) {
+        errors.middle_name = form_data.middle_name.trim().length > 32
+          ? "Middle name must be 32 characters or less"
+          : "Middle name must contain only letters, spaces, dots, and hyphens";
+      }
+    }
+
+    // Last name validation
+    if (!form_data.last_name || !isValidName(form_data.last_name)) {
+      errors.last_name = !form_data.last_name?.trim()
+        ? "Last name is required"
+        : form_data.last_name.trim().length < 2
+        ? "Last name must be at least 2 characters"
+        : form_data.last_name.trim().length > 32
+        ? "Last name must be 32 characters or less"
+        : "Last name must contain only letters, spaces, dots, and hyphens";
+    }
+
+    // Phone number validation
+    if (!form_data.phone_number || !isValidPhoneNumber(form_data.phone_number)) {
+      errors.phone_number = !form_data.phone_number?.trim()
+        ? "Phone number is required"
+        : "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
+    }
+
+    // Linkage officer validation (only if taking for credit)
+    if (takingForCredit && (!form_data.linkage_officer || !isValidLinkageOfficer(form_data.linkage_officer))) {
+      errors.linkage_officer = !form_data.linkage_officer?.trim()
+        ? "Linkage officer is required when taking for credit"
+        : form_data.linkage_officer.trim().length > 40
+        ? "Linkage officer name must be 40 characters or less"
+        : "Linkage officer name must contain only letters, spaces, dots, and hyphens";
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Clear validation error when user starts typing
+  const clearValidationError = (field: keyof typeof validationErrors) => {
+    if (validationErrors[field]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
 
   // Initialize form fields with default values
   useEffect(() => {
@@ -71,6 +161,12 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const domain = email.split("@")[1];
+
+    // Run validation
+    if (!validateFields()) {
+      setError("Please fix all validation errors before continuing");
+      return;
+    }
 
     if (
       !form_data.first_name ||
@@ -169,12 +265,38 @@ export default function RegisterPage() {
                 First Name <span className="text-red-500">*</span>, Middle Name,
                 Last Name <span className="text-red-500">*</span>
               </label>
+              {(validationErrors.first_name || validationErrors.middle_name || validationErrors.last_name) && (
+                <div className="mb-2">
+                  {validationErrors.first_name && (
+                    <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>{validationErrors.first_name}</span>
+                    </div>
+                  )}
+                  {validationErrors.middle_name && (
+                    <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>{validationErrors.middle_name}</span>
+                    </div>
+                  )}
+                  {validationErrors.last_name && (
+                    <div className="flex items-center gap-1 text-red-600 text-xs">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>{validationErrors.last_name}</span>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="w-full flex flex-row space-x-2">
                 <Input
                   type="text"
                   value={form_data.first_name ?? undefined}
-                  onChange={(e) => set_field("first_name", e.target.value)}
+                  onChange={(e) => {
+                    set_field("first_name", e.target.value);
+                    clearValidationError("first_name");
+                  }}
                   placeholder="First Name..."
+                  maxLength={32}
                   className={
                     (form_data.first_name === ""
                       ? "border-gray-300"
@@ -187,8 +309,12 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={form_data.middle_name ?? undefined}
-                  onChange={(e) => set_field("middle_name", e.target.value)}
+                  onChange={(e) => {
+                    set_field("middle_name", e.target.value);
+                    clearValidationError("middle_name");
+                  }}
                   placeholder="Middle Name..."
+                  maxLength={32}
                   className={
                     (form_data.middle_name === ""
                       ? "border-gray-300"
@@ -200,8 +326,12 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={form_data.last_name ?? undefined}
-                  onChange={(e) => set_field("last_name", e.target.value)}
+                  onChange={(e) => {
+                    set_field("last_name", e.target.value);
+                    clearValidationError("last_name");
+                  }}
                   placeholder="Last Name..."
+                  maxLength={32}
                   className={
                     (form_data.last_name === ""
                       ? "border-gray-300"
@@ -219,11 +349,21 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number <span className="text-red-500">*</span>
               </label>
+              {validationErrors.phone_number && (
+                <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                  <AlertCircle className="h-3 w-3" />
+                  <span>{validationErrors.phone_number}</span>
+                </div>
+              )}
               <Input
                 type="tel"
                 value={form_data.phone_number ?? ""}
-                onChange={(e) => set_field("phone_number", e.target.value)}
+                onChange={(e) => {
+                  set_field("phone_number", e.target.value);
+                  clearValidationError("phone_number");
+                }}
                 placeholder="Enter Phone Number"
+                maxLength={11}
                 className={
                   (form_data.phone_number === ""
                     ? "border-gray-300"
@@ -411,11 +551,21 @@ export default function RegisterPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Linkage Officer
                 </label>
+                {validationErrors.linkage_officer && (
+                  <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                    <AlertCircle className="h-3 w-3" />
+                    <span>{validationErrors.linkage_officer}</span>
+                  </div>
+                )}
                 <Input
                   type="text"
                   value={form_data.linkage_officer ?? ""}
-                  onChange={(e) => set_field("linkage_officer", e.target.value)}
+                  onChange={(e) => {
+                    set_field("linkage_officer", e.target.value);
+                    clearValidationError("linkage_officer");
+                  }}
                   placeholder="Enter your linkage officer's name"
+                  maxLength={40}
                   className={
                     (form_data.linkage_officer === ""
                       ? "border-gray-300"
