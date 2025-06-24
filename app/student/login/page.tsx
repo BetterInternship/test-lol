@@ -60,6 +60,7 @@ export default function LoginPage() {
       await email_status(email).then((response) => {
         if (!response?.existing_user) {
           set_new_account(true);
+          setLoading(false);
         } else if (!response.verified_user) {
           router.push(`/login?verified=pending`);
         } else {
@@ -69,8 +70,8 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "An error occurred. Please try again.");
-    } finally {
       setLoading(false);
+    } finally {
     }
   };
 

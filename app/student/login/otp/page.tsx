@@ -98,7 +98,9 @@ export default function OTPPage() {
       setError("");
       await verify_otp(email, otpString)
         .then((r) =>
-          r?.success ? router.push("/") : setError(r.message ?? "Invalid OTP.")
+          r?.success
+            ? router.push("/")
+            : (setError("Invalid OTP."), setLoading(false))
         )
         .catch((e) => setError(e.message ?? ""));
     } catch (err: any) {
@@ -107,8 +109,8 @@ export default function OTPPage() {
       setOtp(["", "", "", "", "", ""]);
       // Focus back to first input
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
-    } finally {
       setLoading(false);
+    } finally {
     }
   };
 

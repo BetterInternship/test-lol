@@ -67,9 +67,8 @@ export default function LoginPage() {
         }
       } else {
         setError("Invalid password.");
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     });
   };
 
