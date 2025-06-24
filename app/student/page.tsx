@@ -227,18 +227,17 @@ export default function HomePage() {
                         </Button>
                       </div>
                       <div className="h-8 w-px bg-gray-300 mx-1" />
-                      <div className="w-40">
+                      <div className="w-44">
                         <Button
                           onClick={() => openCategoryModal()}
                           className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
                             is_mobile ? 'bg-white' : 'bg-transparent'
                           }`}
                         >
-                        >
-                          <span className="truncate text-sm">
+                          <span className="text-sm whitespace-nowrap">
                             {filters.category || "All categories"}
                           </span>
-                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
                         </Button>
                       </div>
                     </DropdownGroup>
