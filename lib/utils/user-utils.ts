@@ -40,7 +40,6 @@ export const user_can_apply = (user: PublicUser | null): boolean => {
     !not_null(user.first_name) ||
     !not_null(user.last_name) ||
     !not_null(user.phone_number) ||
-    !not_null(user.profile_picture) ||
     !not_null(user.resume) ||
     !not_null(user.university) ||
     !not_null(user.year_level)

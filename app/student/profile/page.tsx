@@ -1011,7 +1011,7 @@ export default function ProfilePage() {
                           is_editing={isEditing}
                           value={form_data.calendar_link}
                           setter={validatedFieldSetter("calendar_link")}
-                          placeholder="https://calendly.com/yourusername"
+                          placeholder="https://calendar.app.google/your-link"
                         >
                           <UserLinkLabel />
                         </EditableInput>
