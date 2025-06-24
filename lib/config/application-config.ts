@@ -68,7 +68,6 @@ export const APP_CONFIG: ApplicationConfig = {
  * These users can submit applications even when maintenance mode is enabled
  */
 const BYPASS_EMAILS = [
-  "sherwin_yaun@dlsu.edu.ph",
   "ric_pagulayan@dlsu.edu.ph", 
   "malks_david@dlsu.edu.ph"
 ];
