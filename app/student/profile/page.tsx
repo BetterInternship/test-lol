@@ -151,7 +151,7 @@ export default function ProfilePage() {
   // Field validation functions
   const isValidPhoneNumber = (phone: string): boolean => {
     if (!phone || phone.trim() === "") return true; // Empty is allowed
-    const cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits
+    const cleanPhone = phone.replace(/\D/g, ""); // Remove non-digits
     return cleanPhone.length === 11 && /^09\d{9}$/.test(cleanPhone); // Philippine format: 09XXXXXXXXX
   };
 
@@ -165,21 +165,22 @@ export default function ProfilePage() {
 
     // First name validation
     if (!form_data.first_name || !isValidName(form_data.first_name)) {
-      errors.first_name = !form_data.first_name?.trim() 
-        ? "First name is required" 
+      errors.first_name = !form_data.first_name?.trim()
+        ? "First name is required"
         : "First name must be at least 2 characters and contain only letters";
     }
 
     // Last name validation
     if (!form_data.last_name || !isValidName(form_data.last_name)) {
-      errors.last_name = !form_data.last_name?.trim() 
-        ? "Last name is required" 
+      errors.last_name = !form_data.last_name?.trim()
+        ? "Last name is required"
         : "Last name must be at least 2 characters and contain only letters";
     }
 
     // Phone number validation
     if (form_data.phone_number && !isValidPhoneNumber(form_data.phone_number)) {
-      errors.phone_number = "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
+      errors.phone_number =
+        "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
     }
 
     // College validation
@@ -187,8 +188,19 @@ export default function ProfilePage() {
       errors.college = "Please select your college";
     }
 
+    // College validation
+    if (
+      !form_data.department_name ||
+      form_data.department_name === "Not specified"
+    ) {
+      errors.college = "Please select your department";
+    }
+
     // Year level validation
-    if (!form_data.year_level_name || form_data.year_level_name === "Not specified") {
+    if (
+      !form_data.year_level_name ||
+      form_data.year_level_name === "Not specified"
+    ) {
       errors.year_level = "Please select your year level";
     }
 
@@ -236,7 +248,7 @@ export default function ProfilePage() {
     // Clear field error when user starts typing
     const fieldErrorKey = field as keyof typeof fieldErrors;
     if (fieldErrors[fieldErrorKey]) {
-      setFieldErrors(prev => {
+      setFieldErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[fieldErrorKey];
         return newErrors;
@@ -287,54 +299,58 @@ export default function ProfilePage() {
   };
 
   // Field setter with field validation
-  const validatedBasicFieldSetter = (field: keyof PublicUser) => (value: string) => {
-    field_setter(field)(value);
+  const validatedBasicFieldSetter =
+    (field: keyof PublicUser) => (value: string) => {
+      field_setter(field)(value);
 
-    // Clear field error when user starts typing
-    const fieldErrorKey = field as keyof typeof fieldErrors;
-    if (fieldErrors[fieldErrorKey]) {
-      setFieldErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[fieldErrorKey];
-        return newErrors;
-      });
-    }
-
-    // Real-time validation for specific fields
-    setTimeout(() => {
-      const errors = { ...fieldErrors };
-
-      switch (field) {
-        case "first_name":
-          if (value && !isValidName(value)) {
-            errors.first_name = "First name must be at least 2 characters and contain only letters";
-          } else if (!value?.trim()) {
-            errors.first_name = "First name is required";
-          } else {
-            delete errors.first_name;
-          }
-          break;
-        case "last_name":
-          if (value && !isValidName(value)) {
-            errors.last_name = "Last name must be at least 2 characters and contain only letters";
-          } else if (!value?.trim()) {
-            errors.last_name = "Last name is required";
-          } else {
-            delete errors.last_name;
-          }
-          break;
-        case "phone_number":
-          if (value && !isValidPhoneNumber(value)) {
-            errors.phone_number = "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
-          } else {
-            delete errors.phone_number;
-          }
-          break;
+      // Clear field error when user starts typing
+      const fieldErrorKey = field as keyof typeof fieldErrors;
+      if (fieldErrors[fieldErrorKey]) {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldErrorKey];
+          return newErrors;
+        });
       }
 
-      setFieldErrors(errors);
-    }, 500);
-  };
+      // Real-time validation for specific fields
+      setTimeout(() => {
+        const errors = { ...fieldErrors };
+
+        switch (field) {
+          case "first_name":
+            if (value && !isValidName(value)) {
+              errors.first_name =
+                "First name must be at least 2 characters and contain only letters";
+            } else if (!value?.trim()) {
+              errors.first_name = "First name is required";
+            } else {
+              delete errors.first_name;
+            }
+            break;
+          case "last_name":
+            if (value && !isValidName(value)) {
+              errors.last_name =
+                "Last name must be at least 2 characters and contain only letters";
+            } else if (!value?.trim()) {
+              errors.last_name = "Last name is required";
+            } else {
+              delete errors.last_name;
+            }
+            break;
+          case "phone_number":
+            if (value && !isValidPhoneNumber(value)) {
+              errors.phone_number =
+                "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
+            } else {
+              delete errors.phone_number;
+            }
+            break;
+        }
+
+        setFieldErrors(errors);
+      }, 500);
+    };
   const {
     open: open_employer_modal,
     close: close_employer_modal,
@@ -458,7 +474,7 @@ export default function ProfilePage() {
     // Validate all fields before saving
     const fieldsValid = validateFields();
     const linksValid = validateLinks();
-    
+
     if (!fieldsValid || !linksValid) {
       alert("Please fix all validation errors before saving.");
       return;
@@ -502,13 +518,14 @@ export default function ProfilePage() {
   };
 
   const handleCancel = () => {
-    if (profile) set_fields({ 
-      ...profile,
-      college_name: to_college_name(profile.college),
-      year_level_name: to_level_name(profile.year_level),
-      department_name: to_department_name(profile.department),
-      degree_name: to_degree_full_name(profile.degree),
-    });
+    if (profile)
+      set_fields({
+        ...profile,
+        college_name: to_college_name(profile.college),
+        year_level_name: to_level_name(profile.year_level),
+        department_name: to_department_name(profile.department),
+        degree_name: to_degree_full_name(profile.degree),
+      });
     setIsEditing(false);
     setLinkErrors({}); // Clear errors when cancelling
     setFieldErrors({}); // Clear field errors when cancelling
@@ -608,9 +625,14 @@ export default function ProfilePage() {
                   <Button
                     size="sm"
                     onClick={handleSave}
-                    disabled={saving || Object.keys(linkErrors).length > 0 || Object.keys(fieldErrors).length > 0}
+                    disabled={
+                      saving ||
+                      Object.keys(linkErrors).length > 0 ||
+                      Object.keys(fieldErrors).length > 0
+                    }
                     className={
-                      Object.keys(linkErrors).length > 0 || Object.keys(fieldErrors).length > 0
+                      Object.keys(linkErrors).length > 0 ||
+                      Object.keys(fieldErrors).length > 0
                         ? "opacity-50 cursor-not-allowed"
                         : ""
                     }
@@ -753,10 +775,11 @@ export default function ProfilePage() {
                                 college_name: value,
                                 college: get_college_by_name(value)?.id,
                                 department_name: "Not specified",
+                                department: null,
                               });
                               // Clear college error when user selects a value
                               if (value && value !== "Not specified") {
-                                setFieldErrors(prev => {
+                                setFieldErrors((prev) => {
                                   const newErrors = { ...prev };
                                   delete newErrors.college;
                                   return newErrors;
@@ -852,7 +875,7 @@ export default function ProfilePage() {
                               field_setter("year_level_name")(value);
                               // Clear year level error when user selects a value
                               if (value && value !== "Not specified") {
-                                setFieldErrors(prev => {
+                                setFieldErrors((prev) => {
                                   const newErrors = { ...prev };
                                   delete newErrors.year_level;
                                   return newErrors;
