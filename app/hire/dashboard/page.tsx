@@ -594,17 +594,18 @@ export default function Dashboard() {
 
         <ResumeModal>
           {selected_application?.user?.resume ? (
-            <div className="p-6">
-              <h1 className="font-bold font-heading text-3xl pb-6 text-gray-900">
-                get_full_name(selected_application?.user) - Resume
-              </h1>
-              <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+            <div className="h-full flex flex-col">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                <h1 className="font-bold font-heading text-2xl text-gray-900">
+                  {get_full_name(selected_application?.user)} - Resume
+                </h1>
+              </div>
+              <div className="flex-1 p-4">
                 <iframe
                   allowTransparency={true}
-                  className="w-full border-0 rounded-lg"
+                  className="w-full h-full border border-gray-200 rounded-lg"
                   style={{
-                    width: client_width * 0.4,
-                    height: client_height * 0.8,
+                    minHeight: "70vh",
                     background: "#FFFFFF",
                   }}
                   src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
@@ -614,10 +615,13 @@ export default function Dashboard() {
               </div>
             </div>
           ) : (
-            <div className="h-48 px-8">
-              <h1 className="font-heading font-bold text-4xl my-4">Aww man!</h1>
-              <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
-                This applicant has not uploaded a resume.
+            <div className="flex flex-col items-center justify-center h-96 px-8">
+              <div className="text-center">
+                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">No Resume Available</h1>
+                <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                  This applicant has not uploaded a resume yet.
+                </div>
               </div>
             </div>
           )}
