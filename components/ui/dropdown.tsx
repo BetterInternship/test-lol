@@ -141,19 +141,33 @@ export const GroupableRadioDropdown = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const touchStartRef = useRef<{ x: number; y: number; target: EventTarget | null } | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0, openUpwards: false });
 
   // Update dropdown position when it opens or button position changes
   const updateDropdownPosition = useCallback(() => {
     if (buttonRef.current && is_open) {
       const rect = buttonRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const dropdownHeight = 320; // Estimated max dropdown height (max-h-80 = 320px)
+      
+      // On mobile, prefer opening upwards to avoid being cut off
+      // On desktop, open downwards unless there's insufficient space
+      const shouldOpenUpwards = is_mobile 
+        ? spaceAbove > 120 // Open upwards if there's at least 120px above (more margin for mobile)
+        : spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
+      
       setDropdownPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width
+        top: shouldOpenUpwards 
+          ? rect.top - (is_mobile ? 12 : 8) // Extra margin on mobile
+          : rect.bottom + (is_mobile ? 12 : 8),
+        left: is_mobile ? Math.max(16, rect.left) : rect.left, // Ensure margin from screen edge on mobile
+        width: is_mobile ? Math.min(rect.width, window.innerWidth - 32) : rect.width, // Prevent overflow on mobile
+        openUpwards: shouldOpenUpwards
       });
     }
-  }, [is_open]);
+  }, [is_open, is_mobile]);
 
   // Update position when dropdown opens
   useEffect(() => {
@@ -311,7 +325,8 @@ export const GroupableRadioDropdown = ({
         <div
           className={cn(
             "absolute top-full mt-2 bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
-            "z-[9999]", // Use maximum z-index to ensure it appears above modals
+            "z-[9999] transition-all duration-200 ease-out", // Add smooth animation
+            dropdownPosition.openUpwards ? "animate-in slide-in-from-bottom-2" : "animate-in slide-in-from-top-2",
             is_mobile ? "min-w-full" : "min-w-[200px]",
             className
           )}
@@ -323,7 +338,9 @@ export const GroupableRadioDropdown = ({
             top: dropdownPosition.top,
             left: dropdownPosition.left,
             width: dropdownPosition.width,
-            minWidth: is_mobile ? '100%' : '200px'
+            minWidth: is_mobile ? '100%' : '200px',
+            transform: dropdownPosition.openUpwards ? 'translateY(-100%)' : 'none',
+            transformOrigin: dropdownPosition.openUpwards ? 'bottom' : 'top'
           }}
         >
           <div 
