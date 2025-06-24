@@ -127,17 +127,6 @@ export default function RegisterPage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Clear validation error when user starts typing
-  const clearValidationError = (field: keyof typeof validationErrors) => {
-    if (validationErrors[field]) {
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[field];
-        return newErrors;
-      });
-    }
-  };
-
   // Initialize form fields with default values
   useEffect(() => {
     if (form_data.taking_for_credit === undefined) {
@@ -162,27 +151,31 @@ export default function RegisterPage() {
     e.preventDefault();
     const domain = email.split("@")[1];
 
-    // Run validation
-    if (!validateFields()) {
-      setError("Please fix all validation errors before continuing");
+    // Clear previous errors
+    setError("");
+    setValidationErrors({});
+
+    // Run validation only on submit
+    const isValid = validateFields();
+    
+    // Check for missing required fields
+    const missingFields = [];
+    if (!form_data.first_name?.trim()) missingFields.push("First Name");
+    if (!form_data.last_name?.trim()) missingFields.push("Last Name");
+    if (!form_data.phone_number?.trim()) missingFields.push("Phone Number");
+    if (!form_data.year_level_name || form_data.year_level_name === defaultYearLevel) missingFields.push("Year Level");
+    if (!form_data.college_name || form_data.college_name === defaultCollege) missingFields.push("College");
+    if (takingForCredit && !form_data.linkage_officer?.trim()) missingFields.push("Linkage Officer");
+
+    // Show specific missing fields error
+    if (missingFields.length > 0) {
+      setError(`Please fill in the following required fields: ${missingFields.join(", ")}`);
       return;
     }
 
-    if (
-      !form_data.first_name ||
-      !form_data.last_name ||
-      !form_data.phone_number ||
-      !form_data.year_level_name ||
-      form_data.year_level_name === defaultYearLevel ||
-      !form_data.college_name ||
-      form_data.college_name === defaultCollege
-    ) {
-      setError("Please fill in all required fields");
-      return;
-    }
-
-    if (takingForCredit && !form_data.linkage_officer?.trim()) {
-      setError("Please provide your linkage officer information");
+    // Show validation errors if any
+    if (!isValid) {
+      setError("Please fix the validation errors above before continuing");
       return;
     }
 
@@ -195,14 +188,6 @@ export default function RegisterPage() {
 
     if (!get_university_by_domain(domain)) {
       setError("Please use your university email address (e.g. @dlsu.edu.ph)");
-      return;
-    }
-
-    if (
-      form_data.college_name === defaultCollege ||
-      form_data.year_level_name === defaultYearLevel
-    ) {
-      setError("Please fill in the dropdown fields too.");
       return;
     }
 
@@ -291,10 +276,7 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={form_data.first_name ?? undefined}
-                  onChange={(e) => {
-                    set_field("first_name", e.target.value);
-                    clearValidationError("first_name");
-                  }}
+                  onChange={(e) => set_field("first_name", e.target.value)}
                   placeholder="First Name..."
                   maxLength={32}
                   className={
@@ -309,10 +291,7 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={form_data.middle_name ?? undefined}
-                  onChange={(e) => {
-                    set_field("middle_name", e.target.value);
-                    clearValidationError("middle_name");
-                  }}
+                  onChange={(e) => set_field("middle_name", e.target.value)}
                   placeholder="Middle Name..."
                   maxLength={32}
                   className={
@@ -326,10 +305,7 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={form_data.last_name ?? undefined}
-                  onChange={(e) => {
-                    set_field("last_name", e.target.value);
-                    clearValidationError("last_name");
-                  }}
+                  onChange={(e) => set_field("last_name", e.target.value)}
                   placeholder="Last Name..."
                   maxLength={32}
                   className={
@@ -358,10 +334,7 @@ export default function RegisterPage() {
               <Input
                 type="tel"
                 value={form_data.phone_number ?? ""}
-                onChange={(e) => {
-                  set_field("phone_number", e.target.value);
-                  clearValidationError("phone_number");
-                }}
+                onChange={(e) => set_field("phone_number", e.target.value)}
                 placeholder="Enter Phone Number"
                 maxLength={11}
                 className={
@@ -560,10 +533,7 @@ export default function RegisterPage() {
                 <Input
                   type="text"
                   value={form_data.linkage_officer ?? ""}
-                  onChange={(e) => {
-                    set_field("linkage_officer", e.target.value);
-                    clearValidationError("linkage_officer");
-                  }}
+                  onChange={(e) => set_field("linkage_officer", e.target.value)}
                   placeholder="Enter your linkage officer's name"
                   maxLength={40}
                   className={
