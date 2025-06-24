@@ -35,6 +35,7 @@ import {
   getMaintenanceSubMessage,
   getAvailableActions,
 } from "@/lib/config/application-config";
+import ReactMarkdown from "react-markdown";
 
 /**
  * The individual job page.
@@ -444,7 +445,9 @@ export default function JobPage() {
                       </h2>
                       <div className="prose max-w-none text-gray-700 leading-relaxed">
                         <div className="whitespace-pre-wrap text-base leading-7">
-                          {job.description || "No description provided."}
+                          <ReactMarkdown>
+                            {job.description || "No description provided."}
+                          </ReactMarkdown>
                         </div>
                       </div>
                     </div>
