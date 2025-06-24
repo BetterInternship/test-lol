@@ -155,7 +155,11 @@ export default function ProfilePage() {
 
   const isValidName = (name: string): boolean => {
     if (!name || name.trim() === "") return false;
-    return name.trim().length >= 2 && name.trim().length <= 32 && /^[a-zA-Z\s.-]+$/.test(name.trim());
+    return (
+      name.trim().length >= 2 &&
+      name.trim().length <= 32 &&
+      /^[a-zA-Z\s.-]+$/.test(name.trim())
+    );
   };
 
   const validateFields = () => {
@@ -174,10 +178,14 @@ export default function ProfilePage() {
 
     // Middle name validation (optional but must be valid if provided)
     if (form_data.middle_name && form_data.middle_name.trim()) {
-      if (form_data.middle_name.trim().length > 32 || !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())) {
-        errors.middle_name = form_data.middle_name.trim().length > 32
-          ? "Middle name must be 32 characters or less"
-          : "Middle name must contain only letters, spaces, dots, and hyphens";
+      if (
+        form_data.middle_name.trim().length > 32 ||
+        !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())
+      ) {
+        errors.middle_name =
+          form_data.middle_name.trim().length > 32
+            ? "Middle name must be 32 characters or less"
+            : "Middle name must contain only letters, spaces, dots, and hyphens";
       }
     }
 
@@ -636,7 +644,9 @@ export default function ProfilePage() {
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
                           Full Name, Middle Name, Last Name
                         </label>
-                        {(fieldErrors.first_name || fieldErrors.middle_name || fieldErrors.last_name) && (
+                        {(fieldErrors.first_name ||
+                          fieldErrors.middle_name ||
+                          fieldErrors.last_name) && (
                           <div className="mb-2">
                             {fieldErrors.first_name && (
                               <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
@@ -763,16 +773,12 @@ export default function ProfilePage() {
                             is_editing={isEditing}
                             name="department"
                             value={form_data.department_name}
-                            setter={(value) => {
-                              field_setter("department_name")(value);
-                              // Clear department error when user selects a value (immediate feedback)
-                              if (value && value !== "Not specified") {
-                                setFieldErrors((prev) => {
-                                  const newErrors = { ...prev };
-                                  delete newErrors.department;
-                                  return newErrors;
-                                });
-                              }
+                            setter={(value: string) => {
+                              set_field(
+                                "department",
+                                get_department_by_name(value)
+                              );
+                              set_field("department_name", value);
                             }}
                             options={[
                               "Not specified",
