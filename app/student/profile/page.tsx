@@ -92,6 +92,7 @@ export default function ProfilePage() {
     last_name?: string;
     phone_number?: string;
     college?: string;
+    department?: string;
     year_level?: string;
   }>({});
 
@@ -140,6 +141,7 @@ export default function ProfilePage() {
       return (
         (urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
         (urlObj.hostname === "calendar.app.google" ||
+          urlObj.hostname === "calendar.google.com" ||
           urlObj.hostname === "calendly.com" ||
           urlObj.hostname === "cal.com")
       );
@@ -193,7 +195,7 @@ export default function ProfilePage() {
       !form_data.department_name ||
       form_data.department_name === "Not specified"
     ) {
-      errors.college = "Please select your department";
+      errors.department = "Please select your department";
     }
 
     // Year level validation
@@ -234,7 +236,7 @@ export default function ProfilePage() {
       !isValidCalendarURL(form_data.calendar_link)
     ) {
       errors.calendar_link =
-        "Please enter a valid calendar URL (e.g., https://calendly.com/username or https://calendar.app.google/link)";
+        "Please enter a valid calendar URL (e.g., https://calendar.app.google/link or https://calendar.google.com/link)";
     }
 
     setLinkErrors(errors);
@@ -287,7 +289,7 @@ export default function ProfilePage() {
         case "calendar_link":
           if (value && !isValidCalendarURL(value)) {
             errors.calendar_link =
-              "Please enter a valid calendar URL (e.g., https://calendly.com/username or https://calendar.app.google/link)";
+              "Please enter a valid calendar URL (e.g., https://calendar.app.google/link or https://calendar.google.com/link)";
           } else {
             delete errors.calendar_link;
           }
@@ -799,6 +801,12 @@ export default function ProfilePage() {
                           <label className="text-sm font-medium text-gray-700 mb-1 block">
                             Department
                           </label>
+                          {fieldErrors.department && (
+                            <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                              <AlertCircle className="h-3 w-3" />
+                              <span>{fieldErrors.department}</span>
+                            </div>
+                          )}
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="department"
