@@ -1148,7 +1148,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Modals */}
-      {resume_url.length && (
+      {resume_url.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
@@ -1163,7 +1163,7 @@ export default function ProfilePage() {
                   maxHeight: "800px",
                   background: "#FFFFFF",
                 }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
+                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
               >
                 Resume could not be loaded.
               </iframe>

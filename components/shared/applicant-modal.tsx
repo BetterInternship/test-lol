@@ -349,7 +349,7 @@ export const ApplicantModalContent = ({
       </div>
 
       {/* Resume Modal */}
-      {resume_url.length && (
+      {resume_url.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
