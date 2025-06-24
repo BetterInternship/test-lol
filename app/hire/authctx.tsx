@@ -104,6 +104,7 @@ export const AuthContextProvider = ({
     employer_auth_service.logout();
     router.push("/login");
     setUser(null);
+    setGod(false);
     set_is_authenticated(false);
   };
 
