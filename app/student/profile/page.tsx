@@ -131,7 +131,9 @@ export default function ProfilePage() {
       const urlObj = new URL(url);
       return (
         (urlObj.protocol === "http:" || urlObj.protocol === "https:") &&
-        urlObj.hostname === "calendar.app.google"
+        (urlObj.hostname === "calendar.app.google" ||
+          urlObj.hostname === "calendly.com" ||
+          urlObj.hostname === "cal.com")
       );
     } catch {
       return false;
@@ -164,7 +166,7 @@ export default function ProfilePage() {
       !isValidCalendarURL(form_data.calendar_link)
     ) {
       errors.calendar_link =
-        "Please enter a valid Google Calendar URL (e.g., https://calendar.app.google/link)";
+        "Please enter a valid calendar URL (e.g., https://calendly.com/username or https://calendar.app.google/link)";
     }
 
     setLinkErrors(errors);
@@ -207,7 +209,7 @@ export default function ProfilePage() {
         case "calendar_link":
           if (value && !isValidCalendarURL(value)) {
             errors.calendar_link =
-              "Please enter a valid Calendar URL (e.g., https://calendly.com/username)";
+              "Please enter a valid calendar URL (e.g., https://calendly.com/username or https://calendar.app.google/link)";
           } else {
             delete errors.calendar_link;
           }
@@ -332,6 +334,7 @@ export default function ProfilePage() {
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
         department_name: to_department_name(profile.department),
+        calendar_link: profile.calendar_link ?? "",
       });
   }, [profile, ref_loading]);
 
@@ -502,8 +505,11 @@ export default function ProfilePage() {
                     setIsEditing(true),
                     set_fields({
                       ...profile,
+                      degree_name: to_degree_full_name(profile.degree),
                       college_name: to_college_name(profile.college),
                       year_level_name: to_level_name(profile.year_level),
+                      department_name: to_department_name(profile.department),
+                      calendar_link: profile.calendar_link ?? "",
                     })
                   )}
                 >

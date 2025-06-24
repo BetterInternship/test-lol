@@ -129,7 +129,7 @@ export const useModal = (name: string, options?: { showCloseButton?: boolean }) 
               className={`bg-white overflow-hidden shadow-2xl w-full ${
                 is_mobile 
                   ? 'max-w-full mx-0 rounded-t-2xl rounded-b-none max-h-[85vh] min-h-[200px] flex flex-col animate-in slide-in-from-bottom duration-300' 
-                  : 'max-w-lg rounded-2xl max-h-[85vh] animate-in fade-in zoom-in-95 duration-200'
+                  : 'max-w-2xl rounded-2xl max-h-[85vh] animate-in fade-in zoom-in-95 duration-200'
               }`}
               onClick={handleModalInteraction}
               onTouchStart={handleModalInteraction}

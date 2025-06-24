@@ -40,7 +40,8 @@ export const EditableInput = ({
       value={value ?? ""}
       onChange={(e) => setter(e.target.value)}
       placeholder={placeholder}
-      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm relative z-10 pointer-events-auto"
+      style={{ position: 'relative', zIndex: 10 }}
     />
   ) : (
     React.Children.map(children, (child) => {

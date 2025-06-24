@@ -76,7 +76,7 @@ const DropdownOptionButton = ({
     <button
       className={cn(
         "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
-        is_mobile ? "py-3 active:bg-gray-200" : "", // Larger touch targets on mobile
+        is_mobile ? "py-3 active:bg-gray-200 touch-manipulation" : "", // Larger touch targets on mobile
         children.props.highlighted ? "text-blue-500" : ""
       )}
       onClick={handleClick}
@@ -288,16 +288,27 @@ export const GroupableRadioDropdown = ({
           onTouchStart={handleDropdownInteraction}
           onTouchEnd={handleDropdownInteraction}
         >
-          {options.map((option, index) => (
-            <DropdownOptionButton key={index} set_is_open={set_is_open}>
-              <DropdownOption
-                highlighted={value === option}
-                on_click={() => handle_change(option)}
-              >
-                {option}
-              </DropdownOption>
-            </DropdownOptionButton>
-          ))}
+          <div 
+            className={cn(
+              "max-h-64 overflow-y-scroll overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+              is_mobile ? "max-h-80" : "max-h-64" // Slightly taller on mobile for better UX
+            )}
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#9ca3af #f3f4f6'
+            }}
+          >
+            {options.map((option, index) => (
+              <DropdownOptionButton key={index} set_is_open={set_is_open}>
+                <DropdownOption
+                  highlighted={value === option}
+                  on_click={() => handle_change(option)}
+                >
+                  {option}
+                </DropdownOption>
+              </DropdownOptionButton>
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -448,7 +459,14 @@ export const GroupableNavDropdown = ({
           onTouchStart={handleDropdownInteraction}
           onTouchEnd={handleDropdownInteraction}
         >
-          <div className="py-1">
+          <div className={cn(
+            "py-1 max-h-64 overflow-y-scroll overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+            is_mobile ? "max-h-80" : "max-h-64"
+          )}
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#9ca3af #f3f4f6'
+          }}>
             {content}
 
             {React.Children.map(children, (child, index) => {
