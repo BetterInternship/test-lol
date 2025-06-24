@@ -45,7 +45,7 @@ import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { industriesOptions, allCategories } from "@/lib/utils/job-options";
-import { user_can_apply } from "@/lib/utils/user-utils";
+import { user_can_apply, get_missing_profile_fields } from "@/lib/utils/user-utils";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -111,6 +111,11 @@ export default function SearchPage() {
     close: close_profile_preview_modal,
     Modal: ProfilePreviewModal,
   } = useModal("profile-preview-modal");
+  const {
+    open: open_incomplete_profile_modal,
+    close: close_incomplete_profile_modal,
+    Modal: IncompleteProfileModal,
+  } = useModal("incomplete-profile-modal");
 
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
@@ -222,9 +227,8 @@ export default function SearchPage() {
     console.log("Profile:", profile);
 
     if (!profileComplete) {
-      console.log("Profile not complete, redirecting to profile page");
-      alert("Please complete your profile before applying.");
-      router.push("/profile");
+      console.log("Profile not complete, opening incomplete profile modal");
+      open_incomplete_profile_modal();
       return;
     }
 
@@ -969,25 +973,118 @@ Best regards,
 
       {/* Profile Preview Modal */}
       <ProfilePreviewModal>
-        {profile && (
-          <ApplicantModalContent
-            applicant={profile as any}
-            open_resume_modal={() => {}} // Optional: Add resume preview functionality
-          />
-        )}
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              Your Profile Preview
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </Button>
+          </div>
 
-        <div className="mt-6">
-          <Button
-            onClick={() => {
-              close_profile_preview_modal();
-              open_application_confirmation_modal();
-            }}
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-          >
-            Back to Application
-          </Button>
+          {profile && (
+            <ApplicantModalContent
+              applicant={profile as any}
+              open_resume_modal={() => {}} // Optional: Add resume preview functionality
+            />
+          )}
+
+          <div className="mt-6">
+            <Button
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+            >
+              Back to Application
+            </Button>
+          </div>
         </div>
       </ProfilePreviewModal>
+
+      {/* Incomplete Profile Modal */}
+      <IncompleteProfileModal>
+        <div className="p-6">
+          {(() => {
+            const { missing, labels } = get_missing_profile_fields(profile);
+            const missingCount = missing.length;
+            
+            return (
+              <>
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Complete Your Profile
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed">
+                    You need to complete your profile before applying to jobs. 
+                    {missingCount === 1 
+                      ? "There is 1 required field missing."
+                      : `There are ${missingCount} required fields missing.`
+                    }
+                  </p>
+                </div>
+
+                {/* Missing Fields List */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                    Missing Information
+                  </h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    {missing.map((field) => (
+                      <div 
+                        key={field}
+                        className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg"
+                      >
+                        <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+                        <span className="text-sm font-medium text-orange-800">
+                          {labels[field]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => close_incomplete_profile_modal()}
+                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      close_incomplete_profile_modal();
+                      router.push("/profile");
+                    }}
+                    className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <User className="w-4 h-4" />
+                      Complete Profile
+                    </div>
+                  </Button>
+                </div>
+              </>
+            );
+          })()} 
+        </div>
+      </IncompleteProfileModal>
     </>
   );
 }
