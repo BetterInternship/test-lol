@@ -84,6 +84,7 @@ export default function ProfilePage() {
 
   const [fieldErrors, setFieldErrors] = useState<{
     first_name?: string;
+    middle_name?: string;
     last_name?: string;
     phone_number?: string;
     college?: string;
@@ -154,7 +155,7 @@ export default function ProfilePage() {
 
   const isValidName = (name: string): boolean => {
     if (!name || name.trim() === "") return false;
-    return name.trim().length >= 2 && /^[a-zA-Z\s.-]+$/.test(name.trim());
+    return name.trim().length >= 2 && name.trim().length <= 32 && /^[a-zA-Z\s.-]+$/.test(name.trim());
   };
 
   const validateFields = () => {
@@ -164,14 +165,31 @@ export default function ProfilePage() {
     if (!form_data.first_name || !isValidName(form_data.first_name)) {
       errors.first_name = !form_data.first_name?.trim()
         ? "First name is required"
-        : "First name must be at least 2 characters and contain only letters";
+        : form_data.first_name.trim().length < 2
+        ? "First name must be at least 2 characters"
+        : form_data.first_name.trim().length > 32
+        ? "First name must be 32 characters or less"
+        : "First name must contain only letters, spaces, dots, and hyphens";
+    }
+
+    // Middle name validation (optional but must be valid if provided)
+    if (form_data.middle_name && form_data.middle_name.trim()) {
+      if (form_data.middle_name.trim().length > 32 || !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())) {
+        errors.middle_name = form_data.middle_name.trim().length > 32
+          ? "Middle name must be 32 characters or less"
+          : "Middle name must contain only letters, spaces, dots, and hyphens";
+      }
     }
 
     // Last name validation
     if (!form_data.last_name || !isValidName(form_data.last_name)) {
       errors.last_name = !form_data.last_name?.trim()
         ? "Last name is required"
-        : "Last name must be at least 2 characters and contain only letters";
+        : form_data.last_name.trim().length < 2
+        ? "Last name must be at least 2 characters"
+        : form_data.last_name.trim().length > 32
+        ? "Last name must be 32 characters or less"
+        : "Last name must contain only letters, spaces, dots, and hyphens";
     }
 
     // Phone number validation
@@ -238,11 +256,11 @@ export default function ProfilePage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Enhanced field setters with validation
+  // Enhanced field setters - simplified without real-time validation
   const validatedFieldSetter = (field: keyof PublicUser) => (value: string) => {
     field_setter(field)(value);
 
-    // Clear field error when user starts typing
+    // Clear field error when user starts typing (immediate feedback)
     const fieldErrorKey = field as keyof typeof fieldErrors;
     if (fieldErrors[fieldErrorKey]) {
       setFieldErrors((prev) => {
@@ -252,55 +270,23 @@ export default function ProfilePage() {
       });
     }
 
-    // Validate specific fields on change
-    setTimeout(() => {
-      const errors = { ...linkErrors };
-
-      switch (field) {
-        case "portfolio_link":
-          if (value && !isValidURL(value)) {
-            errors.portfolio_link =
-              "Please enter a valid URL (e.g., https://example.com)";
-          } else {
-            delete errors.portfolio_link;
-          }
-          break;
-        case "github_link":
-          if (value && !isValidGitHubURL(value)) {
-            errors.github_link =
-              "Please enter a valid GitHub URL (e.g., https://github.com/username)";
-          } else {
-            delete errors.github_link;
-          }
-          break;
-        case "linkedin_link":
-          if (value && !isValidLinkedInURL(value)) {
-            errors.linkedin_link =
-              "Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)";
-          } else {
-            delete errors.linkedin_link;
-          }
-          break;
-        case "calendar_link":
-          if (value && !isValidCalendarURL(value)) {
-            errors.calendar_link =
-              "Please enter a valid calendar URL (e.g., https://calendar.app.google/link or https://calendar.google.com/link)";
-          } else {
-            delete errors.calendar_link;
-          }
-          break;
-      }
-
-      setLinkErrors(errors);
-    }, 500); // Debounce validation by 500ms
+    // Clear link error when user starts typing (immediate feedback)
+    const linkErrorKey = field as keyof typeof linkErrors;
+    if (linkErrors[linkErrorKey]) {
+      setLinkErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[linkErrorKey];
+        return newErrors;
+      });
+    }
   };
 
-  // Field setter with field validation
+  // Field setter for basic fields - simplified without real-time validation
   const validatedBasicFieldSetter =
     (field: keyof PublicUser) => (value: string) => {
       field_setter(field)(value);
 
-      // Clear field error when user starts typing
+      // Clear field error when user starts typing (immediate feedback)
       const fieldErrorKey = field as keyof typeof fieldErrors;
       if (fieldErrors[fieldErrorKey]) {
         setFieldErrors((prev) => {
@@ -309,44 +295,6 @@ export default function ProfilePage() {
           return newErrors;
         });
       }
-
-      // Real-time validation for specific fields
-      setTimeout(() => {
-        const errors = { ...fieldErrors };
-
-        switch (field) {
-          case "first_name":
-            if (value && !isValidName(value)) {
-              errors.first_name =
-                "First name must be at least 2 characters and contain only letters";
-            } else if (!value?.trim()) {
-              errors.first_name = "First name is required";
-            } else {
-              delete errors.first_name;
-            }
-            break;
-          case "last_name":
-            if (value && !isValidName(value)) {
-              errors.last_name =
-                "Last name must be at least 2 characters and contain only letters";
-            } else if (!value?.trim()) {
-              errors.last_name = "Last name is required";
-            } else {
-              delete errors.last_name;
-            }
-            break;
-          case "phone_number":
-            if (value && !isValidPhoneNumber(value)) {
-              errors.phone_number =
-                "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
-            } else {
-              delete errors.phone_number;
-            }
-            break;
-        }
-
-        setFieldErrors(errors);
-      }, 500);
     };
   const {
     open: open_employer_modal,
@@ -688,12 +636,18 @@ export default function ProfilePage() {
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
                           Full Name, Middle Name, Last Name
                         </label>
-                        {(fieldErrors.first_name || fieldErrors.last_name) && (
+                        {(fieldErrors.first_name || fieldErrors.middle_name || fieldErrors.last_name) && (
                           <div className="mb-2">
                             {fieldErrors.first_name && (
                               <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
                                 <AlertCircle className="h-3 w-3" />
                                 <span>{fieldErrors.first_name}</span>
+                              </div>
+                            )}
+                            {fieldErrors.middle_name && (
+                              <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>{fieldErrors.middle_name}</span>
                               </div>
                             )}
                             {fieldErrors.last_name && (
@@ -710,14 +664,16 @@ export default function ProfilePage() {
                             value={form_data.first_name}
                             setter={validatedBasicFieldSetter("first_name")}
                             placeholder="First name"
+                            maxLength={32}
                           >
                             <UserPropertyLabel />
                           </EditableInput>
                           <EditableInput
                             is_editing={isEditing}
                             value={form_data.middle_name}
-                            setter={field_setter("middle_name")}
+                            setter={validatedBasicFieldSetter("middle_name")}
                             placeholder="Middle name"
+                            maxLength={32}
                           >
                             <UserPropertyLabel fallback="" />
                           </EditableInput>
@@ -726,6 +682,7 @@ export default function ProfilePage() {
                             value={form_data.last_name}
                             setter={validatedBasicFieldSetter("last_name")}
                             placeholder="Last name"
+                            maxLength={32}
                           >
                             <UserPropertyLabel />
                           </EditableInput>
@@ -774,7 +731,7 @@ export default function ProfilePage() {
                                 department_name: "Not specified",
                                 department: null,
                               });
-                              // Clear college error when user selects a value
+                              // Clear college error when user selects a value (immediate feedback)
                               if (value && value !== "Not specified") {
                                 setFieldErrors((prev) => {
                                   const newErrors = { ...prev };
@@ -806,7 +763,17 @@ export default function ProfilePage() {
                             is_editing={isEditing}
                             name="department"
                             value={form_data.department_name}
-                            setter={field_setter("department_name")}
+                            setter={(value) => {
+                              field_setter("department_name")(value);
+                              // Clear department error when user selects a value (immediate feedback)
+                              if (value && value !== "Not specified") {
+                                setFieldErrors((prev) => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.department;
+                                  return newErrors;
+                                });
+                              }
+                            }}
                             options={[
                               "Not specified",
                               ...departments
@@ -876,7 +843,7 @@ export default function ProfilePage() {
                             value={form_data.year_level_name}
                             setter={(value) => {
                               field_setter("year_level_name")(value);
-                              // Clear year level error when user selects a value
+                              // Clear year level error when user selects a value (immediate feedback)
                               if (value && value !== "Not specified") {
                                 setFieldErrors((prev) => {
                                   const newErrors = { ...prev };
@@ -924,6 +891,7 @@ export default function ProfilePage() {
                                   is_editing={isEditing}
                                   value={form_data.linkage_officer}
                                   setter={field_setter("linkage_officer")}
+                                  maxLength={32}
                                 >
                                   <UserPropertyLabel />
                                 </EditableInput>
