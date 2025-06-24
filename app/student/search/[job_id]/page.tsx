@@ -45,7 +45,7 @@ export default function JobPage() {
   const params = useParams();
   const { job_id } = params;
   const { job, loading, error, refetch } = useJob(job_id as string);
-  const { is_authenticated } = useAuthContext();
+  const { is_authenticated, user } = useAuthContext();
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -97,8 +97,8 @@ export default function JobPage() {
   };
 
   const handleApply = () => {
-    // Check maintenance mode first
-    if (!areApplicationsEnabled()) {
+    // Check maintenance mode first, passing user email for bypass check
+    if (!areApplicationsEnabled(user?.email)) {
       open_maintenance_modal();
       return;
     }

@@ -64,10 +64,32 @@ export const APP_CONFIG: ApplicationConfig = {
 };
 
 /**
- * Helper function to check if applications are enabled
+ * Emails that can bypass maintenance mode
+ * These users can submit applications even when maintenance mode is enabled
  */
-export const areApplicationsEnabled = (): boolean => {
-  return APP_CONFIG.applicationsEnabled;
+const BYPASS_EMAILS = [
+  "sherwin_yaun@dlsu.edu.ph",
+  "ric_pagulayan@dlsu.edu.ph", 
+  "malks_david@dlsu.edu.ph"
+];
+
+/**
+ * Helper function to check if applications are enabled
+ * Accepts optional user email to check for bypass access
+ */
+export const areApplicationsEnabled = (userEmail?: string): boolean => {
+  // If applications are globally enabled, allow access
+  if (APP_CONFIG.applicationsEnabled) {
+    return true;
+  }
+  
+  // If user email is provided and in bypass list, allow access
+  if (userEmail && BYPASS_EMAILS.includes(userEmail.toLowerCase())) {
+    return true;
+  }
+  
+  // Otherwise, block access
+  return false;
 };
 
 /**

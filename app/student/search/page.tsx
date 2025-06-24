@@ -60,7 +60,7 @@ const formatDate = (dateString: string) => {
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { is_authenticated } = useAuthContext();
+  const { is_authenticated, user } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [coverLetter, setCoverLetter] = useState("");
@@ -213,8 +213,8 @@ export default function SearchPage() {
   const handleApply = () => {
     console.log("handleApply called");
 
-    // Check maintenance mode first
-    if (!areApplicationsEnabled()) {
+    // Check maintenance mode first, passing user email for bypass check
+    if (!areApplicationsEnabled(user?.email)) {
       console.log("Applications disabled - showing maintenance modal");
       open_maintenance_modal();
       return;
