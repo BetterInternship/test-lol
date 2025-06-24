@@ -87,6 +87,14 @@ export default function ProfilePage() {
     calendar_link?: string;
   }>({});
 
+  const [fieldErrors, setFieldErrors] = useState<{
+    first_name?: string;
+    last_name?: string;
+    phone_number?: string;
+    college?: string;
+    year_level?: string;
+  }>({});
+
   // URL validation functions
   const isValidURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true; // Empty URLs are allowed
@@ -140,6 +148,54 @@ export default function ProfilePage() {
     }
   };
 
+  // Field validation functions
+  const isValidPhoneNumber = (phone: string): boolean => {
+    if (!phone || phone.trim() === "") return true; // Empty is allowed
+    const cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits
+    return cleanPhone.length === 11 && /^09\d{9}$/.test(cleanPhone); // Philippine format: 09XXXXXXXXX
+  };
+
+  const isValidName = (name: string): boolean => {
+    if (!name || name.trim() === "") return false;
+    return name.trim().length >= 2 && /^[a-zA-Z\s.-]+$/.test(name.trim());
+  };
+
+  const validateFields = () => {
+    const errors: typeof fieldErrors = {};
+
+    // First name validation
+    if (!form_data.first_name || !isValidName(form_data.first_name)) {
+      errors.first_name = !form_data.first_name?.trim() 
+        ? "First name is required" 
+        : "First name must be at least 2 characters and contain only letters";
+    }
+
+    // Last name validation
+    if (!form_data.last_name || !isValidName(form_data.last_name)) {
+      errors.last_name = !form_data.last_name?.trim() 
+        ? "Last name is required" 
+        : "Last name must be at least 2 characters and contain only letters";
+    }
+
+    // Phone number validation
+    if (form_data.phone_number && !isValidPhoneNumber(form_data.phone_number)) {
+      errors.phone_number = "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
+    }
+
+    // College validation
+    if (!form_data.college_name || form_data.college_name === "Not specified") {
+      errors.college = "Please select your college";
+    }
+
+    // Year level validation
+    if (!form_data.year_level_name || form_data.year_level_name === "Not specified") {
+      errors.year_level = "Please select your year level";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const validateLinks = () => {
     const errors: typeof linkErrors = {};
 
@@ -176,6 +232,16 @@ export default function ProfilePage() {
   // Enhanced field setters with validation
   const validatedFieldSetter = (field: keyof PublicUser) => (value: string) => {
     field_setter(field)(value);
+
+    // Clear field error when user starts typing
+    const fieldErrorKey = field as keyof typeof fieldErrors;
+    if (fieldErrors[fieldErrorKey]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldErrorKey];
+        return newErrors;
+      });
+    }
 
     // Validate specific fields on change
     setTimeout(() => {
@@ -218,6 +284,56 @@ export default function ProfilePage() {
 
       setLinkErrors(errors);
     }, 500); // Debounce validation by 500ms
+  };
+
+  // Field setter with field validation
+  const validatedBasicFieldSetter = (field: keyof PublicUser) => (value: string) => {
+    field_setter(field)(value);
+
+    // Clear field error when user starts typing
+    const fieldErrorKey = field as keyof typeof fieldErrors;
+    if (fieldErrors[fieldErrorKey]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldErrorKey];
+        return newErrors;
+      });
+    }
+
+    // Real-time validation for specific fields
+    setTimeout(() => {
+      const errors = { ...fieldErrors };
+
+      switch (field) {
+        case "first_name":
+          if (value && !isValidName(value)) {
+            errors.first_name = "First name must be at least 2 characters and contain only letters";
+          } else if (!value?.trim()) {
+            errors.first_name = "First name is required";
+          } else {
+            delete errors.first_name;
+          }
+          break;
+        case "last_name":
+          if (value && !isValidName(value)) {
+            errors.last_name = "Last name must be at least 2 characters and contain only letters";
+          } else if (!value?.trim()) {
+            errors.last_name = "Last name is required";
+          } else {
+            delete errors.last_name;
+          }
+          break;
+        case "phone_number":
+          if (value && !isValidPhoneNumber(value)) {
+            errors.phone_number = "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
+          } else {
+            delete errors.phone_number;
+          }
+          break;
+      }
+
+      setFieldErrors(errors);
+    }, 500);
   };
   const {
     open: open_employer_modal,
@@ -339,9 +455,12 @@ export default function ProfilePage() {
   }, [profile, ref_loading]);
 
   const handleSave = async () => {
-    // Validate links before saving
-    if (!validateLinks()) {
-      alert("Please fix the invalid URLs before saving.");
+    // Validate all fields before saving
+    const fieldsValid = validateFields();
+    const linksValid = validateLinks();
+    
+    if (!fieldsValid || !linksValid) {
+      alert("Please fix all validation errors before saving.");
       return;
     }
 
@@ -383,9 +502,16 @@ export default function ProfilePage() {
   };
 
   const handleCancel = () => {
-    if (profile) set_fields({ ...profile });
+    if (profile) set_fields({ 
+      ...profile,
+      college_name: to_college_name(profile.college),
+      year_level_name: to_level_name(profile.year_level),
+      department_name: to_department_name(profile.department),
+      degree_name: to_degree_full_name(profile.degree),
+    });
     setIsEditing(false);
     setLinkErrors({}); // Clear errors when cancelling
+    setFieldErrors({}); // Clear field errors when cancelling
   };
 
   if (!is_authenticated()) {
@@ -482,9 +608,9 @@ export default function ProfilePage() {
                   <Button
                     size="sm"
                     onClick={handleSave}
-                    disabled={saving || Object.keys(linkErrors).length > 0}
+                    disabled={saving || Object.keys(linkErrors).length > 0 || Object.keys(fieldErrors).length > 0}
                     className={
-                      Object.keys(linkErrors).length > 0
+                      Object.keys(linkErrors).length > 0 || Object.keys(fieldErrors).length > 0
                         ? "opacity-50 cursor-not-allowed"
                         : ""
                     }
@@ -494,7 +620,13 @@ export default function ProfilePage() {
                   {Object.keys(linkErrors).length > 0 && (
                     <div className="flex items-center gap-1 text-red-600 text-xs">
                       <AlertCircle className="h-3 w-3" />
-                      <span>Fix invalid URLs to save</span>
+                      <span>Fix URL errors to save</span>
+                    </div>
+                  )}
+                  {Object.keys(fieldErrors).length > 0 && (
+                    <div className="flex items-center gap-1 text-red-600 text-xs">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Fix required fields to save</span>
                     </div>
                   )}
                 </>
@@ -537,11 +669,28 @@ export default function ProfilePage() {
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
                           Full Name, Middle Name, Last Name
                         </label>
+                        {(fieldErrors.first_name || fieldErrors.last_name) && (
+                          <div className="mb-2">
+                            {fieldErrors.first_name && (
+                              <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>{fieldErrors.first_name}</span>
+                              </div>
+                            )}
+                            {fieldErrors.last_name && (
+                              <div className="flex items-center gap-1 text-red-600 text-xs">
+                                <AlertCircle className="h-3 w-3" />
+                                <span>{fieldErrors.last_name}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         <div className="flex flex-row space-x-2">
                           <EditableInput
                             is_editing={isEditing}
                             value={form_data.first_name}
-                            setter={field_setter("first_name")}
+                            setter={validatedBasicFieldSetter("first_name")}
+                            placeholder="First name"
                           >
                             <UserPropertyLabel />
                           </EditableInput>
@@ -549,13 +698,15 @@ export default function ProfilePage() {
                             is_editing={isEditing}
                             value={form_data.middle_name}
                             setter={field_setter("middle_name")}
+                            placeholder="Middle name"
                           >
                             <UserPropertyLabel />
                           </EditableInput>
                           <EditableInput
                             is_editing={isEditing}
                             value={form_data.last_name}
-                            setter={field_setter("last_name")}
+                            setter={validatedBasicFieldSetter("last_name")}
+                            placeholder="Last name"
                           >
                             <UserPropertyLabel />
                           </EditableInput>
@@ -566,10 +717,17 @@ export default function ProfilePage() {
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
                           Phone Number
                         </label>
+                        {fieldErrors.phone_number && (
+                          <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>{fieldErrors.phone_number}</span>
+                          </div>
+                        )}
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.phone_number}
-                          setter={field_setter("phone_number")}
+                          setter={validatedBasicFieldSetter("phone_number")}
+                          placeholder="09XXXXXXXXX"
                         >
                           <UserPropertyLabel />
                         </EditableInput>
@@ -580,6 +738,12 @@ export default function ProfilePage() {
                           <label className="text-sm font-medium text-gray-700 mb-1 block">
                             College
                           </label>
+                          {fieldErrors.college && (
+                            <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                              <AlertCircle className="h-3 w-3" />
+                              <span>{fieldErrors.college}</span>
+                            </div>
+                          )}
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="college"
@@ -590,6 +754,14 @@ export default function ProfilePage() {
                                 college: get_college_by_name(value)?.id,
                                 department_name: "Not specified",
                               });
+                              // Clear college error when user selects a value
+                              if (value && value !== "Not specified") {
+                                setFieldErrors(prev => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.college;
+                                  return newErrors;
+                                });
+                              }
                             }}
                             options={[
                               "Not specified",
@@ -666,11 +838,27 @@ export default function ProfilePage() {
                           <label className="text-sm font-medium text-gray-700 mb-1 block">
                             Year Level
                           </label>
+                          {fieldErrors.year_level && (
+                            <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                              <AlertCircle className="h-3 w-3" />
+                              <span>{fieldErrors.year_level}</span>
+                            </div>
+                          )}
                           <EditableGroupableRadioDropdown
                             is_editing={isEditing}
                             name="year_level"
                             value={form_data.year_level_name}
-                            setter={field_setter("year_level_name")}
+                            setter={(value) => {
+                              field_setter("year_level_name")(value);
+                              // Clear year level error when user selects a value
+                              if (value && value !== "Not specified") {
+                                setFieldErrors(prev => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.year_level;
+                                  return newErrors;
+                                });
+                              }
+                            }}
                             options={[
                               "Not specified",
                               ...levels.map((l) => l.name),
