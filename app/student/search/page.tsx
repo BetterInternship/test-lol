@@ -896,23 +896,18 @@ export default function SearchPage() {
                   type="checkbox"
                   id="add-cover-letter"
                   checked={showCoverLetterInput}
-                  onChange={(e) => {
-                    setShowCoverLetterInput(e.target.checked);
-                    if (!e.target.checked) {
-                      setCoverLetter("");
-                    }
-                  }}
+                  onChange={() =>
+                    setShowCoverLetterInput(!showCoverLetterInput)
+                  }
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <span className="text-sm text-gray-500">Optional</span>
+                <span className="text-sm text-gray-500">Include</span>
               </div>
             </div>
 
             {showCoverLetterInput && (
               <div className="space-y-3">
                 <Textarea
-                  value={coverLetter}
-                  onChange={(e) => setCoverLetter(e.target.value)}
                   placeholder="Dear Hiring Manager,
 
 I am excited to apply for this position because...
@@ -974,42 +969,23 @@ Best regards,
 
       {/* Profile Preview Modal */}
       <ProfilePreviewModal>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Your Profile Preview
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                close_profile_preview_modal();
-                open_application_confirmation_modal();
-              }}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-            >
-              <X className="h-4 w-4 text-gray-500" />
-            </Button>
-          </div>
+        {profile && (
+          <ApplicantModalContent
+            applicant={profile as any}
+            open_resume_modal={() => {}} // Optional: Add resume preview functionality
+          />
+        )}
 
-          {profile && (
-            <ApplicantModalContent
-              applicant={profile as any}
-              open_resume_modal={() => {}} // Optional: Add resume preview functionality
-            />
-          )}
-
-          <div className="mt-6">
-            <Button
-              onClick={() => {
-                close_profile_preview_modal();
-                open_application_confirmation_modal();
-              }}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-            >
-              Back to Application
-            </Button>
-          </div>
+        <div className="mt-6">
+          <Button
+            onClick={() => {
+              close_profile_preview_modal();
+              open_application_confirmation_modal();
+            }}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+          >
+            Back to Application
+          </Button>
         </div>
       </ProfilePreviewModal>
     </>
