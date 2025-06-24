@@ -59,8 +59,12 @@ export default function LoginPage() {
       // @ts-ignore
       if (r?.success) {
         // @ts-ignore
-        if (r.god) router.push("/god");
-        else router.push("/dashboard");
+        if (r.god) {
+          router.push("/god");
+          router.push("/dashboard");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         setError("Invalid password.");
       }
@@ -161,6 +165,7 @@ export default function LoginPage() {
               <form onSubmit={handle_password_submit} className="space-y-6">
                 {/* OTP Input Boxes */}
                 <Input
+                  type="password"
                   className="w-full h-12 input-box hover:cursor-text"
                   placeholder="Password..."
                   onChange={(e) => setPassword(e.target.value)}
