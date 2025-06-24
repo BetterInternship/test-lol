@@ -379,60 +379,64 @@ const CreateModalForm = ({
   return (
     <>
       {/* Header with improved styling */}
-      <div className="px-8 py-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-        <div className="flex justify-between items-center">
-          <div className="">
-            <div className="text-4xl font-heading font-bold text-gray-700">
-              {form_data.title || "Untitled Job"}
+      <div className="px-6 py-5 border-b border-gray-200 bg-white">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-start">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                {form_data.title || "Untitled Job"}
+              </h2>
+              <p className="text-sm text-gray-500">Create a new job listing</p>
             </div>
-            <br />
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => close()}
+                className="px-4 py-2 text-sm font-medium"
+                disabled={creating}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={creating}
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+              >
+                {creating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Saving...
+                  </>
+                ) : (
+                  "Publish Listing"
+                )}
+              </Button>
+            </div>
+          </div>
+          <div>
             <Input
               value={form_data.title || ""}
               onChange={(e) => set_field("title", e.target.value)}
-              className="text-4xl text-bold"
-              placeholder={"Enter job title here..."}
-            ></Input>
-          </div>
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => close()}
-              className="px-5 py-2.5 text-sm font-medium border-gray-300 hover:bg-gray-50"
-              disabled={creating}
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={creating}
-              onClick={handleSaveEdit}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium shadow-sm"
-            >
-              {creating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Saving...
-                </>
-              ) : (
-                "Publish Listing"
-              )}
-            </Button>
+              className="text-lg font-medium"
+              placeholder="Enter job title here..."
+            />
           </div>
         </div>
       </div>
 
       {/* Main Content with improved layout */}
-      <div className="p-8 overflow-y-auto max-h-[calc(90vh-120px)] min-h-[60vh] bg-gray-50">
-        <div className="max-w-7xl mx-auto">
+      <div className="p-6 overflow-y-auto max-h-[calc(85vh-120px)] bg-gray-50">
+        <div className="max-w-5xl mx-auto space-y-6">
           {/* Basic Information Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-5 flex items-center">
+              <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                 <FileText className="w-4 h-4 text-blue-600" />
               </div>
               Basic Information
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
                   Location
@@ -441,7 +445,7 @@ const CreateModalForm = ({
                   value={form_data.location ?? ""}
                   onChange={(e) => set_field("location", e.target.value)}
                   placeholder="Enter location"
-                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
 
@@ -492,7 +496,7 @@ const CreateModalForm = ({
                         value={form_data.salary ?? ""}
                         onChange={(e) => set_field("salary", e.target.value)}
                         placeholder="Enter salary amount"
-                        className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                       />
                     </div>
 
@@ -510,15 +514,15 @@ const CreateModalForm = ({
                   </>
                 )}
               </DropdownGroup>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-900">
+              
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">
                   Mark as Unlisted
                 </Label>
                 <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      This job will only be visible to applicants with the link
-                    </p>
+                    <p className="text-sm font-medium text-gray-900">Unlisted Job</p>
+                    <p className="text-xs text-gray-500">Only visible to applicants with the link</p>
                   </div>
                   <Checkbox
                     checked={form_data.is_unlisted ?? false}
@@ -528,77 +532,82 @@ const CreateModalForm = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    checked={form_data.is_year_round ?? false}
-                    onCheckedChange={(value) => {
-                      set_fields({
-                        is_year_round: !!value,
-                      });
-                    }}
-                  />
-                  <span className="text-sm">Year Round</span>
+              <div className="space-y-3">
+                <Label className="text-sm font-medium text-gray-700">
+                  Duration
+                </Label>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.is_year_round ?? false}
+                      onCheckedChange={(value) => {
+                        set_fields({
+                          is_year_round: !!value,
+                        });
+                      }}
+                    />
+                    <span className="text-sm font-medium">Year Round</span>
+                  </div>
+                  {!form_data.is_year_round && (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">
+                          Start Date
+                        </label>
+                        <DatePicker
+                          id="start-date"
+                          selected={
+                            form_data.start_date
+                              ? new Date(form_data.start_date)
+                              : new Date()
+                          }
+                          className="input-box text-sm"
+                          onChange={(date) =>
+                            set_field("start_date", date?.getTime())
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">
+                          End Date
+                        </label>
+                        <DatePicker
+                          id="end-date"
+                          selected={
+                            form_data.end_date
+                              ? new Date(form_data.end_date)
+                              : new Date()
+                          }
+                          className="input-box text-sm"
+                          onChange={(date) =>
+                            set_field("end_date", date?.getTime())
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {!form_data.is_year_round && (
-                  <>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Start Date
-                      </label>
-                      <DatePicker
-                        id="start-date"
-                        selected={
-                          form_data.start_date
-                            ? new Date(form_data.start_date)
-                            : new Date()
-                        }
-                        className="input-box"
-                        onChange={(date) =>
-                          set_field("start_date", date?.getTime())
-                        }
-                      ></DatePicker>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        End Date
-                      </label>
-                      <DatePicker
-                        id="end-date"
-                        selected={
-                          form_data.end_date
-                            ? new Date(form_data.end_date)
-                            : new Date()
-                        }
-                        className="input-box"
-                        onChange={(date) =>
-                          set_field("end_date", date?.getTime())
-                        }
-                      ></DatePicker>
-                    </div>
-                  </>
-                )}
               </div>
             </div>
           </div>
 
           {/* Requirements Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-5 flex items-center">
+              <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                 <Checkbox className="w-4 h-4 text-green-600" />
               </div>
               Application Requirements
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                 <div>
                   <Label className="text-sm font-medium text-gray-900">
-                    GitHub Repository Required
+                    GitHub Repository
                   </Label>
                   <p className="text-xs text-gray-500 mt-1">
-                    Applicants must provide a GitHub link
+                    Require GitHub link
                   </p>
                 </div>
                 <Checkbox
@@ -610,13 +619,13 @@ const CreateModalForm = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                 <div>
                   <Label className="text-sm font-medium text-gray-900">
-                    Portfolio Required
+                    Portfolio
                   </Label>
                   <p className="text-xs text-gray-500 mt-1">
-                    Applicants must provide a portfolio link
+                    Require portfolio link
                   </p>
                 </div>
                 <Checkbox
@@ -627,13 +636,14 @@ const CreateModalForm = ({
                   className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                 />
               </div>
-              <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+
+              <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                 <div>
                   <Label className="text-sm font-medium text-gray-900">
-                    Cover Letter Required
+                    Cover Letter
                   </Label>
                   <p className="text-xs text-gray-500 mt-1">
-                    Applicants must provide a cover letter
+                    Require cover letter
                   </p>
                 </div>
                 <Checkbox
@@ -649,32 +659,32 @@ const CreateModalForm = ({
 
           {/* Content Editors */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                   <FileEdit className="w-4 h-4 text-purple-600" />
                 </div>
                 Job Description
               </h3>
               <div className="relative">
                 <MDXEditor
-                  className="min-h-[300px] border border-gray-200 rounded-lg"
+                  className="min-h-[250px] border border-gray-200 rounded-lg"
                   markdown={form_data.description ?? ""}
                   onChange={(value) => set_field("description", value)}
                 />
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                <div className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
                   <FileText className="w-4 h-4 text-orange-600" />
                 </div>
                 Requirements
               </h3>
               <div className="relative">
                 <MDXEditor
-                  className="min-h-[300px] border border-gray-200 rounded-lg"
+                  className="min-h-[250px] border border-gray-200 rounded-lg"
                   markdown={form_data.requirements ?? ""}
                   onChange={(value) => set_field("requirements", value)}
                 />
