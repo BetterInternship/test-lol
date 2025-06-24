@@ -497,7 +497,7 @@ export default function ProfilePage() {
             form_data.degree_name?.split(" - ")[0],
             form_data.degree_name?.split(" - ")[1]
           )?.id ?? undefined,
-        degree_notes: form_data.degree_notes,
+        degree_notes: form_data.degree_notes ?? "",
         portfolio_link: form_data.portfolio_link ?? "",
         github_link: form_data.github_link ?? "",
         linkedin_link: form_data.linkedin_link ?? "",
