@@ -5,16 +5,11 @@ import {
   Edit2,
   Upload,
   User,
-  Phone,
   ExternalLink,
   FileText,
   Eye,
-  Calendar,
   Award,
-  Github,
-  Hash,
   Camera,
-  GraduationCap,
   AlertCircle,
 } from "lucide-react";
 import { useProfile } from "@/lib/api/use-api";
@@ -1160,7 +1155,7 @@ export default function ProfilePage() {
                       </p>
                     </div>
                   ) : (
-                    <div className="bg-muted/50 rounded-lg p-3">
+                    <div className="bg-muted/50 rounded-lg p-3 overflow-hidden text-wrap">
                       <p className="text-sm leading-relaxed">
                         {profile.bio || (
                           <span className="text-muted-foreground italic">

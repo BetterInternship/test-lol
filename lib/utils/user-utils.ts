@@ -12,23 +12,27 @@ export const get_full_name = (
   user: Partial<PublicUser> | null | undefined
 ): string => {
   let name = "";
-  if (!user) return name;
-  if (!user.first_name && !user.last_name) return name;
+  if (!user) return name.slice(0, 32);
+  if (!user.first_name && !user.last_name) return name.slice(0, 32);
   if (!user.first_name && user.last_name) name = user.last_name;
   if (user.first_name && !user.last_name) name = user.first_name;
   if (user.first_name && user.last_name)
     name = `${user.first_name ?? ""} ${user.last_name ?? ""}`;
-  return name.replace(
-    /\w\S*/g,
-    (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
-  );
+  return name
+    .replace(
+      /\w\S*/g,
+      (text) => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+    )
+    .slice(0, 32);
 };
 
 /**
  * Gets a detailed breakdown of missing profile fields for application.
  * Returns an object with missing fields and user-friendly labels.
  */
-export const get_missing_profile_fields = (user: PublicUser | null): {
+export const get_missing_profile_fields = (
+  user: PublicUser | null
+): {
   missing: string[];
   labels: Record<string, string>;
   canApply: boolean;
@@ -44,7 +48,7 @@ export const get_missing_profile_fields = (user: PublicUser | null): {
     phone_number: "Phone Number",
     resume: "Resume",
     university: "University",
-    year_level: "Year Level"
+    year_level: "Year Level",
   };
 
   const not_null = (ref: any) => ref || ref === 0;
@@ -54,17 +58,26 @@ export const get_missing_profile_fields = (user: PublicUser | null): {
     return {
       missing: Object.keys(fieldLabels),
       labels: fieldLabels,
-      canApply: false
+      canApply: false,
     };
   }
 
   // Check each required field
   const requiredFields = [
-    'calendar_link', 'college', 'degree', 'department', 'email',
-    'first_name', 'last_name', 'phone_number', 'resume', 'university', 'year_level'
+    "calendar_link",
+    "college",
+    "degree",
+    "department",
+    "email",
+    "first_name",
+    "last_name",
+    "phone_number",
+    "resume",
+    "university",
+    "year_level",
   ] as const;
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach((field) => {
     if (!not_null(user[field])) {
       missing.push(field);
     }
@@ -73,13 +86,13 @@ export const get_missing_profile_fields = (user: PublicUser | null): {
   return {
     missing,
     labels: fieldLabels,
-    canApply: missing.length === 0
+    canApply: missing.length === 0,
   };
 };
 
 /**
  * Checks whether all the needed fields from the user have been filled for applying.
- * 
+ *
  */
 export const user_can_apply = (user: PublicUser | null): boolean => {
   return get_missing_profile_fields(user).canApply;

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-06-24 21:17:30
+ * @ Modified time: 2025-06-24 21:36:02
  * @ Description:
  *
  * Commonly used label components
@@ -14,6 +14,11 @@ import React from "react";
 const DEFAULT_LABEL = "Not specified";
 type Value = string | null | undefined;
 type LabelComponentProps = { value?: Value; fallback?: Value };
+type LinkLabelComponentProps = {
+  name?: Value;
+  value?: Value;
+  fallback?: Value;
+};
 export type LabelComponent = React.FC<LabelComponentProps>;
 
 /**
@@ -43,7 +48,7 @@ export const UserPropertyLabel: LabelComponent = ({
  */
 export const UserLinkLabel: LabelComponent = ({
   value,
-}: LabelComponentProps) => {
+}: LinkLabelComponentProps) => {
   return (
     <div>
       {value ? (
@@ -53,7 +58,7 @@ export const UserLinkLabel: LabelComponent = ({
           rel="noopener noreferrer"
           className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium hover:underline text-sm"
         >
-          {value}
+          {"Link"}
         </a>
       ) : (
         <span className="text-gray-400 italic text-sm">{DEFAULT_LABEL}</span>
