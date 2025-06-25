@@ -131,7 +131,8 @@ export const ApplicantModalContent = ({
       open_calendar_modal();
     } else {
       // Use internal modal
-      open_internal_calendar_modal();
+      window.open(applicant.calendar_link, '_blank').focus();
+      // open_internal_calendar_modal();
     }
   };
 
