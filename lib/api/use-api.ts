@@ -9,6 +9,7 @@ import { Job, PublicUser, UserApplication } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "../../hooks/use-cache";
 import { create_cached_fetcher, FetchResponse } from "./use-fetch";
+import { useRefs } from "../db/use-refs";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -24,6 +25,7 @@ export function useJobs(
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { job_categories, get_job_category_by_name } = useRefs();
 
   // ! make sure last update depends on last update sent by server (should be a cookie instead, dont let client handle it on its own)
   const fetcher = async () => {
@@ -104,214 +106,9 @@ export function useJobs(
         !params.category.toLowerCase().includes("all") &&
         !params.category.toLowerCase().includes("categories")
       ) {
-        const categoryTerm = params.category.toLowerCase();
-        const jobTitle = (job.title || "").toLowerCase();
-        const jobDescription = (job.description || "").toLowerCase();
-
-        // First, check if job has a direct category field (if it exists)
-        // Note: This would need to be implemented when the actual job category field is identified
-        // if (job.category_id && to_job_category_name) {
-        //   const jobCategoryName = to_job_category_name(job.category_id)?.toLowerCase();
-        //   if (jobCategoryName === categoryTerm) return true;
-        // }
-
-        // Define category-specific keywords and patterns for smart matching
-        const categoryPatterns: { [key: string]: string[] } = {
-          frontend: [
-            "frontend",
-            "front-end",
-            "front end",
-            "react",
-            "vue",
-            "angular",
-            "javascript",
-            "html",
-            "css",
-            "ui developer",
-          ],
-          backend: [
-            "backend",
-            "back-end",
-            "back end",
-            "server",
-            "api",
-            "database",
-            "node.js",
-            "python",
-            "java",
-            "php",
-          ],
-          mobile: [
-            "mobile",
-            "ios",
-            "android",
-            "react native",
-            "flutter",
-            "swift",
-            "kotlin",
-            "app development",
-          ],
-          "ai/ml": [
-            "ai",
-            "ml",
-            "machine learning",
-            "artificial intelligence",
-            "data science",
-            "tensorflow",
-            "pytorch",
-          ],
-          "ui/ux": [
-            "ui",
-            "ux",
-            "user interface",
-            "user experience",
-            "design",
-            "figma",
-            "adobe",
-            "prototype",
-          ],
-          "product management": [
-            "product manager",
-            "product management",
-            "pm",
-            "product owner",
-            "roadmap",
-          ],
-          "project management": [
-            "project manager",
-            "project management",
-            "scrum",
-            "agile",
-            "coordinator",
-          ],
-          devops: [
-            "devops",
-            "dev ops",
-            "infrastructure",
-            "deployment",
-            "docker",
-            "kubernetes",
-            "ci/cd",
-          ],
-          qa: [
-            "qa",
-            "quality assurance",
-            "testing",
-            "test",
-            "automation",
-            "selenium",
-          ],
-          design: [
-            "design",
-            "graphic",
-            "visual",
-            "creative",
-            "adobe",
-            "photoshop",
-            "illustrator",
-          ],
-          sales: [
-            "sales",
-            "business development",
-            "account manager",
-            "revenue",
-          ],
-          marketing: [
-            "marketing",
-            "digital marketing",
-            "social media",
-            "content marketing",
-            "seo",
-          ],
-          finance: ["finance", "financial", "accounting", "budget", "analyst"],
-          hr: ["hr", "human resources", "recruitment", "talent", "people"],
-          "data analysis": [
-            "data analyst",
-            "data analysis",
-            "analytics",
-            "sql",
-            "excel",
-            "tableau",
-          ],
-          "business development": [
-            "business development",
-            "bd",
-            "partnerships",
-            "growth",
-          ],
-          content: ["content", "writing", "copywriting", "editorial", "blog"],
-          administrative: [
-            "administrative",
-            "admin",
-            "assistant",
-            "coordinator",
-            "support",
-          ],
-          operations: [
-            "operations",
-            "ops",
-            "logistics",
-            "supply chain",
-            "process",
-          ],
-          it: [
-            "it",
-            "information technology",
-            "tech support",
-            "helpdesk",
-            "systems",
-          ],
-          legal: [
-            "legal",
-            "law",
-            "compliance",
-            "contract",
-            "attorney",
-            "paralegal",
-          ],
-          support: ["support", "customer service", "help desk", "client"],
-          engineering: [
-            "engineering",
-            "engineer",
-            "technical",
-            "software engineer",
-          ],
-          research: ["research", "researcher", "analyst", "study"],
-          teaching: ["teaching", "teacher", "education", "tutor", "instructor"],
-        };
-
-        // Get patterns for the selected category
-        const patterns = categoryPatterns[categoryTerm] || [categoryTerm];
-
-        // Check if any pattern matches the job title (stronger weight) or description
-        const titleMatch = patterns.some((pattern) =>
-          jobTitle.includes(pattern)
-        );
-        const descriptionMatch = patterns.some((pattern) =>
-          jobDescription.includes(pattern)
-        );
-
-        // If no matches found, filter out this job
-        if (!titleMatch && !descriptionMatch) {
-          return false;
-        }
-
-        // Additional filtering: if title doesn't match but description does,
-        // be more strict about the match quality for better precision
-        if (!titleMatch && descriptionMatch) {
-          // Only include if it's a very specific match in description
-          const strongDescriptionMatch = patterns.some((pattern) => {
-            const words = jobDescription.split(/\s+/);
-            return (
-              words.includes(pattern) ||
-              words.includes(pattern.replace(/\s+/g, ""))
-            );
-          });
-
-          if (!strongDescriptionMatch) {
-            return false;
-          }
-        }
+        const category_id = get_job_category_by_name(params.category)?.id;
+        // @ts-ignore
+        return category_id === job.category;
       }
 
       // Job type filter
