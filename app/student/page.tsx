@@ -12,17 +12,20 @@ import { DropdownGroup } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
-import { industriesOptions, categoryGroups } from "@/lib/utils/job-options";
+import { industriesOptions } from "@/lib/utils/job-options";
+import { useRefs } from "@/lib/db/use-refs";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { filters, set_filter, filter_setter, applyFiltersAndNavigate } = useFilter<{
-    industry: string;
-    category: string;
-  }>({
-    industry: "All industries",
-    category: "All categories"
-  });
+  const { job_categories } = useRefs();
+  const { filters, set_filter, filter_setter, applyFiltersAndNavigate } =
+    useFilter<{
+      industry: string;
+      category: string;
+    }>({
+      industry: "All industries",
+      category: "All categories",
+    });
 
   // Use standardized modal hooks
   const {
@@ -30,7 +33,7 @@ export default function HomePage() {
     close: closeCategoryModal,
     Modal: CategoryModal,
   } = useModal("category-modal");
-  
+
   const {
     open: openIndustryModal,
     close: closeIndustryModal,
@@ -48,22 +51,23 @@ export default function HomePage() {
   const applyFilterAndGo = (type: "industry" | "category", value: string) => {
     // Create updated filters
     const updatedFilters = { ...filters, [type]: value };
-    
+
     // Build URL parameters
     const params = new URLSearchParams();
     if (searchTerm.trim()) {
-      params.set('q', searchTerm);
+      params.set("q", searchTerm);
     }
-    
+
     // Add non-default filters to URL
     Object.entries(updatedFilters).forEach(([key, filterValue]) => {
-      const isDefaultValue = filterValue.toLowerCase().includes('all') || 
-                            filterValue.toLowerCase().includes('any');
+      const isDefaultValue =
+        filterValue.toLowerCase().includes("all") ||
+        filterValue.toLowerCase().includes("any");
       if (!isDefaultValue) {
         params.set(key, filterValue);
       }
     });
-    
+
     // Navigate immediately
     router.push(`/search?${params.toString()}`);
   };
@@ -157,7 +161,7 @@ export default function HomePage() {
                     <Button
                       onClick={() => openIndustryModal()}
                       className={`h-12 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
-                        is_mobile ? 'bg-white' : 'bg-transparent'
+                        is_mobile ? "bg-white" : "bg-transparent"
                       }`}
                     >
                       <span className="truncate">
@@ -170,9 +174,8 @@ export default function HomePage() {
                     <Button
                       onClick={() => openCategoryModal()}
                       className={`h-12 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 focus:ring-2 focus:ring-blue-500 transition-all duration-200 ${
-                        is_mobile ? 'bg-white' : 'bg-transparent'
+                        is_mobile ? "bg-white" : "bg-transparent"
                       }`}
-                    >
                     >
                       <span className="truncate">
                         {filters.category || "All categories"}
@@ -217,7 +220,7 @@ export default function HomePage() {
                         <Button
                           onClick={() => openIndustryModal()}
                           className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
-                            is_mobile ? 'bg-white' : 'bg-transparent'
+                            is_mobile ? "bg-white" : "bg-transparent"
                           }`}
                         >
                           <span className="truncate text-sm">
@@ -231,7 +234,7 @@ export default function HomePage() {
                         <Button
                           onClick={() => openCategoryModal()}
                           className={`h-14 px-4 flex items-center gap-2 w-full justify-between text-left border-none shadow-none rounded-none font-medium text-gray-700 hover:bg-gray-100 transition-all duration-200 ${
-                            is_mobile ? 'bg-white' : 'bg-transparent'
+                            is_mobile ? "bg-white" : "bg-transparent"
                           }`}
                         >
                           <span className="text-sm whitespace-nowrap">
@@ -313,22 +316,24 @@ export default function HomePage() {
                   Tech
                 </h4>
               </div>
-              {categoryGroups.Tech.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => {
-                    closeCategoryModal();
-                    applyFilterAndGo("category", option);
-                  }}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
-                    filters.category === option
-                      ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  <span className="block truncate">{option}</span>
-                </button>
-              ))}
+              {job_categories
+                .filter((c) => c.class === "Tech")
+                .map((option) => (
+                  <button
+                    key={option.class + option.name}
+                    onClick={() => {
+                      closeCategoryModal();
+                      applyFilterAndGo("category", option.name);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
+                      filters.category === option.name
+                        ? "bg-blue-50 text-blue-600 border border-blue-200"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    <span className="block truncate">{option.name}</span>
+                  </button>
+                ))}
             </div>
 
             {/* Non-Tech Category Group */}
@@ -338,22 +343,24 @@ export default function HomePage() {
                   Non-Tech
                 </h4>
               </div>
-              {categoryGroups["Non-Tech"].map((option) => (
-                <button
-                  key={option}
-                  onClick={() => {
-                    closeCategoryModal();
-                    applyFilterAndGo("category", option);
-                  }}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
-                    filters.category === option
-                      ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  <span className="block truncate">{option}</span>
-                </button>
-              ))}
+              {job_categories
+                .filter((c) => c.class === "Non-Tech")
+                .map((option) => (
+                  <button
+                    key={option.class + option.name}
+                    onClick={() => {
+                      closeCategoryModal();
+                      applyFilterAndGo("category", option.name);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
+                      filters.category === option.name
+                        ? "bg-blue-50 text-blue-600 border border-blue-200"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    <span className="block truncate">{option.name}</span>
+                  </button>
+                ))}
             </div>
 
             {/* Specialized Category Group */}
@@ -363,22 +370,24 @@ export default function HomePage() {
                   Specialized
                 </h4>
               </div>
-              {categoryGroups.Specialized.map((option) => (
-                <button
-                  key={option}
-                  onClick={() => {
-                    closeCategoryModal();
-                    applyFilterAndGo("category", option);
-                  }}
-                  className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
-                    filters.category === option
-                      ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  <span className="block truncate">{option}</span>
-                </button>
-              ))}
+              {job_categories
+                .filter((c) => c.class === "Specialized")
+                .map((option) => (
+                  <button
+                    key={option.class + option.name}
+                    onClick={() => {
+                      closeCategoryModal();
+                      applyFilterAndGo("category", option.name);
+                    }}
+                    className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors duration-150 text-sm font-medium ml-2 break-words ${
+                      filters.category === option.name
+                        ? "bg-blue-50 text-blue-600 border border-blue-200"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    <span className="block truncate">{option.name}</span>
+                  </button>
+                ))}
             </div>
           </div>
         </div>
@@ -394,7 +403,8 @@ export default function HomePage() {
           </div>
           <div className="space-y-2 overflow-y-auto flex-1 max-h-[60vh]">
             {industriesOptions.map((option) => {
-              const normalizedOption = option === "All Industries" ? "All industries" : option;
+              const normalizedOption =
+                option === "All Industries" ? "All industries" : option;
               return (
                 <button
                   key={option}
