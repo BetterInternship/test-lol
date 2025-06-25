@@ -494,7 +494,8 @@ export default function Dashboard() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 set_application(application);
-                                open_calendar_modal();
+                                window.open(application.user?.calendar_link, '_blank').focus();
+                                //open_calendar_modal();
                               }}
                             >
                               <Calendar className="h-4 w-4" />
@@ -540,7 +541,8 @@ export default function Dashboard() {
             applicant={selected_application?.user}
             open_calendar_modal={async () => {
               close_applicant_modal();
-              open_calendar_modal();
+              window.open(selected_application?.user?.calendar_link, '_blank').focus();
+              //open_calendar_modal();
             }}
             open_resume_modal={async () => {
               close_applicant_modal();
