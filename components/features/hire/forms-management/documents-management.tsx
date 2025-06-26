@@ -228,7 +228,7 @@ const DocumentsManagement = () => {
         Internship Forms Automation
       </h1>
 
-      <div className="relative flex flex-row justify-center w-full py-8">
+      {/* <div className="relative flex flex-row justify-center w-full py-8">
         <Image
           className="invisible relative"
           src={hire_coming_soon}
@@ -246,7 +246,7 @@ const DocumentsManagement = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Hidden for now, remove hidden class to show trust mode table */}
       {/* <ModeToggle
         isTrustMode={isTrustMode}
@@ -255,123 +255,123 @@ const DocumentsManagement = () => {
       /> */}
 
       {isTrustMode ? (
-        //   <TrustModeTable
-        //     students={mockStudents}
-        //     internshipData={internshipData}
-        //   />
-        <></> // ! to remove line
+        <TrustModeTable
+          students={mockStudents}
+          internshipData={internshipData}
+        />
       ) : (
-        <></> // ! to remove line
-        //   <Accordion
-        //     type="multiple"
-        //     defaultValue={internshipData.map((category) => category.id)}
-        //     className="w-full"
-        //   >
-        //     {internshipData.map((category) => (
-        //       <AccordionItem
-        //         key={category.id}
-        //         value={category.id}
-        //         className="mb-4 border rounded-lg shadow-sm"
-        //       >
-        //         <AccordionTrigger className="px-4 py-3 text-lg sm:text-xl font-semibold hover:no-underline">
-        //           {category.title}
-        //         </AccordionTrigger>
-        //         <AccordionContent className="p-0">
-        //           <Card className="border-none shadow-none rounded-t-none">
-        //             <div className="overflow-x-auto">
-        //               <Table>
-        //                 <TableHeader>
-        //                   <TableRow>
-        //                     <TableHead className="w-[40%] sm:w-[50%]">
-        //                       Form Name
-        //                     </TableHead>
-        //                     <TableHead className="w-[30%] sm:w-[30%]">
-        //                       Forms Needed By
-        //                     </TableHead>
-        //                     <TableHead className="w-[30%] sm:w-[20%] text-center">
-        //                       Automate
-        //                     </TableHead>
-        //                   </TableRow>
-        //                 </TableHeader>
-        //                 <TableBody>
-        //                   {category.forms.map((form, formIndex) => (
-        //                     <TableRow key={formIndex}>
-        //                       <TableCell className="font-medium py-3">
-        //                         <a
-        //                           href={form.pdfUrl}
-        //                           download
-        //                           className="text-blue-600 hover:underline flex items-center gap-2"
-        //                         >
-        //                           <FileText className="h-4 w-4 flex-shrink-0" />
-        //                           <span className="break-words">
-        //                             {form.prefix}
-        //                             {form.baseName}
-        //                           </span>
-        //                         </a>
-        //                       </TableCell>
-        //                       <TableCell className="py-3">
-        //                         <div className="flex items-center -space-x-2">
-        //                           {form.interns
-        //                             .slice(0, 3)
-        //                             .map((intern, internIndex) => (
-        //                               <Tooltip key={internIndex}>
-        //                                 <TooltipTrigger asChild>
-        //                                   <Avatar className="h-7 w-7 border-2 border-background">
-        //                                     <AvatarImage
-        //                                       src={intern.src}
-        //                                       alt={intern.name}
-        //                                     />
-        //                                     <AvatarFallback className="text-xs">
-        //                                       {intern.name
-        //                                         .split(" ")
-        //                                         .map((n) => n[0])
-        //                                         .join("")}
-        //                                     </AvatarFallback>
-        //                                   </Avatar>
-        //                                 </TooltipTrigger>
-        //                                 <TooltipContent>
-        //                                   <p>{intern.name}</p>
-        //                                 </TooltipContent>
-        //                               </Tooltip>
-        //                             ))}
-        //                           {form.interns.length > 3 && (
-        //                             <span className="ml-3 text-sm text-gray-500">
-        //                               ..... and {form.interns.length - 3} others
-        //                             </span>
-        //                           )}
-        //                         </div>
-        //                       </TableCell>
-        //                       <TableCell className="text-center py-3">
-        //                         <Tooltip>
-        //                           <TooltipTrigger asChild>
-        //                             <Button
-        //                               variant="ghost"
-        //                               size="icon"
-        //                               onClick={() =>
-        //                                 handleAutomateAndDownloadZip(form)
-        //                               }
-        //                               className="h-8 w-8"
-        //                             >
-        //                               <Zap className="h-4 w-4" />
-        //                             </Button>
-        //                           </TooltipTrigger>
-        //                           <TooltipContent>
-        //                             <p>
-        //                               Automate & Download All Pre-filled Forms
-        //                             </p>
-        //                           </TooltipContent>
-        //                         </Tooltip>
-        //                       </TableCell>
-        //                     </TableRow>
-        //                   ))}
-        //                 </TableBody>
-        //               </Table>
-        //             </div>
-        //           </Card>
-        //         </AccordionContent>
-        //       </AccordionItem>
-        //     ))}
-        //   </Accordion>
+        // <></> // ! to remove line
+        // <></> // ! to remove line
+        <Accordion
+          type="multiple"
+          defaultValue={internshipData.map((category) => category.id)}
+          className="w-full"
+        >
+          {internshipData.map((category) => (
+            <AccordionItem
+              key={category.id}
+              value={category.id}
+              className="mb-4 border rounded-lg shadow-sm"
+            >
+              <AccordionTrigger className="px-4 py-3 text-lg sm:text-xl font-semibold hover:no-underline">
+                {category.title}
+              </AccordionTrigger>
+              <AccordionContent className="p-0">
+                <Card className="border-none shadow-none rounded-t-none">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[40%] sm:w-[50%]">
+                            Form Name
+                          </TableHead>
+                          <TableHead className="w-[30%] sm:w-[30%]">
+                            Forms Needed By
+                          </TableHead>
+                          <TableHead className="w-[30%] sm:w-[20%] text-center">
+                            Automate
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {category.forms.map((form, formIndex) => (
+                          <TableRow key={formIndex}>
+                            <TableCell className="font-medium py-3">
+                              <a
+                                href={form.pdfUrl}
+                                download
+                                className="text-blue-600 hover:underline flex items-center gap-2"
+                              >
+                                <FileText className="h-4 w-4 flex-shrink-0" />
+                                <span className="break-words">
+                                  {form.prefix}
+                                  {form.baseName}
+                                </span>
+                              </a>
+                            </TableCell>
+                            <TableCell className="py-3">
+                              <div className="flex items-center -space-x-2">
+                                {form.interns
+                                  .slice(0, 3)
+                                  .map((intern, internIndex) => (
+                                    <Tooltip key={internIndex}>
+                                      <TooltipTrigger asChild>
+                                        <Avatar className="h-7 w-7 border-2 border-background">
+                                          <AvatarImage
+                                            src={intern.src}
+                                            alt={intern.name}
+                                          />
+                                          <AvatarFallback className="text-xs">
+                                            {intern.name
+                                              .split(" ")
+                                              .map((n) => n[0])
+                                              .join("")}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>{intern.name}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ))}
+                                {form.interns.length > 3 && (
+                                  <span className="ml-3 text-sm text-gray-500">
+                                    ..... and {form.interns.length - 3} others
+                                  </span>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center py-3">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() =>
+                                      handleAutomateAndDownloadZip(form)
+                                    }
+                                    className="h-8 w-8"
+                                  >
+                                    <Zap className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>
+                                    Automate & Download All Pre-filled Forms
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </Card>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       )}
     </div>
   );
