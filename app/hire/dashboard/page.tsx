@@ -21,7 +21,10 @@ import {
   FileUser,
 } from "lucide-react";
 import Link from "next/link";
-import { useEmployerApplications } from "@/hooks/use-employer-api";
+import {
+  useEmployerApplications,
+  useOwnedJobs,
+} from "@/hooks/use-employer-api";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
@@ -42,6 +45,7 @@ export default function Dashboard() {
     useEmployerApplications();
   const { redirect_if_not_logged_in } = useAuthContext();
   const { client_width, client_height } = useClientDimensions();
+  const { ownedJobs } = useOwnedJobs();
   const {
     app_statuses,
     get_college,
@@ -112,7 +116,7 @@ export default function Dashboard() {
             .filter((a) => a !== undefined)
         ),
       ].sort(),
-    []
+    [employer_applications]
   );
 
   // Filter and sort applications
@@ -315,7 +319,7 @@ export default function Dashboard() {
                       Active Jobs
                     </h4>
                     <p className="text-3xl font-bold text-gray-900">
-                      {uniqueJobs.length}
+                      {ownedJobs.filter((job) => job.is_active).length}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -494,7 +498,12 @@ export default function Dashboard() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 set_application(application);
-                                window.open(application.user?.calendar_link, '_blank').focus();
+                                window
+                                  ?.open(
+                                    application.user?.calendar_link,
+                                    "_blank"
+                                  )
+                                  ?.focus();
                                 //open_calendar_modal();
                               }}
                             >
@@ -541,7 +550,9 @@ export default function Dashboard() {
             applicant={selected_application?.user}
             open_calendar_modal={async () => {
               close_applicant_modal();
-              window.open(selected_application?.user?.calendar_link, '_blank').focus();
+              window
+                ?.open(selected_application?.user?.calendar_link, "_blank")
+                ?.focus();
               //open_calendar_modal();
             }}
             open_resume_modal={async () => {
@@ -620,7 +631,9 @@ export default function Dashboard() {
             <div className="flex flex-col items-center justify-center h-96 px-8">
               <div className="text-center">
                 <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">No Resume Available</h1>
+                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                  No Resume Available
+                </h1>
                 <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
                   This applicant has not uploaded a resume yet.
                 </div>

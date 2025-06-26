@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-06-23 22:10:52
+ * @ Modified time: 2025-06-26 08:57:10
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -131,7 +131,7 @@ export const ApplicantModalContent = ({
       open_calendar_modal();
     } else {
       // Use internal modal
-      window.open(applicant.calendar_link, '_blank').focus();
+      window?.open(applicant.calendar_link, "_blank")?.focus();
       // open_internal_calendar_modal();
     }
   };
@@ -161,7 +161,9 @@ export const ApplicantModalContent = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600 font-medium">Active</span>
+                <span className="text-sm text-gray-600 font-medium">
+                  Active
+                </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
                 {get_full_name(applicant) === ""
@@ -230,7 +232,9 @@ export const ApplicantModalContent = ({
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-2">Institution</p>
-                <p className="font-medium text-gray-900 text-base">DLSU Manila</p>
+                <p className="font-medium text-gray-900 text-base">
+                  DLSU Manila
+                </p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 mb-2">Year Level</p>
