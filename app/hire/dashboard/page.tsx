@@ -112,7 +112,7 @@ export default function Dashboard() {
             .filter((a) => a !== undefined)
         ),
       ].sort(),
-    []
+    [employer_applications]
   );
 
   // Filter and sort applications
@@ -620,7 +620,9 @@ export default function Dashboard() {
             <div className="flex flex-col items-center justify-center h-96 px-8">
               <div className="text-center">
                 <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">No Resume Available</h1>
+                <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                  No Resume Available
+                </h1>
                 <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
                   This applicant has not uploaded a resume yet.
                 </div>
