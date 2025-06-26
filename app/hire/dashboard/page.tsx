@@ -21,7 +21,10 @@ import {
   FileUser,
 } from "lucide-react";
 import Link from "next/link";
-import { useEmployerApplications } from "@/hooks/use-employer-api";
+import {
+  useEmployerApplications,
+  useOwnedJobs,
+} from "@/hooks/use-employer-api";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
@@ -42,6 +45,7 @@ export default function Dashboard() {
     useEmployerApplications();
   const { redirect_if_not_logged_in } = useAuthContext();
   const { client_width, client_height } = useClientDimensions();
+  const { ownedJobs } = useOwnedJobs();
   const {
     app_statuses,
     get_college,
@@ -315,7 +319,7 @@ export default function Dashboard() {
                       Active Jobs
                     </h4>
                     <p className="text-3xl font-bold text-gray-900">
-                      {uniqueJobs.length}
+                      {ownedJobs.filter((job) => job.is_active).length}
                     </p>
                   </div>
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -494,7 +498,12 @@ export default function Dashboard() {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 set_application(application);
-                                window.open(application.user?.calendar_link, '_blank').focus();
+                                window
+                                  ?.open(
+                                    application.user?.calendar_link,
+                                    "_blank"
+                                  )
+                                  ?.focus();
                                 //open_calendar_modal();
                               }}
                             >
@@ -541,7 +550,9 @@ export default function Dashboard() {
             applicant={selected_application?.user}
             open_calendar_modal={async () => {
               close_applicant_modal();
-              window.open(selected_application?.user?.calendar_link, '_blank').focus();
+              window
+                ?.open(selected_application?.user?.calendar_link, "_blank")
+                ?.focus();
               //open_calendar_modal();
             }}
             open_resume_modal={async () => {
