@@ -1,132 +1,324 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
-import { useAuthContext } from "../authctx";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { GroupableRadioDropdown, DropdownGroup } from "@/components/ui/dropdown";
+import { useRefs } from "@/lib/db/use-refs";
 
-export default function LoginPage() {
-  const { email_status, login, redirect_if_logged_in } = useAuthContext();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [step, setStep] = useState<"email" | "password">("email");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
+export default function RegisterPage() {
+  const [form_data, setFormData] = useState({
+    doing_business_as: "",
+    legal_entity_name: "",
+    industry: "",
+    office_location: "",
+    website: "",
+    company_description: "",
+    contact_name: "",
+    contact_phone: "",
+    contact_email: "",
+    contact_position: "",
+    year_round_internship: false,
+    hiring_urgently: false,
+    open_to_all_levels: false,
+    accept_outside_dlsu: false,
+    has_moa_with_dlsu: false,
+    terms_accepted: false,
+  });
 
-  redirect_if_logged_in();
+  const { industries, job_categories, universities } = useRefs();
 
-  const handle_email_submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    if (email.trim() === "") {
-      setIsLoading(false);
-      setError("Email is required.");
-      return;
-    }
-
-    await email_status(email).then(async (r) => {
-      if (!r.existing_user) {
-        setIsLoading(false);
-        setError("Account does not exist in our database.");
-        return;
-      }
-
-      // @ts-ignore
-      if (!r.success) {
-        setIsLoading(false);
-        // @ts-ignore
-        alert(r.message);
-        return;
-      }
-      console.log("lol what");
-      setIsLoading(false);
-      setStep("password");
-    });
+  const handle_change = (field, value) => {
+    setFormData({ ...form_data, [field]: value });
   };
 
-  const handle_password_submit = async (e: React.FormEvent) => {
+  const handle_submit = (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    await login(email, password).then((r) => {
-      // @ts-ignore
-      if (r?.success) {
-        // @ts-ignore
-        if (r.god) router.push("/god");
-        else router.push("/dashboard");
-      } else {
-        setError("Invalid password.");
-      }
-
-      setIsLoading(false);
-    });
-  };
-
-  const handle_back_to_email = () => {
-    setStep("email");
-    setPassword("");
-    setError("");
+    console.log("Form data:", form_data);
   };
 
   return (
-    <>
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full">
-          {/* Back Arrow for OTP step */}
-          {step === "password" && (
-            <div className="mb-6">
-              <button
-                onClick={handle_back_to_email}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </div>
-          )}
+    <div className="flex-1 flex justify-center px-6 py-12 pt-12">
+      <div className="w-full max-w-2xl">
+        <div className="text-center mb-10">
+          <h2 className="text-5xl font-heading font-bold text-gray-900 mb-4">
+            Company Registration
+          </h2>
+        </div>
 
-          {/* Welcome Message */}
-          <div className="text-center mb-10">
-            {step === "email" ? (
-              <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                Coming soon.
-              </h2>
-            ) : (
+        <form onSubmit={handle_submit} className="space-y-16">
+          {/* General Information */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              General Information
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Enter Password
-                </h2>
+                <Label>Doing Business As</Label>
+                <Input
+                  value={form_data.doing_business_as}
+                  onChange={(e) => handle_change("doing_business_as", e.target.value)}
+                  placeholder="e.g. Google"
+                />
               </div>
-            )}
+              <div>
+                <Label>Legal Entity Name</Label>
+                <Input
+                  value={form_data.legal_entity_name}
+                  onChange={(e) => handle_change("legal_entity_name", e.target.value)}
+                  placeholder="e.g. LeapFroggr"
+                />
+              </div>
+            </div>
+
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                <Label>Industry</Label>
+                <DropdownGroup>
+                  <GroupableRadioDropdown
+                    name="industry"
+                    options={industries.map(industry => industry.name)}
+                    on_change={(selected_name) => {
+                      const selected_industry = industries.find(industry => industry.name === selected_name);
+                      handle_change("industry", selected_industry?.id || "");
+                    }}
+                    default_value="Not Selected"
+                  />
+                </DropdownGroup>
+                </div>
+              <div>
+                <Label>Office's General Location</Label>
+                <Input
+                  value={form_data.office_location}
+                  onChange={(e) => handle_change("office_location", e.target.value)}
+                  placeholder="e.g. Makati, Manila"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <div className="w-full max-w-md">
+                <Label className=" block mb-2">Website</Label>
+                <Input
+                  value={form_data.website}
+                  onChange={(e) => handle_change("website", e.target.value)}
+                  placeholder="e.g. https://google.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Company Description</Label>
+              <Textarea
+                value={form_data.company_description}
+                onChange={(e) => handle_change("company_description", e.target.value)}
+                placeholder="Write about your company..."
+                className="min-h-[120px]"
+              />
+            </div>
           </div>
 
-          <div className="max-w-md m-auto">
-            {/* Error Message */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600 justify-center">{error}</p>
+          {/* Contact Information */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              Contact Information
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Company Contact Name</Label>
+                <Input
+                  value={form_data.contact_name}
+                  onChange={(e) => handle_change("contact_name", e.target.value)}
+                  placeholder="e.g. John Doe"
+                />
+              </div>
+              <div>
+                <Label>Contact's Phone Number</Label>
+                <Input
+                  value={form_data.contact_phone}
+                  onChange={(e) => handle_change("contact_phone", e.target.value)}
+                  placeholder="e.g. 09XXXXXXXXX"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Contact's Email</Label>
+                <Input
+                  value={form_data.contact_email}
+                  onChange={(e) => handle_change("contact_email", e.target.value)}
+                  placeholder="e.g. john@google.com"
+                />
+              </div>
+              <div>
+                <Label>Contact's Position</Label>
+                <Input
+                  value={form_data.contact_position}
+                  onChange={(e) => handle_change("contact_position", e.target.value)}
+                  placeholder="e.g. CTO/CEO"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Customization */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              Profile Customization
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <Label className="block mb-4">Is this Internship available year-round?</Label>
+                <div className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.year_round_internship === true}
+                      onCheckedChange={() => handle_change("year_round_internship", true)}
+                    />
+                    <Label>Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.year_round_internship === false}
+                      onCheckedChange={() => handle_change("year_round_internship", false)}
+                    />
+                    <Label>No</Label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="block mb-4">Are you Hiring Interns Urgently?</Label>
+                <div className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.hiring_urgently === true}
+                      onCheckedChange={() => handle_change("hiring_urgently", true)}
+                    />
+                    <Label>Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.hiring_urgently === false}
+                      onCheckedChange={() => handle_change("hiring_urgently", false)}
+                    />
+                    <Label>No</Label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="block mb-4">Are you open to all student levels?</Label>
+                <div className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.open_to_all_levels === true}
+                      onCheckedChange={() => handle_change("open_to_all_levels", true)}
+                    />
+                    <Label>Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.open_to_all_levels === false}
+                      onCheckedChange={() => handle_change("open_to_all_levels", false)}
+                    />
+                    <Label>No</Label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="block mb-4">Are you willing to accept interns outside DLSU?</Label>
+                <div className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.accept_outside_dlsu === true}
+                      onCheckedChange={() => handle_change("accept_outside_dlsu", true)}
+                    />
+                    <Label>Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.accept_outside_dlsu === false}
+                      onCheckedChange={() => handle_change("accept_outside_dlsu", false)}
+                    />
+                    <Label>No</Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Label className="block mb-4">Do you have an ongoing MOA with DLSU?</Label>
+              <div className="flex justify-center gap-6">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={form_data.has_moa_with_dlsu === true}
+                    onCheckedChange={() => handle_change("has_moa_with_dlsu", true)}
+                  />
+                  <Label>Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={form_data.has_moa_with_dlsu === false}
+                    onCheckedChange={() => handle_change("has_moa_with_dlsu", false)}
+                  />
+                  <Label>No</Label>
+                </div>
+              </div>
+            </div>
+
+            {form_data.has_moa_with_dlsu && (
+              <div className="space-y-4">
+                <Label className="block text-center">MOA Start & End Date</Label>
+                <div className="flex justify-center gap-4">
+                  <Input placeholder="Day" className="w-20" />
+                  <Input placeholder="Month" className="w-32" />
+                  <Input placeholder="Year" className="w-20" />
+                </div>
+                <div className="flex justify-center gap-4">
+                  <Input placeholder="Day" className="w-20" />
+                  <Input placeholder="Month" className="w-32" />
+                  <Input placeholder="Year" className="w-20" />
+                </div>
+                <div className="text-center">
+                  <Label className="block mb-4">MOA Files/Contract Files (optional)</Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 max-w-md mx-auto">
+                    <p className="text-gray-600">Upload Here</p>
+                  </div>
+                </div>
               </div>
             )}
 
-            {/* Login Form */}
-            <form onSubmit={handle_password_submit} className="space-y-6">
+            <div className="flex justify-center pt-6">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  checked={form_data.terms_accepted}
+                  onCheckedChange={(checked) => handle_change("terms_accepted", checked)}
+                />
+                <Label>I Agree to the Terms and Privacy Policy</Label>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-6">
               <Button
                 type="submit"
-                disabled={true}
-                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full max-w-md h-12 bg-black hover:bg-gray-800 text-white"
               >
-                {isLoading ? "Logging in..." : "Register"}
+                Next
               </Button>
-            </form>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 }

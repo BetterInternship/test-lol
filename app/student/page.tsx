@@ -12,7 +12,6 @@ import { DropdownGroup } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
-import { industriesOptions } from "@/lib/utils/job-options";
 import { useRefs } from "@/lib/db/use-refs";
 
 export default function HomePage() {
