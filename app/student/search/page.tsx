@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import type { ChangeEvent } from "react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -43,7 +42,6 @@ import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { industriesOptions } from "@/lib/utils/job-options";
 import {
   user_can_apply,
   get_missing_profile_fields,
@@ -134,6 +132,7 @@ export default function SearchPage() {
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
   const {
+    industries,
     job_categories,
     to_job_mode_name,
     to_job_type_name,
@@ -814,9 +813,10 @@ export default function SearchPage() {
             />
             <GroupableRadioDropdown
               name="industry"
-              options={industriesOptions.map((industry) =>
-                industry === "All Industries" ? "All industries" : industry
-              )}
+              options={[
+                "All industries",
+                ...industries.map((industry) => industry.name),
+              ]}
               on_change={filter_setter("industry")}
               default_value={filters.industry}
             />
