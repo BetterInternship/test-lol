@@ -5,9 +5,11 @@ import { useDetectClickOutside } from "react-detect-click-outside";
 export const Autocomplete = ({
   options,
   setter,
+  placeholder,
 }: {
   options: string[];
   setter: (value: string) => void;
+  placeholder?: string;
 }) => {
   const [query, set_query] = useState("");
   const [is_open, set_is_open] = useState(false);
@@ -25,6 +27,7 @@ export const Autocomplete = ({
       <Input
         value={selected || query}
         className="border-gray-300"
+        placeholder={placeholder}
         onChange={(e) => {
           setter(e.target.value);
           set_query(e.target.value);
