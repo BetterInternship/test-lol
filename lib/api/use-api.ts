@@ -4,18 +4,12 @@ import {
   user_service,
   application_service,
   handle_api_error,
-} from "@/lib/api";
-import {
-  Job,
-  PublicUser,
-  UserApplication,
-  SavedJob,
-  Employer,
-  EmployerApplication,
-} from "@/lib/db/db.types";
+} from "@/lib/api/api";
+import { Job, PublicUser, UserApplication } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useCache } from "./use-cache";
-import { FetchResponse } from "./use-fetch";
+import { useCache } from "../../hooks/use-cache";
+import { create_cached_fetcher, FetchResponse } from "./use-fetch";
+import { useRefs } from "../db/use-refs";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -28,29 +22,32 @@ export function useJobs(
     industry?: string;
   } = {}
 ) {
-  const { get_cache_item, set_cache_item } = useCache();
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { job_categories, get_job_category_by_name } = useRefs();
+
+  // ! make sure last update depends on last update sent by server (should be a cookie instead, dont let client handle it on its own)
+  const fetcher = async () => {
+    const response = await job_service.get_jobs({
+      last_update: new Date(0).getTime(),
+    });
+    if (!response.success) setError(response.message ?? "");
+    return response.jobs;
+  };
+  const { do_fetch: fetch_all_active_jobs } = create_cached_fetcher<Job[]>(
+    "active-jobs",
+    fetcher
+  );
 
   // Load all jobs initially
   const fetchAllActiveJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await job_service.get_jobs({
-        last_update:
-          (get_cache_item("_jobs_last_update") as number) ??
-          new Date(0).getTime(),
-      });
-
-      if (response.success) {
-        if (response.jobs) {
-          setJobs(response.jobs);
-          set_cache_item("_jobs_last_update", new Date().getTime());
-          set_cache_item("_jobs_active_list", response.jobs);
-        } else setJobs(get_cache_item("_jobs_active_list") as Job[]);
-      }
+      const jobs = await fetch_all_active_jobs();
+      if (jobs) setAllJobs(jobs);
+      else setError("Could not load jobs.");
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
@@ -63,78 +60,110 @@ export function useJobs(
     fetchAllActiveJobs();
   }, [fetchAllActiveJobs]);
 
-  // Client-side filtering
+  // Client-side filtering logic
   const filteredJobs = useMemo(() => {
-    let filtered = [...jobs];
-    const { type, mode, search, location, industry } = params;
+    if (!allJobs.length) return [];
 
-    // Apply type filter
-    if (type && type !== "All types") {
-      filtered = filtered.filter((job) => {
-        if (type === "Internships") return job.type === 0;
-        if (type === "Full-time") return job.type === 1;
-        if (type === "Part-time") return job.type === 2;
-        return false;
-      });
-    }
-
-    // Apply mode filter
-    if (mode && mode !== "Any location") {
-      filtered = filtered.filter((job) => {
-        if (mode === "In-Person") return job.mode === 0;
-        return job.mode === 1 || job.mode === 2;
-      });
-    }
-
-    // Apply industry filter
-    if (industry && industry !== "All industries") {
-      filtered = filtered.filter((job) => {
-        return job.employer?.industry
-          ?.toLowerCase()
-          .includes(industry.toLowerCase());
-      });
-    }
-
-    // Apply search filter
-    if (search && search.trim()) {
-      const searchLower = search.toLowerCase().trim();
-      filtered = filtered.filter((job) => {
-        // Search in multiple fields
+    return allJobs.filter((job) => {
+      // Search filter
+      if (params.search?.trim()) {
+        const searchTerm = params.search.toLowerCase();
         const searchableText = [
           job.title,
           job.description,
           job.employer?.name,
           job.employer?.industry,
           job.location,
-          ...(job.keywords || []),
-          ...(job.requirements || []),
         ]
+          .filter(Boolean)
           .join(" ")
           .toLowerCase();
 
-        return searchableText.includes(searchLower);
-      });
-    }
+        if (!searchableText.includes(searchTerm)) return false;
+      }
 
-    // Apply location filter
-    if (location && location.trim()) {
-      filtered = filtered.filter((job) =>
-        job.location?.toLowerCase().includes(location.toLowerCase())
-      );
-    }
+      // Industry filter (through employer.industry)
+      if (
+        params.industry &&
+        !params.industry.toLowerCase().includes("all") &&
+        !params.industry.toLowerCase().includes("industries")
+      ) {
+        const jobIndustry = job.employer?.industry?.toLowerCase();
+        const filterIndustry = params.industry.toLowerCase();
 
-    return filtered;
-  }, [jobs, params]);
+        // Handle partial matches for industry names
+        if (
+          !jobIndustry?.includes(filterIndustry) &&
+          !filterIndustry.includes(jobIndustry || "")
+        ) {
+          return false;
+        }
+      }
 
-  const getJobsPage = ({ page = 1, limit = 10 }) => {
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    return filteredJobs.slice(startIndex, endIndex);
-  };
+      // Category filter - Improved logic with better keyword matching and potential field matching
+      if (
+        params.category &&
+        !params.category.toLowerCase().includes("all") &&
+        !params.category.toLowerCase().includes("categories")
+      ) {
+        const category_id = get_job_category_by_name(params.category)?.id;
+        // @ts-ignore
+        return category_id === job.category;
+      }
+
+      // Job type filter
+      if (
+        params.type &&
+        !params.type.toLowerCase().includes("all") &&
+        !params.type.toLowerCase().includes("types")
+      ) {
+        // Map filter values to job type values
+        const typeMapping: { [key: string]: number } = {
+          Internships: 0,
+          "Part-time": 1,
+          "Full-time": 2,
+        };
+
+        const expectedType = typeMapping[params.type];
+        if (expectedType !== undefined && job.type !== expectedType)
+          return false;
+      }
+
+      // Location/Mode filter
+      if (
+        params.mode &&
+        !params.mode.toLowerCase().includes("any") &&
+        !params.mode.toLowerCase().includes("location")
+      ) {
+        // Map filter values to job mode values
+        const modeMapping: { [key: string]: number } = {
+          "In-Person": 0,
+          Remote: 1,
+          Hybrid: 2,
+        };
+
+        const expectedMode = modeMapping[params.mode];
+        if (expectedMode !== undefined && job.mode !== expectedMode)
+          return false;
+      }
+
+      return true;
+    });
+  }, [allJobs, params]);
+
+  const getJobsPage = useCallback(
+    ({ page = 1, limit = 10 }) => {
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      return filteredJobs.slice(startIndex, endIndex);
+    },
+    [filteredJobs]
+  );
 
   return {
     getJobsPage,
-    jobs: filteredJobs, // Expose filtered jobs for search components
+    jobs: filteredJobs, // Return filtered jobs
+    allJobs, // Also expose unfiltered jobs for total count
     loading,
     error,
     refetch: fetchAllActiveJobs,
@@ -143,7 +172,6 @@ export function useJobs(
 
 // Single Job Hook
 export function useJob(job_id: string | null) {
-  const { is_authenticated } = useAuthContext();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -258,8 +286,7 @@ const listFromDBInternalHook = <
     ) => Promise<{ data?: T } & FetchResponse>;
   };
 }) => {
-  const cache_key = `__${name}__cache`;
-  const { get_cache_item, set_cache_item } = useCache();
+  const { get_cache, set_cache } = useCache<T[]>(`__${name}__cache`);
   const [data, setData] = useState<T[]>([]);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -279,21 +306,18 @@ const listFromDBInternalHook = <
       // We added an item
       if (added_data) {
         console.log("[DBLISTHOOK] Toggling on; table " + name);
-        if (!get_cache_item(cache_key)) set_cache_item(cache_key, []);
-        const new_data = [
-          ...(get_cache_item(cache_key) as T[]),
-          { ...added_data },
-        ] as T[];
-        set_cache_item(cache_key, new_data);
+        if (!get_cache()) set_cache([]);
+        const new_data = [...(get_cache() as T[]), { ...added_data }] as T[];
+        set_cache(new_data);
         setData(new_data);
 
         // We unadded an item, for toggle routes
       } else if (response.success) {
         console.log("[DBLISTHOOK] Toggling off; table " + name);
-        const new_data = (get_cache_item(cache_key) as T[]).filter(
+        const new_data = (get_cache() as T[]).filter(
           (old_data) => old_data.id !== id
         );
-        set_cache_item(cache_key, new_data);
+        set_cache(new_data);
         setData(new_data);
       }
       return response;
@@ -314,7 +338,7 @@ const listFromDBInternalHook = <
       setError("");
 
       // Check cache first
-      const cache_data = get_cache_item(cache_key) as T[];
+      const cache_data = get_cache() as T[];
       if (cache_data) {
         setData(cache_data);
         return;
@@ -326,7 +350,7 @@ const listFromDBInternalHook = <
 
       if (response.success) {
         setData(gotten_data);
-        set_cache_item(cache_key, gotten_data);
+        set_cache(gotten_data);
       }
     } catch (err) {
       setError(handle_api_error(err));
@@ -395,8 +419,8 @@ export const useSavedJobs = () => {
 
 // Saved Jobs Hook
 export function useApplications() {
-  const { recheck_authentication } = useAuthContext();
-  const { get_cache_item, set_cache_item } = useCache();
+  const { get_cache, set_cache } =
+    useCache<UserApplication[]>("_applications_list");
   const [applications, setApplications] = useState<UserApplication[]>([]);
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   const [loading, setLoading] = useState(true);
@@ -409,26 +433,16 @@ export function useApplications() {
     );
   }, [applications]);
 
-  const fetchApplications = useCallback(async () => {
+  const fetch_applications = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Check cache first
-      const cached_applications = get_cache_item(
-        "_applications_list"
-      ) as UserApplication[];
-      if (cached_applications) {
-        await setTimeout(() => {}, 500);
-        setApplications(cached_applications);
-        return;
-      }
-
       // Otherwise, pull from server
       const response = await application_service.get_applications();
       if (response.success) {
-        setApplications(response.applications ?? []);
-        set_cache_item("_applications_list", response.applications ?? []);
+        setApplications(response.applications);
+        set_cache(applications);
       }
     } catch (err) {
       const errorMessage = handle_api_error(err);
@@ -445,13 +459,12 @@ export function useApplications() {
       });
 
       if (response.application) {
-        if (!get_cache_item("_applications_list"))
-          set_cache_item("_applications_list", []);
+        if (!get_cache()) set_cache([]);
         const new_applications = [
-          ...(get_cache_item("_applications_list") as UserApplication[]),
+          ...(get_cache() ?? []),
           { ...response.application },
         ] as UserApplication[];
-        set_cache_item("_applications_list", new_applications);
+        set_cache(new_applications);
         setApplications(new_applications);
       }
 
@@ -467,10 +480,9 @@ export function useApplications() {
   };
 
   useEffect(() => {
-    recheck_authentication().then((r) =>
-      r ? fetchApplications() : setLoading(false)
-    );
-  }, [fetchApplications]);
+    fetch_applications();
+    setLoading(false);
+  }, [fetch_applications]);
 
   return {
     apply,
@@ -482,6 +494,6 @@ export function useApplications() {
     appliedJobs,
     appliedJob: (job_id: string) =>
       appliedJobs.map((aj) => aj.id).includes(job_id),
-    refetch: fetchApplications,
+    refetch: fetch_applications,
   };
 }

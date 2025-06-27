@@ -23,30 +23,30 @@ const generateMockHiringData = (count: number): HiringData[] => {
       applicationDate: new Date(
         2024,
         Math.floor(i / 5) % 12,
-        (i % 28) + 1,
+        (i % 28) + 1
       ).toISOString(),
       decisionDate:
         Math.random() > 0.3
           ? new Date(
               2024,
               (Math.floor(i / 5) % 12) + 1,
-              (i % 28) + 1,
+              (i % 28) + 1
             ).toISOString()
           : undefined,
       decision:
         i % 4 === 0
           ? "Accepted"
           : i % 4 === 1
-            ? "Offer Received"
-            : i % 4 === 2
-              ? "Pending"
-              : "Rejected",
+          ? "Offer Received"
+          : i % 4 === 2
+          ? "Pending"
+          : "Rejected",
       moaSubmissionDate:
         Math.random() > 0.5
           ? new Date(
               2024,
               (Math.floor(i / 5) % 12) + 1,
-              (i % 28) + 5,
+              (i % 28) + 5
             ).toISOString()
           : undefined,
       jobDescriptionSubmissionDate:
@@ -54,7 +54,7 @@ const generateMockHiringData = (count: number): HiringData[] => {
           ? new Date(
               2024,
               (Math.floor(i / 5) % 12) + 1,
-              (i % 28) + 6,
+              (i % 28) + 6
             ).toISOString()
           : undefined,
     });
@@ -82,7 +82,7 @@ const generateMockFeedbackData = (count: number): FeedbackData[] => {
       startDateOfInternship: new Date(
         2024,
         Math.floor(i / 5) % 12,
-        (i % 28) + 1,
+        (i % 28) + 1
       ).toISOString(),
       overallFeedback: `Overall, student ${i} performed satisfactorily. Showed initiative.`,
       tasksCompleted: `Completed project X, assisted with Y, documented Z.`,

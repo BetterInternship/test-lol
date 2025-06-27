@@ -13,21 +13,24 @@ import {
   Briefcase,
   PhilippinePeso,
 } from "lucide-react";
-import { useSavedJobs } from "@/hooks/use-api";
+import { useSavedJobs } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useAppContext } from "@/lib/ctx-app";
+import { useRefs } from "@/lib/db/use-refs";
 
 export default function SavedJobsPage() {
-  const { is_authenticated, recheck_authentication } = useAuthContext();
+  const {
+    is_authenticated,
+    redirect_if_not_logged_in: redirect_if_not_logged_in,
+  } = useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
   const router = useRouter();
   const { is_mobile } = useAppContext();
+  const { to_job_pay_freq_name } = useRefs();
 
-  useEffect(() => {
-    recheck_authentication().then((r) => !r && router.push("/login"));
-  }, [is_authenticated(), router]);
+  redirect_if_not_logged_in();
 
   const handleUnsaveJob = async (job_id: string) => {
     try {
@@ -247,7 +250,7 @@ export default function SavedJobsPage() {
                               className={is_mobile ? "px-3 py-1" : ""}
                             >
                               <PhilippinePeso className="w-3 h-3 mr-1" />
-                              {savedJob.salary}
+                              {savedJob.salary}/{to_job_pay_freq_name(savedJob.salary_freq)}
                             </Badge>
                           )}
                         </div>

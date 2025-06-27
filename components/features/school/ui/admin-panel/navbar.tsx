@@ -1,5 +1,5 @@
-import { ModeToggle } from '@/components/features/school/mode-toggle';
-import { SheetMenu } from '@/components/features/school/ui/admin-panel/sheet-menu';
+import { ModeToggle } from "@/components/features/school/mode-toggle";
+import { SheetMenu } from "@/components/features/school/ui/admin-panel/sheet-menu";
 
 interface NavbarProps {
   title: string;

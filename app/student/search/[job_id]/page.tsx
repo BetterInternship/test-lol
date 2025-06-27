@@ -17,13 +17,25 @@ import {
   useProfile,
   useApplications,
   useJob,
-} from "@/hooks/use-api";
+} from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
-import { JobDetails } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
+import { useMoa } from "@/lib/db/use-moa";
+import {
+  user_can_apply,
+  get_missing_profile_fields,
+} from "@/lib/utils/user-utils";
+import {
+  areApplicationsEnabled,
+  getMaintenanceTitle,
+  getMaintenanceMessage,
+  getMaintenanceSubMessage,
+  getAvailableActions,
+} from "@/lib/config/application-config";
+import ReactMarkdown from "react-markdown";
 
 /**
  * The individual job page.
@@ -34,7 +46,7 @@ export default function JobPage() {
   const params = useParams();
   const { job_id } = params;
   const { job, loading, error, refetch } = useJob(job_id as string);
-  const { is_authenticated } = useAuthContext();
+  const { is_authenticated, user } = useAuthContext();
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -45,21 +57,21 @@ export default function JobPage() {
     close: close_success_modal,
     Modal: SuccessModal,
   } = useModal("success-modal");
+  const {
+    open: open_incomplete_profile_modal,
+    close: close_incomplete_profile_modal,
+    Modal: IncompleteProfileModal,
+  } = useModal("incomplete-profile-modal");
+  const {
+    open: open_maintenance_modal,
+    close: close_maintenance_modal,
+    Modal: MaintenanceModal,
+  } = useModal("maintenance-modal");
+  const { check } = useMoa();
   const { profile } = useProfile();
-  const { ref_is_not_null } = useRefs();
+  const { universities, to_job_pay_freq_name } = useRefs();
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
-
-  // Check if profile is complete
-  const isProfileComplete = () => {
-    if (!profile) return false;
-    return !!(
-      profile.full_name &&
-      profile.phone_number &&
-      ref_is_not_null(profile.college) &&
-      ref_is_not_null(profile.year_level)
-    );
-  };
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
@@ -86,6 +98,12 @@ export default function JobPage() {
   };
 
   const handleApply = () => {
+    // Check maintenance mode first, passing user email for bypass check
+    if (!areApplicationsEnabled(user?.email)) {
+      open_maintenance_modal();
+      return;
+    }
+
     if (!is_authenticated()) {
       window.location.href = "/login";
       return;
@@ -99,9 +117,8 @@ export default function JobPage() {
     }
 
     // Check if profile is complete
-    if (!isProfileComplete()) {
-      alert("Please complete your profile before applying.");
-      router.push("/profile");
+    if (!user_can_apply(profile)) {
+      open_incomplete_profile_modal();
       return;
     }
 
@@ -166,7 +183,7 @@ export default function JobPage() {
                     <ArrowLeft className="w-4 h-4" />
                     Back to Applications
                   </Button>
-                  
+
                   {job && (
                     <div className="flex items-center gap-3">
                       <Button
@@ -179,13 +196,24 @@ export default function JobPage() {
                             : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
                         )}
                       >
-                        <Heart className={cn("w-4 h-4", is_saved(job.id ?? "") ? "fill-current" : "")} />
-                        {is_saved(job.id ?? "") ? "Saved" : saving ? "Saving..." : "Save"}
+                        <Heart
+                          className={cn(
+                            "w-4 h-4",
+                            is_saved(job.id ?? "") ? "fill-current" : ""
+                          )}
+                        />
+                        {is_saved(job.id ?? "")
+                          ? "Saved"
+                          : saving
+                          ? "Saving..."
+                          : "Save"}
                       </Button>
-                      
+
                       <Button
                         disabled={appliedJob(job.id ?? "")}
-                        onClick={() => !appliedJob(job.id ?? "") && handleApply()}
+                        onClick={() =>
+                          !appliedJob(job.id ?? "") && handleApply()
+                        }
                         className={cn(
                           "flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all",
                           appliedJob(job.id ?? "")
@@ -218,19 +246,19 @@ export default function JobPage() {
                           <p className="text-lg text-gray-700 font-medium">
                             {job.employer?.name}
                           </p>
-                          {job.employer?.has_dlsu_moa && (
-                            <span className="inline-flex items-center bg-green-100 text-green-800 text-sm px-3 py-1.5 rounded-full font-medium">
-                              <CheckCircle className="w-4 h-4 mr-1.5" />
-                              DLSU MOA
-                            </span>
-                          )}
                         </div>
                         <p className="text-gray-500 text-sm">
-                          Listed on {job.created_at ? new Date(job.created_at).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long", 
-                            day: "numeric"
-                          }) : ""}
+                          Listed on{" "}
+                          {job.created_at
+                            ? new Date(job.created_at).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )
+                            : ""}
                         </p>
                       </div>
                     </div>
@@ -240,9 +268,24 @@ export default function JobPage() {
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <svg
+                              className="w-4 h-4 text-blue-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
                             </svg>
                           </div>
                           <span className="text-sm font-medium">Location</span>
@@ -255,46 +298,124 @@ export default function JobPage() {
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            <svg
+                              className="w-4 h-4 text-purple-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
                             </svg>
                           </div>
                           <span className="text-sm font-medium">Mode</span>
                         </div>
                         <p className="text-gray-900 font-medium">
-                          {job.mode !== null && job.mode !== undefined ? 
-                            (job.mode === 0 ? "Face to Face" : job.mode === 1 ? "Remote" : "Hybrid") : 
-                            "Not specified"}
+                          {job.mode !== null && job.mode !== undefined
+                            ? job.mode === 0
+                              ? "Face to Face"
+                              : job.mode === 1
+                              ? "Remote"
+                              : "Hybrid"
+                            : "Not specified"}
                         </p>
                       </div>
 
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            <svg
+                              className="w-4 h-4 text-green-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                              />
                             </svg>
                           </div>
                           <span className="text-sm font-medium">Salary</span>
                         </div>
                         <p className="text-gray-900 font-medium">
-                          {job.salary ? `₱${job.salary}` : "Not specified"}
+                          {job.salary
+                            ? `₱${job.salary}/${to_job_pay_freq_name(
+                                job.salary_freq
+                              )}`
+                            : "None"}
                         </p>
                       </div>
 
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-4 h-4 text-orange-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                           </div>
                           <span className="text-sm font-medium">Type</span>
                         </div>
                         <p className="text-gray-900 font-medium">
-                          {job.type !== null && job.type !== undefined ? 
-                            (job.type === 0 ? "Internship" : job.type === 1 ? "Full-time" : "Part-time") : 
-                            "Not specified"}
+                          {job.type !== null && job.type !== undefined
+                            ? job.type === 0
+                              ? "Internship"
+                              : job.type === 1
+                              ? "Full-time"
+                              : "Part-time"
+                            : "Not specified"}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-green-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          </div>
+                          <span className="text-sm font-medium">
+                            Partnership
+                          </span>
+                        </div>
+                        <p className="text-gray-900 font-medium">
+                          {check(
+                            job.employer?.id ?? "",
+                            universities[0]?.id
+                          ) ? (
+                            <span className="inline-flex items-center text-green-700 font-medium">
+                              <CheckCircle className="w-4 h-4 mr-1" />
+                              DLSU MOA
+                            </span>
+                          ) : (
+                            "No MOA"
+                          )}
                         </p>
                       </div>
                     </div>
@@ -306,15 +427,27 @@ export default function JobPage() {
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                       <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                         <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
                           </svg>
                         </div>
                         Description
                       </h2>
                       <div className="prose max-w-none text-gray-700 leading-relaxed">
                         <div className="whitespace-pre-wrap text-base leading-7">
-                          {job.description || "No description provided."}
+                          <ReactMarkdown>
+                            {job.description || "No description provided."}
+                          </ReactMarkdown>
                         </div>
                       </div>
                     </div>
@@ -324,8 +457,18 @@ export default function JobPage() {
                       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                         <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
                           <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            <svg
+                              className="w-5 h-5 text-red-600"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                              />
                             </svg>
                           </div>
                           Requirements
@@ -504,6 +647,195 @@ export default function JobPage() {
           </motion.div>
         </div>
       </SuccessModal>
+
+      {/* Incomplete Profile Modal */}
+      <IncompleteProfileModal>
+        <div className="p-6">
+          {(() => {
+            const { missing, labels } = get_missing_profile_fields(profile);
+            const missingCount = missing.length;
+
+            return (
+              <>
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Complete Your Profile
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed">
+                    You need to complete your profile before applying to jobs.
+                    {missingCount === 1
+                      ? "There is 1 required field missing."
+                      : `There are ${missingCount} required fields missing.`}
+                  </p>
+                </div>
+
+                {/* Missing Fields List */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                    Missing Information
+                  </h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    {missing.map((field) => (
+                      <div
+                        key={field}
+                        className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg"
+                      >
+                        <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+                        <span className="text-sm font-medium text-orange-800">
+                          {labels[field]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => close_incomplete_profile_modal()}
+                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      close_incomplete_profile_modal();
+                      router.push("/profile");
+                    }}
+                    className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <User className="w-4 h-4" />
+                      Complete Profile
+                    </div>
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </IncompleteProfileModal>
+
+      {/* Maintenance Mode Modal */}
+      <MaintenanceModal>
+        <div className="flex flex-col h-full max-h-[85vh]">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 text-blue-600">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                {getMaintenanceTitle()}
+              </h2>
+              <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
+                {getMaintenanceMessage()}
+              </p>
+            </div>
+
+            {/* Actions List */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                {getMaintenanceSubMessage()}
+              </h3>
+
+              <div className="space-y-3">
+                {getAvailableActions().map((action, index) => {
+                  const getIcon = (iconName: string) => {
+                    switch (iconName) {
+                      case "heart":
+                        return <Heart className="w-5 h-5" />;
+                      case "user":
+                        return <User className="w-5 h-5" />;
+                      case "search":
+                        return (
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                          </svg>
+                        );
+                      case "calendar":
+                        return (
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                        );
+                      default:
+                        return (
+                          <div className="w-5 h-5 bg-blue-500 rounded-full" />
+                        );
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                        {getIcon(action.icon)}
+                      </div>
+                      <span className="text-gray-700 font-medium">
+                        {action.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Fixed Action Button - Always Visible */}
+          <div className="flex-shrink-0 p-6 pt-0 border-t border-gray-100 bg-white">
+            <div className="flex justify-center">
+              <Button
+                onClick={() => close_maintenance_modal()}
+                className="px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                Got it, thanks!
+              </Button>
+            </div>
+          </div>
+        </div>
+      </MaintenanceModal>
     </>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect } from "react";
+import React from "react";
+import type { ChangeEvent } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -20,12 +21,13 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useJobs,
   useSavedJobs,
   useProfile,
   useApplications,
-} from "@/hooks/use-api";
+} from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { UserApplication, Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
@@ -39,8 +41,20 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { industriesOptions } from "@/lib/utils/job-options";
+import {
+  user_can_apply,
+  get_missing_profile_fields,
+} from "@/lib/utils/user-utils";
+import {
+  areApplicationsEnabled,
+  getMaintenanceTitle,
+  getMaintenanceMessage,
+  getMaintenanceSubMessage,
+  getAvailableActions,
+} from "@/lib/config/application-config";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -54,23 +68,28 @@ const formatDate = (dateString: string) => {
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { is_authenticated } = useAuthContext();
+  const { is_authenticated, user } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { filters, set_filter, filter_setter } = useFilter<{
+  const [coverLetter, setCoverLetter] = useState("");
+  const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
+
+  // Initialize filters with URL synchronization and proper defaults
+  const { filters, set_filter, filter_setter, clear_filters } = useFilter<{
     job_type: string;
     location: string;
     industry: string;
     category: string;
-  }>();
-  
-  // Initialize default filter values
-  useEffect(() => {
-    if (!filters.job_type) set_filter("job_type", "All types");
-    if (!filters.location) set_filter("location", "Any location");  
-    if (!filters.industry) set_filter("industry", "All industries");
-    if (!filters.category) set_filter("category", "All categories");
-  }, []);
+  }>(
+    {
+      job_type: searchParams.get("jobType") || "All types",
+      location: searchParams.get("location") || "Any location",
+      industry: searchParams.get("industry") || "All industries",
+      category: searchParams.get("category") || "All categories",
+    },
+    true
+  ); // Enable URL synchronization
+
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -91,20 +110,35 @@ export default function SearchPage() {
     close: close_job_modal,
     Modal: JobModal,
   } = useModal("job-modal", { showCloseButton: false });
+  const {
+    open: open_application_confirmation_modal,
+    close: close_application_confirmation_modal,
+    Modal: ApplicationConfirmationModal,
+  } = useModal("application-confirmation-modal");
+  const {
+    open: open_profile_preview_modal,
+    close: close_profile_preview_modal,
+    Modal: ProfilePreviewModal,
+  } = useModal("profile-preview-modal");
+  const {
+    open: open_incomplete_profile_modal,
+    close: close_incomplete_profile_modal,
+    Modal: IncompleteProfileModal,
+  } = useModal("incomplete-profile-modal");
+  const {
+    open: open_maintenance_modal,
+    close: close_maintenance_modal,
+    Modal: MaintenanceModal,
+  } = useModal("maintenance-modal");
+
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { ref_is_not_null, to_job_mode_name, to_job_type_name, to_job_pay_freq_name } = useRefs();
-
-  // Check if profile is complete
-  const isProfileComplete = () => {
-    if (!profile) return false;
-    return !!(
-      profile.full_name &&
-      profile.phone_number &&
-      ref_is_not_null(profile.college) &&
-      ref_is_not_null(profile.year_level)
-    );
-  };
+  const {
+    job_categories,
+    to_job_mode_name,
+    to_job_type_name,
+    to_job_pay_freq_name,
+  } = useRefs();
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
@@ -117,69 +151,59 @@ export default function SearchPage() {
     return [];
   };
 
-  // API hooks
+  // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
-  const [jobs, setJobs] = useState<Job[]>([]);
   const {
     getJobsPage,
-    jobs: allJobs,
+    jobs: filteredJobs,
+    allJobs,
     loading: jobs_loading,
     error: jobs_error,
     refetch,
   } = useJobs({
     search: searchTerm.trim() || undefined,
     category: filters.category,
-    type: filters.job_type,
     mode: filters.location,
     industry: filters.industry,
   });
 
-  useEffect(() => {
-    setJobs(getJobsPage({ page: jobs_page, limit: jobs_page_size }));
-  }, [jobs_page, jobs_loading]);
+  // Get paginated jobs directly from getJobsPage
+  const jobs = getJobsPage({ page: jobs_page, limit: jobs_page_size });
 
   const { is_saved, saving, save_job } = useSavedJobs();
   const { appliedJob, apply } = useApplications();
 
+  // Initialize search term from URL
   useEffect(() => {
     const query = searchParams.get("q") || "";
     setSearchTerm(query);
   }, [searchParams]);
 
+  // Reset to page 1 when filters or search term change
   useEffect(() => {
-    const jobId = searchParams.get("jobId");
-    if (jobId && jobs.length > 0) {
-      const targetJob = jobs.find((job) => job.id === jobId);
-      if (targetJob) {
-        setSelectedJob(targetJob);
-      }
-    } else if (jobs.length > 0 && !selectedJob) {
-      setSelectedJob(jobs[0]);
-    }
-  }, []);
-
-  useEffect(() => {
-    const jobId = searchParams.get("jobId");
-    const category = searchParams.get("category");
-    const jobType = searchParams.get("jobType");
-    const location = searchParams.get("location");
-    
-    // Initialize filters with proper defaults
-    set_filter("category", category ?? "All categories");
-    set_filter("job_type", jobType ?? "All types");
-    set_filter("location", location ?? "Any location");
-    set_filter("industry", "All industries");
-    
-    setSelectedJob(jobs.filter((job) => job.id === jobId)[0] ?? {});
-  }, [searchParams, jobs]);
+    setJobsPage(1);
+  }, [
+    searchTerm,
+    filters.job_type,
+    filters.location,
+    filters.industry,
+    filters.category,
+  ]);
 
   // Set first job as selected when jobs load
   useEffect(() => {
-    if (jobs.length > 0 && !selectedJob) {
+    const jobId = searchParams.get("jobId");
+
+    if (jobId && jobs.length > 0) {
+      const targetJob = jobs.find((job) => job.id === jobId);
+      if (targetJob && targetJob.id !== selectedJob?.id) {
+        setSelectedJob(targetJob);
+      }
+    } else if (jobs.length > 0 && !selectedJob?.id) {
       setSelectedJob(jobs[0]);
     }
-  }, [jobs, selectedJob]);
+  }, [jobs.length, searchParams]);
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
@@ -195,7 +219,17 @@ export default function SearchPage() {
   };
 
   const handleApply = () => {
+    console.log("handleApply called");
+
+    // Check maintenance mode first, passing user email for bypass check
+    if (!areApplicationsEnabled(user?.email)) {
+      console.log("Applications disabled - showing maintenance modal");
+      open_maintenance_modal();
+      return;
+    }
+
     if (!is_authenticated()) {
+      console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";
       return;
     }
@@ -203,25 +237,25 @@ export default function SearchPage() {
     // Check if already applied
     const applicationStatus = appliedJob(selectedJob?.id ?? "");
     if (applicationStatus) {
+      console.log("Already applied to this job");
       alert("You have already applied to this job!");
       return;
     }
 
     // Check if profile is complete
-    if (!isProfileComplete()) {
-      alert("Please complete your profile before applying.");
-      router.push("/profile");
+    const profileComplete = user_can_apply(profile);
+    console.log("Profile complete:", profileComplete);
+    console.log("Profile:", profile);
+
+    if (!profileComplete) {
+      console.log("Profile not complete, opening incomplete profile modal");
+      open_incomplete_profile_modal();
       return;
     }
 
-    // Check if job requirements are met
-    if (!areJobRequirementsMet()) {
-      open_application_modal();
-      return;
-    }
-
-    // If everything is complete, apply directly
-    handleDirectApplication();
+    // If profile is complete, show confirmation modal
+    console.log("Opening application confirmation modal");
+    open_application_confirmation_modal();
   };
 
   const handleDirectApplication = async () => {
@@ -240,27 +274,16 @@ export default function SearchPage() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
-      // Apply current search term along with active filters
-      // The useJobs hook will automatically filter based on both search and filters
-      // @ts-ignore
-      e.currentTarget.blur();
+      // Reset to page 1 and trigger re-filter with current search term
       setJobsPage(1);
-      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }));
+      // The useJobs hook will automatically re-filter based on the searchTerm
+      (e.currentTarget as HTMLInputElement).blur();
     }
   };
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
-    
-    // If search is cleared (empty), refresh results by clearing all filters
-    if (value.trim() === "") {
-      set_filter("job_type", "All types");
-      set_filter("location", "Any location");
-      set_filter("industry", "All industries");
-      set_filter("category", "All categories");
-      setJobsPage(1);
-      setJobs(getJobsPage({ page: 1, limit: jobs_page_size }));
-    }
+    setJobsPage(1); // Reset to first page when search changes
   };
 
   const handleJobCardClick = (job: Job) => {
@@ -284,7 +307,6 @@ export default function SearchPage() {
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
         {jobs_loading ? (
-          /* Loading State */
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -292,7 +314,6 @@ export default function SearchPage() {
             </div>
           </div>
         ) : is_mobile ? (
-          /* Mobile Layout - Fixed Search Bar with Scrollable Job Cards */
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
@@ -341,7 +362,7 @@ export default function SearchPage() {
               {/* Mobile Paginator */}
               <div className="mt-6">
                 <Paginator
-                  totalItems={allJobs.length}
+                  totalItems={filteredJobs.length}
                   itemsPerPage={jobs_page_size}
                   onPageChange={(page) => setJobsPage(page)}
                 />
@@ -398,7 +419,7 @@ export default function SearchPage() {
 
               {/* Desktop Paginator */}
               <Paginator
-                totalItems={allJobs.length}
+                totalItems={filteredJobs.length}
                 itemsPerPage={jobs_page_size}
                 onPageChange={(page) => setJobsPage(page)}
               />
@@ -413,9 +434,7 @@ export default function SearchPage() {
                     <Button
                       key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
-                      onClick={() =>
-                        !appliedJob(selectedJob.id ?? "") && handleApply()
-                      }
+                      onClick={handleApply}
                       className={cn(
                         appliedJob(selectedJob.id ?? "")
                           ? "bg-green-600 text-white"
@@ -497,7 +516,9 @@ export default function SearchPage() {
               </h1>
               <div className="flex items-center gap-2 text-gray-600 mb-1">
                 <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">{selectedJob.employer?.name}</span>
+                <span className="truncate text-sm">
+                  {selectedJob.employer?.name}
+                </span>
               </div>
               <p className="text-xs text-gray-500">
                 Listed on {formatDate(selectedJob.created_at ?? "")}
@@ -505,57 +526,73 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Scrollable Content Area - Takes remaining space */}
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
+          {/* Scrollable Content Area - MUST be properly configured */}
+          <div
+            className="flex-1 overflow-y-scroll overscroll-contain pb-24"
+            style={{ maxHeight: "calc(100vh - 200px)" }}
+          >
             {selectedJob && (
               <div className="p-4">
                 {/* Mobile Job Details Grid */}
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <h3 className="text-lg font-semibold mb-4 text-gray-900">
+                    Job Details
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Location: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">
+                            Location:{" "}
+                          </span>
+                          <span className="text-gray-700">
                             {selectedJob.location || "Not specified"}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <Monitor className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <Monitor className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Mode: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">
+                            Mode:{" "}
+                          </span>
+                          <span className="text-gray-700">
                             {to_job_mode_name(selectedJob.mode)}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <PhilippinePeso className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Salary: </span>
-                          <span className="opacity-80">
-                            {selectedJob.salary || "Not specified"}{" "}
-                            {to_job_pay_freq_name(selectedJob.salary_freq)}
+                          <span className="font-semibold text-gray-900">
+                            Salary:{" "}
+                          </span>
+                          <span className="text-gray-700">
+                            {!selectedJob.allowance && selectedJob.salary
+                              ? `${selectedJob.salary}/${to_job_pay_freq_name(
+                                  selectedJob.salary_freq
+                                )}`
+                              : "None"}
                           </span>
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
+                      <Clock className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm">
-                          <span className="font-medium">Employment Type: </span>
-                          <span className="opacity-80">
+                          <span className="font-semibold text-gray-900">
+                            Work Schedule:{" "}
+                          </span>
+                          <span className="text-gray-700">
                             {to_job_type_name(selectedJob.type)}
                           </span>
                         </p>
@@ -566,7 +603,9 @@ export default function SearchPage() {
 
                 {/* Job Description */}
                 <div className="mb-6">
-                  <h2 className="text-lg font-semibold mb-3">Description</h2>
+                  <h2 className="text-lg font-semibold mb-3 text-gray-900">
+                    Description
+                  </h2>
                   <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                     <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
                   </div>
@@ -575,52 +614,53 @@ export default function SearchPage() {
                 {/* Job Requirements */}
                 {selectedJob.requirements && (
                   <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-3">Requirements</h2>
+                    <h2 className="text-lg font-semibold mb-3 text-gray-900">
+                      Requirements
+                    </h2>
                     <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                       <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                     </div>
                   </div>
                 )}
 
-                {/* Bottom padding for scroll area */}
-                <div className="pb-4"></div>
-
+                {/* Extra bottom padding to ensure content isn't hidden behind buttons */}
+                <div className="pb-20"></div>
               </div>
             )}
           </div>
 
-          {/* Fixed Action Buttons at Bottom - Always Visible */}
-          <div className="bg-white border-t p-4 flex-shrink-0 safe-area-bottom mb-4">
+          {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 border-blue-200 p-4 shadow-lg">
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
-                onClick={() => !appliedJob(selectedJob?.id ?? "") && handleApply()}
+                onClick={handleApply}
                 className={cn(
-                  "flex-1 h-12 font-semibold rounded-xl transition-all duration-200",
+                  "flex-1 h-14 font-bold rounded-2xl transition-all duration-300 shadow-lg text-base",
                   appliedJob(selectedJob?.id ?? "")
-                    ? "bg-green-600 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                    ? "bg-green-600 hover:bg-green-700 text-white shadow-green-200"
+                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:shadow-xl active:scale-95"
                 )}
               >
                 {appliedJob(selectedJob?.id ?? "") && (
-                  <CheckCircle className="w-4 h-4 mr-2" />
+                  <CheckCircle className="w-5 h-5 mr-2" />
                 )}
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
                 className={cn(
-                  "h-12 w-12 rounded-xl border-2 transition-all duration-200",
+                  "h-14 w-14 rounded-2xl border-2 transition-all duration-300 shadow-lg active:scale-95",
                   is_saved(selectedJob?.id ?? "")
-                    ? "bg-red-50 border-red-200 text-red-600"
-                    : "border-gray-200 text-gray-600 hover:border-gray-300"
+                    ? "bg-red-50 border-red-300 text-red-600 shadow-red-200 hover:bg-red-100"
+                    : "border-gray-300 text-gray-600 hover:border-gray-400 bg-white shadow-gray-200 hover:shadow-xl"
                 )}
               >
                 <Heart
                   className={cn(
-                    "w-5 h-5",
+                    "w-6 h-6",
                     is_saved(selectedJob?.id ?? "") ? "fill-current" : ""
                   )}
                 />
@@ -767,27 +807,29 @@ export default function SearchPage() {
           </div>
           <DropdownGroup>
             <GroupableRadioDropdown
-              name="jobType"
-              options={["All types", "Internships", "Full-time", "Part-time"]}
-              on_change={filter_setter("job_type")}
-              default_value={filters.job_type}
-            />
-            <GroupableRadioDropdown
               name="location"
               options={["Any location", "In-Person", "Remote", "Hybrid"]}
               on_change={filter_setter("location")}
               default_value={filters.location}
             />
             <GroupableRadioDropdown
-              name="category"
-              options={[
-                "All industries",
-                "Technology",
-                "Creative Services",
-                "Consumer Goods",
-              ]}
+              name="industry"
+              options={industriesOptions.map((industry) =>
+                industry === "All Industries" ? "All industries" : industry
+              )}
               on_change={filter_setter("industry")}
               default_value={filters.industry}
+            />
+            <GroupableRadioDropdown
+              name="category"
+              options={[
+                "All categories",
+                ...job_categories
+                  .toSorted((a, b) => a.order - b.order)
+                  .map((c) => c.name),
+              ]}
+              on_change={filter_setter("category")}
+              default_value={filters.category}
             />
           </DropdownGroup>
 
@@ -795,10 +837,11 @@ export default function SearchPage() {
             <Button
               variant="outline"
               onClick={() => {
-                // Clear temp filters but keep search term
-                set_filter("job_type", "All types");
-                set_filter("location", "Any location");
-                set_filter("industry", "All industries");
+                clear_filters({
+                  location: "Any location",
+                  industry: "All industries",
+                  category: "All categories",
+                });
               }}
               className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
             >
@@ -813,6 +856,362 @@ export default function SearchPage() {
           </div>
         </div>
       </FilterModal>
+
+      {/* Application Confirmation Modal - Redesigned */}
+      <ApplicationConfirmationModal>
+        <div className="max-w-lg mx-auto p-6">
+          {/* Header Section */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <Clipboard className="w-8 h-8 text-blue-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Ready to Apply?
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
+              You're applying for{" "}
+              <span className="font-semibold text-gray-900">
+                {selectedJob?.title}
+              </span>
+              {selectedJob?.employer?.name && (
+                <>
+                  {" "}
+                  at{" "}
+                  <span className="font-semibold text-gray-900">
+                    {selectedJob.employer.name}
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+
+          {/* Profile Preview Section */}
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                close_application_confirmation_modal();
+                open_profile_preview_modal();
+              }}
+              className="w-full h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium group transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                  <User className="w-4 h-4 text-gray-600" />
+                </div>
+                <span>Preview Your Profile</span>
+              </div>
+            </Button>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              See how employers will view your application
+            </p>
+          </div>
+
+          {/* Cover Letter Section */}
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                  <Clipboard className="w-4 h-4 text-amber-600" />
+                </div>
+                <label
+                  htmlFor="add-cover-letter"
+                  className="font-medium text-gray-900"
+                >
+                  Cover Letter
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="add-cover-letter"
+                  checked={showCoverLetterInput}
+                  onChange={() =>
+                    setShowCoverLetterInput(!showCoverLetterInput)
+                  }
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="text-sm text-gray-500">Include</span>
+              </div>
+            </div>
+
+            {showCoverLetterInput && (
+              <div className="space-y-3">
+                <Textarea
+                  placeholder="Dear Hiring Manager,
+
+I am excited to apply for this position because...
+
+Best regards,
+[Your name]"
+                  className="w-full h-20 p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none text-sm overflow-y-auto"
+                  maxLength={500}
+                />
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-500 flex items-center gap-1">
+                    💡 <span>Mention specific skills and enthusiasm</span>
+                  </span>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      coverLetter.length > 450
+                        ? "text-red-500"
+                        : "text-gray-500"
+                    )}
+                  >
+                    {coverLetter.length}/500
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={() => {
+                close_application_confirmation_modal();
+                setCoverLetter("");
+                setShowCoverLetterInput(false);
+              }}
+              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                close_application_confirmation_modal();
+                handleDirectApplication();
+                setCoverLetter("");
+                setShowCoverLetterInput(false);
+              }}
+              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <div className="flex items-center justify-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Submit Application
+              </div>
+            </Button>
+          </div>
+        </div>
+      </ApplicationConfirmationModal>
+
+      {/* Profile Preview Modal */}
+      <ProfilePreviewModal>
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">
+              Your Profile Preview
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </Button>
+          </div>
+
+          {profile && (
+            <ApplicantModalContent
+              applicant={profile as any}
+              open_resume_modal={() => {}} // Optional: Add resume preview functionality
+            />
+          )}
+
+          <div className="mt-6">
+            <Button
+              onClick={() => {
+                close_profile_preview_modal();
+                open_application_confirmation_modal();
+              }}
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+            >
+              Back to Application
+            </Button>
+          </div>
+        </div>
+      </ProfilePreviewModal>
+
+      {/* Incomplete Profile Modal */}
+      <IncompleteProfileModal>
+        <div className="p-6">
+          {(() => {
+            const { missing, labels } = get_missing_profile_fields(profile);
+            const missingCount = missing.length;
+
+            return (
+              <>
+                {/* Header */}
+                <div className="text-center mb-6">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-orange-100 rounded-full flex items-center justify-center">
+                    <AlertTriangle className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Complete Your Profile
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed">
+                    You need to complete your profile before applying to jobs.
+                    {missingCount === 1
+                      ? "There is 1 required field missing."
+                      : `There are ${missingCount} required fields missing.`}
+                  </p>
+                </div>
+
+                {/* Missing Fields List */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
+                    Missing Information
+                  </h3>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    {missing.map((field) => (
+                      <div
+                        key={field}
+                        className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-lg"
+                      >
+                        <div className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0" />
+                        <span className="text-sm font-medium text-orange-800">
+                          {labels[field]}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => close_incomplete_profile_modal()}
+                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      close_incomplete_profile_modal();
+                      router.push("/profile");
+                    }}
+                    className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <User className="w-4 h-4" />
+                      Complete Profile
+                    </div>
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
+        </div>
+      </IncompleteProfileModal>
+
+      {/* Maintenance Mode Modal */}
+      <MaintenanceModal>
+        <div className="flex flex-col h-full max-h-[85vh]">
+          {/* Scrollable Content Area */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 text-blue-600">
+                  <svg
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                {getMaintenanceTitle()}
+              </h2>
+              <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
+                {getMaintenanceMessage()}
+              </p>
+            </div>
+
+            {/* Actions List */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
+                {getMaintenanceSubMessage()}
+              </h3>
+
+              <div className="space-y-3">
+                {getAvailableActions().map((action, index) => {
+                  const getIcon = (iconName: string) => {
+                    switch (iconName) {
+                      case "heart":
+                        return <Heart className="w-5 h-5" />;
+                      case "user":
+                        return <User className="w-5 h-5" />;
+                      case "search":
+                        return <Search className="w-5 h-5" />;
+                      case "calendar":
+                        return (
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                        );
+                      default:
+                        return (
+                          <div className="w-5 h-5 bg-blue-500 rounded-full" />
+                        );
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                        {getIcon(action.icon)}
+                      </div>
+                      <span className="text-gray-700 font-medium">
+                        {action.text}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Fixed Action Button - Always Visible */}
+          <div className="flex-shrink-0 p-6 pt-0 border-t border-gray-100 bg-white">
+            <div className="flex justify-center">
+              <Button
+                onClick={() => close_maintenance_modal()}
+                className="px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+              >
+                Got it, thanks!
+              </Button>
+            </div>
+          </div>
+        </div>
+      </MaintenanceModal>
     </>
   );
 }

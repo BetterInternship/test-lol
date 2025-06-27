@@ -27,12 +27,14 @@ export const EditableInput = ({
   value,
   setter,
   placeholder,
+  maxLength,
   children,
 }: {
   is_editing: boolean;
   value: Value;
   setter: (value: string) => void;
   placeholder?: string;
+  maxLength?: number;
   children?: React.ReactElement<{ value?: Value }>;
 }) => {
   return is_editing ? (
@@ -40,7 +42,9 @@ export const EditableInput = ({
       value={value ?? ""}
       onChange={(e) => setter(e.target.value)}
       placeholder={placeholder}
-      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm"
+      maxLength={maxLength}
+      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm relative z-10 pointer-events-auto"
+      style={{ position: 'relative', zIndex: 10 }}
     />
   ) : (
     React.Children.map(children, (child) => {

@@ -84,14 +84,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
   html {
     @apply scroll-smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     @apply text-base leading-normal;
@@ -155,14 +151,13 @@
   /* Enhanced link styles */
   a {
     @apply text-primary hover:text-primary/80 transition-colors duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary rounded-sm;
+    @apply focus:outline-none rounded-sm;
   }
 
   /* Form elements */
   input, textarea, select {
     @apply border border-gray-300 rounded-lg px-3 py-2;
     @apply text-gray-900 placeholder-gray-500;
-    @apply focus:ring-2 focus:ring-primary focus:border-primary;
     @apply transition-colors duration-200;
   }
 
@@ -498,18 +493,18 @@ button[role="checkbox"]:checked {
   .no-print {
     display: none !important;
   }
-  
+
   .print-break {
     page-break-after: always;
   }
-  
+
   body {
     font-size: 12pt;
     line-height: 1.4;
     color: black !important;
     background: white !important;
   }
-  
+
   .card {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
@@ -546,5 +541,28 @@ button[role="checkbox"]:checked {
     left: 0;
     right: 0;
     z-index: 50;
+  }
+}
+
+/* Mobile-specific utilities */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .webkit-overflow-scrolling-touch {
+    -webkit-overflow-scrolling: touch;
   }
 }

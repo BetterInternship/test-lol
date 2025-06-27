@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "../globals.css";
-import { AuthContextInitter, AuthContextProvider } from "@/lib/ctx-auth";
+import { AuthContextProvider } from "@/lib/ctx-auth";
 import { RefsContextProvider } from "@/lib/db/use-refs";
 import Header from "@/components/features/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { Footer } from "@/components/shared/footer";
+import { MoaContextProvider } from "@/lib/db/use-moa";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -25,9 +26,9 @@ export const RootLayout = ({
     <AppContextProvider>
       <AuthContextProvider>
         <RefsContextProvider>
-          <AuthContextInitter>
+          <MoaContextProvider>
             <HTMLContent>{children}</HTMLContent>
-          </AuthContextInitter>
+          </MoaContextProvider>
         </RefsContextProvider>
       </AuthContextProvider>
     </AppContextProvider>

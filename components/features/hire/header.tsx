@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
+import { get_full_name } from "@/lib/utils/user-utils";
 
 /**
  * The header present on every page
@@ -64,11 +65,9 @@ export const ProfileButton = () => {
   };
 
   const get_display_name = () => {
-    if (!user?.full_name) return "User";
-    const names = user.full_name.split(" ");
-    if (names.length > 1)
-      return `${names[0]} ${names[names.length - 1].charAt(0)}.`;
-    return names[0];
+    if (!user) return "User";
+    if (get_full_name(user) === "") return "User";
+    return get_full_name(user);
   };
 
   return is_authenticated() ? (
@@ -85,21 +84,15 @@ export const ProfileButton = () => {
       }
       content={
         <div className="px-4 py-3 border-b border-gray-200">
-          <p className="text-sm font-medium text-gray-900">{user?.full_name}</p>
+          <p className="text-sm font-medium text-gray-900">
+            {get_full_name(user)}
+          </p>
           <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
             {user?.email}
           </p>
         </div>
       }
     >
-      <DropdownOption href="/company-profile">
-        <Building2 className="w-4 h-4 inline-block m-1 mr-2" />
-        Edit Company Profile
-      </DropdownOption>
-      <DropdownOption href="/add-users">
-        <UserPlus className="w-4 h-4 inline-block m-1 mr-2" />
-        Add Users
-      </DropdownOption>
       <DropdownOption href="/login" on_click={handle_logout}>
         <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
         <span className="text-red-500">Sign Out</span>

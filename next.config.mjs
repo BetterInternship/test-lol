@@ -9,6 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  allowedDevOrigins: ["hire.localhost", "localhost"]
 }
 
 export default nextConfig

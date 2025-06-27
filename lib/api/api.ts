@@ -7,25 +7,16 @@ import {
   EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
-import { FetchResponse } from "@/hooks/use-fetch";
-
-// Generic Responses
-interface NoResponse extends FetchResponse {}
-
-interface StatusResponse extends FetchResponse {
-  message: string;
-  success: boolean;
-}
-
-interface ToggleResponse extends FetchResponse {
-  message: string;
-  state: boolean;
-}
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 // Auth Services
 interface AuthResponse extends FetchResponse {
   success: boolean;
-  user: Partial<PublicUser> | Partial<PublicEmployerUser>;
+  user: Partial<PublicUser>;
+}
+
+interface OTPRequestResponse extends FetchResponse {
+  email: string;
 }
 
 interface EmailStatusResponse extends FetchResponse {
@@ -33,64 +24,15 @@ interface EmailStatusResponse extends FetchResponse {
   verified_user: boolean;
 }
 
-interface SendOTPResponse extends FetchResponse {
-  email: string;
+interface ResourceHashResponse {
+  success?: boolean;
+  message?: string;
+  hash?: string;
 }
 
 export const auth_service = {
-  // Employer auth
-  employer: {
-    async loggedin() {
-      return APIClient.post<AuthResponse>(
-        APIRoute("auth").r("hire", "loggedin").build()
-      );
-    },
-
-    async email_status(email: string) {
-      return APIClient.post<EmailStatusResponse>(
-        APIRoute("auth").r("hire", "email-status").build(),
-        { email }
-      );
-    },
-
-    async send_otp_request(email: string) {
-      return APIClient.post<SendOTPResponse>(
-        APIRoute("auth").r("hire", "send-new-otp").build(),
-        { email }
-      );
-    },
-
-    async verify_otp(email: string, otp: string) {
-      return APIClient.post<AuthResponse>(
-        APIRoute("auth").r("hire", "verify-otp").build(),
-        { email, otp }
-      );
-    },
-
-    async login_as_employer(employer_id: string) {
-      return APIClient.post<AuthResponse>(
-        APIRoute("employer").r("proxy", employer_id).build()
-      );
-    },
-
-    async get_all_employers() {
-      return APIClient.get<AuthResponse>(APIRoute("employer").r("all").build());
-    },
-
-    // ! to implement
-    async refresh_token() {},
-
-    async logout() {
-      await APIClient.post<NoResponse>(
-        APIRoute("auth").r("hire", "logout").build()
-      );
-    },
-  },
-
   async loggedin() {
-    return APIClient.post<AuthResponse>(
-      APIRoute("auth").r("hire", "loggedin").build()
-    );
+    return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
   },
 
   async register(user: Partial<PublicUser>) {
@@ -126,14 +68,14 @@ export const auth_service = {
   },
 
   async send_otp_request(email: string) {
-    return APIClient.post<SendOTPResponse>(
+    return APIClient.post<OTPRequestResponse>(
       APIRoute("auth").r("send-new-otp").build(),
       { email }
     );
   },
 
   async resend_otp_request(email: string) {
-    return APIClient.post<SendOTPResponse>(
+    return APIClient.post<OTPRequestResponse>(
       APIRoute("auth").r("resend-new-otp").build(),
       { email }
     );
@@ -146,20 +88,10 @@ export const auth_service = {
     );
   },
 
-  // ! to implement
-  async refresh_token() {},
-
   async logout() {
-    await APIClient.post<NoResponse>(APIRoute("auth").r("logout").build());
+    await APIClient.post<FetchResponse>(APIRoute("auth").r("logout").build());
   },
 };
-
-// User Services
-interface ResourceHashResponse {
-  success?: boolean;
-  message?: string;
-  hash?: string;
-}
 interface UserResponse extends FetchResponse {
   user: Partial<PublicUser>;
 }
@@ -219,10 +151,6 @@ export const user_service = {
     );
   },
 
-  async update_profile_picture(file: Blob | null) {
-    // ! to implement
-  },
-
   async save_job(job_id: string) {
     return APIClient.post<SaveJobResponse>(
       APIRoute("users").r("save-job").build(),
@@ -232,24 +160,20 @@ export const user_service = {
 };
 
 // Job Services
-interface JobResponse extends Job, FetchResponse {}
+interface JobResponse extends FetchResponse {
+  job: Job;
+}
 
 interface JobsResponse extends FetchResponse {
   jobs?: Job[];
-  success?: boolean;
-  message: string;
 }
 
 interface SavedJobsResponse extends FetchResponse {
   jobs?: SavedJob[];
-  success?: boolean;
-  message: string;
 }
 
 interface OwnedJobsResponse extends FetchResponse {
   jobs: Job[];
-  success?: boolean;
-  message: string;
 }
 
 export const job_service = {
@@ -274,49 +198,42 @@ export const job_service = {
   },
 
   async create_job(job: Partial<Job>) {
-    return APIClient.post<StatusResponse>(
+    return APIClient.post<FetchResponse>(
       APIRoute("jobs").r("create").build(),
       job
     );
   },
 
   async update_job(job_id: string, job: Partial<Job>) {
-    return APIClient.put<StatusResponse>(
+    return APIClient.put<FetchResponse>(
       APIRoute("jobs").r(job_id).build(),
       job
     );
+  },
+
+  async delete_job(job_id: string) {
+    return APIClient.delete<FetchResponse>(APIRoute("jobs").r(job_id).build());
   },
 };
 
 // Application Services
 interface UserApplicationsResponse extends FetchResponse {
-  success?: boolean;
-  message?: string;
   applications: UserApplication[];
-  total: number;
 }
 
 interface EmployerApplicationsResponse extends FetchResponse {
-  success?: boolean;
-  message?: string;
   applications: EmployerApplication[];
-  total: number;
 }
 
-interface UserApplicationResponse extends UserApplication, FetchResponse {
-  success?: boolean;
-  message?: string;
+interface UserApplicationResponse extends FetchResponse {
+  application: UserApplication;
 }
 
-interface EmployerApplicationResponse
-  extends EmployerApplication,
-    FetchResponse {
-  success?: boolean;
-  message?: string;
+interface EmployerApplicationResponse extends FetchResponse {
+  application: EmployerApplication;
 }
 
 interface CreateApplicationResponse extends FetchResponse {
-  message: string;
   application: UserApplication;
 }
 
@@ -373,7 +290,7 @@ export const application_service = {
   },
 
   async withdraw_application(id: string) {
-    return APIClient.delete<StatusResponse>(
+    return APIClient.delete<FetchResponse>(
       APIRoute("applications").r(id).build()
     );
   },
@@ -382,7 +299,7 @@ export const application_service = {
     id: string,
     review_options: { review?: string; notes?: string; status?: number }
   ) {
-    return APIClient.post<StatusResponse>(
+    return APIClient.post<FetchResponse>(
       APIRoute("applications").r(id, "review").build(),
       review_options
     );

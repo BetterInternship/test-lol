@@ -5,10 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthContext } from "@/lib/ctx-auth";
+import { MultipartFormBuilder } from "@/lib/multipart-form";
 
 export default function LoginPage() {
-  const { email_status, redirect_if_logged_in } = useAuthContext();
+  const { email_status, register, redirect_if_logged_in } = useAuthContext();
   const [email, setEmail] = useState("");
+  const [new_account, set_new_account] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
@@ -56,13 +58,11 @@ export default function LoginPage() {
 
       // Production flow with OTP
       await email_status(email).then((response) => {
-        if (!response?.existing_user || !response?.verified_user) {
-          if (!response?.existing_user) {
-            // New user - redirect directly to registration
-            router.push(`/register?email=${encodeURIComponent(email)}`);
-          } else {
-            router.push(`/login?verified=pending`);
-          }
+        if (!response?.existing_user) {
+          set_new_account(true);
+          setLoading(false);
+        } else if (!response.verified_user) {
+          router.push(`/login?verified=pending`);
         } else {
           router.push(`/login/otp?email=${encodeURIComponent(email)}`);
         }
@@ -70,9 +70,18 @@ export default function LoginPage() {
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "An error occurred. Please try again.");
-    } finally {
       setLoading(false);
+    } finally {
     }
+  };
+
+  const handle_skip = async () => {
+    const multipart_form = MultipartFormBuilder.new();
+    multipart_form.add_field("email", email);
+    // @ts-ignore
+    const response = await register(multipart_form.build());
+    if (response?.success) router.push(`/verify`);
+    else setError(response?.message ?? "Could not create account.");
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -88,9 +97,18 @@ export default function LoginPage() {
         <div className="w-full">
           {/* Welcome Message */}
           <div className="text-center mb-10">
-            <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-              Recruiters are waiting!
-            </h2>
+            {!new_account ? (
+              <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+                Recruiters are waiting!
+              </h2>
+            ) : (
+              <>
+                <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+                  First time?
+                </h2>
+                <div>We're glad to see you join us!</div>
+              </>
+            )}
           </div>
 
           <div className="max-w-md m-auto">
@@ -111,7 +129,7 @@ export default function LoginPage() {
             )}
 
             {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
                 <Input
                   type="email"
@@ -129,12 +147,36 @@ export default function LoginPage() {
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
-              >
-                {loading ? "Checking..." : "Continue"}
-              </Button>
+              {!new_account ? (
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                >
+                  {loading ? "Checking..." : "Continue"}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                    onClick={() =>
+                      router.push(
+                        `/register?email=${encodeURIComponent(email)}`
+                      )
+                    }
+                  >
+                    Finish setting up profile
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full h-12 border-gray-300 font-medium rounded-lg transition-colors cursor-pointer"
+                    onClick={handle_skip}
+                  >
+                    Skip for now
+                  </Button>
+                </>
+              )}
             </form>
           </div>
         </div>
