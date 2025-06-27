@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-06-23 05:29:38
+ * @ Modified time: 2025-06-28 06:17:48
  * @ Description:
  *
  * Routes used by employers
@@ -49,6 +49,12 @@ export const employer_auth_service = {
   async login_as_employer(employer_id: string) {
     return APIClient.post<AuthResponse>(
       APIRoute("employer").r("proxy", employer_id).build()
+    );
+  },
+
+  async get_all_users() {
+    return APIClient.get<AuthResponse>(
+      APIRoute("employer").r("all-users").build()
     );
   },
 

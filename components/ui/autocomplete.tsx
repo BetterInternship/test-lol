@@ -56,7 +56,7 @@ export const Autocomplete = ({
               key="no-match"
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
             >
-              No matching employers.
+              No matching results.
             </li>
           )}
         </ul>
