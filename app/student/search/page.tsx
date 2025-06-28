@@ -81,7 +81,7 @@ export default function SearchPage() {
   }>(
     {
       job_type: searchParams.get("jobType") || "All types",
-      location: searchParams.get("location") || "Any location",
+      location: searchParams.get("location") || "Any work load type",
       industry: searchParams.get("industry") || "All industries",
       category: searchParams.get("category") || "All categories",
     },
@@ -800,14 +800,14 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="space-y-6 py-4 px-8">
-          <div className="flex justify-between items-center mb-8">
+        <div className="space-y-6 px-8">
+          <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
           </div>
           <DropdownGroup>
             <GroupableRadioDropdown
               name="location"
-              options={["Any location", "In-Person", "Remote", "Hybrid"]}
+              options={["Any work load", "In-Person", "Remote", "Hybrid"]}
               on_change={filter_setter("location")}
               default_value={filters.location}
             />
@@ -833,7 +833,13 @@ export default function SearchPage() {
             />
           </DropdownGroup>
 
-          <div className="flex gap-3 pt-6">
+          <div className="flex gap-3 pt-6 pb-8">
+             <Button
+              onClick={() => close_filter_modal()}
+              className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Apply Filters
+            </Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -847,12 +853,7 @@ export default function SearchPage() {
             >
               Clear Filters
             </Button>
-            <Button
-              onClick={() => close_filter_modal()}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Apply Filters
-            </Button>
+           
           </div>
         </div>
       </FilterModal>
