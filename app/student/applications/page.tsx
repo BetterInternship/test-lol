@@ -215,7 +215,8 @@ export default function ApplicationsPage() {
                       variant="outline"
                       className="text-xs flex items-center px-3 py-1"
                     >
-                      <SalaryIcon />₱{application.job.salary}/{to_job_pay_freq_name(application.job.salary_freq)}
+                      <SalaryIcon />{application.job.salary}
+                      {application.job.salary_freq && `/${to_job_pay_freq_name(application.job.salary_freq)}`}
                     </Badge>
                   )}
                   {application.job?.duration && (

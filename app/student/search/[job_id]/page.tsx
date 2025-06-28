@@ -265,6 +265,7 @@ export default function JobPage() {
 
                     {/* Job Details Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-gray-50 rounded-lg">
+                      {job.location && (
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -294,7 +295,9 @@ export default function JobPage() {
                           {job.location || "Not specified"}
                         </p>
                       </div>
+                      )}
 
+                      {(job.mode !== null && job.mode !== undefined) && (
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -324,7 +327,8 @@ export default function JobPage() {
                             : "Not specified"}
                         </p>
                       </div>
-
+                      )}
+                      {job.salary && (
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -352,7 +356,9 @@ export default function JobPage() {
                             : "None"}
                         </p>
                       </div>
-
+                      )}
+                      
+                      {(job.type !== null && job.type !== undefined) && (
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -370,7 +376,7 @@ export default function JobPage() {
                               />
                             </svg>
                           </div>
-                          <span className="text-sm font-medium">Type</span>
+                          <span className="text-sm font-medium">Work Load</span>
                         </div>
                         <p className="text-gray-900 font-medium">
                           {job.type !== null && job.type !== undefined
@@ -382,6 +388,7 @@ export default function JobPage() {
                             : "Not specified"}
                         </p>
                       </div>
+                      )}
 
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
