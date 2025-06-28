@@ -199,90 +199,13 @@ export default function RegisterPage() {
               Profile Customization
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <Label className="block mb-4">
-                  Is this Internship available year-round?
-                </Label>
-                <div className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={form_data.year_round_internship === true}
-                      onCheckedChange={() =>
-                        handle_change("year_round_internship", true)
-                      }
-                    />
-                    <Label>Yes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={form_data.year_round_internship === false}
-                      onCheckedChange={() =>
-                        handle_change("year_round_internship", false)
-                      }
-                    />
-                    <Label>No</Label>
-                  </div>
-                </div>
-              </div>
+            <div className="text-center">
 
-              <div>
-                <Label className="block mb-4">
-                  Are you Hiring Interns Urgently?
-                </Label>
-                <div className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={form_data.hiring_urgently === true}
-                      onCheckedChange={() =>
-                        handle_change("hiring_urgently", true)
-                      }
-                    />
-                    <Label>Yes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={form_data.hiring_urgently === false}
-                      onCheckedChange={() =>
-                        handle_change("hiring_urgently", false)
-                      }
-                    />
-                    <Label>No</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="block mb-4">
-                  Are you open to all student levels?
-                </Label>
-                <div className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={form_data.open_to_all_levels === true}
-                      onCheckedChange={() =>
-                        handle_change("open_to_all_levels", true)
-                      }
-                    />
-                    <Label>Yes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={form_data.open_to_all_levels === false}
-                      onCheckedChange={() =>
-                        handle_change("open_to_all_levels", false)
-                      }
-                    />
-                    <Label>No</Label>
-                  </div>
-                </div>
-              </div>
-
-              <div>
+              <div className="text-center">
                 <Label className="block mb-4">
                   Are you willing to accept interns outside DLSU?
                 </Label>
-                <div className="flex gap-6">
+                <div className="flex justify-center gap-6">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.accept_outside_dlsu === true}
