@@ -549,8 +549,8 @@ const CreateModalForm = ({
                     <span className="text-sm font-medium">Year Round</span>
                   </div>
                   {!form_data.is_year_round && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
+                    <div className="flex gap-4">
+                      <div className="flex-1">
                         <label className="text-xs font-medium text-gray-600 mb-1 block">
                           Start Date
                         </label>
@@ -567,7 +567,7 @@ const CreateModalForm = ({
                           }
                         />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <label className="text-xs font-medium text-gray-600 mb-1 block">
                           End Date
                         </label>
