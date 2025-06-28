@@ -1198,18 +1198,6 @@ Best regards,
               </div>
             </div>
           </div>
-
-          {/* Fixed Action Button - Always Visible */}
-          <div className="flex-shrink-0 p-6 pt-0 border-t border-gray-100 bg-white">
-            <div className="flex justify-center">
-              <Button
-                onClick={() => close_maintenance_modal()}
-                className="px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-              >
-                Got it, thanks!
-              </Button>
-            </div>
-          </div>
         </div>
       </MaintenanceModal>
     </>
