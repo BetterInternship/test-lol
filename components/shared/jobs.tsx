@@ -495,7 +495,7 @@ export const EditableJobDetails = ({
           <div className="flex flex-col items-start gap-3">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Mode:
+              Work Mode:
             </label>
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
@@ -512,7 +512,7 @@ export const EditableJobDetails = ({
           <div className="flex flex-col items-start gap-3 max-w-prose">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Work Schedule:
+              Work Load:
             </label>
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
@@ -532,7 +532,7 @@ export const EditableJobDetails = ({
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-semibold text-gray-700">
                     <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                    Allowance:
+                    Compensation:
                   </label>
                   <EditableGroupableRadioDropdown
                     is_editing={is_editing}
@@ -841,7 +841,7 @@ export const JobDetails = ({
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Mode:
+                Work Mode:
               </label>
               <JobPropertyLabel value={to_job_mode_name(job.mode)} />
             </div>
@@ -862,7 +862,7 @@ export const JobDetails = ({
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Work Schedule:
+                Work Load:
               </label>
               <JobPropertyLabel value={to_job_type_name(job.type)} />
             </div>

@@ -476,7 +476,7 @@ const CreateModalForm = ({
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Job Allowance
+                    Compensations
                   </Label>
                   <GroupableRadioDropdown
                     name="allowance"
@@ -668,14 +668,14 @@ const CreateModalForm = ({
               </h3>
               <div className="relative">
                 <MDXEditor
-                  className="min-h-[250px] border border-gray-200 rounded-lg"
+                  className="min-h-[250px] border border-gray-200 rounded-lg overflow-y-auto"
                   markdown={form_data.description ?? ""}
                   onChange={(value) => set_field("description", value)}
                 />
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-6 pb-16">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <div className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
                   <FileText className="w-4 h-4 text-orange-600" />
@@ -684,7 +684,7 @@ const CreateModalForm = ({
               </h3>
               <div className="relative">
                 <MDXEditor
-                  className="min-h-[250px] border border-gray-200 rounded-lg"
+                  className="min-h-[250px] w-full border border-gray-200 rounded-lg overflow-y-auto"
                   markdown={form_data.requirements ?? ""}
                   onChange={(value) => set_field("requirements", value)}
                 />
