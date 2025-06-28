@@ -381,7 +381,7 @@ export const GroupableRadioDropdown = ({
           <div
             className={cn(
               "max-h-64 overflow-y-scroll overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-              is_mobile ? "max-h-80" : "max-h-64" // Slightly taller on mobile for better UX
+              is_mobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
             )}
             style={{
               scrollbarWidth: "thin",
