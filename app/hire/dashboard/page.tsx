@@ -678,14 +678,23 @@ const ReviewModalContent = ({
 
   return (
     <>
-      <div className="flex flex-col">
+      <div className="flex flex-col items-center justify-center">
         <h1 className="font-bold font-heading text-4xl px-8 pb-4">
           {get_full_name(application.user)} - Review
         </h1>
-        <div className="flex flex-row">
+        
+      </div>
+      <div className="flex flex-col items-center justify-center">
+        <MDXEditor
+          className="min-h-[300px] px-8 w-full rounded-lg overflow-y-auto"
+          markdown={application.review ?? ""}
+          onChange={(value) => set_review(value)}
+        />
+      </div>
+      <div className="flex flex-row items-center justify-center w-full px-5 py-3 gap-2">
           <Button
             disabled={saving}
-            className="bg-blue-500 ml-8"
+            className="bg-blue-500 w-2/3 px-3"
             onClick={handle_save}
           >
             {saving ? "Saving..." : "Save"}
@@ -693,20 +702,12 @@ const ReviewModalContent = ({
           <Button
             variant="outline"
             disabled={saving}
-            className="ml-2"
+            className=" w-1/3 px-3"
             onClick={close}
           >
             Cancel
           </Button>
         </div>
-      </div>
-      <div className="relative h-[500px] w-[600px] mt-4">
-        <MDXEditor
-          className="min-h-[300px] border border-gray-200 rounded-lg"
-          markdown={application.review ?? ""}
-          onChange={(value) => set_review(value)}
-        />
-      </div>
     </>
   );
 };
