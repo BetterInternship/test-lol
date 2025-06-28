@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-06-28 06:17:48
+ * @ Modified time: 2025-06-28 20:40:41
  * @ Description:
  *
  * Routes used by employers
@@ -65,6 +65,18 @@ export const employer_auth_service = {
   async logout() {
     await APIClient.post<FetchResponse>(
       APIRoute("auth").r("hire", "logout").build()
+    );
+  },
+
+  async verify_employer(employer_id: string): Promise<FetchResponse> {
+    return APIClient.post<FetchResponse>(
+      APIRoute("employer").r("verify", employer_id).build()
+    );
+  },
+
+  async unverify_employer(employer_id: string): Promise<FetchResponse> {
+    return APIClient.post<FetchResponse>(
+      APIRoute("employer").r("unverify", employer_id).build()
     );
   },
 };

@@ -14,9 +14,10 @@ import { get_full_name } from "@/lib/utils/user-utils";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
-  const { employers, loading, error } = useEmployers();
+  const { employers, loading, verify } = useEmployers();
   const { users } = useUsers();
   const [search_name, set_search_name] = useState<string | null>();
+  const [selected, set_selected] = useState("");
   const router = useRouter();
 
   // Redirect if no employers found (not god)
@@ -53,13 +54,29 @@ export default function GodLandingPage() {
               .filter((e) => e.is_verified)
               .toSorted((a, b) => a.name?.localeCompare(b.name ?? "") ?? 0)
               .map((e) => (
-                <div className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all">
+                <div
+                  key={e.id}
+                  className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
+                >
                   <Button
                     variant="outline"
                     className="border-blue-500 text-blue-500 hover:text-white hover:bg-blue-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
                     onClick={() => authorize_as(e.id ?? "")}
                   >
                     View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-red-500 text-red-500 hover:text-white hover:bg-red-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
+                    disabled={loading && e.id === selected}
+                    onClick={() => {
+                      set_selected(e.id ?? "");
+                      verify(e.id ?? "", false);
+                    }}
+                  >
+                    {loading && e.id === selected
+                      ? "Unverifying..."
+                      : "Unverify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
                   <Badge
@@ -95,13 +112,27 @@ export default function GodLandingPage() {
               .filter((e) => !e.is_verified)
               .toSorted((a, b) => a.name?.localeCompare(b.name ?? "") ?? 0)
               .map((e) => (
-                <div className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all">
+                <div
+                  key={e.id}
+                  className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
+                >
                   <Button
                     variant="outline"
                     className="border-blue-500 text-blue-500 hover:text-white hover:bg-blue-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
                     onClick={() => authorize_as(e.id ?? "")}
                   >
                     View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="border-green-500 text-green-500 hover:text-white hover:bg-green-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
+                    disabled={loading && e.id === selected}
+                    onClick={() => {
+                      set_selected(e.id ?? "");
+                      verify(e.id ?? "", true);
+                    }}
+                  >
+                    {loading && e.id === selected ? "Verifying..." : "Verify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
                   <Badge
@@ -142,7 +173,10 @@ export default function GodLandingPage() {
                   new Date(a.created_at ?? "").getTime()
               )
               .map((u) => (
-                <div className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all">
+                <div
+                  key={u.id}
+                  className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
+                >
                   <div className="text-gray-700 w-full">
                     {get_full_name(u)}{" "}
                     <Badge className="opacity-65 bg-gray-400 pointer-events-none">
