@@ -8,6 +8,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
+import { PostHogProvider } from "../posthog-provider";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -26,17 +27,19 @@ export default function RootLayout({
           <MoaContextProvider>
             <TooltipProvider>
               <Sonner />
-              <html lang="en" className="overflow-hidden">
-                <body>
-                  <div className="h-screen bg-gray-50 flex flex-col">
-                    <Header />
-                    <div className="flex-grow overflow-auto flex">
-                      {children}
+              <PostHogProvider>
+                <html lang="en" className="overflow-hidden">
+                  <body>
+                    <div className="h-screen bg-gray-50 flex flex-col">
+                      <Header />
+                      <div className="flex-grow overflow-auto flex">
+                        {children}
+                      </div>
+                      <Footer />
                     </div>
-                    <Footer />
-                  </div>
-                </body>
-              </html>
+                  </body>
+                </html>
+              </PostHogProvider>
             </TooltipProvider>
           </MoaContextProvider>
         </RefsContextProvider>
