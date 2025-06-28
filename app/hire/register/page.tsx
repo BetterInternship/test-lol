@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { GroupableRadioDropdown, DropdownGroup } from "@/components/ui/dropdown";
 import { useRefs } from "@/lib/db/use-refs";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function RegisterPage() {
   const [form_data, setFormData] = useState({
@@ -29,7 +30,8 @@ export default function RegisterPage() {
     terms_accepted: false,
   });
 
-  const { industries, job_categories, universities } = useRefs();
+  const { industries} = useRefs();
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   const handle_change = (field, value) => {
     setFormData({ ...form_data, [field]: value });
@@ -298,17 +300,47 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div className="flex justify-center pt-6">
-              <div className="flex items-center space-x-2">
+            <div className="mb-8">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <div className="flex items-start gap-3">
                 <Checkbox
-                  checked={form_data.terms_accepted}
-                  onCheckedChange={(checked) => handle_change("terms_accepted", checked)}
+                  id="accept-terms"
+                  checked={acceptTerms}
+                  onCheckedChange={(checked) =>
+                    setAcceptTerms(checked as boolean)
+                  }
+                  className="mt-1"
                 />
-                <Label>I Agree to the Terms and Privacy Policy</Label>
+                <label
+                  htmlFor="accept-terms"
+                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+                >
+                  I have read and agree to the{" "}
+                  <a
+                    href="/TermsConditions.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Terms & Conditions
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    href="/PrivacyPolicy.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+                  >
+                    Privacy Policy
+                  </a>
+                  .
+                </label>
               </div>
             </div>
+          </div>
 
-            <div className="flex justify-center pt-6">
+
+            <div className="flex justify-center pt-3 pb-10">
               <Button
                 type="submit"
                 className="w-full max-w-md h-12 bg-black hover:bg-gray-800 text-white"
