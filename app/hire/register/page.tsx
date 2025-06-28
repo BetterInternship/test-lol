@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { GroupableRadioDropdown, DropdownGroup } from "@/components/ui/dropdown";
+import {
+  GroupableRadioDropdown,
+  DropdownGroup,
+} from "@/components/ui/dropdown";
 import { useRefs } from "@/lib/db/use-refs";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -33,11 +36,11 @@ export default function RegisterPage() {
   const { industries} = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
 
-  const handle_change = (field, value) => {
+  const handle_change = (field: string, value: any) => {
     setFormData({ ...form_data, [field]: value });
   };
 
-  const handle_submit = (e) => {
+  const handle_submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Form data:", form_data);
   };
@@ -63,7 +66,9 @@ export default function RegisterPage() {
                 <Label>Doing Business As</Label>
                 <Input
                   value={form_data.doing_business_as}
-                  onChange={(e) => handle_change("doing_business_as", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("doing_business_as", e.target.value)
+                  }
                   placeholder="e.g. Google"
                 />
               </div>
@@ -71,33 +76,41 @@ export default function RegisterPage() {
                 <Label>Legal Entity Name</Label>
                 <Input
                   value={form_data.legal_entity_name}
-                  onChange={(e) => handle_change("legal_entity_name", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("legal_entity_name", e.target.value)
+                  }
                   placeholder="e.g. LeapFroggr"
                 />
               </div>
             </div>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
+              <div>
                 <Label>Industry</Label>
                 <DropdownGroup>
                   <GroupableRadioDropdown
                     name="industry"
-                    options={industries.map(industry => industry.name)}
+                    options={[
+                      "All industries",
+                      ...industries.map((industry) => industry.name),
+                    ]}
                     on_change={(selected_name) => {
-                      const selected_industry = industries.find(industry => industry.name === selected_name);
+                      const selected_industry = industries.find(
+                        (industry) => industry.name === selected_name
+                      );
                       handle_change("industry", selected_industry?.id || "");
                     }}
                     default_value="Not Selected"
                   />
                 </DropdownGroup>
-                </div>
+              </div>
               <div>
                 <Label>Office's General Location</Label>
                 <Input
                   value={form_data.office_location}
-                  onChange={(e) => handle_change("office_location", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("office_location", e.target.value)
+                  }
                   placeholder="e.g. Makati, Manila"
                 />
               </div>
@@ -118,7 +131,9 @@ export default function RegisterPage() {
               <Label>Company Description</Label>
               <Textarea
                 value={form_data.company_description}
-                onChange={(e) => handle_change("company_description", e.target.value)}
+                onChange={(e) =>
+                  handle_change("company_description", e.target.value)
+                }
                 placeholder="Write about your company..."
                 className="min-h-[120px]"
               />
@@ -136,7 +151,9 @@ export default function RegisterPage() {
                 <Label>Company Contact Name</Label>
                 <Input
                   value={form_data.contact_name}
-                  onChange={(e) => handle_change("contact_name", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("contact_name", e.target.value)
+                  }
                   placeholder="e.g. John Doe"
                 />
               </div>
@@ -144,7 +161,9 @@ export default function RegisterPage() {
                 <Label>Contact's Phone Number</Label>
                 <Input
                   value={form_data.contact_phone}
-                  onChange={(e) => handle_change("contact_phone", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("contact_phone", e.target.value)
+                  }
                   placeholder="e.g. 09XXXXXXXXX"
                 />
               </div>
@@ -155,7 +174,9 @@ export default function RegisterPage() {
                 <Label>Contact's Email</Label>
                 <Input
                   value={form_data.contact_email}
-                  onChange={(e) => handle_change("contact_email", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("contact_email", e.target.value)
+                  }
                   placeholder="e.g. john@google.com"
                 />
               </div>
@@ -163,7 +184,9 @@ export default function RegisterPage() {
                 <Label>Contact's Position</Label>
                 <Input
                   value={form_data.contact_position}
-                  onChange={(e) => handle_change("contact_position", e.target.value)}
+                  onChange={(e) =>
+                    handle_change("contact_position", e.target.value)
+                  }
                   placeholder="e.g. CTO/CEO"
                 />
               </div>
@@ -178,19 +201,25 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <Label className="block mb-4">Is this Internship available year-round?</Label>
+                <Label className="block mb-4">
+                  Is this Internship available year-round?
+                </Label>
                 <div className="flex gap-6">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.year_round_internship === true}
-                      onCheckedChange={() => handle_change("year_round_internship", true)}
+                      onCheckedChange={() =>
+                        handle_change("year_round_internship", true)
+                      }
                     />
                     <Label>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.year_round_internship === false}
-                      onCheckedChange={() => handle_change("year_round_internship", false)}
+                      onCheckedChange={() =>
+                        handle_change("year_round_internship", false)
+                      }
                     />
                     <Label>No</Label>
                   </div>
@@ -198,19 +227,25 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <Label className="block mb-4">Are you Hiring Interns Urgently?</Label>
+                <Label className="block mb-4">
+                  Are you Hiring Interns Urgently?
+                </Label>
                 <div className="flex gap-6">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.hiring_urgently === true}
-                      onCheckedChange={() => handle_change("hiring_urgently", true)}
+                      onCheckedChange={() =>
+                        handle_change("hiring_urgently", true)
+                      }
                     />
                     <Label>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.hiring_urgently === false}
-                      onCheckedChange={() => handle_change("hiring_urgently", false)}
+                      onCheckedChange={() =>
+                        handle_change("hiring_urgently", false)
+                      }
                     />
                     <Label>No</Label>
                   </div>
@@ -218,19 +253,25 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <Label className="block mb-4">Are you open to all student levels?</Label>
+                <Label className="block mb-4">
+                  Are you open to all student levels?
+                </Label>
                 <div className="flex gap-6">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.open_to_all_levels === true}
-                      onCheckedChange={() => handle_change("open_to_all_levels", true)}
+                      onCheckedChange={() =>
+                        handle_change("open_to_all_levels", true)
+                      }
                     />
                     <Label>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.open_to_all_levels === false}
-                      onCheckedChange={() => handle_change("open_to_all_levels", false)}
+                      onCheckedChange={() =>
+                        handle_change("open_to_all_levels", false)
+                      }
                     />
                     <Label>No</Label>
                   </div>
@@ -238,19 +279,25 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <Label className="block mb-4">Are you willing to accept interns outside DLSU?</Label>
+                <Label className="block mb-4">
+                  Are you willing to accept interns outside DLSU?
+                </Label>
                 <div className="flex gap-6">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.accept_outside_dlsu === true}
-                      onCheckedChange={() => handle_change("accept_outside_dlsu", true)}
+                      onCheckedChange={() =>
+                        handle_change("accept_outside_dlsu", true)
+                      }
                     />
                     <Label>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.accept_outside_dlsu === false}
-                      onCheckedChange={() => handle_change("accept_outside_dlsu", false)}
+                      onCheckedChange={() =>
+                        handle_change("accept_outside_dlsu", false)
+                      }
                     />
                     <Label>No</Label>
                   </div>
@@ -259,19 +306,25 @@ export default function RegisterPage() {
             </div>
 
             <div className="text-center">
-              <Label className="block mb-4">Do you have an ongoing MOA with DLSU?</Label>
+              <Label className="block mb-4">
+                Do you have an ongoing MOA with DLSU?
+              </Label>
               <div className="flex justify-center gap-6">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     checked={form_data.has_moa_with_dlsu === true}
-                    onCheckedChange={() => handle_change("has_moa_with_dlsu", true)}
+                    onCheckedChange={() =>
+                      handle_change("has_moa_with_dlsu", true)
+                    }
                   />
                   <Label>Yes</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     checked={form_data.has_moa_with_dlsu === false}
-                    onCheckedChange={() => handle_change("has_moa_with_dlsu", false)}
+                    onCheckedChange={() =>
+                      handle_change("has_moa_with_dlsu", false)
+                    }
                   />
                   <Label>No</Label>
                 </div>
@@ -280,7 +333,9 @@ export default function RegisterPage() {
 
             {form_data.has_moa_with_dlsu && (
               <div className="space-y-4">
-                <Label className="block text-center">MOA Start & End Date</Label>
+                <Label className="block text-center">
+                  MOA Start & End Date
+                </Label>
                 <div className="flex justify-center gap-4">
                   <Input placeholder="Day" className="w-20" />
                   <Input placeholder="Month" className="w-32" />
@@ -292,7 +347,9 @@ export default function RegisterPage() {
                   <Input placeholder="Year" className="w-20" />
                 </div>
                 <div className="text-center">
-                  <Label className="block mb-4">MOA Files/Contract Files (optional)</Label>
+                  <Label className="block mb-4">
+                    MOA Files/Contract Files (optional)
+                  </Label>
                   <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 max-w-md mx-auto">
                     <p className="text-gray-600">Upload Here</p>
                   </div>
