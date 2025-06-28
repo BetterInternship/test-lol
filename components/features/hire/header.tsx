@@ -12,6 +12,7 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
 import { get_full_name } from "@/lib/utils/user-utils";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * The header present on every page
@@ -19,7 +20,7 @@ import { get_full_name } from "@/lib/utils/user-utils";
  * @component
  */
 export const Header = () => {
-  const { god } = useAuthContext();
+  const { proxy, god } = useAuthContext();
   const { is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
@@ -33,12 +34,14 @@ export const Header = () => {
     >
       <HeaderTitle />
       {god && (
-        <Link
-          className="p-2 px-4 border border-gray-300 rounded-sm"
-          href={"/god"}
-        >
-          Select Different Employer
-        </Link>
+        <div className="w-full px-4 flex flex-row justify-end">
+          <Link
+            className="p-2 px-4 border border-gray-300 rounded-sm text-red-500 hover:text-white hover:bg-red-500 hover:border-opacity-0"
+            href={"/god"}
+          >
+            GOD DASHBOARD
+          </Link>
+        </div>
       )}
       {route_excluded(header_routes) ? (
         <ProfileButton />

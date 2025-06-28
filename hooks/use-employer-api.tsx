@@ -4,10 +4,46 @@ import {
   handle_api_error,
   application_service,
 } from "@/lib/api/api";
-import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
-import { useAuthContext } from "@/app/hire/authctx";
+import {
+  Employer,
+  EmployerApplication,
+  Job,
+  PrivateUser,
+} from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
 import { employer_auth_service } from "@/lib/api/employer.api";
+
+export function useUsers() {
+  const [users, set_users] = useState<PrivateUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await employer_auth_service.get_all_users();
+      if (response.success)
+        // @ts-ignore
+        set_users(response.users ?? []);
+    } catch (err) {
+      const errorMessage = handle_api_error(err);
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  return {
+    users,
+    loading,
+    error,
+  };
+}
 
 export function useEmployers() {
   const [employers, set_employers] = useState<Employer[]>([]);

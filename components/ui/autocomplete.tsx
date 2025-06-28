@@ -5,9 +5,11 @@ import { useDetectClickOutside } from "react-detect-click-outside";
 export const Autocomplete = ({
   options,
   setter,
+  placeholder,
 }: {
   options: string[];
   setter: (value: string) => void;
+  placeholder?: string;
 }) => {
   const [query, set_query] = useState("");
   const [is_open, set_is_open] = useState(false);
@@ -25,6 +27,7 @@ export const Autocomplete = ({
       <Input
         value={selected || query}
         className="border-gray-300"
+        placeholder={placeholder}
         onChange={(e) => {
           setter(e.target.value);
           set_query(e.target.value);
@@ -53,7 +56,7 @@ export const Autocomplete = ({
               key="no-match"
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2"
             >
-              No matching employers.
+              No matching results.
             </li>
           )}
         </ul>

@@ -4,10 +4,12 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { employer_auth_service } from "@/lib/api/employer.api";
+import { get_full_name } from "@/lib/utils/user-utils";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
   god: boolean;
+  proxy: string;
   register: (
     user: Partial<PublicEmployerUser>
   ) => Promise<Partial<PublicEmployerUser> | null>;
@@ -18,6 +20,9 @@ interface IAuthContext {
   login: (
     email: string,
     password: string
+  ) => Promise<Partial<PublicEmployerUser> | null>;
+  login_as: (
+    employer_id: string
   ) => Promise<Partial<PublicEmployerUser> | null>;
   email_status: (
     email: string
@@ -44,6 +49,7 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
+  const [proxy, set_proxy] = useState("");
   const [is_loading, set_is_loading] = useState(true);
   const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -77,6 +83,10 @@ export const AuthContextProvider = ({
       }
 
       setUser(response.user as PublicEmployerUser);
+
+      // @ts-ignore
+      if (response.god) setGod(true);
+
       set_is_authenticated(true);
       set_is_loading(false);
       return response.user as PublicEmployerUser;
@@ -93,6 +103,17 @@ export const AuthContextProvider = ({
     if (response.god) setGod(true);
 
     return response;
+  };
+
+  const login_as = async (employer_id: string) => {
+    const response = await employer_auth_service.login_as_employer(employer_id);
+    if (!response.success) {
+      alert("Error logging in by proxy.");
+      return null;
+    }
+
+    set_proxy(get_full_name(response.user));
+    return response.user;
   };
 
   const email_status = async (email: string) => {
@@ -127,8 +148,10 @@ export const AuthContextProvider = ({
       value={{
         user,
         god,
+        proxy,
         // @ts-ignore
         login,
+        login_as,
         email_status,
         logout,
         refresh_authentication,

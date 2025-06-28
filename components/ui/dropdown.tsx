@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-24 20:50:19
+ * @ Modified time: 2025-06-28 04:39:08
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -14,6 +14,7 @@ import React, {
   useState,
   useRef,
   useCallback,
+  Children,
 } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -173,7 +174,8 @@ export const GroupableRadioDropdown = ({
       const dropdownHeight = 160; // Estimated max dropdown height (max-h-80 = 320px)
 
       // Prefer opening downwards, only open upwards if insufficient space below
-      const shouldOpenUpwards = spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
+      const shouldOpenUpwards =
+        spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
 
       setDropdownPosition({
         top: shouldOpenUpwards
@@ -581,7 +583,7 @@ export const GroupableNavDropdown = ({
           >
             {content}
 
-            {React.Children.map(children, (child, index) => {
+            {Children.map(children, (child, index) => {
               return (
                 <DropdownOptionButton key={index} set_is_open={set_is_open}>
                   {child ? child : <></>}
