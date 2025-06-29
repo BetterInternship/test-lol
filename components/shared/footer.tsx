@@ -22,13 +22,29 @@ export const Footer = ({ content }: { content?: string }) => {
     <div className="bg-white border-t px-6 py-4">
       <div className="text-center">
         <p className="text-sm text-gray-500">
-          {content ?? "Encountering problems? Contact us at:"}{" "}
-          <a
-            href="mailto:hello@betterinternship.com"
-            className="text-blue-600 hover:underline"
-          >
-            hello@betterinternship.com
-          </a>
+          {content ?? (
+            <>
+              © 2025 BetterInternship. All rights reserved.{" "}
+              <a
+                href="/TermsConditions.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                Terms & Conditions
+              </a>
+              {" "}and{" "}
+              <a
+                href="/PrivacyPolicy.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                Privacy Policy
+              </a>
+              .
+            </>
+          )}
         </p>
       </div>
     </div>

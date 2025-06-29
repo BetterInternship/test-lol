@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   Edit2,
   Upload,
@@ -11,6 +12,7 @@ import {
   Award,
   Camera,
   AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import { useProfile } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
@@ -650,10 +652,15 @@ export default function ProfilePage() {
                 <CardContent className="p-6">
                   {/* Personal Information Section */}
                   <div className="mb-8">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-4">
                       <User className="h-5 w-5 text-blue-600" />
-                      Personal Information
-                    </h2>
+                      <h2 className="text-lg font-semibold">Personal Information</h2>
+                      {!isEditing && (
+                        <Link href="/help">
+                          <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
+                        </Link>
+                      )}
+                    </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="text-sm font-medium text-gray-700 mb-1 block">
@@ -1025,9 +1032,16 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <label className="text-sm font-medium text-gray-700 mb-1 block">
-                          Calendar Link
-                        </label>
+                        <div className="flex items-center gap-2">
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Calendar Link
+                          </label>
+                          {!isEditing && (
+                            <Link href="/help" className="mb-1">
+                              <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
+                            </Link>
+                          )}
+                        </div>
                         <EditableInput
                           is_editing={isEditing}
                           value={form_data.calendar_link}
