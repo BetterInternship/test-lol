@@ -21,9 +21,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { JobTypeIcon, JobModeIcon, SalaryIcon } from "@/components/ui/icons";
 
-// Common components
-import { StatusBadge } from "@/components/common";
-
 // Hooks (preserving existing implementations)
 import { useApplications } from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -37,6 +34,7 @@ export default function ApplicationsPage() {
   const { applications, loading, error, refetch } = useApplications();
   const {
     universities,
+    to_app_status_name,
     to_job_mode_name,
     to_job_type_name,
     to_job_allowance_name,
@@ -142,11 +140,9 @@ export default function ApplicationsPage() {
                             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight">
                               {application.job?.title}
                             </h3>
-                            <StatusBadge
-                              status={application.status ?? 0}
-                              variant="with-icon"
-                              size="md"
-                            />
+                            <Badge className="bg-gray-500">
+                              {to_app_status_name(application.status)}
+                            </Badge>
                           </div>
 
                           <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3">
@@ -216,17 +212,12 @@ export default function ApplicationsPage() {
                         variant="outline"
                         className="text-xs flex items-center px-2 sm:px-3 py-1"
                       >
-                        <SalaryIcon />{application.job.salary}
-                        {application.job.salary_freq && `/${to_job_pay_freq_name(application.job.salary_freq)}`}
-                      </Badge>
-                    )}
-                    {application.job?.duration && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center px-2 sm:px-3 py-1"
-                      >
-                        <Clock className="w-3 h-3 mr-1" />
-                        {application.job.duration}
+                        <SalaryIcon />
+                        {application.job.salary}
+                        {application.job.salary_freq &&
+                          `/${to_job_pay_freq_name(
+                            application.job.salary_freq
+                          )}`}
                       </Badge>
                     )}
                   </div>
@@ -236,7 +227,10 @@ export default function ApplicationsPage() {
                   </p>
 
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 sm:pt-4 border-t border-gray-100">
-                    <Link href={`/search/${application.job?.id}`} className="w-full sm:w-auto">
+                    <Link
+                      href={`/search/${application.job?.id}`}
+                      className="w-full sm:w-auto"
+                    >
                       <Button
                         size="sm"
                         className="w-full sm:w-auto px-4 py-3 sm:py-2 font-medium hover:shadow-sm h-12 sm:h-auto"
