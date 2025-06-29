@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRouter } from "next/navigation";
-import { User, Settings, BookA, Heart, LogOut } from "lucide-react";
+import { User, Settings, BookA, Heart, LogOut, HelpCircle } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -70,7 +70,9 @@ export const ProfileButton = () => {
         content={
           <div className="px-4 py-3 border-b border-gray-200">
             <p className="text-sm font-medium text-gray-900">
-              {user?.full_name}
+              {user?.first_name && user?.last_name 
+                ? `${user.first_name} ${user.last_name}` 
+                : user?.email}
             </p>
             <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
               {user?.email}
@@ -90,6 +92,10 @@ export const ProfileButton = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block m-1 mr-2" />
           Saved Jobs
+        </DropdownOption>
+        <DropdownOption href="/help">
+          <HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />
+          Help Center
         </DropdownOption>
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
