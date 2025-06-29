@@ -1,22 +1,20 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { PublicEmployerUser } from "@/lib/db/db.types";
+import { Employer, PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { employer_auth_service } from "@/lib/api/employer.api";
 import { get_full_name } from "@/lib/utils/user-utils";
+import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
   god: boolean;
   proxy: string;
   register: (
-    user: Partial<PublicEmployerUser>
+    employer: Partial<Employer>
   ) => Promise<Partial<PublicEmployerUser> | null>;
-  verify: (
-    user_id: string,
-    key: string
-  ) => Promise<Partial<PublicEmployerUser> | null>;
+  verify: (user_id: string, key: string) => Promise<FetchResponse | null>;
   login: (
     email: string,
     password: string
@@ -92,6 +90,15 @@ export const AuthContextProvider = ({
       return response.user as PublicEmployerUser;
     };
 
+  const register = async (employer: Partial<Employer>) => {
+    const response = await employer_auth_service.register(employer);
+    if (!response.success) {
+      return null;
+    }
+
+    return response;
+  };
+
   const login = async (email: string, password: string) => {
     const response = await employer_auth_service.login(email, password);
     if (!response.success) return null;
@@ -149,6 +156,8 @@ export const AuthContextProvider = ({
         user,
         god,
         proxy,
+        // @ts-ignore
+        register,
         // @ts-ignore
         login,
         login_as,

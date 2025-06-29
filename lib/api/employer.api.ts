@@ -1,14 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-06-28 20:40:41
+ * @ Modified time: 2025-06-29 18:05:29
  * @ Description:
  *
  * Routes used by employers
  */
 
 import { FetchResponse } from "@/lib/api/use-fetch";
-import { PublicEmployerUser } from "../db/db.types";
+import { Employer, PublicEmployerUser } from "../db/db.types";
 import { APIClient, APIRoute } from "./api-client";
 
 interface AuthResponse extends FetchResponse {
@@ -36,6 +36,14 @@ export const employer_auth_service = {
     return APIClient.post<EmailStatusResponse>(
       APIRoute("auth").r("hire", "email-status").build(),
       { email }
+    );
+  },
+
+  async register(employer: Partial<Employer>) {
+    return APIClient.post<AuthResponse>(
+      APIRoute("auth").r("hire", "register").build(),
+      employer,
+      "form-data"
     );
   },
 

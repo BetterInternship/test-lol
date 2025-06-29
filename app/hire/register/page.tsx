@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,8 +12,14 @@ import {
 } from "@/components/ui/dropdown";
 import { useRefs } from "@/lib/db/use-refs";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuthContext } from "../authctx";
+import { MultipartFormBuilder } from "@/lib/multipart-form";
+import { EditableDatePicker } from "@/components/ui/editable";
+import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {
+  const { register } = useAuthContext();
+  const router = useRouter();
   const [form_data, setFormData] = useState({
     doing_business_as: "",
     legal_entity_name: "",
@@ -25,24 +31,64 @@ export default function RegisterPage() {
     contact_phone: "",
     contact_email: "",
     contact_position: "",
-    year_round_internship: false,
-    hiring_urgently: false,
-    open_to_all_levels: false,
     accept_outside_dlsu: false,
     has_moa_with_dlsu: false,
+    moa_start_date: new Date().getTime(),
+    moa_expires_at: new Date().getTime(),
     terms_accepted: false,
   });
 
-  const { industries} = useRefs();
+  const { industries, universities } = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
 
   const handle_change = (field: string, value: any) => {
     setFormData({ ...form_data, [field]: value });
   };
 
-  const handle_submit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("Form data:", form_data);
+  const handle_submit = async () => {
+    const multipart_form = MultipartFormBuilder.new();
+    multipart_form.from({
+      name: form_data.doing_business_as,
+      contact_name: form_data.contact_name,
+      legal_entity_name: form_data.legal_entity_name,
+      industry: form_data.industry,
+      location: form_data.office_location,
+      description: form_data.company_description,
+      email: form_data.contact_email,
+      website: form_data.website,
+      phone_number: form_data.contact_phone,
+      accepted_universities: `[${universities
+        .map((u) => `"${u.id}"`)
+        .join("")}]`,
+      acceps_non_university: form_data.accept_outside_dlsu,
+
+      // Moa instances, in this case DLSU only for now
+      ...(form_data.has_moa_with_dlsu
+        ? {
+            moa: [
+              {
+                // ! change when unis update
+                university_id: universities.map((u) => u.id)[0],
+                start_date: form_data.moa_start_date,
+                expires_at: form_data.moa_expires_at,
+              },
+            ],
+          }
+        : {}),
+    });
+    // multipart_form.add_file("logo", ogoFile);
+    // console.log("Form data:", multipart_form.build());
+    // @ts-ignore
+    const response = await register(multipart_form.build());
+    // @ts-ignore
+    if (response.success) {
+      alert("Email has been sent with password!");
+      router.push("/login");
+    } else {
+      alert(
+        "Could not register, please check console for error (will fix later)."
+      );
+    }
   };
 
   return (
@@ -200,7 +246,6 @@ export default function RegisterPage() {
             </h3>
 
             <div className="text-center">
-
               <div className="text-center">
                 <Label className="block mb-4">
                   Are you willing to accept interns outside DLSU?
@@ -260,14 +305,18 @@ export default function RegisterPage() {
                   MOA Start & End Date
                 </Label>
                 <div className="flex justify-center gap-4">
-                  <Input placeholder="Day" className="w-20" />
-                  <Input placeholder="Month" className="w-32" />
-                  <Input placeholder="Year" className="w-20" />
+                  <EditableDatePicker
+                    is_editing={true}
+                    value={new Date(form_data.moa_start_date)}
+                    setter={(value) => handle_change("moa_start_date", value)}
+                  ></EditableDatePicker>
                 </div>
                 <div className="flex justify-center gap-4">
-                  <Input placeholder="Day" className="w-20" />
-                  <Input placeholder="Month" className="w-32" />
-                  <Input placeholder="Year" className="w-20" />
+                  <EditableDatePicker
+                    is_editing={true}
+                    value={new Date(form_data.moa_expires_at)}
+                    setter={(value) => handle_change("moa_expires_at", value)}
+                  ></EditableDatePicker>{" "}
                 </div>
                 <div className="text-center">
                   <Label className="block mb-4">
@@ -281,51 +330,51 @@ export default function RegisterPage() {
             )}
 
             <div className="mb-8">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start gap-3">
-                <Checkbox
-                  id="accept-terms"
-                  checked={acceptTerms}
-                  onCheckedChange={(checked) =>
-                    setAcceptTerms(checked as boolean)
-                  }
-                  className="mt-1"
-                />
-                <label
-                  htmlFor="accept-terms"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
-                >
-                  I have read and agree to the{" "}
-                  <a
-                    href="/TermsConditions.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="accept-terms"
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) =>
+                      setAcceptTerms(checked as boolean)
+                    }
+                    className="mt-1"
+                  />
+                  <label
+                    htmlFor="accept-terms"
+                    className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
                   >
-                    Terms & Conditions
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="/PrivacyPolicy.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 underline font-medium"
-                  >
-                    Privacy Policy
-                  </a>
-                  .
-                </label>
+                    I have read and agree to the{" "}
+                    <a
+                      href="/TermsConditions.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      Terms & Conditions
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/PrivacyPolicy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      Privacy Policy
+                    </a>
+                    .
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
-
 
             <div className="flex justify-center pt-3 pb-10">
               <Button
-                type="submit"
+                type="button"
                 className="w-full max-w-md h-12 bg-black hover:bg-gray-800 text-white"
+                onClick={() => handle_submit()}
               >
-                Next
+                Register
               </Button>
             </div>
           </div>

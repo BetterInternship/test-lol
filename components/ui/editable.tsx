@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-06-28 04:39:28
+ * @ Modified time: 2025-06-29 17:50:47
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -14,6 +14,7 @@ import { Checkbox } from "@radix-ui/react-checkbox";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type Value = string | null | undefined;
 
