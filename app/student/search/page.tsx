@@ -662,9 +662,6 @@ export default function SearchPage() {
                     : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:shadow-xl active:scale-95"
                 )}
               >
-                {appliedJob(selectedJob?.id ?? "") && (
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                )}
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
               </Button>
 

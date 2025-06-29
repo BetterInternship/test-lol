@@ -1037,7 +1037,7 @@ export default function ProfilePage() {
                             Calendar Link
                           </label>
                           {!isEditing && (
-                            <Link href="/help" className="mb-1">
+                            <Link href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit" className="mb-1">
                               <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
                             </Link>
                           )}
