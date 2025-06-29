@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -69,7 +69,7 @@ export default function SearchPage() {
   const { is_authenticated, user } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [coverLetter, setCoverLetter] = useState("");
+  const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
 
   // Initialize filters with URL synchronization and proper defaults
@@ -261,7 +261,10 @@ export default function SearchPage() {
     if (!selectedJob) return;
 
     try {
-      const { success } = await apply(selectedJob.id ?? "", coverLetter);
+      const { success } = await apply(
+        selectedJob.id ?? "",
+        textarea_ref.current?.value ?? ""
+      );
       if (success) open_success_modal();
       else alert("Could not apply to job.");
     } catch (error) {
@@ -938,6 +941,7 @@ export default function SearchPage() {
             {showCoverLetterInput && (
               <div className="space-y-3">
                 <Textarea
+                  ref={textarea_ref}
                   placeholder="Dear Hiring Manager,
 
 I am excited to apply for this position because...
@@ -951,16 +955,6 @@ Best regards,
                   <span className="text-gray-500 flex items-center gap-1">
                     💡 <span>Mention specific skills and enthusiasm</span>
                   </span>
-                  <span
-                    className={cn(
-                      "font-medium",
-                      coverLetter.length > 450
-                        ? "text-red-500"
-                        : "text-gray-500"
-                    )}
-                  >
-                    {coverLetter.length}/500
-                  </span>
                 </div>
               </div>
             )}
@@ -972,7 +966,6 @@ Best regards,
               variant="outline"
               onClick={() => {
                 close_application_confirmation_modal();
-                setCoverLetter("");
                 setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
@@ -983,7 +976,6 @@ Best regards,
               onClick={() => {
                 close_application_confirmation_modal();
                 handleDirectApplication();
-                setCoverLetter("");
                 setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
