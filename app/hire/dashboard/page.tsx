@@ -504,7 +504,7 @@ export default function Dashboard() {
                                   set_application(application);
                                   window
                                     ?.open(
-                                      application.user?.calendar_link,
+                                      application.user?.calendar_link ?? "",
                                       "_blank"
                                     )
                                     ?.focus();
@@ -552,11 +552,26 @@ export default function Dashboard() {
           <ApplicantModal>
             <ApplicantModalContent
               clickable={true}
+              resume_fetcher={async () =>
+                user_service.get_user_resume_url(
+                  selected_application?.user?.id ?? ""
+                )
+              }
+              pfp_fetcher={async () =>
+                user_service.get_user_pfp_url(
+                  selected_application?.user?.id ?? ""
+                )
+              }
+              resume_route={`/users/${selected_application?.user?.id}/resume`}
+              pfp_route={`/users/${selected_application?.user?.id}/pic`}
               applicant={selected_application?.user}
               open_calendar_modal={async () => {
                 close_applicant_modal();
                 window
-                  ?.open(selected_application?.user?.calendar_link, "_blank")
+                  ?.open(
+                    selected_application?.user?.calendar_link ?? "",
+                    "_blank"
+                  )
                   ?.focus();
                 //open_calendar_modal();
               }}
