@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-28 04:39:08
+ * @ Modified time: 2025-06-30 04:41:45
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -65,6 +65,8 @@ const DropdownOptionButton = ({
 }) => {
   const router = useRouter();
   const { is_mobile } = useAppContext();
+  const [scrolling, setScrolling] = useState(false);
+  const dropdown_button_ref = useRef<HTMLInputElement>({} as HTMLInputElement);
 
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -76,26 +78,46 @@ const DropdownOptionButton = ({
     [children.props, router, set_is_open]
   );
 
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      e.stopPropagation();
-      set_is_open(false);
-      children.props.on_click && children.props.on_click();
-      children.props.href && router.push(children.props.href);
-    },
-    [children.props, router, set_is_open]
-  );
+  const onTouchStart = (e: any) => {
+    e.stopPropagation();
+    setScrolling(true);
+  };
+
+  const onTouchEnd = (e: any) => {
+    e.stopPropagation();
+    setScrolling(false);
+  };
+
+  useEffect(() => {
+    const dropdown_button = dropdown_button_ref.current;
+    if (!dropdown_button) return;
+
+    // Attach passive touchstart handler
+    dropdown_button.addEventListener("touchstart", onTouchStart, {
+      passive: true,
+    });
+
+    dropdown_button.addEventListener("touchend", onTouchEnd, {
+      passive: true,
+    });
+
+    // Cleanup on unmount
+    return () => {
+      dropdown_button.removeEventListener("touchstart", onTouchStart);
+      dropdown_button.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [onTouchStart]);
 
   return (
     <button
+      // @ts-ignore
+      ref={dropdown_button_ref}
       className={cn(
         "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
         is_mobile ? "py-3 active:bg-gray-200 touch-manipulation" : "", // Larger touch targets on mobile
         children.props.highlighted ? "text-blue-500" : ""
       )}
-      onClick={handleClick}
-      onTouchEnd={handleTouchEnd}
-      onTouchStart={(e) => e.stopPropagation()}
+      onClick={(e) => !scrolling && handleClick(e)}
     >
       <div className="w-full">{children}</div>
     </button>
