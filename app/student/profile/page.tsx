@@ -520,58 +520,66 @@ export default function ProfilePage() {
     <>
       <div className="min-h-screen bg-background">
         <div className="container max-w-6xl py-6">
-          {/* Compact Header with Avatar, Name and Actions */}
-          <div className="flex items-start gap-6 mb-8">
-            <div className="relative flex-shrink-0">
-              <Avatar className="h-20 w-20">
-                {profile.profile_picture && pfp_url ? (
-                  <AvatarImage src={pfp_url} alt="Profile picture" />
-                ) : (
-                  <AvatarFallback className="text-lg font-semibold">
-                    {profile.first_name?.[0]?.toUpperCase()}
-                    {profile.last_name?.[0]?.toUpperCase()}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <Button
-                variant="outline"
-                size="icon"
-                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full"
-                onClick={() => profilePictureInputRef.current?.click()}
-                disabled={uploading}
-              >
-                <Camera className="h-3 w-3" />
-              </Button>
+          {/* Mobile-Optimized Header with Avatar, Name and Actions */}
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 mb-8">
+            {/* Avatar and Name Section */}
+            <div className="flex items-start gap-4 sm:gap-6 flex-1">
+              <div className="relative flex-shrink-0">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
+                  {profile.profile_picture && pfp_url ? (
+                    <AvatarImage src={pfp_url} alt="Profile picture" />
+                  ) : (
+                    <AvatarFallback className="text-base sm:text-lg font-semibold">
+                      {profile.first_name?.[0]?.toUpperCase()}
+                      {profile.last_name?.[0]?.toUpperCase()}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="absolute -bottom-1 -right-1 h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                  onClick={() => profilePictureInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Camera className="h-3 w-3" />
+                </Button>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold font-heading mb-1">
+                  {get_full_name(profile)}
+                </h1>
+                <p className="text-muted-foreground text-sm">
+                  {profile.college && to_college_name(profile.college)}
+                  {profile.college && profile.year_level && " • "}
+                  {profile.year_level && to_level_name(profile.year_level)}
+                </p>
+              </div>
             </div>
 
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold font-heading mb-1">
-                {get_full_name(profile)}
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                {profile.college && to_college_name(profile.college)}
-                {profile.college && profile.year_level && " • "}
-                {profile.year_level && to_level_name(profile.year_level)}
-              </p>
-            </div>
-
-            <div className="flex gap-2 flex-shrink-0">
+            {/* Action Buttons Section - Mobile Optimized */}
+            <div className="flex flex-col gap-3 w-full sm:w-auto sm:flex-row sm:gap-2 sm:flex-shrink-0">
+              {/* Preview Button - Always Visible */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => open_employer_modal()}
-                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                className="text-blue-600 border-blue-200 hover:bg-blue-50 w-full sm:w-auto h-12 sm:h-auto"
               >
-                <Eye className="h-4 w-4 mr-1" />
+                <Eye className="h-4 w-4 mr-2" />
                 Preview
               </Button>
+
+              {/* Edit Mode Buttons */}
               {isEditing ? (
-                <>
+                <div className="flex gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCancel}
                     disabled={saving}
+                    className="flex-1 sm:flex-none h-12 sm:h-auto"
                   >
                     Cancel
                   </Button>
@@ -583,28 +591,16 @@ export default function ProfilePage() {
                       Object.keys(linkErrors).length > 0 ||
                       Object.keys(fieldErrors).length > 0
                     }
-                    className={
+                    className={`flex-1 sm:flex-none h-12 sm:h-auto ${
                       Object.keys(linkErrors).length > 0 ||
                       Object.keys(fieldErrors).length > 0
                         ? "opacity-50 cursor-not-allowed"
                         : ""
-                    }
+                    }`}
                   >
                     {saving ? "Saving..." : "Save"}
                   </Button>
-                  {Object.keys(linkErrors).length > 0 && (
-                    <div className="flex items-center gap-1 text-red-600 text-xs">
-                      <AlertCircle className="h-3 w-3" />
-                      <span>Fix URL errors to save</span>
-                    </div>
-                  )}
-                  {Object.keys(fieldErrors).length > 0 && (
-                    <div className="flex items-center gap-1 text-red-600 text-xs">
-                      <AlertCircle className="h-3 w-3" />
-                      <span>Fix required fields to save</span>
-                    </div>
-                  )}
-                </>
+                </div>
               ) : (
                 <Button
                   size="sm"
@@ -619,10 +615,29 @@ export default function ProfilePage() {
                       calendar_link: profile.calendar_link ?? "",
                     })
                   )}
+                  className="w-full sm:w-auto h-12 sm:h-auto"
                 >
-                  <Edit2 className="h-4 w-4 mr-1" />
+                  <Edit2 className="h-4 w-4 mr-2" />
                   Edit
                 </Button>
+              )}
+
+              {/* Error Messages - Mobile Optimized */}
+              {isEditing && (Object.keys(linkErrors).length > 0 || Object.keys(fieldErrors).length > 0) && (
+                <div className="flex flex-col gap-1 text-xs">
+                  {Object.keys(linkErrors).length > 0 && (
+                    <div className="flex items-center gap-1 text-red-600">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Fix URL errors to save</span>
+                    </div>
+                  )}
+                  {Object.keys(fieldErrors).length > 0 && (
+                    <div className="flex items-center gap-1 text-red-600">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Fix required fields to save</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </div>
