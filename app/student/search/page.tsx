@@ -247,6 +247,23 @@ export default function SearchPage() {
     console.log("Profile complete:", profileComplete);
     console.log("Profile:", profile);
 
+    // Check if requirements are met
+    if (
+      selectedJob?.require_github &&
+      (!profile?.github_link || profile.github_link === "")
+    ) {
+      alert("This job requires a github link, but you don't have one yet!");
+      return;
+    }
+
+    if (
+      selectedJob?.require_portfolio &&
+      (!profile?.portfolio_link || profile.portfolio_link === "")
+    ) {
+      alert("This job requires a portfolio link, but you don't have one yet!");
+      return;
+    }
+
     if (!profileComplete) {
       console.log("Profile not complete, opening incomplete profile modal");
       open_incomplete_profile_modal();
@@ -928,7 +945,11 @@ export default function SearchPage() {
                 <input
                   type="checkbox"
                   id="add-cover-letter"
-                  checked={showCoverLetterInput}
+                  checked={
+                    showCoverLetterInput ||
+                    (selectedJob?.require_cover_letter ?? false)
+                  }
+                  disabled={selectedJob?.require_cover_letter ?? false}
                   onChange={() =>
                     setShowCoverLetterInput(!showCoverLetterInput)
                   }
