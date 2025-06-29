@@ -73,10 +73,7 @@ export default function SavedJobsPage() {
                 Saved Jobs
               </h1>
               {!loading && (
-                <Badge
-                  variant="outline"
-                  className="ml-2 text-sm px-3 py-1"
-                >
+                <Badge variant="outline" className="ml-2 text-sm px-3 py-1">
                   {saved_jobs.length} saved
                 </Badge>
               )}
@@ -141,17 +138,6 @@ export default function SavedJobsPage() {
                             <span>{savedJob.employer?.location}</span>
                           </div>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={saving}
-                          onClick={() => handleUnsaveJob(savedJob.id ?? "")}
-                          className="text-red-600 border-red-200 hover:bg-red-50 flex-shrink-0 h-9 px-3"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1 sm:mr-2" />
-                          <span className="hidden sm:inline">Remove</span>
-                          <span className="sm:hidden">Remove</span>
-                        </Button>
                       </div>
 
                       <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
@@ -170,7 +156,8 @@ export default function SavedJobsPage() {
                             className="px-2 sm:px-3 py-1 text-xs"
                           >
                             <PhilippinePeso className="w-3 h-3 mr-1" />
-                            {savedJob.salary}/{to_job_pay_freq_name(savedJob.salary_freq)}
+                            {savedJob.salary}/
+                            {to_job_pay_freq_name(savedJob.salary_freq)}
                           </Badge>
                         )}
                       </div>
@@ -180,7 +167,10 @@ export default function SavedJobsPage() {
                       </p>
 
                       <div className="flex gap-3">
-                        <Link href={`/search/${savedJob.id}`} className="flex-1 sm:flex-none">
+                        <Link
+                          href={`/search/${savedJob.id}`}
+                          className="flex-1 sm:flex-none"
+                        >
                           <Button
                             size="sm"
                             className="w-full sm:w-auto h-10 px-6 font-medium"
@@ -188,6 +178,16 @@ export default function SavedJobsPage() {
                             View Details
                           </Button>
                         </Link>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={saving}
+                          onClick={() => handleUnsaveJob(savedJob.id ?? "")}
+                          className="text-red-600 border-red-200 hover:bg-red-50 flex-shrink-0 h-10 px-3"
+                        >
+                          <span className="hidden sm:inline">Unsave</span>
+                          <span className="sm:hidden">Unsave</span>
+                        </Button>
                       </div>
                     </div>
                   </div>

@@ -18,6 +18,7 @@ import {
   Monitor,
   PhilippinePeso,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -862,8 +863,7 @@ export default function SearchPage() {
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>
-        <div className="max-w-lg mx-auto p-6">
-          {/* Header Section */}
+        <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
               <Clipboard className="w-8 h-8 text-blue-600" />
@@ -991,43 +991,24 @@ Best regards,
 
       {/* Profile Preview Modal */}
       <ProfilePreviewModal>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Your Profile Preview
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                close_profile_preview_modal();
-                open_application_confirmation_modal();
-              }}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-            >
-              <X className="h-4 w-4 text-gray-500" />
-            </Button>
-          </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            close_profile_preview_modal();
+            open_application_confirmation_modal();
+          }}
+          className="h-8 w-8 p-0 ml-4 hover:bg-gray-100 rounded-full"
+        >
+          <ArrowLeft className="h-4 w-4 text-gray-500" />
+        </Button>
 
-          {profile && (
-            <ApplicantModalContent
-              applicant={profile as any}
-              open_resume_modal={() => {}} // Optional: Add resume preview functionality
-            />
-          )}
-
-          <div className="mt-6">
-            <Button
-              onClick={() => {
-                close_profile_preview_modal();
-                open_application_confirmation_modal();
-              }}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-            >
-              Back to Application
-            </Button>
-          </div>
-        </div>
+        {profile && (
+          <ApplicantModalContent
+            applicant={profile as any}
+            open_resume_modal={() => {}} // Optional: Add resume preview functionality
+          />
+        )}
       </ProfilePreviewModal>
 
       {/* Incomplete Profile Modal */}
