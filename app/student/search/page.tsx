@@ -941,25 +941,28 @@ export default function SearchPage() {
                   Cover Letter
                 </label>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="add-cover-letter"
-                  checked={
-                    showCoverLetterInput ||
-                    (selectedJob?.require_cover_letter ?? false)
-                  }
-                  disabled={selectedJob?.require_cover_letter ?? false}
-                  onChange={() =>
-                    setShowCoverLetterInput(!showCoverLetterInput)
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="text-sm text-gray-500">Include</span>
-              </div>
+              {!selectedJob?.require_cover_letter && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="add-cover-letter"
+                    checked={
+                      showCoverLetterInput ||
+                      (selectedJob?.require_cover_letter ?? false)
+                    }
+                    disabled={selectedJob?.require_cover_letter ?? false}
+                    onChange={() =>
+                      setShowCoverLetterInput(!showCoverLetterInput)
+                    }
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-500">Include</span>
+                </div>
+              )}
             </div>
 
-            {showCoverLetterInput && (
+            {(showCoverLetterInput ||
+              (selectedJob?.require_cover_letter ?? false)) && (
               <div className="space-y-3">
                 <Textarea
                   ref={textarea_ref}
