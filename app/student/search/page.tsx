@@ -530,7 +530,7 @@ export default function SearchPage() {
 
           {/* Scrollable Content Area - MUST be properly configured */}
           <div
-            className="flex-1 overflow-y-scroll overscroll-contain pb-24"
+            className="flex-1 overflow-y-scroll overscroll-contain pb-32"
             style={{ maxHeight: "calc(100vh - 200px)" }}
           >
             {selectedJob && (

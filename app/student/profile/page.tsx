@@ -563,7 +563,7 @@ export default function ProfilePage() {
               {/* Preview Button - Always Visible */}
               <Button
                 variant="outline"
-                size="sm"
+                size="default"
                 onClick={() => open_employer_modal()}
                 className="text-blue-600 border-blue-200 hover:bg-blue-50 w-full sm:w-auto h-12 sm:h-auto"
               >
@@ -576,7 +576,7 @@ export default function ProfilePage() {
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="default"
                     onClick={handleCancel}
                     disabled={saving}
                     className="flex-1 sm:flex-none h-12 sm:h-auto"
@@ -584,7 +584,7 @@ export default function ProfilePage() {
                     Cancel
                   </Button>
                   <Button
-                    size="sm"
+                    size="default"
                     onClick={handleSave}
                     disabled={
                       saving ||
@@ -603,7 +603,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <Button
-                  size="sm"
+                  size="default"
                   onClick={() => (
                     setIsEditing(true),
                     set_fields({
