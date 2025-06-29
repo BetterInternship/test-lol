@@ -136,7 +136,7 @@ export default function JobPage() {
     if (!job) return;
 
     try {
-      const { success } = await apply(job.id ?? "");
+      const { success } = await apply(job.id ?? "", "");
       if (success) open_success_modal();
       else alert("Could not apply to job.");
     } catch (error) {
@@ -265,123 +265,134 @@ export default function JobPage() {
 
                     {/* Job Details Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-gray-50 rounded-lg">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              className="w-4 h-4 text-blue-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
+                      {job.location && (
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2 text-gray-600 mb-2">
+                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium">
+                              Location
+                            </span>
                           </div>
-                          <span className="text-sm font-medium">Location</span>
+                          <p className="text-gray-900 font-medium">
+                            {job.location || "Not specified"}
+                          </p>
                         </div>
-                        <p className="text-gray-900 font-medium">
-                          {job.location || "Not specified"}
-                        </p>
-                      </div>
+                      )}
 
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              className="w-4 h-4 text-purple-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                              />
-                            </svg>
+                      {job.mode !== null && job.mode !== undefined && (
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2 text-gray-600 mb-2">
+                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-purple-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium">Mode</span>
                           </div>
-                          <span className="text-sm font-medium">Mode</span>
+                          <p className="text-gray-900 font-medium">
+                            {job.mode !== null && job.mode !== undefined
+                              ? job.mode === 0
+                                ? "Face to Face"
+                                : job.mode === 1
+                                ? "Remote"
+                                : "Hybrid"
+                              : "Not specified"}
+                          </p>
                         </div>
-                        <p className="text-gray-900 font-medium">
-                          {job.mode !== null && job.mode !== undefined
-                            ? job.mode === 0
-                              ? "Face to Face"
-                              : job.mode === 1
-                              ? "Remote"
-                              : "Hybrid"
-                            : "Not specified"}
-                        </p>
-                      </div>
+                      )}
+                      {job.salary && (
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2 text-gray-600 mb-2">
+                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-green-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                                />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium">Salary</span>
+                          </div>
+                          <p className="text-gray-900 font-medium">
+                            {job.salary
+                              ? `₱${job.salary}/${to_job_pay_freq_name(
+                                  job.salary_freq
+                                )}`
+                              : "None"}
+                          </p>
+                        </div>
+                      )}
 
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              className="w-4 h-4 text-green-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-                              />
-                            </svg>
+                      {job.type !== null && job.type !== undefined && (
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2 text-gray-600 mb-2">
+                            <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-orange-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                            </div>
+                            <span className="text-sm font-medium">
+                              Work Load
+                            </span>
                           </div>
-                          <span className="text-sm font-medium">Salary</span>
+                          <p className="text-gray-900 font-medium">
+                            {job.type !== null && job.type !== undefined
+                              ? job.type === 0
+                                ? "Internship"
+                                : job.type === 1
+                                ? "Full-time"
+                                : "Part-time"
+                              : "Not specified"}
+                          </p>
                         </div>
-                        <p className="text-gray-900 font-medium">
-                          {job.salary
-                            ? `₱${job.salary}/${to_job_pay_freq_name(
-                                job.salary_freq
-                              )}`
-                            : "None"}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                            <svg
-                              className="w-4 h-4 text-orange-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                          </div>
-                          <span className="text-sm font-medium">Type</span>
-                        </div>
-                        <p className="text-gray-900 font-medium">
-                          {job.type !== null && job.type !== undefined
-                            ? job.type === 0
-                              ? "Internship"
-                              : job.type === 1
-                              ? "Full-time"
-                              : "Part-time"
-                            : "Not specified"}
-                        </p>
-                      </div>
+                      )}
 
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
@@ -723,11 +734,11 @@ export default function JobPage() {
 
       {/* Maintenance Mode Modal */}
       <MaintenanceModal>
-        <div className="flex flex-col h-full max-h-[85vh]">
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex flex-col h-[70vh] max-h-[500px] min-h-[350px]">
+          {/* Content with smaller spacing */}
+          <div className="flex-1 overflow-y-auto px-4 pt-4">
             {/* Header */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6">
               <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                 <div className="w-8 h-8 text-blue-600">
                   <svg
@@ -753,7 +764,7 @@ export default function JobPage() {
             </div>
 
             {/* Actions List */}
-            <div className="mb-6">
+            <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
                 {getMaintenanceSubMessage()}
               </h3>
@@ -820,18 +831,6 @@ export default function JobPage() {
                   );
                 })}
               </div>
-            </div>
-          </div>
-
-          {/* Fixed Action Button - Always Visible */}
-          <div className="flex-shrink-0 p-6 pt-0 border-t border-gray-100 bg-white">
-            <div className="flex justify-center">
-              <Button
-                onClick={() => close_maintenance_modal()}
-                className="px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-              >
-                Got it, thanks!
-              </Button>
             </div>
           </div>
         </div>

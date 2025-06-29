@@ -12,12 +12,12 @@ import { DropdownGroup } from "@/components/ui/dropdown";
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
-import { industriesOptions } from "@/lib/utils/job-options";
 import { useRefs } from "@/lib/db/use-refs";
+import { Industry } from "@/lib/db/db.types";
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { job_categories } = useRefs();
+  const { industries, job_categories } = useRefs();
   const { filters, set_filter, filter_setter, applyFiltersAndNavigate } =
     useFilter<{
       industry: string;
@@ -48,6 +48,7 @@ export default function HomePage() {
   };
 
   // Helper to apply filter and go to job listings
+  // ! this needs to be changed lol
   const applyFilterAndGo = (type: "industry" | "category", value: string) => {
     // Create updated filters
     const updatedFilters = { ...filters, [type]: value };
@@ -402,26 +403,26 @@ export default function HomePage() {
             </h3>
           </div>
           <div className="space-y-2 overflow-y-auto flex-1 max-h-[60vh]">
-            {industriesOptions.map((option) => {
-              const normalizedOption =
-                option === "All Industries" ? "All industries" : option;
-              return (
-                <button
-                  key={option}
-                  onClick={() => {
-                    closeIndustryModal();
-                    applyFilterAndGo("industry", normalizedOption);
-                  }}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
-                    filters.industry === normalizedOption
-                      ? "bg-blue-50 text-blue-600 border border-blue-200"
-                      : "hover:bg-gray-50 text-gray-700"
-                  }`}
-                >
-                  {normalizedOption}
-                </button>
-              );
-            })}
+            {["All industries", ...industries.map((i: Industry) => i.name)].map(
+              (industry_name) => {
+                return (
+                  <button
+                    key={industry_name}
+                    onClick={() => {
+                      closeIndustryModal();
+                      applyFilterAndGo("industry", industry_name);
+                    }}
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-colors duration-150 text-sm font-medium ${
+                      filters.industry === industry_name
+                        ? "bg-blue-50 text-blue-600 border border-blue-200"
+                        : "hover:bg-gray-50 text-gray-700"
+                    }`}
+                  >
+                    {industry_name}
+                  </button>
+                );
+              }
+            )}
           </div>
         </div>
       </IndustryModal>

@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-24 20:50:19
+ * @ Modified time: 2025-06-28 04:39:08
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -14,6 +14,7 @@ import React, {
   useState,
   useRef,
   useCallback,
+  Children,
 } from "react";
 import { ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -170,13 +171,11 @@ export const GroupableRadioDropdown = ({
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
-      const dropdownHeight = 320; // Estimated max dropdown height (max-h-80 = 320px)
+      const dropdownHeight = 160; // Estimated max dropdown height (max-h-80 = 320px)
 
-      // On mobile, prefer opening upwards to avoid being cut off
-      // On desktop, open downwards unless there's insufficient space
-      const shouldOpenUpwards = is_mobile
-        ? spaceAbove > 120 // Open upwards if there's at least 120px above (more margin for mobile)
-        : spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
+      // Prefer opening downwards, only open upwards if insufficient space below
+      const shouldOpenUpwards =
+        spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
 
       setDropdownPosition({
         top: shouldOpenUpwards
@@ -364,7 +363,7 @@ export const GroupableRadioDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute top-full mt-2 bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
+            "fixed bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
             "z-[9999] duration-200 ease-out transition-all", // Add smooth animation
             dropdownPosition.openUpwards
               ? "animate-in slide-in-from-bottom-2"
@@ -376,16 +375,15 @@ export const GroupableRadioDropdown = ({
           onTouchStart={handleDropdownInteraction}
           onTouchEnd={handleDropdownInteraction}
           style={{
-            transform: dropdownPosition.openUpwards
-              ? "translateY(-100%)"
-              : "none",
-            transformOrigin: dropdownPosition.openUpwards ? "bottom" : "top",
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: dropdownPosition.width,
           }}
         >
           <div
             className={cn(
               "max-h-64 overflow-y-scroll overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-              is_mobile ? "max-h-80" : "max-h-64" // Slightly taller on mobile for better UX
+              is_mobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
             )}
             style={{
               scrollbarWidth: "thin",
@@ -585,7 +583,7 @@ export const GroupableNavDropdown = ({
           >
             {content}
 
-            {React.Children.map(children, (child, index) => {
+            {Children.map(children, (child, index) => {
               return (
                 <DropdownOptionButton key={index} set_is_open={set_is_open}>
                   {child ? child : <></>}

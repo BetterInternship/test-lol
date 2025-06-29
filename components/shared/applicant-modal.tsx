@@ -58,7 +58,7 @@ export const ApplicantModalContent = ({
     Modal: CalendarModal,
   } = useModal("calendar-modal");
 
-  // Resume URL management
+  // Resume URL management - memoize the callback to prevent re-renders
   const [resume_route, set_resume_route] = useState("");
 
   const get_user_resume_url = useCallback(
@@ -71,7 +71,7 @@ export const ApplicantModalContent = ({
     route: resume_route,
   });
 
-  // Profile picture URL management
+  // Profile picture URL management - memoize the callback to prevent re-renders
   const [pfp_route, set_pfp_route] = useState("");
 
   const get_user_pfp_url = useCallback(
@@ -84,23 +84,28 @@ export const ApplicantModalContent = ({
     route: pfp_route,
   });
 
-  // Set the resume and profile picture routes when applicant changes
+  // Set the resume and profile picture routes when applicant changes - only when needed
   useEffect(() => {
-    if (applicant?.id) {
+    if (applicant?.id && !resume_route) {
       set_resume_route(`/users/${applicant.id}/resume`);
+    }
+  }, [applicant?.id, resume_route]);
+
+  useEffect(() => {
+    if (applicant?.id && !pfp_route) {
       set_pfp_route(`/users/${applicant.id}/pic`);
     }
-  }, [applicant?.id]);
+  }, [applicant?.id, pfp_route]);
 
-  // Sync profile picture when modal opens
+  // Sync profile picture when modal opens - avoid infinite re-renders
   useEffect(() => {
     if (applicant?.id && applicant?.profile_picture) {
       sync_pfp_url();
     }
-  }, [applicant?.id, applicant?.profile_picture, sync_pfp_url]);
+  }, [applicant?.id, applicant?.profile_picture]); // Removed sync_pfp_url from dependencies
 
-  // Handle resume button click
-  const handleResumeClick = async () => {
+  // Handle resume button click - memoize to prevent re-renders
+  const handleResumeClick = useCallback(async () => {
     if (!clickable || !applicant?.resume || !applicant?.id) return;
 
     if (open_resume_modal) {
@@ -120,10 +125,10 @@ export const ApplicantModalContent = ({
         // Optionally show user-friendly error message
       }
     }
-  };
+  }, [clickable, applicant?.resume, applicant?.id, open_resume_modal, resume_route, sync_resume_url, open_internal_resume_modal]);
 
-  // Handle calendar button click
-  const handleCalendarClick = () => {
+  // Handle calendar button click - memoize to prevent re-renders
+  const handleCalendarClick = useCallback(() => {
     if (!clickable || !applicant?.calendar_link) return;
 
     if (open_calendar_modal) {
@@ -134,22 +139,22 @@ export const ApplicantModalContent = ({
       window?.open(applicant.calendar_link, "_blank")?.focus();
       // open_internal_calendar_modal();
     }
-  };
+  }, [clickable, applicant?.calendar_link, open_calendar_modal]);
 
   return (
     <>
-      <div className="flex flex-col h-full min-h-0 max-h-[80vh]">
+      <div className="flex flex-col h-full min-h-0 max-h-[95vh] md:max-h-[85vh]">
         {/* Fixed Header Section - Not Scrollable */}
-        <div className="flex-shrink-0 px-8 md:px-10 pt-6 pb-6 border-b border-gray-100">
+        <div className="flex-shrink-0 px-4 sm:px-6 md:px-8 lg:px-10 pt-3 sm:pt-4 md:pt-6 pb-3 sm:pb-4 md:pb-6 border-b border-gray-100">
           {/* Header with Profile Picture and Basic Info */}
-          <div className="flex items-start gap-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
             {/* Profile Picture */}
-            <div className="flex-shrink-0">
-              <Avatar className="h-20 w-20 md:h-24 md:w-24">
+            <div className="flex-shrink-0 self-center sm:self-start">
+              <Avatar className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-24 lg:w-24">
                 {applicant?.profile_picture && pfp_url ? (
                   <AvatarImage src={pfp_url} alt="Profile picture" />
                 ) : (
-                  <AvatarFallback className="text-xl font-semibold bg-blue-100 text-blue-700">
+                  <AvatarFallback className="text-sm sm:text-lg md:text-xl font-semibold bg-blue-100 text-blue-700">
                     {applicant?.first_name?.[0]?.toUpperCase() || ""}
                     {applicant?.last_name?.[0]?.toUpperCase() || ""}
                   </AvatarFallback>
@@ -158,19 +163,19 @@ export const ApplicantModalContent = ({
             </div>
 
             {/* Name and Status */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 min-w-0 text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-1 sm:mb-2 md:mb-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-600 font-medium">
+                <span className="text-xs sm:text-sm text-gray-600 font-medium">
                   Active
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
+              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 md:mb-3 leading-tight">
                 {get_full_name(applicant) === ""
                   ? "No Name"
                   : get_full_name(applicant)}
               </h1>
-              <p className="text-gray-600 text-base leading-relaxed mb-4">
+              <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4">
                 Applying for {job?.title ?? "Sample Position"}{" "}
                 {job?.type !== undefined && job?.type !== null
                   ? `• ${to_job_type_name(job.type)}`
@@ -179,9 +184,9 @@ export const ApplicantModalContent = ({
 
               {/* Indicate if taking for credit */}
               {applicant.taking_for_credit && (
-                <div>
-                  <span className="inline-flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-full text-sm font-medium">
-                    <Award className="w-4 h-4" />
+                <div className="flex justify-center sm:justify-start">
+                  <span className="inline-flex items-center gap-1 sm:gap-2 text-green-700 bg-green-50 px-2 sm:px-3 md:px-4 py-1 sm:py-1 md:py-2 rounded-full text-xs sm:text-sm font-medium">
+                    <Award className="w-3 h-3 sm:w-4 sm:h-4" />
                     Taking for credit
                   </span>
                 </div>
@@ -190,9 +195,9 @@ export const ApplicantModalContent = ({
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col gap-2 sm:gap-3 md:flex-row md:gap-4">
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white h-11 text-base px-6 font-medium flex-1 sm:flex-none"
+              className="bg-blue-600 hover:bg-blue-700 text-white h-10 sm:h-11 text-sm md:text-base px-4 sm:px-6 font-medium flex-1 md:flex-none"
               disabled={!clickable || !applicant.resume}
               onClick={handleResumeClick}
             >
@@ -201,7 +206,7 @@ export const ApplicantModalContent = ({
             </Button>
             <Button
               variant="outline"
-              className="border-blue-600 text-blue-600 hover:bg-blue-50 h-11 text-base px-6 font-medium flex-1 sm:flex-none"
+              className="border-blue-600 text-blue-600 hover:bg-blue-50 h-10 sm:h-11 text-sm md:text-base px-4 sm:px-6 font-medium flex-1 md:flex-none"
               disabled={!clickable || !applicant?.calendar_link}
               onClick={handleCalendarClick}
             >
@@ -211,40 +216,40 @@ export const ApplicantModalContent = ({
           </div>
         </div>
 
-        {/* Scrollable Content Section */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-8 md:px-10 py-6">
+        {/* Scrollable Content Section - Optimized for small screens */}
+        <div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-4 md:py-6 pb-8 sm:pb-12" style={{ minHeight: '250px' }}>
           {/* Academic Background Card */}
-          <div className="bg-blue-50 rounded-xl p-6 mb-6">
-            <div className="flex items-center gap-3 mb-5">
+          <div className="bg-blue-50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <GraduationCap className="h-4 w-4 text-blue-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 text-lg">
+              <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
                 Academic Background
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-500 mb-2">Program</p>
-                <p className="font-medium text-gray-900 text-base">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Program</p>
+                <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {to_college_name(applicant?.college)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">Institution</p>
-                <p className="font-medium text-gray-900 text-base">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Institution</p>
+                <p className="font-medium text-gray-900 text-sm sm:text-base">
                   DLSU Manila
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">Year Level</p>
-                <p className="font-medium text-gray-900 text-base">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Year Level</p>
+                <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {to_level_name(applicant?.year_level)}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">Email</p>
-                <p className="font-medium text-gray-900 text-base break-all">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Email</p>
+                <p className="font-medium text-gray-900 text-sm sm:text-base break-all">
                   {applicant?.email || "Not provided"}
                 </p>
               </div>
@@ -252,24 +257,24 @@ export const ApplicantModalContent = ({
           </div>
 
           {/* Contact & Links */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-6">
-            <div className="flex items-center gap-3 mb-5">
+          <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-5">
               <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
                 <ExternalLink className="h-4 w-4 text-gray-600" />
               </div>
-              <h3 className="font-semibold text-gray-900 text-lg">
+              <h3 className="font-semibold text-gray-900 text-base sm:text-lg">
                 Contact & Professional Links
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-500 mb-2">Phone Number</p>
-                <p className="font-medium text-gray-900 text-base">
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Phone Number</p>
+                <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {applicant?.phone_number || "Not provided"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">Portfolio</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Portfolio</p>
                 {applicant?.portfolio_link ? (
                   <a
                     href={applicant?.portfolio_link}
@@ -280,18 +285,18 @@ export const ApplicantModalContent = ({
                         ? { pointerEvents: "none", cursor: "default" }
                         : {}
                     }
-                    className="text-blue-600 hover:underline font-medium break-all text-base"
+                    className="text-blue-600 hover:underline font-medium break-all text-sm sm:text-base"
                   >
                     View Portfolio
                   </a>
                 ) : (
-                  <p className="font-medium text-gray-900 text-base">
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">
                     Not provided
                   </p>
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">GitHub</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">GitHub</p>
                 {applicant?.github_link ? (
                   <a
                     href={applicant?.github_link}
@@ -302,18 +307,18 @@ export const ApplicantModalContent = ({
                         ? { pointerEvents: "none", cursor: "default" }
                         : {}
                     }
-                    className="text-blue-600 hover:underline font-medium break-all text-base"
+                    className="text-blue-600 hover:underline font-medium break-all text-sm sm:text-base"
                   >
                     View GitHub
                   </a>
                 ) : (
-                  <p className="font-medium text-gray-900 text-base">
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">
                     Not provided
                   </p>
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-2">LinkedIn</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">LinkedIn</p>
                 {applicant?.linkedin_link ? (
                   <a
                     href={applicant?.linkedin_link}
@@ -324,12 +329,12 @@ export const ApplicantModalContent = ({
                         ? { pointerEvents: "none", cursor: "default" }
                         : {}
                     }
-                    className="text-blue-600 hover:underline font-medium break-all text-base"
+                    className="text-blue-600 hover:underline font-medium break-all text-sm sm:text-base"
                   >
                     View LinkedIn
                   </a>
                 ) : (
-                  <p className="font-medium text-gray-900 text-base">
+                  <p className="font-medium text-gray-900 text-sm sm:text-base">
                     Not provided
                   </p>
                 )}
@@ -339,12 +344,12 @@ export const ApplicantModalContent = ({
 
           {/* About the Candidate - Only show if bio exists */}
           {applicant?.bio && applicant.bio.trim() && (
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4 text-lg">
+            <div className="mb-4 sm:mb-6">
+              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-base sm:text-lg">
                 About the Candidate
               </h3>
-              <div className="bg-white rounded-xl p-6 border border-gray-200">
-                <p className="text-gray-700 leading-relaxed text-base">
+              <div className="bg-white rounded-xl p-4 sm:p-6 border border-gray-200">
+                <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
                   {applicant.bio}
                 </p>
               </div>

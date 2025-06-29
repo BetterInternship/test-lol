@@ -1,132 +1,384 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  GroupableRadioDropdown,
+  DropdownGroup,
+} from "@/components/ui/dropdown";
+import { useRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "../authctx";
+import { MultipartFormBuilder } from "@/lib/multipart-form";
+import { EditableDatePicker } from "@/components/ui/editable";
+import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const { email_status, login, redirect_if_logged_in } = useAuthContext();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [step, setStep] = useState<"email" | "password">("email");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+export default function RegisterPage() {
+  const { register } = useAuthContext();
   const router = useRouter();
+  const [form_data, setFormData] = useState({
+    doing_business_as: "",
+    legal_entity_name: "",
+    industry: "",
+    office_location: "",
+    website: "",
+    company_description: "",
+    contact_name: "",
+    contact_phone: "",
+    contact_email: "",
+    contact_position: "",
+    accept_outside_dlsu: false,
+    has_moa_with_dlsu: false,
+    moa_start_date: new Date().getTime(),
+    moa_expires_at: new Date().getTime(),
+    terms_accepted: false,
+  });
 
-  redirect_if_logged_in();
+  const { industries, universities } = useRefs();
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
-  const handle_email_submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+  const handle_change = (field: string, value: any) => {
+    setFormData({ ...form_data, [field]: value });
+  };
 
-    if (email.trim() === "") {
-      setIsLoading(false);
-      setError("Email is required.");
-      return;
+  const handle_submit = async () => {
+    const multipart_form = MultipartFormBuilder.new();
+    multipart_form.from({
+      name: form_data.doing_business_as,
+      contact_name: form_data.contact_name,
+      legal_entity_name: form_data.legal_entity_name,
+      industry: form_data.industry,
+      location: form_data.office_location,
+      description: form_data.company_description,
+      email: form_data.contact_email,
+      website: form_data.website,
+      phone_number: form_data.contact_phone,
+      accepted_universities: `[${universities
+        .map((u) => `"${u.id}"`)
+        .join("")}]`,
+      acceps_non_university: form_data.accept_outside_dlsu,
+
+      // Moa instances, in this case DLSU only for now
+      ...(form_data.has_moa_with_dlsu
+        ? {
+            moa: [
+              {
+                // ! change when unis update
+                university_id: universities.map((u) => u.id)[0],
+                start_date: form_data.moa_start_date,
+                expires_at: form_data.moa_expires_at,
+              },
+            ],
+          }
+        : {}),
+    });
+    // multipart_form.add_file("logo", ogoFile);
+    // console.log("Form data:", multipart_form.build());
+    // @ts-ignore
+    const response = await register(multipart_form.build());
+    // @ts-ignore
+    if (response.success) {
+      alert("Email has been sent with password!");
+      router.push("/login");
+    } else {
+      alert(
+        "Could not register, please check console for error (will fix later)."
+      );
     }
-
-    await email_status(email).then(async (r) => {
-      if (!r.existing_user) {
-        setIsLoading(false);
-        setError("Account does not exist in our database.");
-        return;
-      }
-
-      // @ts-ignore
-      if (!r.success) {
-        setIsLoading(false);
-        // @ts-ignore
-        alert(r.message);
-        return;
-      }
-      console.log("lol what");
-      setIsLoading(false);
-      setStep("password");
-    });
-  };
-
-  const handle_password_submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    await login(email, password).then((r) => {
-      // @ts-ignore
-      if (r?.success) {
-        // @ts-ignore
-        if (r.god) router.push("/god");
-        else router.push("/dashboard");
-      } else {
-        setError("Invalid password.");
-      }
-
-      setIsLoading(false);
-    });
-  };
-
-  const handle_back_to_email = () => {
-    setStep("email");
-    setPassword("");
-    setError("");
   };
 
   return (
-    <>
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full">
-          {/* Back Arrow for OTP step */}
-          {step === "password" && (
-            <div className="mb-6">
-              <button
-                onClick={handle_back_to_email}
-                className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </button>
-            </div>
-          )}
-
-          {/* Welcome Message */}
-          <div className="text-center mb-10">
-            {step === "email" ? (
-              <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                Coming soon.
-              </h2>
-            ) : (
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  Enter Password
-                </h2>
-              </div>
-            )}
-          </div>
-
-          <div className="max-w-md m-auto">
-            {/* Error Message */}
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600 justify-center">{error}</p>
-              </div>
-            )}
-
-            {/* Login Form */}
-            <form onSubmit={handle_password_submit} className="space-y-6">
-              <Button
-                type="submit"
-                disabled={true}
-                className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? "Logging in..." : "Register"}
-              </Button>
-            </form>
-          </div>
+    <div className="flex-1 flex justify-center px-6 py-12 pt-12">
+      <div className="w-full max-w-2xl">
+        <div className="text-center mb-10">
+          <h2 className="text-5xl font-heading font-bold text-gray-900 mb-4">
+            Company Registration
+          </h2>
         </div>
+
+        <form onSubmit={handle_submit} className="space-y-16">
+          {/* General Information */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              General Information
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Doing Business As</Label>
+                <Input
+                  value={form_data.doing_business_as}
+                  onChange={(e) =>
+                    handle_change("doing_business_as", e.target.value)
+                  }
+                  placeholder="e.g. Google"
+                />
+              </div>
+              <div>
+                <Label>Legal Entity Name</Label>
+                <Input
+                  value={form_data.legal_entity_name}
+                  onChange={(e) =>
+                    handle_change("legal_entity_name", e.target.value)
+                  }
+                  placeholder="e.g. LeapFroggr"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Industry</Label>
+                <DropdownGroup>
+                  <GroupableRadioDropdown
+                    name="industry"
+                    options={[
+                      "All industries",
+                      ...industries.map((industry) => industry.name),
+                    ]}
+                    on_change={(selected_name) => {
+                      const selected_industry = industries.find(
+                        (industry) => industry.name === selected_name
+                      );
+                      handle_change("industry", selected_industry?.id || "");
+                    }}
+                    default_value="Not Selected"
+                  />
+                </DropdownGroup>
+              </div>
+              <div>
+                <Label>Office's General Location</Label>
+                <Input
+                  value={form_data.office_location}
+                  onChange={(e) =>
+                    handle_change("office_location", e.target.value)
+                  }
+                  placeholder="e.g. Makati, Manila"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <div className="w-full max-w-md">
+                <Label className=" block mb-2">Website</Label>
+                <Input
+                  value={form_data.website}
+                  onChange={(e) => handle_change("website", e.target.value)}
+                  placeholder="e.g. https://google.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Company Description</Label>
+              <Textarea
+                value={form_data.company_description}
+                onChange={(e) =>
+                  handle_change("company_description", e.target.value)
+                }
+                placeholder="Write about your company..."
+                className="min-h-[120px]"
+              />
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              Contact Information
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Company Contact Name</Label>
+                <Input
+                  value={form_data.contact_name}
+                  onChange={(e) =>
+                    handle_change("contact_name", e.target.value)
+                  }
+                  placeholder="e.g. John Doe"
+                />
+              </div>
+              <div>
+                <Label>Contact's Phone Number</Label>
+                <Input
+                  value={form_data.contact_phone}
+                  onChange={(e) =>
+                    handle_change("contact_phone", e.target.value)
+                  }
+                  placeholder="e.g. 09XXXXXXXXX"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label>Contact's Email</Label>
+                <Input
+                  value={form_data.contact_email}
+                  onChange={(e) =>
+                    handle_change("contact_email", e.target.value)
+                  }
+                  placeholder="e.g. john@google.com"
+                />
+              </div>
+              <div>
+                <Label>Contact's Position</Label>
+                <Input
+                  value={form_data.contact_position}
+                  onChange={(e) =>
+                    handle_change("contact_position", e.target.value)
+                  }
+                  placeholder="e.g. CTO/CEO"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Customization */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+              Profile Customization
+            </h3>
+
+            <div className="text-center">
+              <div className="text-center">
+                <Label className="block mb-4">
+                  Are you willing to accept interns outside DLSU?
+                </Label>
+                <div className="flex justify-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.accept_outside_dlsu === true}
+                      onCheckedChange={() =>
+                        handle_change("accept_outside_dlsu", true)
+                      }
+                    />
+                    <Label>Yes</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={form_data.accept_outside_dlsu === false}
+                      onCheckedChange={() =>
+                        handle_change("accept_outside_dlsu", false)
+                      }
+                    />
+                    <Label>No</Label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center">
+              <Label className="block mb-4">
+                Do you have an ongoing MOA with DLSU?
+              </Label>
+              <div className="flex justify-center gap-6">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={form_data.has_moa_with_dlsu === true}
+                    onCheckedChange={() =>
+                      handle_change("has_moa_with_dlsu", true)
+                    }
+                  />
+                  <Label>Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={form_data.has_moa_with_dlsu === false}
+                    onCheckedChange={() =>
+                      handle_change("has_moa_with_dlsu", false)
+                    }
+                  />
+                  <Label>No</Label>
+                </div>
+              </div>
+            </div>
+
+            {form_data.has_moa_with_dlsu && (
+              <div className="space-y-4">
+                <Label className="block text-center">
+                  MOA Start & End Date
+                </Label>
+                <div className="flex justify-center gap-4">
+                  <EditableDatePicker
+                    is_editing={true}
+                    value={new Date(form_data.moa_start_date)}
+                    setter={(value) => handle_change("moa_start_date", value)}
+                  ></EditableDatePicker>
+                </div>
+                <div className="flex justify-center gap-4">
+                  <EditableDatePicker
+                    is_editing={true}
+                    value={new Date(form_data.moa_expires_at)}
+                    setter={(value) => handle_change("moa_expires_at", value)}
+                  ></EditableDatePicker>{" "}
+                </div>
+                <div className="text-center">
+                  <Label className="block mb-4">
+                    MOA Files/Contract Files (optional)
+                  </Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 max-w-md mx-auto">
+                    <p className="text-gray-600">Upload Here</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="mb-8">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    id="accept-terms"
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) =>
+                      setAcceptTerms(checked as boolean)
+                    }
+                    className="mt-1"
+                  />
+                  <label
+                    htmlFor="accept-terms"
+                    className="text-sm text-gray-700 leading-relaxed cursor-pointer flex-1"
+                  >
+                    I have read and agree to the{" "}
+                    <a
+                      href="/TermsConditions.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      Terms & Conditions
+                    </a>{" "}
+                    and{" "}
+                    <a
+                      href="/PrivacyPolicy.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline font-medium"
+                    >
+                      Privacy Policy
+                    </a>
+                    .
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-3 pb-10">
+              <Button
+                type="button"
+                className="w-full max-w-md h-12 bg-black hover:bg-gray-800 text-white"
+                onClick={() => handle_submit()}
+              >
+                Register
+              </Button>
+            </div>
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 }

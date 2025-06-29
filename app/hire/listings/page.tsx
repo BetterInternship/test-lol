@@ -476,7 +476,7 @@ const CreateModalForm = ({
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Job Allowance
+                    Compensations
                   </Label>
                   <GroupableRadioDropdown
                     name="allowance"
@@ -514,15 +514,19 @@ const CreateModalForm = ({
                   </>
                 )}
               </DropdownGroup>
-              
+
               <div className="space-y-3">
                 <Label className="text-sm font-medium text-gray-700">
                   Mark as Unlisted
                 </Label>
                 <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Unlisted Job</p>
-                    <p className="text-xs text-gray-500">Only visible to applicants with the link</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Unlisted Job
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Only visible to applicants with the link
+                    </p>
                   </div>
                   <Checkbox
                     checked={form_data.is_unlisted ?? false}
@@ -549,8 +553,8 @@ const CreateModalForm = ({
                     <span className="text-sm font-medium">Year Round</span>
                   </div>
                   {!form_data.is_year_round && (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex-1">
                         <label className="text-xs font-medium text-gray-600 mb-1 block">
                           Start Date
                         </label>
@@ -567,7 +571,7 @@ const CreateModalForm = ({
                           }
                         />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <label className="text-xs font-medium text-gray-600 mb-1 block">
                           End Date
                         </label>
@@ -668,14 +672,14 @@ const CreateModalForm = ({
               </h3>
               <div className="relative">
                 <MDXEditor
-                  className="min-h-[250px] border border-gray-200 rounded-lg"
+                  className="min-h-[250px] border border-gray-200 rounded-lg overflow-y-auto"
                   markdown={form_data.description ?? ""}
                   onChange={(value) => set_field("description", value)}
                 />
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-6 pb-16">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <div className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
                   <FileText className="w-4 h-4 text-orange-600" />
@@ -684,7 +688,7 @@ const CreateModalForm = ({
               </h3>
               <div className="relative">
                 <MDXEditor
-                  className="min-h-[250px] border border-gray-200 rounded-lg"
+                  className="min-h-[250px] w-full border border-gray-200 rounded-lg overflow-y-auto"
                   markdown={form_data.requirements ?? ""}
                   onChange={(value) => set_field("requirements", value)}
                 />

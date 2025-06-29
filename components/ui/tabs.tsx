@@ -1,55 +1,86 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import * as TabsPrimitive from "@radix-ui/react-tabs"
+import * as React from "react";
+import { Children, useState, useEffect } from "react";
+import { Button } from "./button";
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+export const TabGroup = ({
+  layout = "landscape",
+  children,
+}: {
+  layout?: "landscape" | "portrait";
+  children: React.ReactNode;
+}) => {
+  const [active_tab, set_active_tab] = useState("");
 
-const Tabs = TabsPrimitive.Root
+  useEffect(() => {
+    const first_child = Children.toArray(children)[0];
+    if (React.isValidElement(first_child))
+      // @ts-ignore
+      set_active_tab(first_child.props?.name);
+  }, []);
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
-      className
-    )}
-    {...props}
-  />
-))
-TabsList.displayName = TabsPrimitive.List.displayName
+  // Create the selection
+  return (
+    <div
+      className={cn(
+        "relative w-full h-full flex",
+        layout === "landscape" ? "flex-col" : "flex-row"
+      )}
+    >
+      <div
+        className={cn(
+          "relative flex items-start bg-white p-4 px-2",
+          layout === "landscape"
+            ? "flex-row w-full h-fit pb-0"
+            : "flex-col w-fit h-full space-y-1"
+        )}
+      >
+        {Children.map(children, (child) => {
+          if (React.isValidElement(child)) {
+            // @ts-ignore
+            const name = child.props?.name ?? "No name";
+            return (
+              <Button
+                variant="ghost"
+                aria-selected={active_tab === name}
+                className={cn(
+                  "p-6 text-left hover:bg-gray-200 hover:text-blue-600 text-gray-700 ring-0 focus:shadow-none focus:ring-transparent focus:ring-0 focus:outline-0 focus:border-0 aria-selected:text-white aria-selected:bg-blue-600",
+                  layout === "landscape"
+                    ? "w-fit rounded-t-sm rounded-b-none"
+                    : "w-full"
+                )}
+                onClick={() => set_active_tab(name)}
+              >
+                <span className="text-lg">{name}</span>
+              </Button>
+            );
+          }
+          return <></>;
+        })}
+      </div>
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName
+      {/* Render just the first active child */}
+      <div className="relative w-full h-full">
+        {
+          Children.toArray(children).filter((child) => {
+            if (React.isValidElement(child))
+              // @ts-ignore
+              return child.props?.name === active_tab;
+          })[0]
+        }
+      </div>
+    </div>
+  );
+};
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-))
-TabsContent.displayName = TabsPrimitive.Content.displayName
-
-export { Tabs, TabsList, TabsTrigger, TabsContent }
+export const Tab = ({
+  name,
+  children,
+}: {
+  name: string;
+  children: React.ReactNode;
+}) => {
+  return <>{children}</>;
+};

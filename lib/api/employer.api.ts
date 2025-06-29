@@ -1,14 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-22 19:43:25
- * @ Modified time: 2025-06-23 05:29:38
+ * @ Modified time: 2025-06-29 18:05:29
  * @ Description:
  *
  * Routes used by employers
  */
 
 import { FetchResponse } from "@/lib/api/use-fetch";
-import { PublicEmployerUser } from "../db/db.types";
+import { Employer, PublicEmployerUser } from "../db/db.types";
 import { APIClient, APIRoute } from "./api-client";
 
 interface AuthResponse extends FetchResponse {
@@ -39,6 +39,14 @@ export const employer_auth_service = {
     );
   },
 
+  async register(employer: Partial<Employer>) {
+    return APIClient.post<AuthResponse>(
+      APIRoute("auth").r("hire", "register").build(),
+      employer,
+      "form-data"
+    );
+  },
+
   async login(email: string, password: string) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("hire", "login").build(),
@@ -52,6 +60,12 @@ export const employer_auth_service = {
     );
   },
 
+  async get_all_users() {
+    return APIClient.get<AuthResponse>(
+      APIRoute("employer").r("all-users").build()
+    );
+  },
+
   async get_all_employers() {
     return APIClient.get<AuthResponse>(APIRoute("employer").r("all").build());
   },
@@ -59,6 +73,18 @@ export const employer_auth_service = {
   async logout() {
     await APIClient.post<FetchResponse>(
       APIRoute("auth").r("hire", "logout").build()
+    );
+  },
+
+  async verify_employer(employer_id: string): Promise<FetchResponse> {
+    return APIClient.post<FetchResponse>(
+      APIRoute("employer").r("verify", employer_id).build()
+    );
+  },
+
+  async unverify_employer(employer_id: string): Promise<FetchResponse> {
+    return APIClient.post<FetchResponse>(
+      APIRoute("employer").r("unverify", employer_id).build()
     );
   },
 };

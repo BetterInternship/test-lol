@@ -250,12 +250,7 @@ export const application_service = {
     );
   },
 
-  async create_application(data: {
-    job_id: string;
-    github_link?: string;
-    portfolio_link?: string;
-    resume?: string;
-  }) {
+  async create_application(data: { job_id: string; cover_letter?: string }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRoute("applications").r("create").build(),
       data

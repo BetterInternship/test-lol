@@ -495,7 +495,7 @@ export const EditableJobDetails = ({
           <div className="flex flex-col items-start gap-3">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Mode:
+              Work Mode:
             </label>
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
@@ -512,7 +512,7 @@ export const EditableJobDetails = ({
           <div className="flex flex-col items-start gap-3 max-w-prose">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-              Work Schedule:
+              Work Load:
             </label>
             <EditableGroupableRadioDropdown
               is_editing={is_editing}
@@ -532,7 +532,7 @@ export const EditableJobDetails = ({
                 <div className="space-y-2">
                   <label className="flex items-center text-sm font-semibold text-gray-700">
                     <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                    Allowance:
+                    Compensation:
                   </label>
                   <EditableGroupableRadioDropdown
                     is_editing={is_editing}
@@ -603,9 +603,9 @@ export const EditableJobDetails = ({
 
           {/* Settings Section */}
           <div className="col-span-1 md:col-span-2 lg:col-span-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* Unlisted */}
-              <div className="flex flex-col space-y-2">
+              <div className="flex flex-col space-y-2 border border-gray-200 rounded-md p-4">
                 <div className="flex flex-row items-start gap-3">
                   <EditableCheckbox
                     is_editing={is_editing}
@@ -618,10 +618,15 @@ export const EditableJobDetails = ({
                     Unlisted?
                   </label>
                 </div>
+                <p className="block text-sm text-gray-500 max-w-prose">
+                  Unlisted jobs can only be viewed through a direct link and
+                  will not show up when searching through the platform. Use this
+                  when you want to share a job only with specific people.
+                </p>
               </div>
 
               {/* Year Round */}
-              <div className="flex flex-col space-y-2">
+              <div className="flex flex-col space-y-2 border border-gray-200 rounded-md p-4">
                 <div className="flex items-center space-x-2">
                   <EditableCheckbox
                     is_editing={is_editing}
@@ -634,49 +639,51 @@ export const EditableJobDetails = ({
                     Year Round?
                   </label>
                 </div>
+                {/* Dates (when not year round) */}
+                {!form_data.is_year_round && (
+                  <>
+                    <br />
+                    <div className="col-span-1 md:col-span-2 lg:col-span-1">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            Start Date
+                          </label>
+                          <EditableDatePicker
+                            is_editing={is_editing}
+                            value={
+                              form_data.start_date
+                                ? new Date(form_data.start_date)
+                                : new Date()
+                            }
+                            // @ts-ignore
+                            setter={field_setter("start_date")}
+                          >
+                            <JobPropertyLabel />
+                          </EditableDatePicker>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            End Date
+                          </label>
+                          <EditableDatePicker
+                            is_editing={is_editing}
+                            value={
+                              form_data.end_date
+                                ? new Date(form_data.end_date)
+                                : new Date()
+                            }
+                            // @ts-ignore
+                            setter={field_setter("end_date")}
+                          >
+                            <JobPropertyLabel />
+                          </EditableDatePicker>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-
-              {/* Dates (when not year round) */}
-              {!form_data.is_year_round && (
-                <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        Start Date
-                      </label>
-                      <EditableDatePicker
-                        is_editing={is_editing}
-                        value={
-                          form_data.start_date
-                            ? new Date(form_data.start_date)
-                            : new Date()
-                        }
-                        // @ts-ignore
-                        setter={field_setter("start_date")}
-                      >
-                        <JobPropertyLabel />
-                      </EditableDatePicker>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-1 block">
-                        End Date
-                      </label>
-                      <EditableDatePicker
-                        is_editing={is_editing}
-                        value={
-                          form_data.end_date
-                            ? new Date(form_data.end_date)
-                            : new Date()
-                        }
-                        // @ts-ignore
-                        setter={field_setter("end_date")}
-                      >
-                        <JobPropertyLabel />
-                      </EditableDatePicker>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
@@ -841,7 +848,7 @@ export const JobDetails = ({
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Mode:
+                Work Mode:
               </label>
               <JobPropertyLabel value={to_job_mode_name(job.mode)} />
             </div>
@@ -862,7 +869,7 @@ export const JobDetails = ({
             <div className="flex flex-col items-start gap-3 max-w-prose">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Work Schedule:
+                Work Load:
               </label>
               <JobPropertyLabel value={to_job_type_name(job.type)} />
             </div>

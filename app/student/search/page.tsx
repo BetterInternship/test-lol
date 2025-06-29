@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
-import type { ChangeEvent } from "react";
-import { useState, useEffect, useCallback } from "react";
+import React, { useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -19,6 +18,7 @@ import {
   Monitor,
   PhilippinePeso,
   Clock,
+  ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,7 +43,6 @@ import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { industriesOptions } from "@/lib/utils/job-options";
 import {
   user_can_apply,
   get_missing_profile_fields,
@@ -71,7 +70,7 @@ export default function SearchPage() {
   const { is_authenticated, user } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [coverLetter, setCoverLetter] = useState("");
+  const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
 
   // Initialize filters with URL synchronization and proper defaults
@@ -83,7 +82,7 @@ export default function SearchPage() {
   }>(
     {
       job_type: searchParams.get("jobType") || "All types",
-      location: searchParams.get("location") || "Any location",
+      location: searchParams.get("location") || "Any work load type",
       industry: searchParams.get("industry") || "All industries",
       category: searchParams.get("category") || "All categories",
     },
@@ -134,6 +133,7 @@ export default function SearchPage() {
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
   const {
+    industries,
     job_categories,
     to_job_mode_name,
     to_job_type_name,
@@ -262,7 +262,10 @@ export default function SearchPage() {
     if (!selectedJob) return;
 
     try {
-      const { success } = await apply(selectedJob.id ?? "");
+      const { success } = await apply(
+        selectedJob.id ?? "",
+        textarea_ref.current?.value ?? ""
+      );
       if (success) open_success_modal();
       else alert("Could not apply to job.");
     } catch (error) {
@@ -528,7 +531,7 @@ export default function SearchPage() {
 
           {/* Scrollable Content Area - MUST be properly configured */}
           <div
-            className="flex-1 overflow-y-scroll overscroll-contain pb-24"
+            className="flex-1 overflow-y-scroll overscroll-contain pb-32"
             style={{ maxHeight: "calc(100vh - 200px)" }}
           >
             {selectedJob && (
@@ -801,22 +804,23 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="space-y-6 py-4 px-8">
-          <div className="flex justify-between items-center mb-8">
+        <div className="space-y-6 px-8">
+          <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
           </div>
           <DropdownGroup>
             <GroupableRadioDropdown
               name="location"
-              options={["Any location", "In-Person", "Remote", "Hybrid"]}
+              options={["Any work load", "In-Person", "Remote", "Hybrid"]}
               on_change={filter_setter("location")}
               default_value={filters.location}
             />
             <GroupableRadioDropdown
               name="industry"
-              options={industriesOptions.map((industry) =>
-                industry === "All Industries" ? "All industries" : industry
-              )}
+              options={[
+                "All industries",
+                ...industries.map((industry) => industry.name),
+              ]}
               on_change={filter_setter("industry")}
               default_value={filters.industry}
             />
@@ -833,7 +837,13 @@ export default function SearchPage() {
             />
           </DropdownGroup>
 
-          <div className="flex gap-3 pt-6">
+          <div className="flex gap-3 pt-6 pb-8">
+            <Button
+              onClick={() => close_filter_modal()}
+              className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              Apply Filters
+            </Button>
             <Button
               variant="outline"
               onClick={() => {
@@ -847,20 +857,13 @@ export default function SearchPage() {
             >
               Clear Filters
             </Button>
-            <Button
-              onClick={() => close_filter_modal()}
-              className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              Apply Filters
-            </Button>
           </div>
         </div>
       </FilterModal>
 
       {/* Application Confirmation Modal - Redesigned */}
       <ApplicationConfirmationModal>
-        <div className="max-w-lg mx-auto p-6">
-          {/* Header Section */}
+        <div className="max-w-lg mx-auto p-6 max-h-[60vh] overflow-auto">
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
               <Clipboard className="w-8 h-8 text-blue-600" />
@@ -938,6 +941,7 @@ export default function SearchPage() {
             {showCoverLetterInput && (
               <div className="space-y-3">
                 <Textarea
+                  ref={textarea_ref}
                   placeholder="Dear Hiring Manager,
 
 I am excited to apply for this position because...
@@ -951,16 +955,6 @@ Best regards,
                   <span className="text-gray-500 flex items-center gap-1">
                     💡 <span>Mention specific skills and enthusiasm</span>
                   </span>
-                  <span
-                    className={cn(
-                      "font-medium",
-                      coverLetter.length > 450
-                        ? "text-red-500"
-                        : "text-gray-500"
-                    )}
-                  >
-                    {coverLetter.length}/500
-                  </span>
                 </div>
               </div>
             )}
@@ -972,7 +966,6 @@ Best regards,
               variant="outline"
               onClick={() => {
                 close_application_confirmation_modal();
-                setCoverLetter("");
                 setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
@@ -983,7 +976,6 @@ Best regards,
               onClick={() => {
                 close_application_confirmation_modal();
                 handleDirectApplication();
-                setCoverLetter("");
                 setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
@@ -999,43 +991,24 @@ Best regards,
 
       {/* Profile Preview Modal */}
       <ProfilePreviewModal>
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900">
-              Your Profile Preview
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                close_profile_preview_modal();
-                open_application_confirmation_modal();
-              }}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
-            >
-              <X className="h-4 w-4 text-gray-500" />
-            </Button>
-          </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            close_profile_preview_modal();
+            open_application_confirmation_modal();
+          }}
+          className="h-8 w-8 p-0 ml-4 hover:bg-gray-100 rounded-full"
+        >
+          <ArrowLeft className="h-4 w-4 text-gray-500" />
+        </Button>
 
-          {profile && (
-            <ApplicantModalContent
-              applicant={profile as any}
-              open_resume_modal={() => {}} // Optional: Add resume preview functionality
-            />
-          )}
-
-          <div className="mt-6">
-            <Button
-              onClick={() => {
-                close_profile_preview_modal();
-                open_application_confirmation_modal();
-              }}
-              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
-            >
-              Back to Application
-            </Button>
-          </div>
-        </div>
+        {profile && (
+          <ApplicantModalContent
+            applicant={profile as any}
+            open_resume_modal={() => {}} // Optional: Add resume preview functionality
+          />
+        )}
       </ProfilePreviewModal>
 
       {/* Incomplete Profile Modal */}
@@ -1196,18 +1169,6 @@ Best regards,
                   );
                 })}
               </div>
-            </div>
-          </div>
-
-          {/* Fixed Action Button - Always Visible */}
-          <div className="flex-shrink-0 p-6 pt-0 border-t border-gray-100 bg-white">
-            <div className="flex justify-center">
-              <Button
-                onClick={() => close_maintenance_modal()}
-                className="px-8 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-              >
-                Got it, thanks!
-              </Button>
             </div>
           </div>
         </div>

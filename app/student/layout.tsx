@@ -6,6 +6,7 @@ import Header from "@/components/features/student/header";
 import { AppContextProvider } from "@/lib/ctx-app";
 import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
+import { PostHogProvider } from "../posthog-provider";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -27,7 +28,9 @@ export const RootLayout = ({
       <AuthContextProvider>
         <RefsContextProvider>
           <MoaContextProvider>
-            <HTMLContent>{children}</HTMLContent>
+            <PostHogProvider>
+              <HTMLContent>{children}</HTMLContent>
+            </PostHogProvider>
           </MoaContextProvider>
         </RefsContextProvider>
       </AuthContextProvider>

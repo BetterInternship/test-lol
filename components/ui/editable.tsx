@@ -1,19 +1,20 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-06-21 17:05:01
+ * @ Modified time: 2025-06-29 17:50:47
  * @ Description:
  *
  * Editable utils for forms and stuff
  */
 
 import { Input } from "./input";
-import React from "react";
+import React, { Children } from "react";
 import { GroupableRadioDropdown } from "./dropdown";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type Value = string | null | undefined;
 
@@ -44,10 +45,10 @@ export const EditableInput = ({
       placeholder={placeholder}
       maxLength={maxLength}
       className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm relative z-10 pointer-events-auto"
-      style={{ position: 'relative', zIndex: 10 }}
+      style={{ position: "relative", zIndex: 10 }}
     />
   ) : (
-    React.Children.map(children, (child) => {
+    Children.map(children, (child) => {
       if (React.isValidElement(child))
         return React.cloneElement(child, { value });
       return <></>;
@@ -83,7 +84,7 @@ export const EditableGroupableRadioDropdown = ({
       on_change={setter}
     ></GroupableRadioDropdown>
   ) : (
-    React.Children.map(children, (child) => {
+    Children.map(children, (child) => {
       if (React.isValidElement(child))
         return React.cloneElement(child, { value });
       return <></>;
@@ -123,7 +124,7 @@ export const EditableCheckbox = ({
       {
         <span className="inline-flex items-center gap-2 text-green-700">
           {
-            (React.Children.map(children, (child) => {
+            (Children.map(children, (child) => {
               if (React.isValidElement(child))
                 return React.cloneElement(child, { value: value?.toString() });
               return <></>;
@@ -160,7 +161,7 @@ export const EditableDatePicker = ({
       {
         <span className="inline-flex items-center gap-2 text-green-700">
           {
-            (React.Children.map(children, (child) => {
+            (Children.map(children, (child) => {
               if (React.isValidElement(child))
                 return React.cloneElement(child, {
                   value: value?.toLocaleDateString() ?? "",
