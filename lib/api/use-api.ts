@@ -452,10 +452,11 @@ export function useApplications() {
     }
   }, []);
 
-  const apply = async (job_id: string) => {
+  const apply = async (job_id: string, cover_letter: string) => {
     try {
       const response = await application_service.create_application({
         job_id,
+        cover_letter,
       });
 
       if (response.application) {

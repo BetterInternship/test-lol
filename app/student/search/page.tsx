@@ -261,7 +261,7 @@ export default function SearchPage() {
     if (!selectedJob) return;
 
     try {
-      const { success } = await apply(selectedJob.id ?? "");
+      const { success } = await apply(selectedJob.id ?? "", coverLetter);
       if (success) open_success_modal();
       else alert("Could not apply to job.");
     } catch (error) {
@@ -834,7 +834,7 @@ export default function SearchPage() {
           </DropdownGroup>
 
           <div className="flex gap-3 pt-6 pb-8">
-             <Button
+            <Button
               onClick={() => close_filter_modal()}
               className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             >
@@ -853,7 +853,6 @@ export default function SearchPage() {
             >
               Clear Filters
             </Button>
-           
           </div>
         </div>
       </FilterModal>
