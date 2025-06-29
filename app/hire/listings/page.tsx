@@ -514,15 +514,19 @@ const CreateModalForm = ({
                   </>
                 )}
               </DropdownGroup>
-              
+
               <div className="space-y-3">
                 <Label className="text-sm font-medium text-gray-700">
                   Mark as Unlisted
                 </Label>
                 <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Unlisted Job</p>
-                    <p className="text-xs text-gray-500">Only visible to applicants with the link</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      Unlisted Job
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Only visible to applicants with the link
+                    </p>
                   </div>
                   <Checkbox
                     checked={form_data.is_unlisted ?? false}
@@ -549,7 +553,7 @@ const CreateModalForm = ({
                     <span className="text-sm font-medium">Year Round</span>
                   </div>
                   {!form_data.is_year_round && (
-                    <div className="flex gap-4">
+                    <div className="flex flex-col gap-4">
                       <div className="flex-1">
                         <label className="text-xs font-medium text-gray-600 mb-1 block">
                           Start Date
