@@ -678,44 +678,6 @@ export const EditableJobDetails = ({
                 </div>
               )}
             </div>
-            {!form_data.is_year_round && (
-              <>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    Start Date
-                  </label>
-                  <EditableDatePicker
-                    is_editing={is_editing}
-                    value={
-                      form_data.start_date
-                        ? new Date(form_data.start_date)
-                        : new Date()
-                    }
-                    // @ts-ignore
-                    setter={field_setter("start_date")}
-                  >
-                    <JobPropertyLabel />
-                  </EditableDatePicker>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700 mb-1 block">
-                    End Date
-                  </label>
-                  <EditableDatePicker
-                    is_editing={is_editing}
-                    value={
-                      form_data.end_date
-                        ? new Date(form_data.end_date)
-                        : new Date()
-                    }
-                    // @ts-ignore
-                    setter={field_setter("end_date")}
-                  >
-                    <JobPropertyLabel />
-                  </EditableDatePicker>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>
