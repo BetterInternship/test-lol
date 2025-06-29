@@ -402,7 +402,7 @@ export default function Dashboard() {
                         <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
                           <div className="flex items-center justify-center gap-2">
                             <Notebook className="h-4 w-4 text-gray-400" />
-                            <span>Review</span>
+                            <span>Private Notes</span>
                           </div>
                         </th>
                         <th className="text-center px-6 py-4 font-semibold text-gray-700 w-[120px]">
@@ -692,7 +692,7 @@ const ReviewModalContent = ({
     <>
       <div className="flex flex-col items-center justify-center">
         <h1 className="font-bold font-heading text-4xl px-8 pb-4">
-          {get_full_name(application.user)} - Review
+          {get_full_name(application.user)} - Private Notes
         </h1>
       </div>
       <div className="flex flex-col items-center justify-center">
