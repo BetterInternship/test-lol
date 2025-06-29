@@ -54,6 +54,7 @@ import {
   getMaintenanceSubMessage,
   getAvailableActions,
 } from "@/lib/config/application-config";
+import { user_service } from "@/lib/api/api";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -1027,6 +1028,10 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
+            resume_fetcher={user_service.get_my_resume_url}
+            pfp_fetcher={user_service.get_my_pfp_url}
+            resume_route="/users/me/resume"
+            pfp_route="/users/me/pic"
             open_resume_modal={() => {}} // Optional: Add resume preview functionality
           />
         )}
