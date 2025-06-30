@@ -305,8 +305,10 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                <Label className="block mb-2">Website</Label>
+              <div className="w-full">
+                <Label className="block mb-2">
+                  Website <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.website}
                   onChange={(e) => handle_change("website", e.target.value)}
