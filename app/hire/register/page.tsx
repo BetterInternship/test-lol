@@ -221,7 +221,7 @@ export default function RegisterPage() {
                   onChange={(e) =>
                     handle_change("legal_entity_name", e.target.value)
                   }
-                  placeholder="e.g. LeapFroggr"
+                  placeholder="e.g. Google inc."
                   maxLength={100}
                   className={fieldErrors.legal_entity_name ? "border-red-500" : ""}
                   disabled={loading}
