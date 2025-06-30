@@ -47,7 +47,7 @@ export default function LoginPage() {
 
     if (!validateDLSUEmail(email)) {
       setError(
-        "Please use your DLSU email address (@dlsu.edu.ph, @students.dlsu.edu.ph, etc.)"
+        "We're currently not accepting non-DLSU students, but we're open to partnering with your school if you can serve as our campus ambassador to help us gather the necessary data and paperwork. Contact us at hello@betterinternship.com."
       );
       return;
     }
