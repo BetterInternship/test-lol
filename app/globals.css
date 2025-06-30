@@ -243,18 +243,6 @@
     @apply bg-blue-100 text-blue-800;
   }
 
-  /* Enhanced job card styles */
-  .job-card {
-    @apply card p-6 hover:shadow-lg cursor-pointer;
-    @apply border-l-4 border-l-transparent hover:border-l-primary;
-    @apply transform hover:-translate-y-0.5 transition-all duration-200;
-  }
-
-  .job-card.selected {
-    @apply border-primary bg-primary/5 shadow-md;
-    @apply border-l-primary;
-  }
-
   /* Dashboard and application specific styles */
   .sidebar-nav {
     @apply space-y-1;

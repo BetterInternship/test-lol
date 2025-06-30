@@ -39,7 +39,15 @@ import {
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
-import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
+import {
+  EmployerMOA,
+  JobCard,
+  JobDetails,
+  JobMode,
+  JobSalary,
+  JobType,
+  MobileJobCard,
+} from "@/components/shared/jobs";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -136,13 +144,7 @@ export default function SearchPage() {
     fetcher: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
-  const {
-    industries,
-    job_categories,
-    to_job_mode_name,
-    to_job_type_name,
-    to_job_pay_freq_name,
-  } = useRefs();
+  const { industries, universities, job_categories } = useRefs();
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
@@ -513,35 +515,45 @@ export default function SearchPage() {
       <JobModal>
         <div className="h-full flex flex-col bg-white overflow-hidden">
           {/* Fixed Header with Close Button */}
-          <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
-            <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
+          <div className="flex flex-col justify-start items-start p-4 border-b bg-white flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => close_job_modal()}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+              className="h-8 w-8 p-0 ml-[-8px] mb-2 hover:bg-gray-100 rounded-full"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <ArrowLeft className="h-5 w-5 text-gray-500" />
             </Button>
-          </div>
-
-          {/* Fixed Job Header - Non-scrollable */}
-          {selectedJob && (
-            <div className="p-4 bg-white flex-shrink-0 border-b">
-              <h1 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                {selectedJob.title}
-              </h1>
-              <div className="flex items-center gap-2 text-gray-600 mb-1">
-                <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">
-                  {selectedJob.employer?.name}
-                </span>
+            {/* Fixed Job Header - Non-scrollable */}
+            {selectedJob && (
+              <div className=" bg-white flex-shrink-0">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">
+                  {selectedJob.title}
+                </h1>
+                <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <Building className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate text-sm">
+                    {selectedJob.employer?.name}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">
+                  Listed on {formatDate(selectedJob.created_at ?? "")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <EmployerMOA
+                    employer_id={selectedJob.employer?.id}
+                    university_id={universities[0]?.id}
+                  />
+                  <JobType type={selectedJob.type} />
+                  <JobSalary
+                    salary={selectedJob.salary}
+                    salary_freq={selectedJob.salary_freq}
+                  />
+                  <JobMode mode={selectedJob.mode} />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                Listed on {formatDate(selectedJob.created_at ?? "")}
-              </p>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Scrollable Content Area - MUST be properly configured */}
           <div
@@ -550,74 +562,6 @@ export default function SearchPage() {
           >
             {selectedJob && (
               <div className="p-4">
-                {/* Mobile Job Details Grid */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">
-                    Job Details
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Location:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {selectedJob.location || "Not specified"}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <Monitor className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Mode:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {to_job_mode_name(selectedJob.mode)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <PhilippinePeso className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Salary:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {!selectedJob.allowance && selectedJob.salary
-                              ? `${selectedJob.salary}/${to_job_pay_freq_name(
-                                  selectedJob.salary_freq
-                                )}`
-                              : "None"}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <Clock className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Work Schedule:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {to_job_type_name(selectedJob.type)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Job Description */}
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">

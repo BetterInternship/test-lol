@@ -109,7 +109,7 @@ export default function MyListings() {
               </div>
 
               {/* Job Cards - Scrollable */}
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r pt-4">
+              <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r pt-4 pl-2">
                 {filteredJobs.map((job) => (
                   <EmployerJobCard
                     key={job.id}
@@ -348,8 +348,6 @@ const CreateModalForm = ({
       end_date: form_data.end_date,
       is_year_round: form_data.is_year_round,
     };
-
-    console.log(form_data.start_date, form_data.end_date);
 
     set_creating(true);
     try {
