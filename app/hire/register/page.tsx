@@ -89,7 +89,7 @@ export default function RegisterPage() {
       setLoading(false);
     } else {
       alert(
-        "Could not register, please check console for error (will fix later)."
+        "Could not register, check all your inputs are correct and complete."
       );
       setLoading(false);
     }

@@ -141,7 +141,7 @@ export default function SearchPage() {
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
   const { client_width, client_height } = useClientDimensions();
-  
+
   // Resume URL management for profile preview
   const { url: resume_url, sync: sync_resume_url } = useFile({
     fetcher: user_service.get_my_resume_url,
@@ -235,13 +235,6 @@ export default function SearchPage() {
 
   const handleApply = () => {
     console.log("handleApply called");
-
-    // Check maintenance mode first, passing user email for bypass check
-    if (!areApplicationsEnabled(user?.email)) {
-      console.log("Applications disabled - showing maintenance modal");
-      open_maintenance_modal();
-      return;
-    }
 
     if (!is_authenticated()) {
       console.log("Not authenticated, redirecting to login");
