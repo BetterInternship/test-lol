@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 export default function RegisterPage() {
   const { register } = useAuthContext();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [form_data, setFormData] = useState({
     doing_business_as: "",
     legal_entity_name: "",
@@ -64,30 +65,36 @@ export default function RegisterPage() {
       // Moa instances, in this case DLSU only for now
       ...(form_data.has_moa_with_dlsu
         ? {
-            moa: [
+            moa: JSON.stringify([
               {
                 // ! change when unis update
                 university_id: universities.map((u) => u.id)[0],
                 start_date: form_data.moa_start_date,
                 expires_at: form_data.moa_expires_at,
               },
-            ],
+            ]),
           }
         : {}),
     });
     // multipart_form.add_file("logo", ogoFile);
     // console.log("Form data:", multipart_form.build());
+
+    setLoading(true);
     // @ts-ignore
     const response = await register(multipart_form.build());
     // @ts-ignore
-    if (response.success) {
+    if (response && response.success) {
       alert("Email has been sent with password!");
       router.push("/login");
+      setLoading(false);
     } else {
       alert(
         "Could not register, please check console for error (will fix later)."
       );
+      setLoading(false);
     }
+
+    setLoading(false);
   };
 
   return (
@@ -135,10 +142,7 @@ export default function RegisterPage() {
                 <DropdownGroup>
                   <GroupableRadioDropdown
                     name="industry"
-                    options={[
-                      "All industries",
-                      ...industries.map((industry) => industry.name),
-                    ]}
+                    options={[...industries.map((industry) => industry.name)]}
                     on_change={(selected_name) => {
                       const selected_industry = industries.find(
                         (industry) => industry.name === selected_name
@@ -190,6 +194,13 @@ export default function RegisterPage() {
             <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
               Contact Information
             </h3>
+
+            <div className="w-max-prose text-sm text-gray-700 border border-gray-200 p-4 rounded-sm">
+              <span className="text-yellow-400">*</span>
+              An admin account will be created for the person as soon as
+              registration is finished. Their email will be sent a password
+              after completing this form.{" "}
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -317,14 +328,6 @@ export default function RegisterPage() {
                     setter={(value) => handle_change("moa_expires_at", value)}
                   ></EditableDatePicker>{" "}
                 </div>
-                <div className="text-center">
-                  <Label className="block mb-4">
-                    MOA Files/Contract Files (optional)
-                  </Label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 max-w-md mx-auto">
-                    <p className="text-gray-600">Upload Here</p>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -370,10 +373,11 @@ export default function RegisterPage() {
             <div className="flex justify-center pt-3 pb-10">
               <Button
                 type="button"
+                disabled={loading}
                 className="w-full max-w-md h-12 bg-black hover:bg-gray-800 text-white"
                 onClick={() => handle_submit()}
               >
-                Register
+                {!loading ? "Register" : "Registering..."}
               </Button>
             </div>
           </div>
