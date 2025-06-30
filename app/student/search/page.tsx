@@ -55,6 +55,8 @@ import {
   getAvailableActions,
 } from "@/lib/config/application-config";
 import { user_service } from "@/lib/api/api";
+import { useFile } from "@/hooks/use-file";
+import { useClientDimensions } from "@/hooks/use-dimensions";
 
 // Utility function to format dates
 const formatDate = (dateString: string) => {
@@ -130,9 +132,21 @@ export default function SearchPage() {
     close: close_maintenance_modal,
     Modal: MaintenanceModal,
   } = useModal("maintenance-modal");
+  const {
+    open: open_resume_modal,
+    close: close_resume_modal,
+    Modal: ResumeModal,
+  } = useModal("resume-modal");
 
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
+  const { client_width, client_height } = useClientDimensions();
+
+  // Resume URL management for profile preview
+  const { url: resume_url, sync: sync_resume_url } = useFile({
+    fetcher: user_service.get_my_resume_url,
+    route: "/users/me/resume",
+  });
   const {
     industries,
     job_categories,
@@ -221,13 +235,6 @@ export default function SearchPage() {
 
   const handleApply = () => {
     console.log("handleApply called");
-
-    // Check maintenance mode first, passing user email for bypass check
-    if (!areApplicationsEnabled(user?.email)) {
-      console.log("Applications disabled - showing maintenance modal");
-      open_maintenance_modal();
-      return;
-    }
 
     if (!is_authenticated()) {
       console.log("Not authenticated, redirecting to login");
@@ -1032,10 +1039,39 @@ Best regards,
             pfp_fetcher={user_service.get_my_pfp_url}
             resume_route="/users/me/resume"
             pfp_route="/users/me/pic"
-            open_resume_modal={() => {}} // Optional: Add resume preview functionality
+            open_resume_modal={async () => {
+              close_profile_preview_modal();
+              await sync_resume_url();
+              open_resume_modal();
+            }}
           />
         )}
       </ProfilePreviewModal>
+
+      {/* Resume Modal */}
+      {resume_url.length > 0 && (
+        <ResumeModal>
+          <div className="space-y-4">
+            <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
+            <div className="px-6 pb-6">
+              <iframe
+                allowTransparency={true}
+                className="w-full border border-gray-200 rounded-lg"
+                style={{
+                  width: "100%",
+                  height: client_height * 0.75,
+                  minHeight: "600px",
+                  maxHeight: "800px",
+                  background: "#FFFFFF",
+                }}
+                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
+              >
+                Resume could not be loaded.
+              </iframe>
+            </div>
+          </div>
+        </ResumeModal>
+      )}
 
       {/* Incomplete Profile Modal */}
       <IncompleteProfileModal>
