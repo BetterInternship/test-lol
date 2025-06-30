@@ -47,13 +47,6 @@ import {
   user_can_apply,
   get_missing_profile_fields,
 } from "@/lib/utils/user-utils";
-import {
-  areApplicationsEnabled,
-  getMaintenanceTitle,
-  getMaintenanceMessage,
-  getMaintenanceSubMessage,
-  getAvailableActions,
-} from "@/lib/config/application-config";
 import { user_service } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
@@ -127,11 +120,7 @@ export default function SearchPage() {
     close: close_incomplete_profile_modal,
     Modal: IncompleteProfileModal,
   } = useModal("incomplete-profile-modal");
-  const {
-    open: open_maintenance_modal,
-    close: close_maintenance_modal,
-    Modal: MaintenanceModal,
-  } = useModal("maintenance-modal");
+
   const {
     open: open_resume_modal,
     close: close_resume_modal,
@@ -360,7 +349,7 @@ export default function SearchPage() {
                   </div>
                   <Button
                     onClick={() => open_filter_modal()}
-                    className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+                    className="h-12 w-12 flex-shrink-0 bg-primary rounded-xl shadow-sm"
                     size="icon"
                   >
                     <Filter className="h-4 w-4" />
@@ -419,7 +408,7 @@ export default function SearchPage() {
                     </div>
                     <Button
                       onClick={() => open_filter_modal()}
-                      className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
+                      className="h-12 w-12 flex-shrink-0 bg-primary rounded-xl shadow-sm"
                       size="icon"
                     >
                       <Filter className="h-4 w-4" />
@@ -465,8 +454,8 @@ export default function SearchPage() {
                       onClick={handleApply}
                       className={cn(
                         appliedJob(selectedJob.id ?? "")
-                          ? "bg-green-600 text-white"
-                          : "bg-blue-600 hover:bg-blue-700"
+                          ? "bg-supportive text-white"
+                          : "bg-primary "
                       )}
                     >
                       {appliedJob(selectedJob.id ?? "") && (
@@ -666,8 +655,8 @@ export default function SearchPage() {
                 className={cn(
                   "flex-1 h-14 font-bold rounded-2xl transition-all duration-300 shadow-lg text-base",
                   appliedJob(selectedJob?.id ?? "")
-                    ? "bg-green-600 hover:bg-green-700 text-white shadow-green-200"
-                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:shadow-xl active:scale-95"
+                    ? "bg-supportive text-white shadow-green-200"
+                    : "bg-primary  text-white shadow-blue-200 hover:shadow-xl active:scale-95"
                 )}
               >
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
@@ -791,12 +780,12 @@ export default function SearchPage() {
             </motion.p>
 
             <motion.div
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+              className="bg-accent border border-gray-300 rounded-lg p-4 mb-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.4 }}
             >
-              <p className="text-sm text-blue-800 max-w-prose">
+              <p className="text-sm max-w-prose">
                 💼 Check <span className="font-semibold">My Applications</span>{" "}
                 to keep track of all your submissions and updates.
               </p>
@@ -811,7 +800,7 @@ export default function SearchPage() {
             transition={{ delay: 0.7, duration: 0.4 }}
           >
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+              className="w-full bg-primary  text-white py-3 rounded-lg font-medium transition-colors"
               onClick={() => {
                 close_success_modal();
                 router.push("/applications");
@@ -862,7 +851,7 @@ export default function SearchPage() {
           <div className="flex gap-3 pt-6 pb-8">
             <Button
               onClick={() => close_filter_modal()}
-              className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-[2] h-12 bg-primary  text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Apply Filters
             </Button>
@@ -1007,7 +996,7 @@ Best regards,
                 handleDirectApplication();
                 setShowCoverLetterInput(false);
               }}
-              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-1 h-12 bg-gradient-to-r bg-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4" />
@@ -1145,96 +1134,6 @@ Best regards,
           })()}
         </div>
       </IncompleteProfileModal>
-
-      {/* Maintenance Mode Modal */}
-      <MaintenanceModal>
-        <div className="flex flex-col h-full max-h-[85vh]">
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <div className="w-8 h-8 text-blue-600">
-                  <svg
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                {getMaintenanceTitle()}
-              </h2>
-              <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                {getMaintenanceMessage()}
-              </p>
-            </div>
-
-            {/* Actions List */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                {getMaintenanceSubMessage()}
-              </h3>
-
-              <div className="space-y-3">
-                {getAvailableActions().map((action, index) => {
-                  const getIcon = (iconName: string) => {
-                    switch (iconName) {
-                      case "heart":
-                        return <Heart className="w-5 h-5" />;
-                      case "user":
-                        return <User className="w-5 h-5" />;
-                      case "search":
-                        return <Search className="w-5 h-5" />;
-                      case "calendar":
-                        return (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                        );
-                      default:
-                        return (
-                          <div className="w-5 h-5 bg-blue-500 rounded-full" />
-                        );
-                    }
-                  };
-
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                        {getIcon(action.icon)}
-                      </div>
-                      <span className="text-gray-700 font-medium">
-                        {action.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </MaintenanceModal>
     </>
   );
 }
