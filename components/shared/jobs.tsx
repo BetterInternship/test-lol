@@ -7,7 +7,6 @@ import {
   MapPin,
   Monitor,
   Clock,
-  Globe,
   Lock,
   EyeOff,
   CheckCircle,
@@ -94,25 +93,21 @@ export const JobCard = ({
 
         <div className="flex flex-wrap gap-2">
           {check(job.employer?.id ?? "", universities[0]?.id) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+            <Badge type="supportive">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
-            </span>
+            </Badge>
           )}
           {ref_is_not_null(job.type) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
-              {to_job_type_name(job.type)}
-            </span>
+            <Badge>{to_job_type_name(job.type)}</Badge>
           )}
           {job.salary && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+            <Badge>
               ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
-            </span>
+            </Badge>
           )}
           {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
-            </span>
+            <Badge>{to_job_mode_name(job.mode)}</Badge>
           )}
         </div>
       </div>
@@ -211,37 +206,27 @@ export const EmployerJobCard = ({
 
         <div className="flex flex-wrap gap-2">
           {check(job.employer?.id ?? "", universities[0]?.id) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+            <Badge type="supportive">
               <CheckCircle className="w-3 h-3 mr-1" />
               DLSU MOA
-            </span>
+            </Badge>
           )}
           {job.is_unlisted && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium border border-orange-200">
+            <Badge type="warning">
               <EyeOff className="w-3 h-3 mr-1" />
               Unlisted
-            </span>
+            </Badge>
           )}
           {ref_is_not_null(job.type) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
-              {to_job_type_name(job.type)}
-            </span>
+            <Badge>{to_job_type_name(job.type)}</Badge>
           )}
           {job.salary && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
+            <Badge>
               ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
-            </span>
+            </Badge>
           )}
           {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
-            </span>
-          )}
-          {!job.is_active && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium border border-gray-200">
-              <Lock className="w-3 h-3 mr-1" />
-              Inactive
-            </span>
+            <Badge>{to_job_mode_name(job.mode)}</Badge>
           )}
         </div>
       </div>
@@ -304,35 +289,21 @@ export const MobileJobCard = ({
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
         {check(job.employer?.id ?? "", universities[0]?.id) && (
-          <Badge
-            variant="outline"
-            className="text-xs border-green-200 bg-green-50 text-green-700"
-          >
+          <Badge type="supportive">
             <CheckCircle className="w-3 h-3 mr-1" />
             DLSU MOA
           </Badge>
         )}
         {ref_is_not_null(job.type) && (
-          <Badge
-            variant="outline"
-            className="text-xs border-purple-200 bg-purple-50 text-purple-700"
-          >
-            {to_job_type_name(job.type)}
-          </Badge>
+          <Badge>{to_job_type_name(job.type)}</Badge>
         )}
         {job.salary && (
-          <Badge
-            variant="outline"
-            className="text-xs border-green-200 bg-green-50 text-green-700"
-          >
+          <Badge>
             ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
           </Badge>
         )}
         {ref_is_not_null(job.mode) && (
-          <Badge
-            variant="outline"
-            className="text-xs border-blue-200 bg-blue-50 text-blue-700"
-          >
+          <Badge>
             <JobModeIcon mode={job.mode} />
             {to_job_mode_name(job.mode)}
           </Badge>

@@ -10,7 +10,6 @@ import Link from "next/link";
 import {
   BookA,
   Calendar,
-  Clock,
   Clipboard,
   CheckCircle,
   Building,
@@ -140,7 +139,7 @@ export default function ApplicationsPage() {
                             <h3 className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight">
                               {application.job?.title}
                             </h3>
-                            <Badge className="bg-gray-500">
+                            <Badge type="accent">
                               {to_app_status_name(application.status)}
                             </Badge>
                           </div>
@@ -171,47 +170,32 @@ export default function ApplicationsPage() {
                       application.job?.employer?.id ?? "",
                       universities[0]?.id
                     ) && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center px-2 sm:px-3 py-1 bg-green-50 border-green-200 text-green-700"
-                      >
+                      <Badge type="supportive">
                         <CheckCircle className="w-3 h-3 mr-1" />
                         DLSU MOA
                       </Badge>
                     )}
                     {(application.job?.type || application.job?.type === 0) && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center px-2 sm:px-3 py-1"
-                      >
+                      <Badge>
                         <JobTypeIcon type={application.job.type} />
                         {to_job_type_name(application.job.type)}
                       </Badge>
                     )}
                     {(application.job?.mode || application.job?.mode === 0) && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center px-2 sm:px-3 py-1"
-                      >
+                      <Badge>
                         <JobModeIcon mode={application.job.mode} />
                         {to_job_mode_name(application.job.mode)}
                       </Badge>
                     )}
                     {(application.job?.allowance ||
                       application.job?.allowance === 0) && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center px-2 sm:px-3 py-1"
-                      >
+                      <Badge>
                         <Clipboard className="w-3 h-3 mr-1" />
                         {to_job_allowance_name(application.job?.allowance)}
                       </Badge>
                     )}
                     {application.job?.salary && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex items-center px-2 sm:px-3 py-1"
-                      >
+                      <Badge>
                         <SalaryIcon />
                         {application.job.salary}
                         {application.job.salary_freq &&

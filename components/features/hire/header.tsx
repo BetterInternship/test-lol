@@ -12,7 +12,6 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
 import { get_full_name } from "@/lib/utils/user-utils";
-import { Badge } from "@/components/ui/badge";
 
 /**
  * The header present on every page

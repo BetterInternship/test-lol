@@ -72,11 +72,7 @@ export default function SavedJobsPage() {
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Saved Jobs
               </h1>
-              {!loading && (
-                <Badge variant="outline" className="ml-2 text-sm px-3 py-1">
-                  {saved_jobs.length} saved
-                </Badge>
-              )}
+              {!loading && <Badge>{saved_jobs.length} saved</Badge>}
             </div>
 
             {loading ? (
@@ -133,33 +129,13 @@ export default function SavedJobsPage() {
                               {savedJob.employer?.name}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 text-sm text-gray-500 mb-3 sm:mb-4">
-                            <MapPin className="w-4 h-4 flex-shrink-0" />
-                            <span>{savedJob.employer?.location}</span>
-                          </div>
+                          {savedJob.employer?.location && (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-3 sm:mb-4">
+                              <MapPin className="w-4 h-4 flex-shrink-0" />
+                              <span>{savedJob.employer?.location}</span>
+                            </div>
+                          )}
                         </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2 mb-3 sm:mb-4">
-                        {savedJob.mode && (
-                          <Badge
-                            variant="outline"
-                            className="px-2 sm:px-3 py-1 text-xs"
-                          >
-                            <Briefcase className="w-3 h-3 mr-1" />
-                            {savedJob.mode}
-                          </Badge>
-                        )}
-                        {savedJob.salary && (
-                          <Badge
-                            variant="outline"
-                            className="px-2 sm:px-3 py-1 text-xs"
-                          >
-                            <PhilippinePeso className="w-3 h-3 mr-1" />
-                            {savedJob.salary}/
-                            {to_job_pay_freq_name(savedJob.salary_freq)}
-                          </Badge>
-                        )}
                       </div>
 
                       <p className="text-gray-700 text-sm leading-relaxed line-clamp-2 mb-4">

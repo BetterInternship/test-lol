@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn, formatDate } from "@/lib/utils";
 import { CheckCircle, XCircle } from "lucide-react";
 import { get_full_name } from "@/lib/utils/user-utils";
+import { BooleanCheckIcon } from "@/components/ui/icons";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -79,16 +80,8 @@ export default function GodLandingPage() {
                       : "Unverify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
-                  <Badge
-                    className={cn(
-                      e.is_verified ? "bg-green-500" : "bg-gray-400"
-                    )}
-                  >
-                    {e.is_verified ? (
-                      <CheckCircle className="w-3 h-3 mr-1"></CheckCircle>
-                    ) : (
-                      <XCircle className="w-3 h-3 mr-1"></XCircle>
-                    )}
+                  <Badge type={e.is_verified ? "supportive" : "destructive"}>
+                    <BooleanCheckIcon checked={e.is_verified} />
                     {e.is_verified ? "verified" : "unverified"}
                   </Badge>
                 </div>
@@ -135,16 +128,8 @@ export default function GodLandingPage() {
                     {loading && e.id === selected ? "Verifying..." : "Verify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
-                  <Badge
-                    className={cn(
-                      e.is_verified ? "bg-green-500" : "bg-gray-400"
-                    )}
-                  >
-                    {e.is_verified ? (
-                      <CheckCircle className="w-3 h-3 mr-1"></CheckCircle>
-                    ) : (
-                      <XCircle className="w-3 h-3 mr-1"></XCircle>
-                    )}
+                  <Badge type={e.is_verified ? "supportive" : "destructive"}>
+                    <BooleanCheckIcon checked={e.is_verified} />
                     {e.is_verified ? "verified" : "unverified"}
                   </Badge>
                 </div>
@@ -179,24 +164,14 @@ export default function GodLandingPage() {
                 >
                   <div className="text-gray-700 w-full">
                     {get_full_name(u)}{" "}
-                    <Badge className="opacity-65 bg-gray-400 pointer-events-none">
-                      {u.email}
-                    </Badge>
+                    <Badge strength="medium">{u.email}</Badge>
                   </div>
-                  <Badge
-                    className={cn(
-                      u.is_verified ? "bg-green-500" : "bg-gray-400"
-                    )}
-                  >
-                    {u.is_verified ? (
-                      <CheckCircle className="w-3 h-3 mr-1"></CheckCircle>
-                    ) : (
-                      <XCircle className="w-3 h-3 mr-1"></XCircle>
-                    )}
+                  <Badge type={u.is_verified ? "supportive" : "destructive"}>
+                    <BooleanCheckIcon checked={u.is_verified} />
                     {u.is_verified ? "verified" : "unverified"}
                   </Badge>
 
-                  <Badge className="w-48 justify-center opacity-65">
+                  <Badge strength="medium">
                     {formatDate(u.created_at ?? "")}
                   </Badge>
                 </div>
