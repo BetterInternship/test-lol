@@ -44,37 +44,54 @@ export default function RegisterPage() {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // Simple validation functions
-  const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  const isValidPhone = (phone: string) => /^09\d{9}$/.test(phone.replace(/\D/g, ""));
+  const isValidEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isValidPhone = (phone: string) =>
+    /^09\d{9}$/.test(phone.replace(/\D/g, ""));
   const isValidUrl = (url: string) => {
     if (!url.trim()) return true; // Optional field
-    try { new URL(url); return true; } catch { return false; }
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   // Get validation errors for display
   const getValidationErrors = () => {
     const errors = [];
-    
+
     if (!form_data.doing_business_as?.trim()) errors.push("Company name (DBA)");
     if (!form_data.legal_entity_name?.trim()) errors.push("Legal entity name");
-    if (!form_data.industry || form_data.industry === "Not Selected") errors.push("Industry");
+    if (!form_data.industry || form_data.industry === "Not Selected")
+      errors.push("Industry");
     if (!form_data.office_location?.trim()) errors.push("Office location");
-    if (!form_data.company_description?.trim() || form_data.company_description.trim().length < 10) {
+    if (
+      !form_data.company_description?.trim() ||
+      form_data.company_description.trim().length < 10
+    ) {
       errors.push("Company description (min 10 characters)");
     }
     if (!form_data.contact_name?.trim()) errors.push("Contact name");
-    if (!form_data.contact_phone?.trim() || !isValidPhone(form_data.contact_phone)) {
+    if (
+      !form_data.contact_phone?.trim() ||
+      !isValidPhone(form_data.contact_phone)
+    ) {
       errors.push("Valid phone number (09XXXXXXXXX)");
     }
-    if (!form_data.contact_email?.trim() || !isValidEmail(form_data.contact_email)) {
+    if (
+      !form_data.contact_email?.trim() ||
+      !isValidEmail(form_data.contact_email)
+    ) {
       errors.push("Valid email address");
     }
     if (!form_data.contact_position?.trim()) errors.push("Contact position");
-    if (form_data.website?.trim() && !isValidUrl(form_data.website)) {
+    if (!form_data.website?.trim() || !isValidUrl(form_data.website.trim())) {
       errors.push("Valid website URL");
     }
     if (!acceptTerms) errors.push("Accept terms and conditions");
-    
+
     return errors;
   };
 
@@ -85,27 +102,36 @@ export default function RegisterPage() {
       legal_entity_name: !form_data.legal_entity_name?.trim(),
       industry: !form_data.industry || form_data.industry === "Not Selected",
       office_location: !form_data.office_location?.trim(),
-      company_description: !form_data.company_description?.trim() || form_data.company_description.trim().length < 10,
+      company_description:
+        !form_data.company_description?.trim() ||
+        form_data.company_description.trim().length < 10,
       contact_name: !form_data.contact_name?.trim(),
-      contact_phone: !form_data.contact_phone?.trim() || !isValidPhone(form_data.contact_phone),
-      contact_email: !form_data.contact_email?.trim() || !isValidEmail(form_data.contact_email),
+      contact_phone:
+        !form_data.contact_phone?.trim() ||
+        !isValidPhone(form_data.contact_phone),
+      contact_email:
+        !form_data.contact_email?.trim() ||
+        !isValidEmail(form_data.contact_email),
       contact_position: !form_data.contact_position?.trim(),
       website: form_data.website?.trim() && !isValidUrl(form_data.website),
     };
   };
 
-  const fieldErrors = validationErrors.length > 0 ? getFieldErrors() : {
-    doing_business_as: false,
-    legal_entity_name: false,
-    industry: false,
-    office_location: false,
-    company_description: false,
-    contact_name: false,
-    contact_phone: false,
-    contact_email: false,
-    contact_position: false,
-    website: false,
-  };
+  const fieldErrors =
+    validationErrors.length > 0
+      ? getFieldErrors()
+      : {
+          doing_business_as: false,
+          legal_entity_name: false,
+          industry: false,
+          office_location: false,
+          company_description: false,
+          contact_name: false,
+          contact_phone: false,
+          contact_email: false,
+          contact_position: false,
+          website: false,
+        };
 
   const handle_change = (field: string, value: any) => {
     setFormData({ ...form_data, [field]: value });
@@ -115,7 +141,7 @@ export default function RegisterPage() {
     // Check validation on submit
     const errors = getValidationErrors();
     setValidationErrors(errors);
-    
+
     if (errors.length > 0) return;
 
     try {
@@ -184,7 +210,9 @@ export default function RegisterPage() {
               <div className="flex items-start gap-2">
                 <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h3 className="font-medium text-red-800 mb-2">Please complete the following:</h3>
+                  <h3 className="font-medium text-red-800 mb-2">
+                    Please complete the following:
+                  </h3>
                   <ul className="text-sm text-red-700 space-y-1">
                     {validationErrors.map((error, index) => (
                       <li key={index}>• {error}</li>
@@ -202,7 +230,9 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label>Doing Business As <span className="text-red-500">*</span></Label>
+                <Label>
+                  Doing Business As <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.doing_business_as}
                   onChange={(e) =>
@@ -210,12 +240,16 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. Google"
                   maxLength={100}
-                  className={fieldErrors.doing_business_as ? "border-red-500" : ""}
+                  className={
+                    fieldErrors.doing_business_as ? "border-red-500" : ""
+                  }
                   disabled={loading}
                 />
               </div>
               <div>
-                <Label>Legal Entity Name <span className="text-red-500">*</span></Label>
+                <Label>
+                  Legal Entity Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.legal_entity_name}
                   onChange={(e) =>
@@ -223,7 +257,9 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. Google inc."
                   maxLength={100}
-                  className={fieldErrors.legal_entity_name ? "border-red-500" : ""}
+                  className={
+                    fieldErrors.legal_entity_name ? "border-red-500" : ""
+                  }
                   disabled={loading}
                 />
               </div>
@@ -231,7 +267,9 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label>Industry <span className="text-red-500">*</span></Label>
+                <Label>
+                  Industry <span className="text-red-500">*</span>
+                </Label>
                 <DropdownGroup>
                   <GroupableRadioDropdown
                     name="industry"
@@ -247,7 +285,10 @@ export default function RegisterPage() {
                 </DropdownGroup>
               </div>
               <div>
-                <Label>Office's General Location <span className="text-red-500">*</span></Label>
+                <Label>
+                  Office's General Location{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.office_location}
                   onChange={(e) =>
@@ -255,7 +296,9 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. Makati, Manila"
                   maxLength={100}
-                  className={fieldErrors.office_location ? "border-red-500" : ""}
+                  className={
+                    fieldErrors.office_location ? "border-red-500" : ""
+                  }
                   disabled={loading}
                 />
               </div>
@@ -263,7 +306,10 @@ export default function RegisterPage() {
 
             <div className="flex justify-center">
               <div className="w-full max-w-md">
-                <Label className="block mb-2">Website <span className="text-gray-500 italic">(Optional)</span></Label>
+                <Label className="block mb-2">
+                  Website{" "}
+                  <span className="text-gray-500 italic">(Optional)</span>
+                </Label>
                 <Input
                   value={form_data.website}
                   onChange={(e) => handle_change("website", e.target.value)}
@@ -275,14 +321,18 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <Label>Company Description <span className="text-red-500">*</span></Label>
+              <Label>
+                Company Description <span className="text-red-500">*</span>
+              </Label>
               <Textarea
                 value={form_data.company_description}
                 onChange={(e) =>
                   handle_change("company_description", e.target.value)
                 }
                 placeholder="Write about your company..."
-                className={`min-h-[120px] ${fieldErrors.company_description ? "border-red-500" : ""}`}
+                className={`min-h-[120px] ${
+                  fieldErrors.company_description ? "border-red-500" : ""
+                }`}
                 maxLength={1000}
                 disabled={loading}
               />
@@ -307,7 +357,9 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label>Company Contact Name <span className="text-red-500">*</span></Label>
+                <Label>
+                  Company Contact Name <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.contact_name}
                   onChange={(e) =>
@@ -320,7 +372,9 @@ export default function RegisterPage() {
                 />
               </div>
               <div>
-                <Label>Contact's Phone Number <span className="text-red-500">*</span></Label>
+                <Label>
+                  Contact's Phone Number <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.contact_phone}
                   onChange={(e) =>
@@ -336,7 +390,9 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label>Contact's Email <span className="text-red-500">*</span></Label>
+                <Label>
+                  Contact's Email <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.contact_email}
                   onChange={(e) =>
@@ -349,7 +405,9 @@ export default function RegisterPage() {
                 />
               </div>
               <div>
-                <Label>Contact's Position <span className="text-red-500">*</span></Label>
+                <Label>
+                  Contact's Position <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   value={form_data.contact_position}
                   onChange={(e) =>
@@ -357,7 +415,9 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. CTO/CEO"
                   maxLength={50}
-                  className={fieldErrors.contact_position ? "border-red-500" : ""}
+                  className={
+                    fieldErrors.contact_position ? "border-red-500" : ""
+                  }
                   disabled={loading}
                 />
               </div>
