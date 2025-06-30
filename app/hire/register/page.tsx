@@ -32,7 +32,7 @@ export default function RegisterPage() {
     contact_phone: "",
     contact_email: "",
     contact_position: "",
-    accept_outside_dlsu: false,
+    accept_outside_dlsu: true,
     has_moa_with_dlsu: false,
     moa_start_date: new Date().getTime(),
     moa_expires_at: new Date().getTime(),
@@ -305,10 +305,9 @@ export default function RegisterPage() {
             </div>
 
             <div className="flex justify-center">
-              <div className="w-full max-w-md">
+              <div className="w-full">
                 <Label className="block mb-2">
-                  Website{" "}
-                  <span className="text-gray-500 italic">(Optional)</span>
+                  Website <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   value={form_data.website}
