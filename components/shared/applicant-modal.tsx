@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-06-26 08:57:10
+ * @ Modified time: 2025-06-30 03:50:26
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -31,12 +31,20 @@ import { get_full_name } from "@/lib/utils/user-utils";
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
   clickable = true,
+  pfp_fetcher,
+  resume_fetcher,
+  resume_route,
+  pfp_route,
   open_resume_modal,
   open_calendar_modal,
   job = {} as Partial<Job>,
 }: {
   applicant?: Partial<PublicUser>;
   clickable?: boolean;
+  pfp_fetcher: () => Promise<{ hash?: string }>;
+  resume_fetcher: () => Promise<{ hash?: string }>;
+  resume_route: string;
+  pfp_route: string;
   open_resume_modal?: () => void;
   open_calendar_modal?: () => void;
   job?: Partial<Job>;
@@ -58,44 +66,15 @@ export const ApplicantModalContent = ({
     Modal: CalendarModal,
   } = useModal("calendar-modal");
 
-  // Resume URL management - memoize the callback to prevent re-renders
-  const [resume_route, set_resume_route] = useState("");
-
-  const get_user_resume_url = useCallback(
-    async () => user_service.get_user_resume_url(applicant?.id ?? ""),
-    [applicant?.id]
-  );
-
   const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetcher: get_user_resume_url,
+    fetcher: resume_fetcher,
     route: resume_route,
   });
 
-  // Profile picture URL management - memoize the callback to prevent re-renders
-  const [pfp_route, set_pfp_route] = useState("");
-
-  const get_user_pfp_url = useCallback(
-    async () => user_service.get_user_pfp_url(applicant?.id ?? ""),
-    [applicant?.id]
-  );
-
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
-    fetcher: get_user_pfp_url,
+    fetcher: pfp_fetcher,
     route: pfp_route,
   });
-
-  // Set the resume and profile picture routes when applicant changes - only when needed
-  useEffect(() => {
-    if (applicant?.id && !resume_route) {
-      set_resume_route(`/users/${applicant.id}/resume`);
-    }
-  }, [applicant?.id, resume_route]);
-
-  useEffect(() => {
-    if (applicant?.id && !pfp_route) {
-      set_pfp_route(`/users/${applicant.id}/pic`);
-    }
-  }, [applicant?.id, pfp_route]);
 
   // Sync profile picture when modal opens - avoid infinite re-renders
   useEffect(() => {
@@ -112,11 +91,6 @@ export const ApplicantModalContent = ({
       // Use external modal handler if provided
       open_resume_modal();
     } else {
-      // Use internal modal - ensure route is set first
-      if (!resume_route) {
-        set_resume_route(`/users/${applicant.id}/resume`);
-      }
-
       try {
         await sync_resume_url();
         open_internal_resume_modal();
@@ -125,7 +99,15 @@ export const ApplicantModalContent = ({
         // Optionally show user-friendly error message
       }
     }
-  }, [clickable, applicant?.resume, applicant?.id, open_resume_modal, resume_route, sync_resume_url, open_internal_resume_modal]);
+  }, [
+    clickable,
+    applicant?.resume,
+    applicant?.id,
+    open_resume_modal,
+    resume_route,
+    sync_resume_url,
+    open_internal_resume_modal,
+  ]);
 
   // Handle calendar button click - memoize to prevent re-renders
   const handleCalendarClick = useCallback(() => {
@@ -151,7 +133,7 @@ export const ApplicantModalContent = ({
             {/* Profile Picture */}
             <div className="flex-shrink-0 self-center sm:self-start">
               <Avatar className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-24 lg:w-24">
-                {applicant?.profile_picture && pfp_url ? (
+                {pfp_url ? (
                   <AvatarImage src={pfp_url} alt="Profile picture" />
                 ) : (
                   <AvatarFallback className="text-sm sm:text-lg md:text-xl font-semibold bg-blue-100 text-blue-700">
@@ -217,7 +199,10 @@ export const ApplicantModalContent = ({
         </div>
 
         {/* Scrollable Content Section - Optimized for small screens */}
-        <div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-4 md:py-6 pb-8 sm:pb-12" style={{ minHeight: '250px' }}>
+        <div
+          className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 md:px-8 lg:px-10 py-3 sm:py-4 md:py-6 pb-8 sm:pb-12"
+          style={{ minHeight: "250px" }}
+        >
           {/* Academic Background Card */}
           <div className="bg-blue-50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
             <div className="flex items-center gap-3 mb-4 sm:mb-5">
@@ -230,25 +215,33 @@ export const ApplicantModalContent = ({
             </div>
             <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Program</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  Program
+                </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {to_college_name(applicant?.college)}
                 </p>
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Institution</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  Institution
+                </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
                   DLSU Manila
                 </p>
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Year Level</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  Year Level
+                </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {to_level_name(applicant?.year_level)}
                 </p>
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Email</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  Email
+                </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base break-all">
                   {applicant?.email || "Not provided"}
                 </p>
@@ -268,13 +261,17 @@ export const ApplicantModalContent = ({
             </div>
             <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Phone Number</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  Phone Number
+                </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
                   {applicant?.phone_number || "Not provided"}
                 </p>
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Portfolio</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  Portfolio
+                </p>
                 {applicant?.portfolio_link ? (
                   <a
                     href={applicant?.portfolio_link}
@@ -296,7 +293,9 @@ export const ApplicantModalContent = ({
                 )}
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">GitHub</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  GitHub
+                </p>
                 {applicant?.github_link ? (
                   <a
                     href={applicant?.github_link}
@@ -318,7 +317,9 @@ export const ApplicantModalContent = ({
                 )}
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">LinkedIn</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">
+                  LinkedIn
+                </p>
                 {applicant?.linkedin_link ? (
                   <a
                     href={applicant?.linkedin_link}

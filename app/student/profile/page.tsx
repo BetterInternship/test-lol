@@ -625,22 +625,24 @@ export default function ProfilePage() {
               )}
 
               {/* Error Messages - Mobile Optimized */}
-              {isEditing && (Object.keys(linkErrors).length > 0 || Object.keys(fieldErrors).length > 0) && (
-                <div className="flex flex-col gap-1 text-xs">
-                  {Object.keys(linkErrors).length > 0 && (
-                    <div className="flex items-center gap-1 text-red-600">
-                      <AlertCircle className="h-3 w-3" />
-                      <span>Fix URL errors to save</span>
-                    </div>
-                  )}
-                  {Object.keys(fieldErrors).length > 0 && (
-                    <div className="flex items-center gap-1 text-red-600">
-                      <AlertCircle className="h-3 w-3" />
-                      <span>Fix required fields to save</span>
-                    </div>
-                  )}
-                </div>
-              )}
+              {isEditing &&
+                (Object.keys(linkErrors).length > 0 ||
+                  Object.keys(fieldErrors).length > 0) && (
+                  <div className="flex flex-col gap-1 text-xs">
+                    {Object.keys(linkErrors).length > 0 && (
+                      <div className="flex items-center gap-1 text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Fix URL errors to save</span>
+                      </div>
+                    )}
+                    {Object.keys(fieldErrors).length > 0 && (
+                      <div className="flex items-center gap-1 text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Fix required fields to save</span>
+                      </div>
+                    )}
+                  </div>
+                )}
             </div>
           </div>
 
@@ -654,7 +656,9 @@ export default function ProfilePage() {
                   <div className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
                       <User className="h-5 w-5 text-blue-600" />
-                      <h2 className="text-lg font-semibold">Personal Information</h2>
+                      <h2 className="text-lg font-semibold">
+                        Personal Information
+                      </h2>
                       {!isEditing && (
                         <Link href="/help">
                           <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
@@ -1037,7 +1041,7 @@ export default function ProfilePage() {
                             Calendar Link
                           </label>
                           {!isEditing && (
-                            <Link href="/help" className="mb-1">
+                            <Link href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit" className="mb-1">
                               <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
                             </Link>
                           )}
@@ -1210,6 +1214,10 @@ export default function ProfilePage() {
       <EmployerModal>
         <ApplicantModalContent
           applicant={profile}
+          resume_fetcher={user_service.get_my_resume_url}
+          pfp_fetcher={user_service.get_my_pfp_url}
+          resume_route="/users/me/resume"
+          pfp_route="/users/me/pic"
           open_resume_modal={async () => {
             close_employer_modal();
             await sync_resume_url();

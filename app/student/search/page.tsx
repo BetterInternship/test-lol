@@ -255,6 +255,23 @@ export default function SearchPage() {
     console.log("Profile complete:", profileComplete);
     console.log("Profile:", profile);
 
+    // Check if requirements are met
+    if (
+      selectedJob?.require_github &&
+      (!profile?.github_link || profile.github_link === "")
+    ) {
+      alert("This job requires a github link, but you don't have one yet!");
+      return;
+    }
+
+    if (
+      selectedJob?.require_portfolio &&
+      (!profile?.portfolio_link || profile.portfolio_link === "")
+    ) {
+      alert("This job requires a portfolio link, but you don't have one yet!");
+      return;
+    }
+
     if (!profileComplete) {
       console.log("Profile not complete, opening incomplete profile modal");
       open_incomplete_profile_modal();
@@ -653,9 +670,6 @@ export default function SearchPage() {
                     : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:shadow-xl active:scale-95"
                 )}
               >
-                {appliedJob(selectedJob?.id ?? "") && (
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                )}
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
               </Button>
 
@@ -932,21 +946,28 @@ export default function SearchPage() {
                   Cover Letter
                 </label>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id="add-cover-letter"
-                  checked={showCoverLetterInput}
-                  onChange={() =>
-                    setShowCoverLetterInput(!showCoverLetterInput)
-                  }
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                />
-                <span className="text-sm text-gray-500">Include</span>
-              </div>
+              {!selectedJob?.require_cover_letter && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="add-cover-letter"
+                    checked={
+                      showCoverLetterInput ||
+                      (selectedJob?.require_cover_letter ?? false)
+                    }
+                    disabled={selectedJob?.require_cover_letter ?? false}
+                    onChange={() =>
+                      setShowCoverLetterInput(!showCoverLetterInput)
+                    }
+                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-500">Include</span>
+                </div>
+              )}
             </div>
 
-            {showCoverLetterInput && (
+            {(showCoverLetterInput ||
+              (selectedJob?.require_cover_letter ?? false)) && (
               <div className="space-y-3">
                 <Textarea
                   ref={textarea_ref}
@@ -1014,6 +1035,10 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
+            resume_fetcher={user_service.get_my_resume_url}
+            pfp_fetcher={user_service.get_my_pfp_url}
+            resume_route="/users/me/resume"
+            pfp_route="/users/me/pic"
             open_resume_modal={async () => {
               close_profile_preview_modal();
               await sync_resume_url();
