@@ -16,23 +16,25 @@ import { useRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/our-card";
+import { JobHead } from "@/components/shared/jobs";
+import { UserApplication } from "@/lib/db/db.types";
 
 export default function ApplicationsPage() {
   const { redirect_if_not_logged_in } = useAuthContext();
   const { applications, loading, error, refetch } = useApplications();
-  const { ref_loading, to_app_status_name } = useRefs();
-
   redirect_if_not_logged_in();
 
   return (
-    <div className="container max-w-5xl p-10 mx-auto">
+    <div className="container max-w-5xl p-10 pt-16 mx-auto">
       <div className="mb-6 sm:mb-8 animate-fade-in">
-        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 mb-2">
-          <div className="w-10 h-10 mt-2 bg-primary rounded-sm flex items-center justify-center flex-shrink-0">
-            <BookA className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+        <div className="flex flex-row items-start gap-3 sm:gap-4 mb-2">
+          <div className="w-8 h-8 mt-1 bg-primary rounded-[0.25em] flex items-center justify-center flex-shrink-0">
+            <BookA className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl sm:text-h2 font-bold">My Applications</h1>
+            <h1 className="text-4xl font-bold tracking-tight">
+              My Applications
+            </h1>
             <p className="text-gray-600 text-sm sm:text-base mb-2">
               Track your internship applications and their status
             </p>
@@ -46,7 +48,7 @@ export default function ApplicationsPage() {
       <hr />
       <br />
 
-      {ref_loading && loading ? (
+      {loading ? (
         <Loader>Loading your applications...</Loader>
       ) : error ? (
         <div className="text-center py-16 animate-fade-in">
@@ -78,46 +80,37 @@ export default function ApplicationsPage() {
           </Card>
         </div>
       ) : (
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-3">
           {applications.map((application) => (
-            <Card key={application.id}>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                  <div className="flex-1">
-                    <div className="flex flex-row items-center justify-between mb-2">
-                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight">
-                        {application.job?.title}
-                      </h3>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3">
-                      <span className="text-sm">
-                        {application.job?.employer?.name ||
-                          application.employer?.name ||
-                          "Company Name"}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <Badge type="accent">
-                        Applied {formatTimeAgo(application.applied_at ?? "")}
-                      </Badge>
-                      <Badge type="accent">
-                        {to_app_status_name(application.status)}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 sm:pt-4 border-t border-gray-100">
-                  <Link href={`/search/${application.job?.id}`}>
-                    <Button size="sm">View Details</Button>
-                  </Link>
-                </div>
-              </div>
-            </Card>
+            <ApplicationCard application={application} />
           ))}
         </div>
       )}
     </div>
   );
 }
+
+const ApplicationCard = ({ application }: { application: UserApplication }) => {
+  const { to_app_status_name } = useRefs();
+  return (
+    <Card key={application.id} className="hover:shadow-lg transition-all">
+      <div className="flex flex-col gap-1">
+        <JobHead
+          title={application.job?.title}
+          employer={application.employer?.name}
+        />
+        <div className="flex items-center gap-2 text-gray-600 mb-4">
+          <Badge type="accent">
+            Applied {formatTimeAgo(application.applied_at ?? "")}
+          </Badge>
+          <Badge type="accent">{to_app_status_name(application.status)}</Badge>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-3 border-t border-gray-100">
+          <Link href={`/search/${application.job?.id}`}>
+            <Button size="sm">View Details</Button>
+          </Link>
+        </div>
+      </div>
+    </Card>
+  );
+};

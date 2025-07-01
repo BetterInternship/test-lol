@@ -27,7 +27,7 @@ import { useMoa } from "@/lib/db/use-moa";
 import { Toggle } from "../ui/toggle";
 import { Card } from "../ui/our-card";
 
-export const JobTitle = ({
+export const JobHead = ({
   title,
   employer,
 }: {
@@ -36,10 +36,10 @@ export const JobTitle = ({
 }) => {
   return (
     <div className="flex-1 min-w-0">
-      <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight truncate group-hover:text-primary transition-colors">
         {title}
       </h3>
-      <div className="flex items-center gap-2 mt-1">
+      <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3 mt-1">
         <p className="text-sm text-gray-600 font-medium">
           {employer ?? "Unknown"}
         </p>
@@ -147,7 +147,7 @@ export const JobCard = ({
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <JobTitle title={job.title} employer={job.employer?.name} />
+          <JobHead title={job.title} employer={job.employer?.name} />
         </div>
         <JobLocation location={job.location} />
         <div className="flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ export const EmployerJobCard = ({
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <JobTitle title={job.title} employer={job.employer?.name} />
+          <JobHead title={job.title} employer={job.employer?.name} />
           <div className="flex items-center gap-2 relative z-20">
             <Toggle
               state={job.is_active}

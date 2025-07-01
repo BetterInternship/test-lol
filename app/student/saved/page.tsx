@@ -1,152 +1,111 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Heart,
-  Calendar,
-  MapPin,
-  Building,
-  Trash2,
-  Briefcase,
-  PhilippinePeso,
-} from "lucide-react";
+import { Heart, MapPin, Building } from "lucide-react";
 import { useSavedJobs } from "@/lib/api/use-api";
 import { useAuthContext } from "../../../lib/ctx-auth";
+import { Loader } from "@/components/ui/loader";
+import { Card } from "@/components/ui/our-card";
+import { JobHead } from "@/components/shared/jobs";
+import { Job } from "@/lib/db/db.types";
 
 export default function SavedJobsPage() {
-  const {
-    is_authenticated,
-    redirect_if_not_logged_in: redirect_if_not_logged_in,
-  } = useAuthContext();
+  const { is_authenticated, redirect_if_not_logged_in } = useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
 
   redirect_if_not_logged_in();
 
-  const handleUnsaveJob = async (job_id: string) => {
-    try {
-      await save_job(job_id); // This will toggle the saved status
-      refetch(); // Refresh the saved jobs list
-    } catch (error) {
-      console.error("Failed to unsave job:", error);
-    }
-  };
-
-  if (!is_authenticated()) {
-    return (
-      <div className="h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-full">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Saved Jobs Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-6 sm:pb-8">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-3">
-              <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 fill-current" />
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Saved Jobs
-              </h1>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-3 sm:mt-4 mb-6 sm:mb-8">
-              {!loading && <Badge>{saved_jobs.length} saved</Badge>}
-            </div>
-
-            {loading ? (
-              <div className="text-center py-12 sm:py-16">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                <p className="text-gray-600 text-base sm:text-lg">
-                  Loading saved jobs...
-                </p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12 sm:py-16">
-                <p className="text-red-600 mb-4 text-base sm:text-lg">
-                  Failed to load saved jobs: {error}
-                </p>
-                <Button onClick={refetch} size="default">
-                  Try Again
-                </Button>
-              </div>
-            ) : saved_jobs.length === 0 ? (
-              <div className="text-center py-16 sm:py-20">
-                <Heart className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-6" />
-                <div className="text-gray-500 text-lg sm:text-xl mb-4 sm:mb-6 font-medium">
-                  No saved jobs yet
-                </div>
-                <div className="text-gray-400 text-sm sm:text-base mb-6 sm:mb-8 px-4 sm:px-0 leading-relaxed max-w-md mx-auto">
-                  Save jobs by clicking the heart icon on job listings to see
-                  them here.
-                </div>
-                <Link href="/search">
-                  <Button size="md">Browse Jobs</Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="space-y-4 sm:space-y-6">
-                {saved_jobs.map((savedJob) => (
-                  <div
-                    key={savedJob.id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:shadow-md transition-shadow min-h-[180px] sm:min-h-[200px]"
-                  >
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 leading-tight">
-                            {savedJob.title}
-                          </h3>
-                          <div className="flex items-center gap-2 text-gray-600 mb-2 sm:mb-3">
-                            <Building className="w-4 h-4 flex-shrink-0" />
-                            <span className="font-medium text-sm sm:text-base">
-                              {savedJob.employer?.name}
-                            </span>
-                          </div>
-                          {savedJob.employer?.location && (
-                            <div className="flex items-center gap-2 text-sm text-gray-500 mb-3 sm:mb-4">
-                              <MapPin className="w-4 h-4 flex-shrink-0" />
-                              <span>{savedJob.employer?.location}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <p className="text-gray-700 text-sm leading-relaxed line-clamp-2 mb-4">
-                        {savedJob.description}
-                      </p>
-
-                      <div className="flex gap-3">
-                        <Link href={`/search/${savedJob.id}`}>
-                          <Button>View Details</Button>
-                        </Link>
-                        <Button
-                          variant="outline"
-                          scheme="destructive"
-                          disabled={saving}
-                          onClick={() => handleUnsaveJob(savedJob.id ?? "")}
-                        >
-                          <span className="hidden sm:inline">Unsave</span>
-                          <span className="sm:hidden">Unsave</span>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+    <div className="container max-w-5xl p-10 pt-16 mx-auto">
+      <div className="mb-6 sm:mb-8 animate-fade-in">
+        <div className="flex flex-row items-start gap-3 sm:gap-4 mb-2">
+          <div className="w-8 h-8 mt-1 bg-destructive rounded-[0.25em] flex items-center justify-center flex-shrink-0">
+            <Heart className="w-4 h-4 text-white" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold tracking-tight mb-2">
+              Saved Jobs
+            </h1>
+            <Badge>{saved_jobs.length} saved</Badge>
           </div>
         </div>
       </div>
+      <hr />
+      <br />
+
+      {loading || !is_authenticated() ? (
+        <Loader>Loading saved jobs...</Loader>
+      ) : error ? (
+        <Card className="max-w-md m-auto">
+          <p className="text-red-600 mb-4 text-base sm:text-lg">
+            Failed to load saved jobs: {error}
+          </p>
+          <Button onClick={refetch} size="default">
+            Try Again
+          </Button>
+        </Card>
+      ) : saved_jobs.length === 0 ? (
+        <Card className="max-w-md m-auto">
+          <Heart className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-6" />
+          <div className="text-gray-500 text-lg sm:text-xl mb-4 sm:mb-6 font-medium">
+            No saved jobs yet
+          </div>
+          <div className="text-gray-400 text-sm sm:text-base mb-6 sm:mb-8 px-4 sm:px-0 leading-relaxed max-w-md mx-auto">
+            Save jobs by clicking the heart icon on job listings to see them
+            here.
+          </div>
+          <Link href="/search">
+            <Button size="md">Browse Jobs</Button>
+          </Link>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {saved_jobs.map((savedJob) => (
+            <SavedJobCard
+              savedJob={savedJob}
+              handleUnsaveJob={async () => await save_job(savedJob.id ?? "")}
+              saving={saving}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+
+const SavedJobCard = ({
+  savedJob,
+  handleUnsaveJob,
+  saving,
+}: {
+  savedJob: Job;
+  handleUnsaveJob: () => void;
+  saving: boolean;
+}) => {
+  return (
+    <Card key={savedJob.id}>
+      <div className="flex flex-col gap-1">
+        <JobHead title={savedJob.title} employer={savedJob.employer?.name} />
+        <p className="text-gray-500 text-sm leading-relaxed line-clamp-2 mt-2 mb-4">
+          {savedJob.description}
+        </p>
+        <div className="flex flex-row items-center gap-3 pt-3 border-t border-gray-100">
+          <Link href={`/search/${savedJob.id}`}>
+            <Button>View Details</Button>
+          </Link>
+          <Button
+            variant="outline"
+            scheme="destructive"
+            disabled={saving}
+            onClick={() => handleUnsaveJob()}
+          >
+            Unsave
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};
