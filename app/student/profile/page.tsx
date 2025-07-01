@@ -1206,14 +1206,15 @@ export default function ProfilePage() {
       <EmployerModal>
         <ApplicantModalContent
           applicant={profile}
-          resume_fetcher={user_service.get_my_resume_url}
           pfp_fetcher={user_service.get_my_pfp_url}
-          resume_route="/users/me/resume"
           pfp_route="/users/me/pic"
-          open_resume_modal={async () => {
+          open_resume={async () => {
             close_employer_modal();
             await sync_resume_url();
             open_resume_modal();
+          }}
+          open_calendar={async () => {
+            window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
           }}
         />
       </EmployerModal>

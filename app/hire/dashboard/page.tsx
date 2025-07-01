@@ -46,8 +46,6 @@ export default function Dashboard() {
     close: close_applicant_modal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-  const { open: open_calendar_modal, Modal: CalendarModal } =
-    useModal("calendar-modal");
   const { open: open_resume_modal, Modal: ResumeModal } =
     useModal("resume-modal");
   const {
@@ -287,20 +285,14 @@ export default function Dashboard() {
           <ApplicantModal>
             <ApplicantModalContent
               clickable={true}
-              resume_fetcher={async () =>
-                user_service.get_user_resume_url(
-                  selected_application?.user?.id ?? ""
-                )
-              }
               pfp_fetcher={async () =>
                 user_service.get_user_pfp_url(
                   selected_application?.user?.id ?? ""
                 )
               }
-              resume_route={`/users/${selected_application?.user?.id}/resume`}
               pfp_route={`/users/${selected_application?.user?.id}/pic`}
               applicant={selected_application?.user}
-              open_calendar_modal={async () => {
+              open_calendar={async () => {
                 close_applicant_modal();
                 window
                   ?.open(
@@ -308,9 +300,8 @@ export default function Dashboard() {
                     "_blank"
                   )
                   ?.focus();
-                //open_calendar_modal();
               }}
-              open_resume_modal={async () => {
+              open_resume={async () => {
                 close_applicant_modal();
                 await sync_resume_url();
                 open_resume_modal();
@@ -328,39 +319,6 @@ export default function Dashboard() {
               />
             )}
           </ReviewModal>
-
-          <CalendarModal>
-            {selected_application?.user?.calendar_link ? (
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Schedule Interview
-                </h2>
-                <div className="relative bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                  <iframe
-                    src={`${selected_application?.user?.calendar_link}?embed_domain=www.calendly-embed.com&embed_type=Inline`}
-                    allowTransparency={true}
-                    className="w-full border-0 rounded-lg"
-                    style={{
-                      width: Math.min(client_width * 0.6, 600),
-                      height: client_height * 0.7,
-                      background: "#FFFFFF",
-                    }}
-                  >
-                    Calendar could not be loaded.
-                  </iframe>
-                </div>
-              </div>
-            ) : (
-              <div className="h-48 px-8">
-                <h1 className="font-heading font-bold text-4xl my-4">
-                  Aww man!
-                </h1>
-                <div className="w-prose text-center border border-red-500 border-opacity-50 text-red-500 shadow-sm rounded-md p-4 bg-white">
-                  This applicant does not have a calendar link.
-                </div>
-              </div>
-            )}
-          </CalendarModal>
 
           <ResumeModal>
             {selected_application?.user?.resume ? (

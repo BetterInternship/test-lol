@@ -901,14 +901,15 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            resume_fetcher={user_service.get_my_resume_url}
             pfp_fetcher={user_service.get_my_pfp_url}
-            resume_route="/users/me/resume"
             pfp_route="/users/me/pic"
-            open_resume_modal={async () => {
+            open_resume={async () => {
               close_profile_preview_modal();
               await sync_resume_url();
               open_resume_modal();
+            }}
+            open_calendar={async () => {
+              window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
             }}
           />
         )}
