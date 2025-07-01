@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
+import { MyPfp } from "@/components/shared/pfp";
+import { getFullName } from "@/lib/utils/user-utils";
 
 /**
  * The header present on every page
@@ -60,26 +62,24 @@ export const ProfileButton = () => {
   };
 
   return is_authenticated() ? (
-    <div className="relative">
+    <div className="relative ">
       <GroupableNavDropdown
         display={
-          <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
-            <User className="w-4 h-4 text-gray-600" />
-          </div>
+          <>
+            <div className="overflow-hidden border border-gray-400 rounded-full flex flex-row items-center justify-center">
+              <MyPfp size={7} />
+            </div>
+            {getFullName(user)}
+          </>
         }
         content={
           <div className="px-4 py-3 border-b border-gray-200">
-            <p className="text-sm font-medium text-gray-900">
-              {user?.first_name && user?.last_name
-                ? `${user.first_name} ${user.last_name}`
-                : user?.email}
-            </p>
             <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
               {user?.email}
             </p>
           </div>
         }
-        className="z-[200]" // Higher z-index for mobile
+        className="z-[200]"
       >
         <DropdownOption href="/profile">
           <Settings className="w-4 h-4 inline-block m-1 mr-2" />

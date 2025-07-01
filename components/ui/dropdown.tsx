@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-02 01:47:02
+ * @ Modified time: 2025-07-02 03:16:17
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -555,8 +555,8 @@ export const GroupableNavDropdown = ({
       <Button
         ref={buttonRef}
         type="button"
-        variant="outline"
-        className="flex items-center gap-2 h-10 px-3 bg-white border-gray-300 hover:bg-gray-50"
+        variant="ghost"
+        className="flex items-center gap-2 h-12 px-3"
         onClick={handleButtonClick}
         onTouchEnd={(e) => e.stopPropagation()}
       >
@@ -575,7 +575,7 @@ export const GroupableNavDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute right-0 mt-2 bg-white border border-gray-200 rounded-md shadow-lg z-50",
+            "absolute right-0 mt-2 bg-white border border-gray-200 rounded-[0.33em] shadow-lg z-50",
             is_mobile ? "w-56" : "w-48", // Slightly wider on mobile for better touch targets
             className
           )}
@@ -585,7 +585,7 @@ export const GroupableNavDropdown = ({
         >
           <div
             className={cn(
-              "py-1 max-h-64 overflow-y-scroll overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+              "py-1 max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
               is_mobile ? "max-h-80" : "max-h-64"
             )}
             style={{
