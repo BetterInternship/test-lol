@@ -10,13 +10,13 @@ import { useCache } from "./use-cache";
 import { useQuery } from "@tanstack/react-query";
 
 export function useProfile() {
-  const { isPending, isFetching, isError, data, error } = useQuery({
+  const { isPending, data, error } = useQuery({
     queryKey: ["my-employer-profile"],
     queryFn: () => EmployerService.getMyProfile(),
   });
 
   return {
-    loading: isPending || isFetching,
+    loading: isPending,
     error: error,
     profile: data?.employer,
   };
