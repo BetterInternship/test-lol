@@ -287,28 +287,29 @@
 /* Custom scrollbar styles */
 @layer utilities {
   /* For Webkit browsers */
-  .scrollbar-custom::-webkit-scrollbar {
+  *::-webkit-scrollbar {
     width: 6px;
   }
 
-  .scrollbar-custom::-webkit-scrollbar-track {
+  *::-webkit-scrollbar-track {
     background: #f8fafc;
     border-radius: 3px;
   }
 
-  .scrollbar-custom::-webkit-scrollbar-thumb {
+  *::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 3px;
+    border-radius: 0px;
   }
 
-  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  *::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
 
   /* For Firefox */
-  .scrollbar-custom {
+  * {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f8fafc;
+    scrollbar-gutter: 6px;
   }
 
   /* Enhanced animation utilities */

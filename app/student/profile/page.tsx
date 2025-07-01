@@ -100,7 +100,9 @@ export default function ProfilePage() {
 
   // URL validation functions
   const isValidURL = (url: string): boolean => {
-    if (!url || url.trim() === "") return true; // Empty URLs are allowed
+    if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return urlObj.protocol === "http:" || urlObj.protocol === "https:";
@@ -111,6 +113,8 @@ export default function ProfilePage() {
 
   const isValidGitHubURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return (
@@ -124,6 +128,8 @@ export default function ProfilePage() {
 
   const isValidLinkedInURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return (
@@ -138,6 +144,8 @@ export default function ProfilePage() {
 
   const isValidCalendarURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return (
@@ -572,6 +580,7 @@ export default function ProfilePage() {
                   <Button
                     variant="outline"
                     scheme="primary"
+                    disabled={isEditing}
                     onClick={() => open_employer_modal()}
                   >
                     <Eye className="h-4 w-4" />

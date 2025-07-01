@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-01 09:24:45
+ * @ Modified time: 2025-07-02 01:25:42
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -386,11 +386,6 @@ export const GroupableRadioDropdown = ({
           onClick={handleDropdownInteraction}
           onTouchStart={handleDropdownInteraction}
           onTouchEnd={handleDropdownInteraction}
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width,
-          }}
         >
           <div
             className={cn(
