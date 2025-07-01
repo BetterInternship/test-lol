@@ -443,9 +443,9 @@ const CreateModalForm = ({
                   </Label>
                   <GroupableRadioDropdown
                     name="type"
-                    default_value={form_data.type_name}
+                    defaultValue={form_data.type_name}
                     options={job_types.map((jt) => jt.name)}
-                    on_change={field_setter("type_name")}
+                    onChange={field_setter("type_name")}
                   />
                 </div>
 
@@ -455,9 +455,9 @@ const CreateModalForm = ({
                   </Label>
                   <GroupableRadioDropdown
                     name="mode"
-                    default_value={form_data.mode_name}
+                    defaultValue={form_data.mode_name}
                     options={job_modes.map((jm) => jm.name)}
-                    on_change={field_setter("mode_name")}
+                    onChange={field_setter("mode_name")}
                   />
                 </div>
 
@@ -467,9 +467,9 @@ const CreateModalForm = ({
                   </Label>
                   <GroupableRadioDropdown
                     name="allowance"
-                    default_value={form_data.job_allowance_name}
+                    defaultValue={form_data.job_allowance_name}
                     options={job_allowances.map((ja) => ja.name).reverse()}
-                    on_change={field_setter("job_allowance_name")}
+                    onChange={field_setter("job_allowance_name")}
                   />
                 </div>
 
@@ -493,9 +493,9 @@ const CreateModalForm = ({
                       </Label>
                       <GroupableRadioDropdown
                         name="pay_freq"
-                        default_value={form_data.salary_freq_name}
+                        defaultValue={form_data.salary_freq_name}
                         options={job_pay_freq.map((jpf) => jpf.name)}
-                        on_change={field_setter("salary_freq_name")}
+                        onChange={field_setter("salary_freq_name")}
                       />
                     </div>
                   </>

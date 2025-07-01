@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuthContext } from "../../../app/hire/authctx";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Building2, UserPlus } from "lucide-react";
+import { User, LogOut, Building2, UserPlus, Building } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -73,38 +73,45 @@ export const ProfileButton = () => {
   };
 
   return is_authenticated() ? (
-    <GroupableNavDropdown
-      display={
-        <>
-          <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
-            <User className="w-4 h-4 text-gray-600" />
+    <div className="relative">
+      <GroupableNavDropdown
+        display={
+          <>
+            <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
+              <User className="w-4 h-4 text-gray-600" />
+            </div>
+            <span className="text-gray-700 font-medium">
+              {is_authenticated() ? get_display_name() : "Account"}
+            </span>
+          </>
+        }
+        content={
+          <div className="px-4 py-3 border-b border-gray-200">
+            <p className="text-sm font-medium text-gray-900">
+              {getFullName(user)}
+            </p>
+            <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
+              {user?.email}
+            </p>
           </div>
-          <span className="text-gray-700 font-medium">
-            {is_authenticated() ? get_display_name() : "Account"}
-          </span>
-        </>
-      }
-      content={
-        <div className="px-4 py-3 border-b border-gray-200">
-          <p className="text-sm font-medium text-gray-900">
-            {getFullName(user)}
-          </p>
-          <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
-            {user?.email}
-          </p>
-        </div>
-      }
-    >
-      <DropdownOption href="/login" on_click={handle_logout}>
-        <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
-        <span className="text-red-500">Sign Out</span>
-      </DropdownOption>
-    </GroupableNavDropdown>
+        }
+      >
+        {/* <DropdownOption href="/company-profile">
+          <Building className="w-4 h-4 inline-block m-1 mr-2" />
+          Company Profile
+        </DropdownOption> */}
+        <DropdownOption href="/login" on_click={handle_logout}>
+          <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
+          <span className="text-red-500">Sign Out</span>
+        </DropdownOption>
+      </GroupableNavDropdown>
+    </div>
   ) : (
     <Button
       type="button"
       variant="outline"
-      className="flex items-center gap-2 h-10 px-4 bg-white border-gray-300 hover:bg-gray-50 text-blue-600 hover:text-blue-600"
+      size="md"
+      className="h-10 border-gray-300 hover:bg-gray-50 "
       onClick={() => router.push("/login")}
     >
       Sign in

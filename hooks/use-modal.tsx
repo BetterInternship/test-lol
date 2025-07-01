@@ -25,28 +25,15 @@ export const useModal = (
   const backdropRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Robust modal close handler
-  const closeModal = () => setIsOpen(false);
-
   // Click handler for desktop
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       // Only handle mouse events on desktop
       if (isMobile) return;
 
-      if (e.target === backdropRef.current) {
-        closeModal();
-      }
+      if (e.target === backdropRef.current) setIsOpen(false);
     },
-    [isMobile, closeModal]
-  );
-
-  // Prevent event propagation for modal content
-  const handleModalInteraction = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
-      // e.stopPropagation();
-    },
-    []
+    [isMobile]
   );
 
   // Body scroll management
@@ -84,7 +71,7 @@ export const useModal = (
   return {
     state: isOpen,
     open: () => setIsOpen(true),
-    close: closeModal,
+    close: () => setIsOpen(false),
     Modal: ({ children }: { children: React.ReactNode }) => (
       <>
         {isOpen && (
@@ -102,7 +89,7 @@ export const useModal = (
                 isTouchOnSingleElement() &&
                 isTouchEndOnElement(backdropRef.current)
               )
-                closeModal();
+                setIsOpen(false);
             }}
             style={{
               height: isMobile ? "calc(var(--vh, 1vh) * 100)" : "100vh",
@@ -115,9 +102,6 @@ export const useModal = (
                   ? "w-full max-w-full mx-0 rounded-t-sm rounded-b-none max-h-[85vh] min-h-[200px] flex flex-col animate-in slide-in-from-bottom duration-300"
                   : "max-w-2xl rounded-sm max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
               }`}
-              onClick={handleModalInteraction}
-              onTouchStart={handleModalInteraction}
-              onTouchEnd={handleModalInteraction}
               style={{
                 maxHeight: isMobile ? "calc(var(--vh, 1vh) * 85)" : "90vh",
                 height: "auto",
@@ -126,16 +110,14 @@ export const useModal = (
               {showCloseButton && (
                 <div
                   className={`flex justify-end p-4 ${isMobile ? "pb-2" : ""}`}
-                  onClick={handleModalInteraction}
-                  onTouchStart={handleModalInteraction}
                 >
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={closeModal}
+                    onClick={() => setIsOpen(false)}
                     onTouchEnd={(e) => {
                       e.stopPropagation();
-                      closeModal();
+                      setIsOpen(false);
                     }}
                     className={`h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors ${
                       isMobile ? "active:bg-gray-200" : ""
@@ -150,19 +132,11 @@ export const useModal = (
                 className={`${
                   showCloseButton && isMobile ? "pt-0" : ""
                 } flex-1 overflow-hidden`}
-                onClick={handleModalInteraction}
-                onTouchStart={handleModalInteraction}
               >
                 {children}
               </div>
               {/* Safe area padding for mobile */}
-              {isMobile && (
-                <div
-                  className="pb-safe h-4"
-                  onClick={handleModalInteraction}
-                  onTouchStart={handleModalInteraction}
-                />
-              )}
+              {isMobile && <div className="pb-safe h-4" />}
             </div>
           </div>
         )}

@@ -390,14 +390,14 @@ export default function RegisterPage() {
                 </label>
                 <GroupableRadioDropdown
                   name="university"
-                  default_value={defaultUniversity}
+                  defaultValue={defaultUniversity}
                   options={[
                     defaultUniversity,
                     ...(get_universities_from_domain(email?.split("@")[1])?.map(
                       (uid) => to_university_name(uid) ?? ""
                     ) ?? []),
                   ]}
-                  on_change={(value) => set_field("university_name", value)}
+                  onChange={(value) => set_field("university_name", value)}
                 ></GroupableRadioDropdown>
               </div>
 
@@ -408,11 +408,11 @@ export default function RegisterPage() {
                 </label>
                 <GroupableRadioDropdown
                   name="college"
-                  default_value={defaultCollege}
+                  defaultValue={defaultCollege}
                   options={get_colleges_by_university(
                     get_university_by_name(form_data.university_name)?.id ?? ""
                   ).map((cid) => to_college_name(cid) ?? "")}
-                  on_change={(value) => set_field("college_name", value)}
+                  onChange={(value) => set_field("college_name", value)}
                 ></GroupableRadioDropdown>
               </div>
 
@@ -423,14 +423,14 @@ export default function RegisterPage() {
                 </label>
                 <GroupableRadioDropdown
                   name="yearLevel"
-                  default_value={defaultYearLevel}
+                  defaultValue={defaultYearLevel}
                   options={levels
                     .sort(
                       (a, b) =>
                         a.order - b.order || a.name.localeCompare(b.name)
                     )
                     .map((level) => level.name)}
-                  on_change={(value) => set_field("year_level_name", value)}
+                  onChange={(value) => set_field("year_level_name", value)}
                 ></GroupableRadioDropdown>
               </div>
             </DropdownGroup>

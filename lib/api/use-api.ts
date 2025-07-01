@@ -220,7 +220,7 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      const { user } = await UserService.get_my_profile();
+      const { user } = await UserService.getMyProfile();
       if (user) setProfile(user as PublicUser);
     } catch (err) {
       const errorMessage = handleApiError(err);
@@ -241,7 +241,7 @@ export function useProfile() {
   const updateProfile = async (data: Partial<PublicUser>) => {
     try {
       setError(null);
-      const { user } = await UserService.update_my_profile(data);
+      const { user } = await UserService.updateMyProfile(data);
       if (user) setProfile(user as PublicUser);
       return user;
     } catch (err) {
@@ -383,7 +383,7 @@ export const useSavedJobs = () => {
   const get_data = async () =>
     await JobService.get_saved_jobs().then((r) => ({ ...r, data: r.jobs }));
   const add_data = async (id: string) =>
-    await UserService.save_job(id).then((r) => ({ ...r, data: r.job }));
+    await UserService.saveJob(id).then((r) => ({ ...r, data: r.job }));
 
   // Makes our lives easier
   const {

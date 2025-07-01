@@ -72,7 +72,7 @@ export default function Dashboard() {
 
   const get_user_resume_url = useCallback(
     async () =>
-      UserService.get_user_resume_url(selected_application?.user?.id ?? ""),
+      UserService.getUserResumeURL(selected_application?.user?.id ?? ""),
     [selected_application]
   );
 
@@ -89,83 +89,15 @@ export default function Dashboard() {
           <div className="flex-1 flex flex-col">
             {/* Enhanced Dashboard */}
             <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
-              {/* Dashboard Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-600 mb-1">
-                        Total Applications
-                      </h4>
-                      <p className="text-3xl font-bold text-gray-900">
-                        {employer_applications.length}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <User className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">Last 30 days</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-600 mb-1">
-                        Active Jobs
-                      </h4>
-                      <p className="text-3xl font-bold text-gray-900">
-                        {ownedJobs.filter((job) => job.is_active).length}
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Building2 className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">Currently posted</p>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-600 mb-1">
-                        Recent Activity
-                      </h4>
-                      <p className="text-3xl font-bold text-gray-900">
-                        {
-                          employer_applications.filter(
-                            (app) =>
-                              new Date(app.applied_at ?? "").getTime() >
-                              Date.now() - 7 * 24 * 60 * 60 * 1000
-                          ).length
-                        }
-                      </p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <BarChart3 className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-xs text-gray-500">
-                      Applications this week
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               {/* Enhanced Table */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
+              <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
                 {/* Table Header with Filters */}
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="text-sm text-gray-500">
                         Showing {employer_applications.length} of{" "}
-                        {employer_applications.length} applicants
+                        {employer_applications.length} applications
                       </div>
                     </div>
                   </div>
@@ -190,7 +122,7 @@ export default function Dashboard() {
                               openApplicantModal();
                             }}
                           >
-                            <td className="px-6 py-4">
+                            <td className="px-4 py-2">
                               <div className="flex items-center gap-3">
                                 {application.user?.id && (
                                   <Pfp user_id={application.user?.id}></Pfp>
@@ -250,10 +182,10 @@ export default function Dashboard() {
                                   name="status"
                                   className="w-36"
                                   options={app_statuses.map((as) => as.name)}
-                                  default_value={
+                                  defaultValue={
                                     to_app_status_name(application.status) ?? ""
                                   }
-                                  on_change={async (status) => {
+                                  onChange={async (status) => {
                                     if (!application?.id) {
                                       console.error(
                                         "Not an application you can edit."
@@ -288,9 +220,7 @@ export default function Dashboard() {
             <ApplicantModalContent
               clickable={true}
               pfp_fetcher={async () =>
-                UserService.get_user_pfp_url(
-                  selected_application?.user?.id ?? ""
-                )
+                UserService.getUserPfpURL(selected_application?.user?.id ?? "")
               }
               pfp_route={`/users/${selected_application?.user?.id}/pic`}
               applicant={selected_application?.user}
