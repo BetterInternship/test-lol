@@ -9,10 +9,10 @@ import Countdown from "react-countdown";
 
 export default function OTPPage() {
   const {
-    send_otp_request,
-    resend_otp_request,
-    verify_otp,
-    redirect_if_logged_in,
+    sendOtpRequest: send_otp_request,
+    resendOtpRequest: resend_otp_request,
+    verifyOtp: verify_otp,
+    redirectIfLoggedIn: redirect_if_logged_in,
   } = useAuthContext();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -201,7 +201,7 @@ export default function OTPPage() {
           <Button
             onClick={handleVerifyOTP}
             disabled={loading || otp.join("").length !== 6}
-            className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+            className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
           >
             {loading ? "Verifying..." : "Verify OTP"}
           </Button>

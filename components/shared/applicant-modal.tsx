@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-06-30 03:50:26
+ * @ Modified time: 2025-07-01 23:57:24
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -10,13 +10,10 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
-import { useModal } from "@/hooks/use-modal";
 import { useFile } from "@/hooks/use-file";
-import { useClientDimensions } from "@/hooks/use-dimensions";
-import { user_service } from "@/lib/api/api";
 import { Button } from "../ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import {
@@ -26,51 +23,31 @@ import {
   FileText,
   GraduationCap,
 } from "lucide-react";
-import { get_full_name } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
   clickable = true,
   pfp_fetcher,
-  resume_fetcher,
-  resume_route,
   pfp_route,
-  open_resume_modal,
-  open_calendar_modal,
+  open_resume,
+  open_calendar,
   job = {} as Partial<Job>,
 }: {
   applicant?: Partial<PublicUser>;
   clickable?: boolean;
   pfp_fetcher: () => Promise<{ hash?: string }>;
-  resume_fetcher: () => Promise<{ hash?: string }>;
-  resume_route: string;
   pfp_route: string;
-  open_resume_modal?: () => void;
-  open_calendar_modal?: () => void;
+  open_resume: () => void;
+  open_calendar: () => void;
   job?: Partial<Job>;
 }) => {
-  const { to_level_name, to_college_name, to_job_type_name } = useRefs();
-  const { client_width, client_height } = useClientDimensions();
-
-  // Resume modal setup
   const {
-    open: open_internal_resume_modal,
-    close: close_resume_modal,
-    Modal: ResumeModal,
-  } = useModal("resume-modal");
-
-  // Calendar modal setup
-  const {
-    open: open_internal_calendar_modal,
-    close: close_calendar_modal,
-    Modal: CalendarModal,
-  } = useModal("calendar-modal");
-
-  const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetcher: resume_fetcher,
-    route: resume_route,
-  });
-
+    to_level_name,
+    to_college_name,
+    to_job_type_name,
+    to_university_name,
+  } = useRefs();
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
     fetcher: pfp_fetcher,
     route: pfp_route,
@@ -86,42 +63,15 @@ export const ApplicantModalContent = ({
   // Handle resume button click - memoize to prevent re-renders
   const handleResumeClick = useCallback(async () => {
     if (!clickable || !applicant?.resume || !applicant?.id) return;
-
-    if (open_resume_modal) {
-      // Use external modal handler if provided
-      open_resume_modal();
-    } else {
-      try {
-        await sync_resume_url();
-        open_internal_resume_modal();
-      } catch (error) {
-        console.error("Failed to sync resume URL:", error);
-        // Optionally show user-friendly error message
-      }
-    }
-  }, [
-    clickable,
-    applicant?.resume,
-    applicant?.id,
-    open_resume_modal,
-    resume_route,
-    sync_resume_url,
-    open_internal_resume_modal,
-  ]);
+    open_resume();
+  }, [clickable, applicant?.resume, applicant?.id, open_resume]);
 
   // Handle calendar button click - memoize to prevent re-renders
   const handleCalendarClick = useCallback(() => {
     if (!clickable || !applicant?.calendar_link) return;
 
-    if (open_calendar_modal) {
-      // Use external modal handler if provided
-      open_calendar_modal();
-    } else {
-      // Use internal modal
-      window?.open(applicant.calendar_link, "_blank")?.focus();
-      // open_internal_calendar_modal();
-    }
-  }, [clickable, applicant?.calendar_link, open_calendar_modal]);
+    open_calendar();
+  }, [clickable, applicant?.calendar_link]);
 
   return (
     <>
@@ -153,9 +103,9 @@ export const ApplicantModalContent = ({
                 </span>
               </div>
               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 md:mb-3 leading-tight">
-                {get_full_name(applicant) === ""
+                {getFullName(applicant) === ""
                   ? "No Name"
-                  : get_full_name(applicant)}
+                  : getFullName(applicant)}
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4">
                 Applying for {job?.title ?? "Sample Position"}{" "}
@@ -177,9 +127,10 @@ export const ApplicantModalContent = ({
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-col gap-2 sm:gap-3 md:flex-row md:gap-4">
+          <div className="flex flex-col gap-2 md:flex-row">
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white h-10 sm:h-11 text-sm md:text-base px-4 sm:px-6 font-medium flex-1 md:flex-none"
+              className="h-10 sm:h-11"
+              size="md"
               disabled={!clickable || !applicant.resume}
               onClick={handleResumeClick}
             >
@@ -188,7 +139,8 @@ export const ApplicantModalContent = ({
             </Button>
             <Button
               variant="outline"
-              className="border-blue-600 text-blue-600 hover:bg-blue-50 h-10 sm:h-11 text-sm md:text-base px-4 sm:px-6 font-medium flex-1 md:flex-none"
+              className="h-10 sm:h-11"
+              size="md"
               disabled={!clickable || !applicant?.calendar_link}
               onClick={handleCalendarClick}
             >
@@ -227,7 +179,7 @@ export const ApplicantModalContent = ({
                   Institution
                 </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
-                  DLSU Manila
+                  {to_university_name(applicant?.university)}
                 </p>
               </div>
               <div>
@@ -358,52 +310,6 @@ export const ApplicantModalContent = ({
           )}
         </div>
       </div>
-
-      {/* Resume Modal */}
-      {resume_url.length > 0 && (
-        <ResumeModal>
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <div className="px-6 pb-6">
-              <iframe
-                allowTransparency={true}
-                className="w-full border border-gray-200 rounded-lg"
-                style={{
-                  width: "100%",
-                  height: client_height * 0.75,
-                  minHeight: "600px",
-                  maxHeight: "800px",
-                  background: "#FFFFFF",
-                }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
-              >
-                Resume could not be loaded.
-              </iframe>
-            </div>
-          </div>
-        </ResumeModal>
-      )}
-
-      {/* Calendar Modal */}
-      {applicant?.calendar_link && (
-        <CalendarModal>
-          <div className="space-y-4">
-            <h1 className="text-2xl font-bold px-6 pt-2">Schedule Interview</h1>
-            <iframe
-              src={applicant.calendar_link}
-              width="100%"
-              height="700"
-              frameBorder="0"
-              style={{
-                minWidth: "320px",
-                height: "700px",
-              }}
-            >
-              Loading Calendar...
-            </iframe>
-          </div>
-        </CalendarModal>
-      )}
     </>
   );
 };

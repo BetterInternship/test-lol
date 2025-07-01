@@ -8,16 +8,16 @@ import { useAuthContext } from "@/lib/ctx-auth";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 
 export default function LoginPage() {
-  const { email_status, register, redirect_if_logged_in } = useAuthContext();
+  const { emailStatus, register, redirectIfLoggedIn } = useAuthContext();
   const [email, setEmail] = useState("");
-  const [new_account, set_new_account] = useState(false);
+  const [newAccount, setNewAccount] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  redirect_if_logged_in();
+  redirectIfLoggedIn();
 
   // Check if user just registered
   useEffect(() => {
@@ -57,9 +57,9 @@ export default function LoginPage() {
       setError("");
 
       // Production flow with OTP
-      await email_status(email).then((response) => {
+      await emailStatus(email).then((response) => {
         if (!response?.existing_user) {
-          set_new_account(true);
+          setNewAccount(true);
           setLoading(false);
         } else if (!response.verified_user) {
           router.push(`/login?verified=pending`);
@@ -97,7 +97,7 @@ export default function LoginPage() {
         <div className="w-full">
           {/* Welcome Message */}
           <div className="text-center mb-10">
-            {!new_account ? (
+            {!newAccount ? (
               <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
                 Recruiters are waiting!
               </h2>
@@ -147,10 +147,10 @@ export default function LoginPage() {
                 />
               </div>
 
-              {!new_account ? (
+              {!newAccount ? (
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer"
                 >
                   {loading ? "Checking..." : "Continue"}
                 </Button>
@@ -158,7 +158,7 @@ export default function LoginPage() {
                 <>
                   <Button
                     type="button"
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                    className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer"
                     onClick={() =>
                       router.push(
                         `/register?email=${encodeURIComponent(email)}`
@@ -170,7 +170,7 @@ export default function LoginPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-12 border-gray-300 font-medium rounded-lg transition-colors cursor-pointer"
+                    className="w-full h-12 border-gray-300 transition-colors cursor-pointer"
                     onClick={handle_skip}
                   >
                     Skip for now

@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, createContext } from "react";
 import { useAppContext } from "@/lib/ctx-app";
+import { useMobile } from "./use-mobile";
+
+interface IModalContext {}
+const modalContext = createContext<IModalContext>({} as IModalContext);
 
 /**
  * Creates a reusable modal component with robust mobile touch handling.
@@ -12,97 +16,47 @@ export const useModal = (
   name: string,
   options?: { showCloseButton?: boolean }
 ) => {
-  const [is_open, set_is_open] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { showCloseButton = true } = options || {};
-  const { is_mobile } = useAppContext();
+  const { isMobile } = useAppContext();
+  const { isTouchOnSingleElement, isTouchEndOnElement, isSwipe } = useMobile();
 
   // Refs for touch event handling
   const backdropRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  const touchStartRef = useRef<{
-    x: number;
-    y: number;
-    target: EventTarget | null;
-  } | null>(null);
 
   // Robust modal close handler
-  const closeModal = useCallback(() => {
-    set_is_open(false);
-  }, []);
-
-  // Touch event handlers for mobile
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      if (!is_mobile) return;
-
-      const touch = e.touches[0];
-      touchStartRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
-        target: e.target,
-      };
-    },
-    [is_mobile]
-  );
-
-  const handleTouchEnd = useCallback(
-    (e: React.TouchEvent) => {
-      if (!is_mobile || !touchStartRef.current) return;
-
-      const touch = e.changedTouches[0];
-      const startTouch = touchStartRef.current;
-
-      // Calculate touch movement
-      const deltaX = Math.abs(touch.clientX - startTouch.x);
-      const deltaY = Math.abs(touch.clientY - startTouch.y);
-      const isSwipe = deltaX > 10 || deltaY > 10;
-
-      // Only close if:
-      // 1. Touch started and ended on backdrop (not modal content)
-      // 2. It wasn't a swipe gesture
-      // 3. Touch target is the backdrop element
-      if (
-        !isSwipe &&
-        startTouch.target === backdropRef.current &&
-        e.target === backdropRef.current
-      ) {
-        closeModal();
-      }
-
-      touchStartRef.current = null;
-    },
-    [is_mobile, closeModal]
-  );
+  const closeModal = () => setIsOpen(false);
 
   // Click handler for desktop
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       // Only handle mouse events on desktop
-      if (is_mobile) return;
+      if (isMobile) return;
 
       if (e.target === backdropRef.current) {
         closeModal();
       }
     },
-    [is_mobile, closeModal]
+    [isMobile, closeModal]
   );
 
   // Prevent event propagation for modal content
   const handleModalInteraction = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
-      e.stopPropagation();
+      // e.stopPropagation();
     },
     []
   );
 
   // Body scroll management
   useEffect(() => {
-    if (is_open) {
+    if (isOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
 
       // Mobile viewport height handling
-      if (is_mobile) {
+      if (isMobile) {
         const setVH = () => {
           document.documentElement.style.setProperty(
             "--vh",
@@ -125,47 +79,53 @@ export const useModal = (
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [is_open, is_mobile]);
+  }, [isOpen, isMobile]);
 
   return {
-    state: is_open,
-    open: () => set_is_open(true),
+    state: isOpen,
+    open: () => setIsOpen(true),
     close: closeModal,
     Modal: ({ children }: { children: React.ReactNode }) => (
       <>
-        {is_open && (
+        {isOpen && (
           <div
             ref={backdropRef}
             className={`fixed inset-0 bg-black bg-opacity-50 flex z-[100] backdrop-blur-sm ${
-              is_mobile
+              isMobile
                 ? "items-end justify-center p-0"
                 : "items-center justify-center p-4"
             }`}
             onClick={handleBackdropClick}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
+            onTouchEnd={(e) => {
+              if (
+                !isSwipe() &&
+                isTouchOnSingleElement() &&
+                isTouchEndOnElement(backdropRef.current)
+              )
+                closeModal();
+            }}
             style={{
-              height: is_mobile ? "calc(var(--vh, 1vh) * 100)" : "100vh",
+              height: isMobile ? "calc(var(--vh, 1vh) * 100)" : "100vh",
             }}
           >
             <div
               ref={modalRef}
-              className={`bg-white overflow-hidden shadow-2xl w-full ${
-                is_mobile
-                  ? "max-w-full mx-0 rounded-t-2xl rounded-b-none max-h-[85vh] min-h-[200px] flex flex-col animate-in slide-in-from-bottom duration-300"
-                  : "max-w-2xl rounded-2xl max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
+              className={`bg-white overflow-hidden shadow-2xl ${
+                isMobile
+                  ? "w-full max-w-full mx-0 rounded-t-sm rounded-b-none max-h-[85vh] min-h-[200px] flex flex-col animate-in slide-in-from-bottom duration-300"
+                  : "max-w-2xl rounded-sm max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
               }`}
               onClick={handleModalInteraction}
               onTouchStart={handleModalInteraction}
               onTouchEnd={handleModalInteraction}
               style={{
-                maxHeight: is_mobile ? "calc(var(--vh, 1vh) * 85)" : "90vh",
+                maxHeight: isMobile ? "calc(var(--vh, 1vh) * 85)" : "90vh",
                 height: "auto",
               }}
             >
               {showCloseButton && (
                 <div
-                  className={`flex justify-end p-4 ${is_mobile ? "pb-2" : ""}`}
+                  className={`flex justify-end p-4 ${isMobile ? "pb-2" : ""}`}
                   onClick={handleModalInteraction}
                   onTouchStart={handleModalInteraction}
                 >
@@ -178,7 +138,7 @@ export const useModal = (
                       closeModal();
                     }}
                     className={`h-8 w-8 p-0 hover:bg-gray-100 rounded-full transition-colors ${
-                      is_mobile ? "active:bg-gray-200" : ""
+                      isMobile ? "active:bg-gray-200" : ""
                     }`}
                     aria-label="Close modal"
                   >
@@ -188,7 +148,7 @@ export const useModal = (
               )}
               <div
                 className={`${
-                  showCloseButton && is_mobile ? "pt-0" : ""
+                  showCloseButton && isMobile ? "pt-0" : ""
                 } flex-1 overflow-hidden`}
                 onClick={handleModalInteraction}
                 onTouchStart={handleModalInteraction}
@@ -196,7 +156,7 @@ export const useModal = (
                 {children}
               </div>
               {/* Safe area padding for mobile */}
-              {is_mobile && (
+              {isMobile && (
                 <div
                   className="pb-safe h-4"
                   onClick={handleModalInteraction}

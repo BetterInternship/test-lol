@@ -57,7 +57,6 @@ export const Paginator: React.FC<PaginatorProps> = ({
         variant={"ghost"}
         onClick={() => goToPage(currentPage - 1)}
         disabled={currentPage === 1}
-        className="px-2 py-1 rounded-md text-sm hover:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
       >
         <ChevronLeft></ChevronLeft>
       </Button>
@@ -66,13 +65,8 @@ export const Paginator: React.FC<PaginatorProps> = ({
         typeof page === "number" ? (
           <Button
             key={idx}
-            variant={"ghost"}
+            variant={currentPage === page ? "default" : "ghost"}
             onClick={() => goToPage(page)}
-            className={`px-3 py-1 rounded-md text-sm ${
-              currentPage === page
-                ? "bg-blue-600 text-white "
-                : "text-blue-600  hover:bg-blue-100"
-            }`}
           >
             {page}
           </Button>
@@ -87,7 +81,6 @@ export const Paginator: React.FC<PaginatorProps> = ({
         variant={"ghost"}
         onClick={() => goToPage(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="px-2 py-1 rounded-md text-sm hover:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
       >
         <ChevronRight></ChevronRight>
       </Button>

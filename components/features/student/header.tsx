@@ -17,7 +17,7 @@ import { useRoute } from "@/hooks/use-route";
  * @component
  */
 export const Header = () => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
 
@@ -50,7 +50,7 @@ export const Header = () => {
  * @component
  */
 export const ProfileButton = () => {
-  const { user, is_authenticated, logout } = useAuthContext();
+  const { user, isAuthenticated: is_authenticated, logout } = useAuthContext();
   const router = useRouter();
 
   const handle_logout = () => {
@@ -70,8 +70,8 @@ export const ProfileButton = () => {
         content={
           <div className="px-4 py-3 border-b border-gray-200">
             <p className="text-sm font-medium text-gray-900">
-              {user?.first_name && user?.last_name 
-                ? `${user.first_name} ${user.last_name}` 
+              {user?.first_name && user?.last_name
+                ? `${user.first_name} ${user.last_name}`
                 : user?.email}
             </p>
             <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
@@ -107,7 +107,8 @@ export const ProfileButton = () => {
     <Button
       type="button"
       variant="outline"
-      className="flex items-center gap-2 h-10 px-4 bg-white border-gray-300 hover:bg-gray-50 text-blue-600 hover:text-blue-600"
+      size="md"
+      className="h-10 border-gray-300 hover:bg-gray-50 "
       onClick={() => router.push("/login")}
     >
       Sign in

@@ -1,36 +1,81 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+import { BooleanCheckIcon } from "./icons";
 
-import { cn } from "@/lib/utils"
-
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+const badge_variants = cva(
+  [
+    "border",
+    "border-transparent",
+    "cursor-default",
+    "font-semibold",
+    "inline-flex",
+    "items-center",
+    "px-[0.75em]",
+    "py-[0.25em]",
+    "rounded-[0.33em]",
+    "select-none",
+    "text-xs",
+    "transition-colors",
+    "whitespace-nowrap",
+  ],
   {
     variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+      type: {
+        default: ["border-gray-300", "text-gray-700"],
+        primary: ["bg-primary", "text-primary-foreground"],
+        accent: ["bg-accent", "text-accent-foreground"],
+        supportive: ["bg-supportive", "text-supportive-foreground"],
+        warning: ["bg-warning", "text-warning-foreground"],
+        destructive: ["bg-destructive", "text-destructive-foreground"],
+      },
+      strength: {
+        default: ["opacity-100"],
+        medium: ["opacity-80"],
+        light: ["opacity-50"],
+        invisible: ["opacity-0"],
       },
     },
     defaultVariants: {
-      variant: "default",
+      type: "default",
+      strength: "default",
     },
   }
-)
+);
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+    VariantProps<typeof badge_variants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+export function Badge({ className, type, strength, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
-  )
+    <div
+      className={cn(badge_variants({ type, strength }), className)}
+      {...props}
+    />
+  );
 }
 
-export { Badge, badgeVariants }
+export function BoolBadge({
+  state,
+  onValue,
+  offValue,
+  onScheme = "supportive",
+  offScheme = "accent",
+  ...props
+}: {
+  state: boolean | null | undefined;
+  onValue: string;
+  offValue: string;
+  onScheme?: "default" | "primary" | "accent" | "supportive" | "destructive";
+  offScheme?: "default" | "primary" | "accent" | "supportive" | "destructive";
+}) {
+  return (
+    <Badge type={state ? onScheme : offScheme}>
+      <BooleanCheckIcon checked={state} />
+      {state ? onValue : offValue}
+    </Badge>
+  );
+}
+
+Badge.displayName = "Badge";

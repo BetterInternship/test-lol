@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-06-30 04:41:45
+ * @ Modified time: 2025-07-02 01:47:02
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -17,7 +17,7 @@ import React, {
   Children,
 } from "react";
 import { ChevronDown, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -59,12 +59,14 @@ export const DropdownOption = ({ children }: IDropdownOptionProps) => {
 const DropdownOptionButton = ({
   children,
   set_is_open,
+  size = "xs",
 }: {
   children: React.ReactElement<IDropdownOptionProps>;
   set_is_open: (is_open: boolean) => void;
+  size?: "xs" | "sm" | "md" | "lg";
 }) => {
   const router = useRouter();
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const [scrolling, setScrolling] = useState(false);
   const dropdown_button_ref = useRef<HTMLInputElement>({} as HTMLInputElement);
 
@@ -113,8 +115,9 @@ const DropdownOptionButton = ({
       // @ts-ignore
       ref={dropdown_button_ref}
       className={cn(
-        "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
-        is_mobile ? "py-3 active:bg-gray-200 touch-manipulation" : "", // Larger touch targets on mobile
+        "w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors flex items-center gap-2",
+        is_mobile ? "py-3 active:bg-gray-200 touch-manipulation" : "",
+        `text-${size}`,
         children.props.highlighted ? "text-blue-500" : ""
       )}
       onClick={(e) => !scrolling && handleClick(e)}
@@ -156,17 +159,17 @@ export const GroupableRadioDropdown = ({
   options,
   on_change,
   default_value = options[0],
-  button_class = "",
+  size = "sm",
   className = "",
 }: {
   name: string;
   options: string[];
   on_change: (option: string) => void;
   default_value?: string;
-  button_class?: string;
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const { active_dropdown, set_active_dropdown } =
     useContext(DropdownGroupContext);
   const [is_open, set_is_open] = useState(false);
@@ -355,25 +358,13 @@ export const GroupableRadioDropdown = ({
       <Button
         ref={buttonRef}
         type="button"
-        variant="ghost"
+        variant="outline"
+        size={size}
         onClick={handle_click}
         onTouchEnd={(e) => e.stopPropagation()}
-        className={cn(
-          "flex items-center input-box justify-between",
-          is_mobile
-            ? "h-12 px-4 gap-2 w-full text-left bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md focus:ring-2 focus:ring-blue-500 font-medium"
-            : "h-auto py-3 px-3 gap-1 bg-transparent font-normal text-sm w-full",
-          button_class
-        )}
+        className="w-full"
       >
-        <span
-          className={cn(
-            "whitespace-nowrap truncate",
-            is_mobile ? "text-sm" : "text-sm"
-          )}
-        >
-          {value}
-        </span>
+        {value}
         <ChevronDown
           className={cn(
             "w-4 h-4 text-gray-600 transition-transform",
@@ -396,11 +387,6 @@ export const GroupableRadioDropdown = ({
           onClick={handleDropdownInteraction}
           onTouchStart={handleDropdownInteraction}
           onTouchEnd={handleDropdownInteraction}
-          style={{
-            top: dropdownPosition.top,
-            left: dropdownPosition.left,
-            width: dropdownPosition.width,
-          }}
         >
           <div
             className={cn(
@@ -413,7 +399,11 @@ export const GroupableRadioDropdown = ({
             }}
           >
             {options.map((option, index) => (
-              <DropdownOptionButton key={index} set_is_open={set_is_open}>
+              <DropdownOptionButton
+                key={index}
+                set_is_open={set_is_open}
+                size={size}
+              >
                 <DropdownOption
                   highlighted={value === option}
                   on_click={() => handle_change(option)}
@@ -449,7 +439,7 @@ export const GroupableNavDropdown = ({
   className?: string;
   showArrow?: boolean;
 }) => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const [is_open, set_is_open] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -566,7 +556,7 @@ export const GroupableNavDropdown = ({
         ref={buttonRef}
         type="button"
         variant="outline"
-        className="flex items-center gap-2 h-10 px-4 bg-white border-gray-300 hover:bg-gray-50"
+        className="flex items-center gap-2 h-10 px-3 bg-white border-gray-300 hover:bg-gray-50"
         onClick={handleButtonClick}
         onTouchEnd={(e) => e.stopPropagation()}
       >

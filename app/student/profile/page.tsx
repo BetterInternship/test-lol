@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
-import { useAppContext } from "@/lib/ctx-app";
 import { PublicUser } from "@/lib/db/db.types";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -28,43 +27,46 @@ import {
 } from "@/components/ui/editable";
 import { UserPropertyLabel, UserLinkLabel } from "@/components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
-import { user_service } from "@/lib/api/api";
-import { useClientDimensions } from "@/hooks/use-dimensions";
+import { UserService } from "@/lib/api/api";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/hooks/use-file";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { get_full_name } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function ProfilePage() {
-  const { is_authenticated } = useAuthContext();
+  const { isAuthenticated: is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
-  const { client_width, client_height } = useClientDimensions();
   const {
     ref_loading,
-    colleges,
+    ref_is_not_null,
     levels,
-    degrees,
-    departments,
     to_college_name,
     to_level_name,
     to_department_name,
     to_degree_full_name,
+    to_university_name,
     get_college_by_name,
     get_level_by_name,
+    get_departments_by_college,
+    get_colleges_by_university,
+    get_degrees_by_university,
     get_department_by_name,
     get_degree_by_type_and_name,
+    get_university_by_name,
+    get_universities_from_domain,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
-  const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetcher: user_service.get_my_resume_url,
+  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
+    fetcher: UserService.get_my_resume_url,
     route: "/users/me/resume",
   });
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
-    fetcher: user_service.get_my_pfp_url,
+    fetcher: UserService.get_my_pfp_url,
     route: "/users/me/pic",
   });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
@@ -73,6 +75,7 @@ export default function ProfilePage() {
       department_name: string | null;
       degree_name: string | null;
       year_level_name: string | null;
+      university_name: string | null;
     }
   >();
   const [saving, setSaving] = useState(false);
@@ -89,6 +92,7 @@ export default function ProfilePage() {
     middle_name?: string;
     last_name?: string;
     phone_number?: string;
+    university?: string;
     college?: string;
     department?: string;
     year_level?: string;
@@ -96,7 +100,9 @@ export default function ProfilePage() {
 
   // URL validation functions
   const isValidURL = (url: string): boolean => {
-    if (!url || url.trim() === "") return true; // Empty URLs are allowed
+    if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return urlObj.protocol === "http:" || urlObj.protocol === "https:";
@@ -107,6 +113,8 @@ export default function ProfilePage() {
 
   const isValidGitHubURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return (
@@ -118,8 +126,19 @@ export default function ProfilePage() {
     }
   };
 
+  // Sanitize urls
+  const urlPreprocess = (url: string | null) =>
+    !url
+      ? ""
+      : !url.toLowerCase().startsWith("http://") &&
+        !url.toLowerCase().startsWith("https://")
+      ? "https://" + url
+      : url;
+
   const isValidLinkedInURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return (
@@ -134,6 +153,8 @@ export default function ProfilePage() {
 
   const isValidCalendarURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
+    if (!url.startsWith("https://") && !url.startsWith("http://"))
+      url = "https://" + url;
     try {
       const urlObj = new URL(url);
       return (
@@ -316,8 +337,6 @@ export default function ProfilePage() {
     close: close_resume_modal,
     Modal: ResumeModal,
   } = useModal("resume-modal");
-
-  const { is_mobile } = useAppContext();
   const router = useRouter();
 
   // File input refs
@@ -351,7 +370,7 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("resume");
       form.file(file);
       // @ts-ignore
-      const result = await user_service.update_my_resume(form.build());
+      const result = await UserService.update_my_resume(form.build());
       alert("Resume uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload resume");
@@ -364,7 +383,7 @@ export default function ProfilePage() {
   };
 
   const handlePreviewResume = async () => {
-    await sync_resume_url();
+    await syncResumeUrl();
     open_resume_modal();
   };
 
@@ -380,8 +399,8 @@ export default function ProfilePage() {
       return;
     }
 
-    if (file.size > 1 * 1024 * 1024) {
-      alert("Image size must be less than 1MB");
+    if (file.size > (1024 * 1024) / 4) {
+      alert("Image size must be less than 0.25MB");
       return;
     }
 
@@ -390,7 +409,7 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("pfp");
       form.file(file);
       // @ts-ignore
-      const result = await user_service.update_my_pfp(form.build());
+      const result = await UserService.update_my_pfp(form.build());
       if (!result.success) {
         alert("Could not upload profile picture.");
         return;
@@ -421,6 +440,7 @@ export default function ProfilePage() {
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
         department_name: to_department_name(profile.department),
+        university_name: to_university_name(profile.university),
         calendar_link: profile.calendar_link ?? "",
       });
   }, [profile, ref_loading]);
@@ -452,11 +472,13 @@ export default function ProfilePage() {
             form_data.degree_name?.split(" - ")[0],
             form_data.degree_name?.split(" - ")[1]
           )?.id ?? undefined,
-        degree_notes: form_data.degree_notes ?? "",
-        portfolio_link: form_data.portfolio_link ?? "",
-        github_link: form_data.github_link ?? "",
-        linkedin_link: form_data.linkedin_link ?? "",
-        calendar_link: form_data.calendar_link ?? "",
+        university:
+          get_university_by_name(form_data.university_name)?.id ?? undefined,
+        degree_notes: form_data.degree_notes,
+        portfolio_link: urlPreprocess(form_data.portfolio_link),
+        github_link: urlPreprocess(form_data.github_link),
+        linkedin_link: urlPreprocess(form_data.linkedin_link),
+        calendar_link: urlPreprocess(form_data.calendar_link),
         bio: form_data.bio ?? "",
         taking_for_credit: form_data.taking_for_credit,
         linkage_officer: form_data.linkage_officer ?? "",
@@ -479,6 +501,7 @@ export default function ProfilePage() {
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
         department_name: to_department_name(profile.department),
+        university_name: to_university_name(profile.university),
         degree_name: to_degree_full_name(profile.degree),
       });
     setIsEditing(false);
@@ -527,7 +550,7 @@ export default function ProfilePage() {
             {/* Avatar and Name Section */}
             <div className="flex items-start gap-4 sm:gap-6 flex-1">
               <div className="relative flex-shrink-0">
-                <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
+                <Avatar className="h-28 w-28 border border-gray-300">
                   {profile.profile_picture && pfp_url ? (
                     <AvatarImage src={pfp_url} alt="Profile picture" />
                   ) : (
@@ -540,7 +563,7 @@ export default function ProfilePage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="absolute -bottom-1 -right-1 h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                  className="absolute -bottom-0 -right-0 h-6 w-6 sm:h-7 sm:w-7 rounded-full"
                   onClick={() => profilePictureInputRef.current?.click()}
                   disabled={uploading}
                 >
@@ -550,99 +573,98 @@ export default function ProfilePage() {
 
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-bold font-heading mb-1">
-                  {get_full_name(profile)}
+                  {getFullName(profile)}
                 </h1>
                 <p className="text-muted-foreground text-sm">
                   {profile.college && to_college_name(profile.college)}
-                  {profile.college && profile.year_level && " • "}
-                  {profile.year_level && to_level_name(profile.year_level)}
+                  {ref_is_not_null(profile.year_level) && profile.college
+                    ? " • "
+                    : ""}
+                  {ref_is_not_null(profile.year_level)
+                    ? to_level_name(profile.year_level)
+                    : ""}
                 </p>
-              </div>
-            </div>
-
-            {/* Action Buttons Section - Mobile Optimized */}
-            <div className="flex flex-col gap-3 w-full sm:w-auto sm:flex-row sm:gap-2 sm:flex-shrink-0">
-              {/* Preview Button - Always Visible */}
-              <Button
-                variant="outline"
-                size="default"
-                onClick={() => open_employer_modal()}
-                className="text-blue-600 border-blue-200 hover:bg-blue-50 w-full sm:w-auto h-12 sm:h-auto"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </Button>
-
-              {/* Edit Mode Buttons */}
-              {isEditing ? (
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex w-full flex-row gap-2 flex-shrink-0 mt-2">
+                  {/* Preview Button - Always Visible */}
                   <Button
                     variant="outline"
-                    size="default"
-                    onClick={handleCancel}
-                    disabled={saving}
-                    className="flex-1 sm:flex-none h-12 sm:h-auto"
+                    scheme="primary"
+                    disabled={isEditing}
+                    onClick={() => open_employer_modal()}
                   >
-                    Cancel
+                    <Eye className="h-4 w-4" />
+                    Preview
                   </Button>
-                  <Button
-                    size="default"
-                    onClick={handleSave}
-                    disabled={
-                      saving ||
-                      Object.keys(linkErrors).length > 0 ||
-                      Object.keys(fieldErrors).length > 0
-                    }
-                    className={`flex-1 sm:flex-none h-12 sm:h-auto ${
-                      Object.keys(linkErrors).length > 0 ||
-                      Object.keys(fieldErrors).length > 0
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  size="default"
-                  onClick={() => (
-                    setIsEditing(true),
-                    set_fields({
-                      ...profile,
-                      degree_name: to_degree_full_name(profile.degree),
-                      college_name: to_college_name(profile.college),
-                      year_level_name: to_level_name(profile.year_level),
-                      department_name: to_department_name(profile.department),
-                      calendar_link: profile.calendar_link ?? "",
-                    })
-                  )}
-                  className="w-full sm:w-auto h-12 sm:h-auto"
-                >
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              )}
 
-              {/* Error Messages - Mobile Optimized */}
-              {isEditing &&
-                (Object.keys(linkErrors).length > 0 ||
-                  Object.keys(fieldErrors).length > 0) && (
-                  <div className="flex flex-col gap-1 text-xs">
-                    {Object.keys(linkErrors).length > 0 && (
-                      <div className="flex items-center gap-1 text-red-600">
-                        <AlertCircle className="h-3 w-3" />
-                        <span>Fix URL errors to save</span>
+                  {/* Edit Mode Buttons */}
+                  {isEditing ? (
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        onClick={handleCancel}
+                        disabled={saving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSave}
+                        disabled={
+                          saving ||
+                          Object.keys(linkErrors).length > 0 ||
+                          Object.keys(fieldErrors).length > 0
+                        }
+                        className={`${
+                          Object.keys(linkErrors).length > 0 ||
+                          Object.keys(fieldErrors).length > 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      >
+                        {saving ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => (
+                        setIsEditing(true),
+                        set_fields({
+                          ...profile,
+                          degree_name: to_degree_full_name(profile.degree),
+                          college_name: to_college_name(profile.college),
+                          year_level_name: to_level_name(profile.year_level),
+                          department_name: to_department_name(
+                            profile.department
+                          ),
+                          calendar_link: profile.calendar_link ?? "",
+                        })
+                      )}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  )}
+
+                  {/* Error Messages - Mobile Optimized */}
+                  {isEditing &&
+                    (Object.keys(linkErrors).length > 0 ||
+                      Object.keys(fieldErrors).length > 0) && (
+                      <div className="flex flex-col gap-1 text-xs">
+                        {Object.keys(linkErrors).length > 0 && (
+                          <div className="flex items-center gap-1 text-red-600">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>Fix URL errors to save</span>
+                          </div>
+                        )}
+                        {Object.keys(fieldErrors).length > 0 && (
+                          <div className="flex items-center gap-1 text-red-600">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>Fix required fields to save</span>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {Object.keys(fieldErrors).length > 0 && (
-                      <div className="flex items-center gap-1 text-red-600">
-                        <AlertCircle className="h-3 w-3" />
-                        <span>Fix required fields to save</span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -748,6 +770,52 @@ export default function ProfilePage() {
                       <DropdownGroup>
                         <div>
                           <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            University
+                          </label>
+                          {fieldErrors.university && (
+                            <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                              <AlertCircle className="h-3 w-3" />
+                              <span>{fieldErrors.university}</span>
+                            </div>
+                          )}
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="college"
+                            value={form_data.university_name}
+                            setter={(value) => {
+                              set_fields({
+                                university_name: value,
+                                university: get_university_by_name(value)?.id,
+                                college_name: "Not specified",
+                                college: null,
+                                department_name: "Not specified",
+                                department: null,
+                                degree_name: "Not specified",
+                                degree: null,
+                              });
+
+                              // Clear college error when user selects a value (immediate feedback)
+                              if (value && value !== "Not specified") {
+                                setFieldErrors((prev) => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.university;
+                                  return newErrors;
+                                });
+                              }
+                            }}
+                            options={[
+                              "Not specified",
+                              ...get_universities_from_domain(
+                                profile.email.split("@")[1]
+                              ).map((uid) => to_university_name(uid) ?? ""),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
                             College
                           </label>
                           {fieldErrors.college && (
@@ -778,7 +846,11 @@ export default function ProfilePage() {
                             }}
                             options={[
                               "Not specified",
-                              ...colleges.map((c) => c.name),
+                              ...get_colleges_by_university(
+                                get_university_by_name(
+                                  form_data.university_name
+                                )?.id ?? ""
+                              ).map((cid) => to_college_name(cid) ?? ""),
                             ]}
                           >
                             <UserPropertyLabel />
@@ -814,13 +886,10 @@ export default function ProfilePage() {
                             }}
                             options={[
                               "Not specified",
-                              ...departments
-                                .filter(
-                                  (d) =>
-                                    form_data.college &&
-                                    d.college_id === form_data.college
-                                )
-                                .map((d) => d.name),
+                              ...get_departments_by_college(
+                                get_college_by_name(form_data.college_name)
+                                  ?.id ?? ""
+                              ).map((did) => to_department_name(did) ?? ""),
                             ]}
                           >
                             <UserPropertyLabel />
@@ -838,13 +907,11 @@ export default function ProfilePage() {
                             setter={field_setter("degree_name")}
                             options={[
                               "Not specified",
-                              ...degrees
-                                .filter(
-                                  (d) =>
-                                    form_data.university &&
-                                    d.university_id === form_data.university
-                                )
-                                .map((d) => `${d.type} - ${d.name}`),
+                              ...get_degrees_by_university(
+                                get_university_by_name(
+                                  form_data.university_name
+                                )?.id ?? ""
+                              ).map((did) => to_degree_full_name(did) ?? ""),
                             ]}
                           >
                             <UserPropertyLabel />
@@ -1041,7 +1108,10 @@ export default function ProfilePage() {
                             Calendar Link
                           </label>
                           {!isEditing && (
-                            <Link href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit" className="mb-1">
+                            <Link
+                              href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
+                              className="mb-1"
+                            >
                               <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
                             </Link>
                           )}
@@ -1105,18 +1175,14 @@ export default function ProfilePage() {
                         <div className="flex gap-1">
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={handlePreviewResume}
-                            className="h-7 px-2 text-green-600 border-green-600 hover:bg-green-100"
                           >
                             <Eye className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={() => resumeInputRef.current?.click()}
                             disabled={uploading}
-                            className="h-7 px-2 text-blue-600 border-blue-600 hover:bg-blue-100"
                           >
                             <Upload className="h-3 w-3" />
                           </Button>
@@ -1132,13 +1198,12 @@ export default function ProfilePage() {
                       <Button
                         onClick={() => resumeInputRef.current?.click()}
                         disabled={uploading}
-                        size="sm"
                       >
-                        <Upload className="h-4 w-4 mr-1" />
+                        <Upload className="h-4 w-4" />
                         {uploading ? "Uploading..." : "Upload"}
                       </Button>
                       <p className="text-xs text-muted-foreground mt-1">
-                        PDF up to 3MB
+                        PDF up to 2.5MB
                       </p>
                     </div>
                   )}
@@ -1187,26 +1252,11 @@ export default function ProfilePage() {
       </div>
 
       {/* Modals */}
-      {resume_url.length > 0 && (
+      {resumeUrl.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <div className="px-6 pb-6">
-              <iframe
-                allowTransparency={true}
-                className="w-full border border-gray-200 rounded-lg"
-                style={{
-                  width: "100%",
-                  height: client_height * 0.75,
-                  minHeight: "600px",
-                  maxHeight: "800px",
-                  background: "#FFFFFF",
-                }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
-              >
-                Resume could not be loaded.
-              </iframe>
-            </div>
+            <PDFPreview url={resumeUrl} />
           </div>
         </ResumeModal>
       )}
@@ -1214,14 +1264,15 @@ export default function ProfilePage() {
       <EmployerModal>
         <ApplicantModalContent
           applicant={profile}
-          resume_fetcher={user_service.get_my_resume_url}
-          pfp_fetcher={user_service.get_my_pfp_url}
-          resume_route="/users/me/resume"
+          pfp_fetcher={UserService.get_my_pfp_url}
           pfp_route="/users/me/pic"
-          open_resume_modal={async () => {
+          open_resume={async () => {
             close_employer_modal();
-            await sync_resume_url();
+            await syncResumeUrl();
             open_resume_modal();
+          }}
+          open_calendar={async () => {
+            window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
           }}
         />
       </EmployerModal>

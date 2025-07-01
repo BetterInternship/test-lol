@@ -9,7 +9,7 @@ import { useAppContext } from "@/lib/ctx-app";
  * @component
  */
 export const Footer = ({ content }: { content?: string }) => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const footer_routes = ["/login", "/register", "/otp", "/"];
   const { route_excluded } = useRoute();
 
@@ -32,8 +32,8 @@ export const Footer = ({ content }: { content?: string }) => {
                 className="text-blue-600 hover:underline"
               >
                 Terms & Conditions
-              </a>
-              {" "}and{" "}
+              </a>{" "}
+              and{" "}
               <a
                 href="/PrivacyPolicy.pdf"
                 target="_blank"

@@ -46,7 +46,7 @@ export const TabGroup = ({
                 variant="ghost"
                 aria-selected={active_tab === name}
                 className={cn(
-                  "p-6 text-left hover:bg-gray-200 hover:text-blue-600 text-gray-700 ring-0 focus:shadow-none focus:ring-transparent focus:ring-0 focus:outline-0 focus:border-0 aria-selected:text-white aria-selected:bg-blue-600",
+                  "p-6 text-left  text-gray-700 aria-selected:text-white aria-selected:bg-primary",
                   layout === "landscape"
                     ? "w-fit rounded-t-sm rounded-b-none"
                     : "w-full"

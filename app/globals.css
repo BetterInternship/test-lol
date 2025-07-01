@@ -13,16 +13,20 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 208 86% 31%;
     --primary-foreground: 210 40% 98%;
+    --warning: 31 78% 56%;
+    --warning-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
+    --accent: 204 14% 93%;
     --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 4 90% 58%;
     --destructive-foreground: 210 40% 98%;
+    --supportive: 102 36 48;
+    --supportive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
@@ -77,6 +81,8 @@
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+    --supportive: 0 62.8% 30.6%;
+    --supportive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
@@ -237,18 +243,6 @@
     @apply bg-blue-100 text-blue-800;
   }
 
-  /* Enhanced job card styles */
-  .job-card {
-    @apply card p-6 hover:shadow-lg cursor-pointer;
-    @apply border-l-4 border-l-transparent hover:border-l-primary;
-    @apply transform hover:-translate-y-0.5 transition-all duration-200;
-  }
-
-  .job-card.selected {
-    @apply border-primary bg-primary/5 shadow-md;
-    @apply border-l-primary;
-  }
-
   /* Dashboard and application specific styles */
   .sidebar-nav {
     @apply space-y-1;
@@ -293,28 +287,29 @@
 /* Custom scrollbar styles */
 @layer utilities {
   /* For Webkit browsers */
-  .scrollbar-custom::-webkit-scrollbar {
+  *::-webkit-scrollbar {
     width: 6px;
   }
 
-  .scrollbar-custom::-webkit-scrollbar-track {
+  *::-webkit-scrollbar-track {
     background: #f8fafc;
     border-radius: 3px;
   }
 
-  .scrollbar-custom::-webkit-scrollbar-thumb {
+  *::-webkit-scrollbar-thumb {
     background: #cbd5e1;
-    border-radius: 3px;
+    border-radius: 0px;
   }
 
-  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  *::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
   }
 
   /* For Firefox */
-  .scrollbar-custom {
+  * {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f8fafc;
+    scrollbar-gutter: 6px;
   }
 
   /* Enhanced animation utilities */
@@ -549,19 +544,19 @@ button[role="checkbox"]:checked {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-  
+
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
-  
+
   .pl-safe {
     padding-left: env(safe-area-inset-left);
   }
-  
+
   .pr-safe {
     padding-right: env(safe-area-inset-right);
   }
-  
+
   .webkit-overflow-scrolling-touch {
     -webkit-overflow-scrolling: touch;
   }

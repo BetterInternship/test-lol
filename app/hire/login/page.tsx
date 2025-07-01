@@ -145,7 +145,7 @@ export default function LoginPage() {
                   <Button
                     type="submit"
                     disabled={isLoading || !email}
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? "Verifying email..." : "Continue"}
                   </Button>
@@ -153,7 +153,7 @@ export default function LoginPage() {
                   <Button
                     type="button"
                     disabled={isLoading || !email}
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => router.push("/register")}
                   >
                     {isLoading ? "Loading..." : "Set Up Account"}

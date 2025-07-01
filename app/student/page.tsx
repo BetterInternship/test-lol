@@ -39,7 +39,7 @@ export default function HomePage() {
     close: closeIndustryModal,
     Modal: IndustryModal,
   } = useModal("industry-modal");
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const router = useRouter();
   const justBetterRef = useRef<HTMLSpanElement>(null);
 
@@ -190,7 +190,7 @@ export default function HomePage() {
               {/* Search Button */}
               <Button
                 onClick={handleSearch}
-                className="w-full h-14 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-md font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full h-14 rounded-md text-base transition-all duration-200 transform"
               >
                 Find Jobs
               </Button>
@@ -248,12 +248,9 @@ export default function HomePage() {
                   </div>
 
                   {/* Search Button */}
-                  <div className="pl-4 pr-2">
-                    <Button
-                      onClick={handleSearch}
-                      className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all duration-200 whitespace-nowrap text-base shadow-none border-0"
-                    >
-                      Find jobs
+                  <div className="pl-2 pr-2">
+                    <Button onClick={handleSearch} size="md">
+                      Find Jobs
                     </Button>
                   </div>
                 </div>

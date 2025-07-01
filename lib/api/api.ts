@@ -3,7 +3,6 @@ import {
   PublicUser,
   UserApplication,
   SavedJob,
-  PublicEmployerUser,
   EmployerApplication,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
@@ -30,8 +29,8 @@ interface ResourceHashResponse {
   hash?: string;
 }
 
-export const auth_service = {
-  async loggedin() {
+export const AuthService = {
+  async isLoggedIn() {
     return APIClient.post<AuthResponse>(APIRoute("auth").r("loggedin").build());
   },
 
@@ -60,28 +59,28 @@ export const auth_service = {
     );
   },
 
-  async email_status(email: string) {
+  async emailStatus(email: string) {
     return APIClient.post<EmailStatusResponse>(
       APIRoute("auth").r("email-status").build(),
       { email }
     );
   },
 
-  async send_otp_request(email: string) {
+  async sendOtpRequest(email: string) {
     return APIClient.post<OTPRequestResponse>(
       APIRoute("auth").r("send-new-otp").build(),
       { email }
     );
   },
 
-  async resend_otp_request(email: string) {
+  async resendOtpRequest(email: string) {
     return APIClient.post<OTPRequestResponse>(
       APIRoute("auth").r("resend-new-otp").build(),
       { email }
     );
   },
 
-  async verify_otp(email: string, otp: string) {
+  async verifyOtp(email: string, otp: string) {
     return APIClient.post<AuthResponse>(
       APIRoute("auth").r("verify-otp").build(),
       { email, otp }
@@ -102,7 +101,7 @@ interface SaveJobResponse extends FetchResponse {
   message: string;
 }
 
-export const user_service = {
+export const UserService = {
   async get_my_profile() {
     return APIClient.get<UserResponse>(APIRoute("users").r("me").build());
   },
@@ -176,7 +175,7 @@ interface OwnedJobsResponse extends FetchResponse {
   jobs: Job[];
 }
 
-export const job_service = {
+export const JobService = {
   async get_jobs(params: { last_update: number }) {
     return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
   },
@@ -237,7 +236,7 @@ interface CreateApplicationResponse extends FetchResponse {
   application: UserApplication;
 }
 
-export const application_service = {
+export const ApplicationService = {
   async get_applications(
     params: {
       page?: number;
@@ -302,7 +301,7 @@ export const application_service = {
 };
 
 // Error handling utility
-export const handle_api_error = (error: any) => {
+export const handleApiError = (error: any) => {
   console.error("API Error:", error);
 
   if (error.message === "Unauthorized") {

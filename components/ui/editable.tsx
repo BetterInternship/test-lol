@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-06-29 17:50:47
+ * @ Modified time: 2025-07-01 22:23:46
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -44,7 +44,7 @@ export const EditableInput = ({
       onChange={(e) => setter(e.target.value)}
       placeholder={placeholder}
       maxLength={maxLength}
-      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 text-sm relative z-10 pointer-events-auto"
+      className="border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto"
       style={{ position: "relative", zIndex: 10 }}
     />
   ) : (
