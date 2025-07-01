@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-02 01:25:42
+ * @ Modified time: 2025-07-02 01:47:02
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -362,6 +362,7 @@ export const GroupableRadioDropdown = ({
         size={size}
         onClick={handle_click}
         onTouchEnd={(e) => e.stopPropagation()}
+        className="w-full"
       >
         {value}
         <ChevronDown

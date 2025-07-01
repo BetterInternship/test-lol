@@ -248,6 +248,7 @@ export default function Dashboard() {
                                 </Button>
                                 <GroupableRadioDropdown
                                   name="status"
+                                  className="w-36"
                                   options={app_statuses.map((as) => as.name)}
                                   default_value={
                                     to_app_status_name(application.status) ?? ""
