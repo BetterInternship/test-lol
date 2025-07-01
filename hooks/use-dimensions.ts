@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-18 23:23:56
- * @ Modified time: 2025-06-18 23:33:59
+ * @ Modified time: 2025-07-01 20:14:01
  * @ Description:
  *
  * Gives you access to client dimensions in pixels.
@@ -38,7 +38,7 @@ export const useClientDimensions = () => {
   }, []);
 
   return {
-    client_width: width,
-    client_height: height,
+    clientWidth: width,
+    clientHeight: height,
   };
 };

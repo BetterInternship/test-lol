@@ -51,6 +51,7 @@ import {
 import { user_service } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -111,9 +112,10 @@ export default function SearchPage() {
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
 
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { client_width, client_height } = useClientDimensions();
+  const { clientWidth: client_width, clientHeight: client_height } =
+    useClientDimensions();
 
   // Resume URL management for profile preview
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
@@ -877,22 +879,7 @@ Best regards,
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <div className="px-6 pb-6">
-              <iframe
-                allowTransparency={true}
-                className="w-full border border-gray-200 rounded-lg"
-                style={{
-                  width: Math.min(client_width * 0.5, 600),
-                  height: client_height * 0.75,
-                  minHeight: "600px",
-                  maxHeight: "800px",
-                  background: "#FFFFFF",
-                }}
-                src={resumeUrl + "#toolbar=0&navpanes=0&scrollbar=1"}
-              >
-                Resume could not be loaded.
-              </iframe>
-            </div>
+            <PDFPreview url={resumeUrl} />
           </div>
         </ResumeModal>
       )}

@@ -293,7 +293,6 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
-  const { universities } = useRefs();
   return (
     <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
       <div className="flex justify-between items-start mb-4">

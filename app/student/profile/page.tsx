@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
-import { useAppContext } from "@/lib/ctx-app";
 import { PublicUser } from "@/lib/db/db.types";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -29,7 +28,6 @@ import {
 import { UserPropertyLabel, UserLinkLabel } from "@/components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
 import { user_service } from "@/lib/api/api";
-import { useClientDimensions } from "@/hooks/use-dimensions";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
@@ -38,11 +36,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getFullName } from "@/lib/utils/user-utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function ProfilePage() {
   const { is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
-  const { client_width, client_height } = useClientDimensions();
   const {
     ref_loading,
     colleges,
@@ -59,7 +57,7 @@ export default function ProfilePage() {
     get_degree_by_type_and_name,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
-  const { url: resume_url, sync: sync_resume_url } = useFile({
+  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
     fetcher: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
@@ -316,8 +314,6 @@ export default function ProfilePage() {
     close: close_resume_modal,
     Modal: ResumeModal,
   } = useModal("resume-modal");
-
-  const { is_mobile } = useAppContext();
   const router = useRouter();
 
   // File input refs
@@ -364,7 +360,7 @@ export default function ProfilePage() {
   };
 
   const handlePreviewResume = async () => {
-    await sync_resume_url();
+    await syncResumeUrl();
     open_resume_modal();
   };
 
@@ -1179,26 +1175,11 @@ export default function ProfilePage() {
       </div>
 
       {/* Modals */}
-      {resume_url.length > 0 && (
+      {resumeUrl.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <div className="px-6 pb-6">
-              <iframe
-                allowTransparency={true}
-                className="w-full border border-gray-200 rounded-lg"
-                style={{
-                  width: Math.min(client_width * 0.5, 600),
-                  height: client_height * 0.75,
-                  minHeight: "600px",
-                  maxHeight: "800px",
-                  background: "#FFFFFF",
-                }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
-              >
-                Resume could not be loaded.
-              </iframe>
-            </div>
+            <PDFPreview url={resumeUrl} />
           </div>
         </ResumeModal>
       )}
@@ -1210,7 +1191,7 @@ export default function ProfilePage() {
           pfp_route="/users/me/pic"
           open_resume={async () => {
             close_employer_modal();
-            await sync_resume_url();
+            await syncResumeUrl();
             open_resume_modal();
           }}
           open_calendar={async () => {

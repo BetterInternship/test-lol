@@ -17,7 +17,7 @@ import { useRoute } from "@/hooks/use-route";
  * @component
  */
 export const Header = () => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
 
