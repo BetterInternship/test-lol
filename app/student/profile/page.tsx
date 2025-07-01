@@ -43,8 +43,8 @@ export default function ProfilePage() {
   const { profile, error, updateProfile } = useProfile();
   const {
     ref_loading,
+    ref_is_not_null,
     levels,
-    degrees,
     to_college_name,
     to_level_name,
     to_department_name,
@@ -560,8 +560,12 @@ export default function ProfilePage() {
                 </h1>
                 <p className="text-muted-foreground text-sm">
                   {profile.college && to_college_name(profile.college)}
-                  {profile.college && profile.year_level && " • "}
-                  {profile.year_level && to_level_name(profile.year_level)}
+                  {ref_is_not_null(profile.year_level) && profile.college
+                    ? " • "
+                    : ""}
+                  {ref_is_not_null(profile.year_level)
+                    ? to_level_name(profile.year_level)
+                    : ""}
                 </p>
                 <div className="flex w-full flex-row gap-2 flex-shrink-0 mt-2">
                   {/* Preview Button - Always Visible */}
