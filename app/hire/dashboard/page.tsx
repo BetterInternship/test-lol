@@ -197,20 +197,22 @@ export default function Dashboard() {
                                 )}
                                 <div>
                                   <p className="font-medium text-gray-900">
-                                    {getFullName(application.user)} •{" "}
+                                    {getFullName(application.user)}{" "}
+                                    <span className="opacity-70">
+                                      —{" "}
+                                      {to_university_name(
+                                        application.user?.university
+                                      )}{" "}
+                                      •{" "}
+                                      {to_level_name(
+                                        application.user?.year_level
+                                      )}
+                                    </span>
+                                  </p>
+                                  <p className="text-sm text-gray-500">
                                     <Badge strength="medium">
                                       {application.job?.title}
                                     </Badge>
-                                  </p>
-                                  <p className="text-sm text-gray-500">
-                                    {to_university_name(
-                                      get_college(application.user?.college)
-                                        ?.university_id
-                                    )}{" "}
-                                    •{" "}
-                                    {to_level_name(
-                                      application.user?.year_level
-                                    )}
                                   </p>
                                 </div>
                               </div>

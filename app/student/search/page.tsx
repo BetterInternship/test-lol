@@ -233,6 +233,14 @@ export default function SearchPage() {
       return;
     }
 
+    if (
+      selectedJob?.require_cover_letter &&
+      !textarea_ref.current?.value.trim()
+    ) {
+      alert("A cover letter is required to apply for this job.");
+      return;
+    }
+
     // If profile is complete, show confirmation modal
     console.log("Opening application confirmation modal");
     openApplicationConfirmationModal();

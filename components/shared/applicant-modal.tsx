@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-07-01 09:55:49
+ * @ Modified time: 2025-07-01 23:57:24
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -42,7 +42,12 @@ export const ApplicantModalContent = ({
   open_calendar: () => void;
   job?: Partial<Job>;
 }) => {
-  const { to_level_name, to_college_name, to_job_type_name } = useRefs();
+  const {
+    to_level_name,
+    to_college_name,
+    to_job_type_name,
+    to_university_name,
+  } = useRefs();
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
     fetcher: pfp_fetcher,
     route: pfp_route,
@@ -174,7 +179,7 @@ export const ApplicantModalContent = ({
                   Institution
                 </p>
                 <p className="font-medium text-gray-900 text-sm sm:text-base">
-                  DLSU Manila
+                  {to_university_name(applicant?.university)}
                 </p>
               </div>
               <div>
