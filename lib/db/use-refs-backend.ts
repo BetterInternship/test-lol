@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-07-01 21:46:46
+ * @ Modified time: 2025-07-01 22:02:21
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -148,6 +148,7 @@ export interface IRefsContext {
     name: string | null | undefined
   ) => Degree | null;
 
+  get_degrees_by_university: (university_id: string) => string[];
   get_departments_by_college: (college_id: string) => string[];
   get_colleges_by_university: (university_id: string) => string[];
   get_universities_from_domain: (domain: string) => string[];
@@ -454,6 +455,9 @@ export const createRefsContext = () => {
     get_app_status_by_name,
     get_industry_by_name,
     get_degree_by_type_and_name,
+
+    get_degrees_by_university: (university_id: string) =>
+      degrees.filter((d) => d.university_id === university_id).map((d) => d.id),
 
     get_departments_by_college: (college_id: string) =>
       departments.filter((d) => d.college_id === college_id).map((d) => d.id),

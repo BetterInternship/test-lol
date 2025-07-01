@@ -54,6 +54,7 @@ export default function ProfilePage() {
     get_level_by_name,
     get_departments_by_college,
     get_colleges_by_university,
+    get_degrees_by_university,
     get_department_by_name,
     get_degree_by_type_and_name,
     get_university_by_name,
@@ -767,6 +768,8 @@ export default function ProfilePage() {
                                 college: null,
                                 department_name: "Not specified",
                                 department: null,
+                                degree_name: "Not specified",
+                                degree: null,
                               });
 
                               // Clear college error when user selects a value (immediate feedback)
@@ -882,13 +885,11 @@ export default function ProfilePage() {
                             setter={field_setter("degree_name")}
                             options={[
                               "Not specified",
-                              ...degrees
-                                .filter(
-                                  (d) =>
-                                    form_data.university &&
-                                    d.university_id === form_data.university
-                                )
-                                .map((d) => `${d.type} - ${d.name}`),
+                              ...get_degrees_by_university(
+                                get_university_by_name(
+                                  form_data.university_name
+                                )?.id ?? ""
+                              ).map((did) => to_degree_full_name(did) ?? ""),
                             ]}
                           >
                             <UserPropertyLabel />
