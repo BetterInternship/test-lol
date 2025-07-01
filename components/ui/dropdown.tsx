@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-02 03:16:17
+ * @ Modified time: 2025-07-02 06:00:05
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -21,6 +21,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useMobile } from "@/hooks/use-mobile";
+import { useDetectClickOutside } from "react-detect-click-outside";
 
 /**
  * The group context interface.
@@ -174,147 +176,12 @@ export const GroupableRadioDropdown = ({
     useContext(DropdownGroupContext);
   const [is_open, set_is_open] = useState(false);
   const [value, set_value] = useState(default_value);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const touchStartRef = useRef<{
-    x: number;
-    y: number;
-    target: EventTarget | null;
-  } | null>(null);
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-    openUpwards: false,
-  });
-
-  // Update dropdown position when it opens or button position changes
-  const updateDropdownPosition = useCallback(() => {
-    if (buttonRef.current && is_open) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const spaceBelow = viewportHeight - rect.bottom;
-      const spaceAbove = rect.top;
-      const dropdownHeight = 160; // Estimated max dropdown height (max-h-80 = 320px)
-
-      // Prefer opening downwards, only open upwards if insufficient space below
-      const shouldOpenUpwards =
-        spaceBelow < dropdownHeight && spaceAbove > dropdownHeight;
-
-      setDropdownPosition({
-        top: shouldOpenUpwards
-          ? rect.top - (is_mobile ? 12 : 8) // Extra margin on mobile
-          : rect.bottom + (is_mobile ? 12 : 8),
-        left: is_mobile ? Math.max(16, rect.left) : rect.left, // Ensure margin from screen edge on mobile
-        width: is_mobile
-          ? Math.min(rect.width, window.innerWidth - 32)
-          : rect.width, // Prevent overflow on mobile
-        openUpwards: shouldOpenUpwards,
-      });
-    }
-  }, [is_open, is_mobile]);
-
-  // Update position when dropdown opens
-  useEffect(() => {
-    if (is_open) {
-      updateDropdownPosition();
-
-      // Also update on scroll/resize to keep dropdown positioned correctly
-      const handlePositionUpdate = () => updateDropdownPosition();
-      window.addEventListener("scroll", handlePositionUpdate, true);
-      window.addEventListener("resize", handlePositionUpdate);
-
-      return () => {
-        window.removeEventListener("scroll", handlePositionUpdate, true);
-        window.removeEventListener("resize", handlePositionUpdate);
-      };
-    }
-  }, [is_open, updateDropdownPosition]);
+  const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
 
   // Just so it's not stuck at the first default when the default changes
   useEffect(() => {
     set_value(default_value);
   }, [default_value]);
-
-  // Close dropdown handler
-  const closeDropdown = useCallback(() => {
-    set_is_open(false);
-  }, []);
-
-  // Handle clicks outside dropdown for desktop
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        !is_mobile &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        closeDropdown();
-      }
-    };
-
-    if (is_open && !is_mobile) {
-      document.addEventListener("mousedown", handleClickOutside);
-      return () =>
-        document.removeEventListener("mousedown", handleClickOutside);
-    }
-  }, [is_open, is_mobile, closeDropdown]);
-
-  // Mobile touch handlers
-  const handleTouchStart = useCallback(
-    (e: TouchEvent) => {
-      if (!is_mobile || !is_open) return;
-
-      const touch = e.touches[0];
-      touchStartRef.current = {
-        x: touch.clientX,
-        y: touch.clientY,
-        target: e.target,
-      };
-    },
-    [is_mobile, is_open]
-  );
-
-  const handleTouchEnd = useCallback(
-    (e: TouchEvent) => {
-      if (!is_mobile || !is_open || !touchStartRef.current) return;
-
-      const touch = e.changedTouches[0];
-      const startTouch = touchStartRef.current;
-
-      // Calculate touch movement
-      const deltaX = Math.abs(touch.clientX - startTouch.x);
-      const deltaY = Math.abs(touch.clientY - startTouch.y);
-      const isSwipe = deltaX > 10 || deltaY > 10;
-
-      // Check if touch is outside dropdown area
-      const target = e.target as Element;
-      const isOutsideDropdown =
-        dropdownRef.current && !dropdownRef.current.contains(target);
-
-      // Close if touch ended outside and wasn't a swipe
-      if (!isSwipe && isOutsideDropdown) {
-        closeDropdown();
-      }
-
-      touchStartRef.current = null;
-    },
-    [is_mobile, is_open, closeDropdown]
-  );
-
-  // Set up mobile touch listeners
-  useEffect(() => {
-    if (is_mobile && is_open) {
-      document.addEventListener("touchstart", handleTouchStart);
-      document.addEventListener("touchend", handleTouchEnd);
-
-      return () => {
-        document.removeEventListener("touchstart", handleTouchStart);
-        document.removeEventListener("touchend", handleTouchEnd);
-      };
-    }
-  }, [is_mobile, is_open, handleTouchStart, handleTouchEnd]);
 
   /**
    * Activates dropdown
@@ -345,18 +212,9 @@ export const GroupableRadioDropdown = ({
     if (active_dropdown !== name) set_is_open(false);
   }, [active_dropdown, name]);
 
-  // Prevent event propagation for dropdown content
-  const handleDropdownInteraction = useCallback(
-    (e: React.MouseEvent | React.TouchEvent) => {
-      e.stopPropagation();
-    },
-    []
-  );
-
   return (
-    <div className={cn("relative", className)} ref={dropdownRef}>
+    <div className={cn("relative", className)} ref={ref}>
       <Button
-        ref={buttonRef}
         type="button"
         variant="outline"
         size={size}
@@ -376,27 +234,17 @@ export const GroupableRadioDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "fixed bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
+            "absolute bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
             "z-[9999] duration-200 ease-out transition-all", // Add smooth animation
-            dropdownPosition.openUpwards
-              ? "animate-in slide-in-from-bottom-2"
-              : "animate-in slide-in-from-top-2",
             is_mobile ? "min-w-full" : "min-w-[200px]",
             className
           )}
-          onClick={handleDropdownInteraction}
-          onTouchStart={handleDropdownInteraction}
-          onTouchEnd={handleDropdownInteraction}
         >
           <div
             className={cn(
-              "max-h-64 overflow-y-scroll overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+              "max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
               is_mobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
             )}
-            style={{
-              scrollbarWidth: "thin",
-              scrollbarColor: "#9ca3af #f3f4f6",
-            }}
           >
             {options.map((option, index) => (
               <DropdownOptionButton
@@ -561,7 +409,6 @@ export const GroupableNavDropdown = ({
         onTouchEnd={(e) => e.stopPropagation()}
       >
         {display}
-        {/* Conditionally render the chevron arrow */}
         {showArrow && (
           <ChevronDown
             className={cn(

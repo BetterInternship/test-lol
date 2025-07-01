@@ -69,3 +69,13 @@ export const isValidOptionalCalendarURL = isValidOptionalSiteURL([
   "calendly.com",
   "cal.com",
 ]);
+
+/**
+ * Opens a URL in a new tab.
+ *
+ * @param url
+ */
+export const openURL = (url: string | null | undefined) => {
+  if (!url) return;
+  window?.open(url ?? "", "_blank")?.focus();
+};

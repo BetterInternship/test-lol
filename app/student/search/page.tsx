@@ -52,6 +52,7 @@ import { UserService } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { PDFPreview } from "@/components/shared/pdf-preview";
+import { openURL } from "@/lib/utils/url-utils";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -876,7 +877,7 @@ Best regards,
               openResumeModal();
             }}
             open_calendar={async () => {
-              window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
+              openURL(profile?.calendar_link);
             }}
           />
         )}

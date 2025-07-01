@@ -2,7 +2,8 @@ import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useCallback, useEffect } from "react";
-import { Avatar } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { useProfile } from "@/lib/api/use-api";
 
 /**
  * A profile picture of a given user.
@@ -31,9 +32,15 @@ export const Pfp = ({
   }, []);
 
   return (
-    <div className={`w-${size} h-${size} rounded-full overflow-hidden`}>
-      <img src={url}></img>
-    </div>
+    <Avatar className={`w-${size} h-${size} rounded-full overflow-hidden`}>
+      {url ? (
+        <img src={url}></img>
+      ) : (
+        <AvatarFallback className="text-base sm:text-lg font-semibold">
+          "?"
+        </AvatarFallback>
+      )}
+    </Avatar>
   );
 };
 
@@ -45,6 +52,7 @@ export const Pfp = ({
  */
 export const MyPfp = ({ size = 10 }: { size?: number }) => {
   const fetcher = async () => UserService.get_my_pfp_url();
+  const { profile } = useProfile();
   const { url, sync } = useFile({
     route: "/users/me/pic",
     fetcher: fetcher,
@@ -56,7 +64,14 @@ export const MyPfp = ({ size = 10 }: { size?: number }) => {
 
   return (
     <Avatar className={`w-${size} h-${size} rounded-full overflow-hidden`}>
-      <img src={url}></img>
+      {profile?.profile_picture ? (
+        <img src={url}></img>
+      ) : (
+        <AvatarFallback className="text-base sm:text-lg font-semibold">
+          {profile?.first_name?.[0]?.toUpperCase()}
+          {profile?.last_name?.[0]?.toUpperCase()}
+        </AvatarFallback>
+      )}
     </Avatar>
   );
 };
