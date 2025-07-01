@@ -14,10 +14,7 @@ import {
   PhilippinePeso,
 } from "lucide-react";
 import { useSavedJobs } from "@/lib/api/use-api";
-import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
-import { useAppContext } from "@/lib/ctx-app";
-import { useRefs } from "@/lib/db/use-refs";
 
 export default function SavedJobsPage() {
   const {
@@ -26,9 +23,6 @@ export default function SavedJobsPage() {
   } = useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
-  const router = useRouter();
-  const { is_mobile } = useAppContext();
-  const { to_job_pay_freq_name } = useRefs();
 
   redirect_if_not_logged_in();
 
@@ -39,14 +33,6 @@ export default function SavedJobsPage() {
     } catch (error) {
       console.error("Failed to unsave job:", error);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   if (!is_authenticated()) {
@@ -67,11 +53,13 @@ export default function SavedJobsPage() {
         {/* Saved Jobs Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 pb-6 sm:pb-8">
           <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-3 mb-6 sm:mb-8">
+            <div className="flex items-center gap-3">
               <Heart className="w-6 h-6 sm:w-8 sm:h-8 text-red-500 fill-current" />
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
                 Saved Jobs
               </h1>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-3 sm:mt-4 mb-6 sm:mb-8">
               {!loading && <Badge>{saved_jobs.length} saved</Badge>}
             </div>
 
@@ -87,7 +75,7 @@ export default function SavedJobsPage() {
                 <p className="text-red-600 mb-4 text-base sm:text-lg">
                   Failed to load saved jobs: {error}
                 </p>
-                <Button onClick={refetch} size="default" className="h-11 px-6">
+                <Button onClick={refetch} size="default">
                   Try Again
                 </Button>
               </div>
@@ -102,12 +90,7 @@ export default function SavedJobsPage() {
                   them here.
                 </div>
                 <Link href="/search">
-                  <Button
-                    size="default"
-                    className="h-11 px-8 text-base font-medium"
-                  >
-                    Browse Jobs
-                  </Button>
+                  <Button size="md">Browse Jobs</Button>
                 </Link>
               </div>
             ) : (
@@ -143,23 +126,14 @@ export default function SavedJobsPage() {
                       </p>
 
                       <div className="flex gap-3">
-                        <Link
-                          href={`/search/${savedJob.id}`}
-                          className="flex-1 sm:flex-none"
-                        >
-                          <Button
-                            size="sm"
-                            className="w-full sm:w-auto h-10 px-6 font-medium"
-                          >
-                            View Details
-                          </Button>
+                        <Link href={`/search/${savedJob.id}`}>
+                          <Button>View Details</Button>
                         </Link>
                         <Button
                           variant="outline"
-                          size="sm"
+                          scheme="destructive"
                           disabled={saving}
                           onClick={() => handleUnsaveJob(savedJob.id ?? "")}
-                          className="text-red-600 border-red-200 hover:bg-red-50 flex-shrink-0 h-10 px-3"
                         >
                           <span className="hidden sm:inline">Unsave</span>
                           <span className="sm:hidden">Unsave</span>

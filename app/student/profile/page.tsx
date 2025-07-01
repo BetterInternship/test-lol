@@ -565,11 +565,10 @@ export default function ProfilePage() {
               {/* Preview Button - Always Visible */}
               <Button
                 variant="outline"
-                size="default"
+                scheme="primary"
                 onClick={() => open_employer_modal()}
-                className="text-blue-600 border-blue-200 hover:bg-blue-50 w-full sm:w-auto h-12 sm:h-auto"
               >
-                <Eye className="h-4 w-4 mr-2" />
+                <Eye className="h-4 w-4" />
                 Preview
               </Button>
 
@@ -578,22 +577,19 @@ export default function ProfilePage() {
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Button
                     variant="outline"
-                    size="default"
                     onClick={handleCancel}
                     disabled={saving}
-                    className="flex-1 sm:flex-none h-12 sm:h-auto"
                   >
                     Cancel
                   </Button>
                   <Button
-                    size="default"
                     onClick={handleSave}
                     disabled={
                       saving ||
                       Object.keys(linkErrors).length > 0 ||
                       Object.keys(fieldErrors).length > 0
                     }
-                    className={`flex-1 sm:flex-none h-12 sm:h-auto ${
+                    className={`${
                       Object.keys(linkErrors).length > 0 ||
                       Object.keys(fieldErrors).length > 0
                         ? "opacity-50 cursor-not-allowed"
@@ -605,7 +601,6 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <Button
-                  size="default"
                   onClick={() => (
                     setIsEditing(true),
                     set_fields({
@@ -617,9 +612,8 @@ export default function ProfilePage() {
                       calendar_link: profile.calendar_link ?? "",
                     })
                   )}
-                  className="w-full sm:w-auto h-12 sm:h-auto"
                 >
-                  <Edit2 className="h-4 w-4 mr-2" />
+                  <Edit2 className="h-4 w-4" />
                   Edit
                 </Button>
               )}
@@ -1041,7 +1035,10 @@ export default function ProfilePage() {
                             Calendar Link
                           </label>
                           {!isEditing && (
-                            <Link href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit" className="mb-1">
+                            <Link
+                              href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
+                              className="mb-1"
+                            >
                               <HelpCircle className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer" />
                             </Link>
                           )}
@@ -1105,18 +1102,14 @@ export default function ProfilePage() {
                         <div className="flex gap-1">
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={handlePreviewResume}
-                            className="h-7 px-2 text-green-600 border-green-600 hover:bg-green-100"
                           >
                             <Eye className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="outline"
-                            size="sm"
                             onClick={() => resumeInputRef.current?.click()}
                             disabled={uploading}
-                            className="h-7 px-2 text-blue-600 border-blue-600 hover:bg-blue-100"
                           >
                             <Upload className="h-3 w-3" />
                           </Button>
@@ -1132,13 +1125,12 @@ export default function ProfilePage() {
                       <Button
                         onClick={() => resumeInputRef.current?.click()}
                         disabled={uploading}
-                        size="sm"
                       >
-                        <Upload className="h-4 w-4 mr-1" />
+                        <Upload className="h-4 w-4" />
                         {uploading ? "Uploading..." : "Upload"}
                       </Button>
                       <p className="text-xs text-muted-foreground mt-1">
-                        PDF up to 3MB
+                        PDF up to 2.5MB
                       </p>
                     </div>
                   )}
@@ -1196,7 +1188,7 @@ export default function ProfilePage() {
                 allowTransparency={true}
                 className="w-full border border-gray-200 rounded-lg"
                 style={{
-                  width: "100%",
+                  width: Math.min(client_width * 0.5, 600),
                   height: client_height * 0.75,
                   minHeight: "600px",
                   maxHeight: "800px",

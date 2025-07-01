@@ -84,7 +84,7 @@ export default function MyListings() {
             <div className="w-96 flex flex-col h-full">
               {/* Search Bar and Filter Button - Fixed */}
               <div
-                className="flex gap-3 mb-4 flex-shrink-0"
+                className="flex items-center gap-3 mb-4 flex-shrink-0"
                 data-tour="job-filters"
               >
                 <div className="relative flex-1">
@@ -99,7 +99,6 @@ export default function MyListings() {
                   />
                 </div>
                 <Button
-                  className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
                   size="icon"
                   onClick={() => open_create_modal()}
                   data-tour="add-job-btn"
@@ -169,7 +168,6 @@ export default function MyListings() {
                     <Button
                       key="3"
                       variant="default"
-                      className="bg-blue-600 text-white"
                       disabled={saving}
                       onClick={() => set_saving(true)}
                     >
@@ -182,7 +180,7 @@ export default function MyListings() {
                     <Button
                       key="4"
                       variant="outline"
-                      className="text-red-500"
+                      scheme="destructive"
                       disabled={saving}
                       onClick={() => set_is_editing(false)}
                     >
@@ -270,18 +268,13 @@ const DeleteModalForm = ({
       <div className="w-full flex flex-row items-end justify-end space-x-2">
         <Button
           variant="outline"
+          scheme="destructive"
           disabled={deleting}
-          className="text-red-500 border border-red-300 hover:bg-red-50 hover:text-red-500"
           onClick={handleDelete}
         >
           {deleting ? "Deleting..." : "Delete"}
         </Button>
-        <Button
-          variant="outline"
-          disabled={deleting}
-          className="input-box"
-          onClick={close}
-        >
+        <Button variant="outline" disabled={deleting} onClick={close}>
           Cancel
         </Button>
       </div>
@@ -395,11 +388,7 @@ const CreateModalForm = ({
               >
                 Cancel
               </Button>
-              <Button
-                disabled={creating}
-                onClick={handleSaveEdit}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-              >
+              <Button disabled={creating} onClick={handleSaveEdit}>
                 {creating ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

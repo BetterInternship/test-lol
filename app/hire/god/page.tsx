@@ -60,15 +60,16 @@ export default function GodLandingPage() {
                   className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
                 >
                   <Button
-                    variant="outline"
-                    className="border-blue-500 text-blue-500 hover:text-white hover:bg-blue-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
+                    scheme="primary"
+                    size="xs"
                     onClick={() => authorize_as(e.id ?? "")}
                   >
                     View
                   </Button>
                   <Button
                     variant="outline"
-                    className="border-red-500 text-red-500 hover:text-white hover:bg-red-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
+                    scheme="destructive"
+                    size="xs"
                     disabled={loading && e.id === selected}
                     onClick={() => {
                       set_selected(e.id ?? "");
@@ -110,15 +111,16 @@ export default function GodLandingPage() {
                   className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
                 >
                   <Button
-                    variant="outline"
-                    className="border-blue-500 text-blue-500 hover:text-white hover:bg-blue-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
+                    scheme="primary"
+                    size="xs"
                     onClick={() => authorize_as(e.id ?? "")}
                   >
                     View
                   </Button>
                   <Button
                     variant="outline"
-                    className="border-green-500 text-green-500 hover:text-white hover:bg-green-600 border-opacity-50 rounded-sm text-xs h-8 p-2"
+                    size="xs"
+                    scheme="supportive"
                     disabled={loading && e.id === selected}
                     onClick={() => {
                       set_selected(e.id ?? "");

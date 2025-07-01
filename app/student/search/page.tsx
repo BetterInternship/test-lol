@@ -94,11 +94,6 @@ export default function SearchPage() {
   ); // Enable URL synchronization
 
   const {
-    open: open_application_modal,
-    close: close_application_modal,
-    Modal: ApplicationModal,
-  } = useModal("application-modal");
-  const {
     open: open_success_modal,
     close: close_success_modal,
     Modal: SuccessModal,
@@ -336,7 +331,7 @@ export default function SearchPage() {
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
-              <div className="bg-white rounded-2xl border border-gray-200 p-2">
+              <div className="bg-white rounded-md border border-gray-200 p-2">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
@@ -349,11 +344,7 @@ export default function SearchPage() {
                       className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                     />
                   </div>
-                  <Button
-                    onClick={() => open_filter_modal()}
-                    className="h-12 w-12 flex-shrink-0 bg-primary rounded-xl shadow-sm"
-                    size="icon"
-                  >
+                  <Button onClick={() => open_filter_modal()} size="icon">
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
@@ -395,7 +386,7 @@ export default function SearchPage() {
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
               {/* Desktop Search Bar */}
               <div className="w-full max-w-4xl mx-auto mb-6">
-                <div className="bg-white rounded-2xl border border-gray-200 p-2">
+                <div className="bg-white rounded-md border border-gray-200 p-2">
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
@@ -408,11 +399,7 @@ export default function SearchPage() {
                         className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                       />
                     </div>
-                    <Button
-                      onClick={() => open_filter_modal()}
-                      className="h-12 w-12 flex-shrink-0 bg-primary rounded-xl shadow-sm"
-                      size="icon"
-                    >
+                    <Button onClick={() => open_filter_modal()} size="icon">
                       <Filter className="h-4 w-4" />
                     </Button>
                   </div>
@@ -453,12 +440,12 @@ export default function SearchPage() {
                     <Button
                       key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
-                      onClick={handleApply}
-                      className={cn(
+                      scheme={
                         appliedJob(selectedJob.id ?? "")
-                          ? "bg-supportive text-white"
-                          : "bg-primary "
-                      )}
+                          ? "supportive"
+                          : "primary"
+                      }
+                      onClick={handleApply}
                     >
                       {appliedJob(selectedJob.id ?? "") && (
                         <CheckCircle className="w-4 h-4 mr-2" />
@@ -469,11 +456,9 @@ export default function SearchPage() {
                       key="2"
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
-                      className={cn(
-                        is_saved(selectedJob.id ?? "")
-                          ? "bg-red-50 border-red-200 text-red-600"
-                          : ""
-                      )}
+                      scheme={
+                        is_saved(selectedJob.id) ? "destructive" : "default"
+                      }
                     >
                       {is_saved(selectedJob.id ?? "") && <Heart />}
                       {is_saved(selectedJob.id ?? "")
@@ -591,16 +576,16 @@ export default function SearchPage() {
           </div>
 
           {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 border-blue-200 p-4 shadow-lg">
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 p-4">
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
                 onClick={handleApply}
                 className={cn(
-                  "flex-1 h-14 font-bold rounded-2xl transition-all duration-300 shadow-lg text-base",
+                  "flex-1 h-14 transition-all duration-300",
                   appliedJob(selectedJob?.id ?? "")
-                    ? "bg-supportive text-white shadow-green-200"
-                    : "bg-primary  text-white shadow-blue-200 hover:shadow-xl active:scale-95"
+                    ? "bg-supportive text-white"
+                    : "bg-primary  text-white"
                 )}
               >
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
@@ -609,12 +594,10 @@ export default function SearchPage() {
               <Button
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
-                className={cn(
-                  "h-14 w-14 rounded-2xl border-2 transition-all duration-300 shadow-lg active:scale-95",
-                  is_saved(selectedJob?.id ?? "")
-                    ? "bg-red-50 border-red-300 text-red-600 shadow-red-200 hover:bg-red-100"
-                    : "border-gray-300 text-gray-600 hover:border-gray-400 bg-white shadow-gray-200 hover:shadow-xl"
-                )}
+                scheme={
+                  is_saved(selectedJob?.id ?? "") ? "destructive" : "default"
+                }
+                className="h-14 w-14"
               >
                 <Heart
                   className={cn(
@@ -627,45 +610,6 @@ export default function SearchPage() {
           </div>
         </div>
       </JobModal>
-
-      {/* Application Modal - Only for Missing Job Requirements */}
-      <ApplicationModal>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Apply to {selectedJob?.title}</h2>
-        </div>
-
-        {/* Missing Job Requirements Warning */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="font-medium text-orange-800 mb-2">
-                Missing Job Requirements
-              </h3>
-              <p className="text-sm text-orange-700 mb-3">
-                This job requires additional profile information:
-              </p>
-              <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
-                {getMissingJobRequirements().map((field, index) => (
-                  <li key={index}>{field}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Update Profile Button */}
-        <Button
-          onClick={() => {
-            close_application_modal();
-            router.push("/profile");
-          }}
-          className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
-        >
-          <User className="w-4 h-4 mr-2" />
-          Update Profile
-        </Button>
-      </ApplicationModal>
 
       {/* Success Modal */}
       <SuccessModal>
@@ -722,18 +666,6 @@ export default function SearchPage() {
               </span>{" "}
               has been successfully submitted.
             </motion.p>
-
-            <motion.div
-              className="bg-accent border border-gray-300 rounded-lg p-4 mb-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-            >
-              <p className="text-sm max-w-prose">
-                💼 Check <span className="font-semibold">My Applications</span>{" "}
-                to keep track of all your submissions and updates.
-              </p>
-            </motion.div>
           </motion.div>
 
           {/* Action Buttons */}
@@ -744,7 +676,6 @@ export default function SearchPage() {
             transition={{ delay: 0.7, duration: 0.4 }}
           >
             <Button
-              className="w-full bg-primary  text-white py-3 rounded-lg font-medium transition-colors"
               onClick={() => {
                 close_success_modal();
                 router.push("/applications");
@@ -759,10 +690,11 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="space-y-6 px-8">
+        <div className="space-y-3 px-8">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
           </div>
+          <br />
           <DropdownGroup>
             <GroupableRadioDropdown
               name="location"
@@ -792,15 +724,18 @@ export default function SearchPage() {
             />
           </DropdownGroup>
 
-          <div className="flex gap-3 pt-6 pb-8">
+          <br />
+          <div className="flex space-x-2">
             <Button
               onClick={() => close_filter_modal()}
-              className="flex-[2] h-12 bg-primary  text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              size="sm"
+              className="transition-all duration-200"
             >
               Apply Filters
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => {
                 clear_filters({
                   location: "Any location",
@@ -808,11 +743,12 @@ export default function SearchPage() {
                   category: "All categories",
                 });
               }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+              className="transition-all duration-200"
             >
               Clear Filters
             </Button>
           </div>
+          <br />
         </div>
       </FilterModal>
 
@@ -851,12 +787,9 @@ export default function SearchPage() {
                 close_application_confirmation_modal();
                 open_profile_preview_modal();
               }}
-              className="w-full h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium group transition-all duration-200"
+              className="w-full h-12 transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
                 <span>Preview Your Profile</span>
               </div>
             </Button>
@@ -930,7 +863,7 @@ Best regards,
                 close_application_confirmation_modal();
                 setShowCoverLetterInput(false);
               }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+              className="flex-1 h-12 transition-all duration-200"
             >
               Cancel
             </Button>
@@ -940,7 +873,7 @@ Best regards,
                 handleDirectApplication();
                 setShowCoverLetterInput(false);
               }}
-              className="flex-1 h-12 bg-gradient-to-r bg-primary text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-1 h-12 transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4" />
@@ -991,7 +924,7 @@ Best regards,
                 allowTransparency={true}
                 className="w-full border border-gray-200 rounded-lg"
                 style={{
-                  width: "100%",
+                  width: Math.min(client_width * 0.5, 600),
                   height: client_height * 0.75,
                   minHeight: "600px",
                   maxHeight: "800px",
@@ -1056,7 +989,7 @@ Best regards,
                   <Button
                     variant="outline"
                     onClick={() => close_incomplete_profile_modal()}
-                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+                    className="flex-1 h-12 transition-all duration-200"
                   >
                     Cancel
                   </Button>
@@ -1065,7 +998,9 @@ Best regards,
                       close_incomplete_profile_modal();
                       router.push("/profile");
                     }}
-                    className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    size="md"
+                    scheme="supportive"
+                    className="h-12"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <User className="w-4 h-4" />

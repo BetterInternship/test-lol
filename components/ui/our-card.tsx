@@ -18,3 +18,4 @@ export const Card = ({
     {children}
   </div>
 );
+Card.displayName = "Card";

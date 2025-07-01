@@ -160,10 +160,10 @@ export default function JobPage() {
                   <Button
                     variant="ghost"
                     onClick={() => router.back()}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    Back to Applications
+                    Back
                   </Button>
 
                   {job && (
@@ -171,12 +171,9 @@ export default function JobPage() {
                       <Button
                         variant="outline"
                         onClick={() => handleSave(job)}
-                        className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all",
-                          is_saved(job.id ?? "")
-                            ? "bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
-                            : "border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50"
-                        )}
+                        scheme={
+                          is_saved(job.id ?? "") ? "destructive" : "default"
+                        }
                       >
                         <Heart
                           className={cn(
@@ -193,15 +190,12 @@ export default function JobPage() {
 
                       <Button
                         disabled={appliedJob(job.id ?? "")}
+                        scheme={
+                          appliedJob(job.id ?? "") ? "supportive" : "primary"
+                        }
                         onClick={() =>
                           !appliedJob(job.id ?? "") && handleApply()
                         }
-                        className={cn(
-                          "flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-all",
-                          appliedJob(job.id ?? "")
-                            ? "bg-supportive text-white"
-                            : "bg-primary text-white shadow-lg hover:shadow-xl"
-                        )}
                       >
                         {appliedJob(job.id ?? "") && (
                           <CheckCircle className="w-4 h-4" />
@@ -214,7 +208,7 @@ export default function JobPage() {
               </div>
             </div>
 
-            {job?.id ? (
+            {job?.id && (
               <div className="flex-1 overflow-y-auto">
                 <div className="max-w-4xl mx-auto px-6 py-8">
                   {/* Job Header Card */}
@@ -479,34 +473,6 @@ export default function JobPage() {
                   <div className="h-16"></div>
                 </div>
               </div>
-            ) : (
-              <div className="h-full m-auto">
-                <div className="flex flex-col items-center pt-[25vh] h-screen">
-                  <div className="opacity-35 mb-10">
-                    <div className="flex flex-row justify-center w-full">
-                      <h1 className="block text-6xl font-heading font-bold ">
-                        BetterInternship
-                      </h1>
-                    </div>
-                    <br />
-                    <div className="flex flex-row justify-center w-full">
-                      <p className="block text-2xl">
-                        Better Internships Start Here
-                      </p>
-                    </div>
-                  </div>
-                  <div className="w-prose text-center  text-red-500  rounded-md p-4 my-4">
-                    This job does not exist.
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="input-box"
-                    onClick={() => router.push("/search")}
-                  >
-                    Look for Other Jobs
-                  </Button>
-                </div>
-              </div>
             )}
           </div>
         )}
@@ -544,7 +510,9 @@ export default function JobPage() {
             close_application_modal();
             router.push("/profile");
           }}
-          className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
+          size="md"
+          scheme="supportive"
+          className="h-12"
         >
           <User className="w-4 h-4 mr-2" />
           Update Profile
@@ -606,18 +574,6 @@ export default function JobPage() {
               </span>{" "}
               has been successfully submitted.
             </motion.p>
-
-            <motion.div
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-            >
-              <p className="text-sm text-blue-800 max-w-prose">
-                💼 Check <span className="font-semibold">My Applications</span>{" "}
-                to keep track of all your submissions and updates.
-              </p>
-            </motion.div>
           </motion.div>
 
           {/* Action Buttons */}
@@ -628,7 +584,6 @@ export default function JobPage() {
             transition={{ delay: 0.7, duration: 0.4 }}
           >
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
               onClick={() => {
                 close_success_modal();
                 router.push("/applications");

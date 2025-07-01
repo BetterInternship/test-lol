@@ -68,13 +68,10 @@ export default function ApplicationsPage() {
           </div>
           {!loading && (
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-3 sm:mt-4">
-              <div className="badge badge-info">
+              <Badge>
                 {applications.length}{" "}
                 {applications.length === 1 ? "application" : "applications"}
-              </div>
-              <div className="text-sm text-gray-500">
-                Keep track of your submissions and updates
-              </div>
+              </Badge>
             </div>
           )}
         </div>

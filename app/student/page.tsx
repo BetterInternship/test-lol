@@ -190,7 +190,7 @@ export default function HomePage() {
               {/* Search Button */}
               <Button
                 onClick={handleSearch}
-                className="w-full h-14 bg-primary text-white rounded-md font-semibold text-base shadow-lg hover:shadow-xl active:shadow-md transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full h-14 rounded-md text-base transition-all duration-200 transform"
               >
                 Find Jobs
               </Button>
@@ -248,11 +248,8 @@ export default function HomePage() {
                   </div>
 
                   {/* Search Button */}
-                  <div className="pl-4 pr-2">
-                    <Button
-                      onClick={handleSearch}
-                      className="px-8 py-3 bg-primary  text-white font-semibold rounded-xl transition-all duration-200 whitespace-nowrap text-base shadow-none border-0"
-                    >
+                  <div className="pl-2 pr-2">
+                    <Button onClick={handleSearch} size="md">
                       Find Jobs
                     </Button>
                   </div>

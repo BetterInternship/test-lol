@@ -749,10 +749,12 @@ export const JobDetails = ({
         <div className="flex items-center">
           <p className="text-gray-600">{job.employer?.name}</p>
         </div>
-        <div className="flex items-center">
-          <JobLocation location={job.location} />{" "}
-        </div>
-        <br />
+        {job.location && (
+          <>
+            <JobLocation location={job.location} />
+            <br />
+          </>
+        )}
         <div className="flex space-x-2 mt-4">{actions}</div>
       </div>
 

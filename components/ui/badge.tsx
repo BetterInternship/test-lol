@@ -46,7 +46,7 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badge_variants> {}
 
-function Badge({ className, type, strength, ...props }: BadgeProps) {
+export function Badge({ className, type, strength, ...props }: BadgeProps) {
   return (
     <div
       className={cn(badge_variants({ type, strength }), className)}
@@ -54,5 +54,4 @@ function Badge({ className, type, strength, ...props }: BadgeProps) {
     />
   );
 }
-
-export { Badge, badge_variants as badgeVariants };
+Badge.displayName = "Badge";

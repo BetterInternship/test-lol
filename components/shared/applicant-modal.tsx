@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-06-30 03:50:26
+ * @ Modified time: 2025-07-01 09:36:28
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -177,9 +177,10 @@ export const ApplicantModalContent = ({
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-col gap-2 sm:gap-3 md:flex-row md:gap-4">
+          <div className="flex flex-col gap-2 md:flex-row">
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white h-10 sm:h-11 text-sm md:text-base px-4 sm:px-6 font-medium flex-1 md:flex-none"
+              className="h-10 sm:h-11"
+              size="md"
               disabled={!clickable || !applicant.resume}
               onClick={handleResumeClick}
             >
@@ -188,7 +189,8 @@ export const ApplicantModalContent = ({
             </Button>
             <Button
               variant="outline"
-              className="border-blue-600 text-blue-600 hover:bg-blue-50 h-10 sm:h-11 text-sm md:text-base px-4 sm:px-6 font-medium flex-1 md:flex-none"
+              className="h-10 sm:h-11"
+              size="md"
               disabled={!clickable || !applicant?.calendar_link}
               onClick={handleCalendarClick}
             >
@@ -369,7 +371,7 @@ export const ApplicantModalContent = ({
                 allowTransparency={true}
                 className="w-full border border-gray-200 rounded-lg"
                 style={{
-                  width: "100%",
+                  width: Math.min(client_width * 0.6, 600),
                   height: client_height * 0.75,
                   minHeight: "600px",
                   maxHeight: "800px",
