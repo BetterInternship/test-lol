@@ -36,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { useFile } from "@/hooks/use-file";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { get_full_name } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function ProfilePage() {
@@ -380,8 +380,8 @@ export default function ProfilePage() {
       return;
     }
 
-    if (file.size > 1 * 1024 * 1024) {
-      alert("Image size must be less than 1MB");
+    if (file.size > (1024 * 1024) / 4) {
+      alert("Image size must be less than 0.25MB");
       return;
     }
 
@@ -527,7 +527,7 @@ export default function ProfilePage() {
             {/* Avatar and Name Section */}
             <div className="flex items-start gap-4 sm:gap-6 flex-1">
               <div className="relative flex-shrink-0">
-                <Avatar className="h-16 w-16 sm:h-20 sm:w-20">
+                <Avatar className="h-28 w-28 border border-gray-300">
                   {profile.profile_picture && pfp_url ? (
                     <AvatarImage src={pfp_url} alt="Profile picture" />
                   ) : (
@@ -540,7 +540,7 @@ export default function ProfilePage() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="absolute -bottom-1 -right-1 h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                  className="absolute -bottom-0 -right-0 h-6 w-6 sm:h-7 sm:w-7 rounded-full"
                   onClick={() => profilePictureInputRef.current?.click()}
                   disabled={uploading}
                 >
@@ -550,93 +550,93 @@ export default function ProfilePage() {
 
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl sm:text-3xl font-bold font-heading mb-1">
-                  {get_full_name(profile)}
+                  {getFullName(profile)}
                 </h1>
                 <p className="text-muted-foreground text-sm">
                   {profile.college && to_college_name(profile.college)}
                   {profile.college && profile.year_level && " • "}
                   {profile.year_level && to_level_name(profile.year_level)}
                 </p>
-              </div>
-            </div>
-
-            {/* Action Buttons Section - Mobile Optimized */}
-            <div className="flex flex-col gap-3 w-full sm:w-auto sm:flex-row sm:gap-2 sm:flex-shrink-0">
-              {/* Preview Button - Always Visible */}
-              <Button
-                variant="outline"
-                scheme="primary"
-                onClick={() => open_employer_modal()}
-              >
-                <Eye className="h-4 w-4" />
-                Preview
-              </Button>
-
-              {/* Edit Mode Buttons */}
-              {isEditing ? (
-                <div className="flex gap-2 w-full sm:w-auto">
+                <div className="flex w-full flex-row gap-2 flex-shrink-0 mt-2">
+                  {/* Preview Button - Always Visible */}
                   <Button
                     variant="outline"
-                    onClick={handleCancel}
-                    disabled={saving}
+                    scheme="primary"
+                    onClick={() => open_employer_modal()}
                   >
-                    Cancel
+                    <Eye className="h-4 w-4" />
+                    Preview
                   </Button>
-                  <Button
-                    onClick={handleSave}
-                    disabled={
-                      saving ||
-                      Object.keys(linkErrors).length > 0 ||
-                      Object.keys(fieldErrors).length > 0
-                    }
-                    className={`${
-                      Object.keys(linkErrors).length > 0 ||
-                      Object.keys(fieldErrors).length > 0
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              ) : (
-                <Button
-                  onClick={() => (
-                    setIsEditing(true),
-                    set_fields({
-                      ...profile,
-                      degree_name: to_degree_full_name(profile.degree),
-                      college_name: to_college_name(profile.college),
-                      year_level_name: to_level_name(profile.year_level),
-                      department_name: to_department_name(profile.department),
-                      calendar_link: profile.calendar_link ?? "",
-                    })
-                  )}
-                >
-                  <Edit2 className="h-4 w-4" />
-                  Edit
-                </Button>
-              )}
 
-              {/* Error Messages - Mobile Optimized */}
-              {isEditing &&
-                (Object.keys(linkErrors).length > 0 ||
-                  Object.keys(fieldErrors).length > 0) && (
-                  <div className="flex flex-col gap-1 text-xs">
-                    {Object.keys(linkErrors).length > 0 && (
-                      <div className="flex items-center gap-1 text-red-600">
-                        <AlertCircle className="h-3 w-3" />
-                        <span>Fix URL errors to save</span>
+                  {/* Edit Mode Buttons */}
+                  {isEditing ? (
+                    <div className="flex gap-2 w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        onClick={handleCancel}
+                        disabled={saving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSave}
+                        disabled={
+                          saving ||
+                          Object.keys(linkErrors).length > 0 ||
+                          Object.keys(fieldErrors).length > 0
+                        }
+                        className={`${
+                          Object.keys(linkErrors).length > 0 ||
+                          Object.keys(fieldErrors).length > 0
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }`}
+                      >
+                        {saving ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => (
+                        setIsEditing(true),
+                        set_fields({
+                          ...profile,
+                          degree_name: to_degree_full_name(profile.degree),
+                          college_name: to_college_name(profile.college),
+                          year_level_name: to_level_name(profile.year_level),
+                          department_name: to_department_name(
+                            profile.department
+                          ),
+                          calendar_link: profile.calendar_link ?? "",
+                        })
+                      )}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                      Edit
+                    </Button>
+                  )}
+
+                  {/* Error Messages - Mobile Optimized */}
+                  {isEditing &&
+                    (Object.keys(linkErrors).length > 0 ||
+                      Object.keys(fieldErrors).length > 0) && (
+                      <div className="flex flex-col gap-1 text-xs">
+                        {Object.keys(linkErrors).length > 0 && (
+                          <div className="flex items-center gap-1 text-red-600">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>Fix URL errors to save</span>
+                          </div>
+                        )}
+                        {Object.keys(fieldErrors).length > 0 && (
+                          <div className="flex items-center gap-1 text-red-600">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>Fix required fields to save</span>
+                          </div>
+                        )}
                       </div>
                     )}
-                    {Object.keys(fieldErrors).length > 0 && (
-                      <div className="flex items-center gap-1 text-red-600">
-                        <AlertCircle className="h-3 w-3" />
-                        <span>Fix required fields to save</span>
-                      </div>
-                    )}
-                  </div>
-                )}
+                </div>
+              </div>
             </div>
           </div>
 

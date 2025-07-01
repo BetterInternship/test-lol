@@ -24,7 +24,7 @@ import {
   useApplications,
 } from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { UserApplication, Job } from "@/lib/db/db.types";
+import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useRefs } from "@/lib/db/use-refs";
 import {
@@ -47,8 +47,8 @@ import { cn, formatDate } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import {
-  user_can_apply,
-  get_missing_profile_fields,
+  getMissingProfileFields,
+  isCompleteProfile,
 } from "@/lib/utils/user-utils";
 import { user_service } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
@@ -57,14 +57,14 @@ import { useClientDimensions } from "@/hooks/use-dimensions";
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { is_authenticated, user } = useAuthContext();
+  const { is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
 
   // Initialize filters with URL synchronization and proper defaults
-  const { filters, set_filter, filter_setter, clear_filters } = useFilter<{
+  const { filters, filter_setter, clear_filters } = useFilter<{
     job_type: string;
     location: string;
     industry: string;
@@ -80,48 +80,45 @@ export default function SearchPage() {
   ); // Enable URL synchronization
 
   const {
-    open: open_success_modal,
-    close: close_success_modal,
+    open: openSuccessModal,
+    close: closeSuccessModal,
     Modal: SuccessModal,
   } = useModal("success-modal");
   const {
-    open: open_filter_modal,
-    close: close_filter_modal,
+    open: openFilterModal,
+    close: closeFilterModal,
     Modal: FilterModal,
   } = useModal("filter-modal");
   const {
-    open: open_job_modal,
-    close: close_job_modal,
+    open: openJobModal,
+    close: closeJobModal,
     Modal: JobModal,
   } = useModal("job-modal", { showCloseButton: false });
   const {
-    open: open_application_confirmation_modal,
-    close: close_application_confirmation_modal,
+    open: openApplicationConfirmationModal,
+    close: closeApplicationConfirmationModal,
     Modal: ApplicationConfirmationModal,
   } = useModal("application-confirmation-modal");
   const {
-    open: open_profile_preview_modal,
-    close: close_profile_preview_modal,
+    open: openProfilePreviewModal,
+    close: closeProfilePreviewModal,
     Modal: ProfilePreviewModal,
   } = useModal("profile-preview-modal");
   const {
-    open: open_incomplete_profile_modal,
-    close: close_incomplete_profile_modal,
+    open: openIncompleteProfileModal,
+    close: closeIncompleteProfileModal,
     Modal: IncompleteProfileModal,
   } = useModal("incomplete-profile-modal");
 
-  const {
-    open: open_resume_modal,
-    close: close_resume_modal,
-    Modal: ResumeModal,
-  } = useModal("resume-modal");
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
 
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
   const { client_width, client_height } = useClientDimensions();
 
   // Resume URL management for profile preview
-  const { url: resume_url, sync: sync_resume_url } = useFile({
+  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
     fetcher: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
@@ -223,9 +220,7 @@ export default function SearchPage() {
     }
 
     // Check if profile is complete
-    const profileComplete = user_can_apply(profile);
-    console.log("Profile complete:", profileComplete);
-    console.log("Profile:", profile);
+    const profileComplete = isCompleteProfile(profile);
 
     // Check if requirements are met
     if (
@@ -246,13 +241,13 @@ export default function SearchPage() {
 
     if (!profileComplete) {
       console.log("Profile not complete, opening incomplete profile modal");
-      open_incomplete_profile_modal();
+      openIncompleteProfileModal();
       return;
     }
 
     // If profile is complete, show confirmation modal
     console.log("Opening application confirmation modal");
-    open_application_confirmation_modal();
+    openApplicationConfirmationModal();
   };
 
   const handleDirectApplication = async () => {
@@ -263,7 +258,7 @@ export default function SearchPage() {
         selectedJob.id ?? "",
         textarea_ref.current?.value ?? ""
       );
-      if (success) open_success_modal();
+      if (success) openSuccessModal();
       else alert("Could not apply to job.");
     } catch (error) {
       console.error("Failed to submit application:", error);
@@ -288,7 +283,7 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
-    if (is_mobile) open_job_modal();
+    if (is_mobile) openJobModal();
   };
 
   if (jobs_error) {
@@ -330,7 +325,7 @@ export default function SearchPage() {
                       className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                     />
                   </div>
-                  <Button onClick={() => open_filter_modal()} size="icon">
+                  <Button onClick={() => openFilterModal()} size="icon">
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
@@ -385,7 +380,7 @@ export default function SearchPage() {
                         className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                       />
                     </div>
-                    <Button onClick={() => open_filter_modal()} size="icon">
+                    <Button onClick={() => openFilterModal()} size="icon">
                       <Filter className="h-4 w-4" />
                     </Button>
                   </div>
@@ -490,7 +485,7 @@ export default function SearchPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => close_job_modal()}
+              onClick={() => closeJobModal()}
               className="h-8 w-8 p-0 ml-[-8px] mb-2 hover:bg-gray-100 rounded-full"
             >
               <ArrowLeft className="h-5 w-5 text-gray-500" />
@@ -663,7 +658,7 @@ export default function SearchPage() {
           >
             <Button
               onClick={() => {
-                close_success_modal();
+                closeSuccessModal();
                 router.push("/applications");
               }}
             >
@@ -713,7 +708,7 @@ export default function SearchPage() {
           <br />
           <div className="flex space-x-2">
             <Button
-              onClick={() => close_filter_modal()}
+              onClick={() => closeFilterModal()}
               size="sm"
               className="transition-all duration-200"
             >
@@ -770,8 +765,8 @@ export default function SearchPage() {
             <Button
               variant="outline"
               onClick={() => {
-                close_application_confirmation_modal();
-                open_profile_preview_modal();
+                closeApplicationConfirmationModal();
+                openProfilePreviewModal();
               }}
               className="w-full h-12 transition-all duration-200"
             >
@@ -846,7 +841,7 @@ Best regards,
             <Button
               variant="outline"
               onClick={() => {
-                close_application_confirmation_modal();
+                closeApplicationConfirmationModal();
                 setShowCoverLetterInput(false);
               }}
               className="flex-1 h-12 transition-all duration-200"
@@ -855,7 +850,7 @@ Best regards,
             </Button>
             <Button
               onClick={() => {
-                close_application_confirmation_modal();
+                closeApplicationConfirmationModal();
                 handleDirectApplication();
                 setShowCoverLetterInput(false);
               }}
@@ -876,8 +871,8 @@ Best regards,
           variant="ghost"
           size="sm"
           onClick={() => {
-            close_profile_preview_modal();
-            open_application_confirmation_modal();
+            closeProfilePreviewModal();
+            openApplicationConfirmationModal();
           }}
           className="h-8 w-8 p-0 ml-4 hover:bg-gray-100 rounded-full"
         >
@@ -890,9 +885,9 @@ Best regards,
             pfp_fetcher={user_service.get_my_pfp_url}
             pfp_route="/users/me/pic"
             open_resume={async () => {
-              close_profile_preview_modal();
-              await sync_resume_url();
-              open_resume_modal();
+              closeProfilePreviewModal();
+              await syncResumeUrl();
+              openResumeModal();
             }}
             open_calendar={async () => {
               window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
@@ -902,7 +897,7 @@ Best regards,
       </ProfilePreviewModal>
 
       {/* Resume Modal */}
-      {resume_url.length > 0 && (
+      {resumeUrl.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
@@ -917,7 +912,7 @@ Best regards,
                   maxHeight: "800px",
                   background: "#FFFFFF",
                 }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
+                src={resumeUrl + "#toolbar=0&navpanes=0&scrollbar=1"}
               >
                 Resume could not be loaded.
               </iframe>
@@ -930,7 +925,7 @@ Best regards,
       <IncompleteProfileModal>
         <div className="p-6">
           {(() => {
-            const { missing, labels } = get_missing_profile_fields(profile);
+            const { missing, labels } = getMissingProfileFields(profile);
             const missingCount = missing.length;
 
             return (
@@ -975,14 +970,14 @@ Best regards,
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    onClick={() => close_incomplete_profile_modal()}
+                    onClick={() => closeIncompleteProfileModal()}
                     className="flex-1 h-12 transition-all duration-200"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={() => {
-                      close_incomplete_profile_modal();
+                      closeIncompleteProfileModal();
                       router.push("/profile");
                     }}
                     size="md"

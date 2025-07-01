@@ -150,7 +150,7 @@ export const useModal = (
           >
             <div
               ref={modalRef}
-              className={`bg-white overflow-hidden ${
+              className={`bg-white overflow-hidden shadow-2xl ${
                 is_mobile
                   ? "max-w-full mx-0 rounded-t-sm rounded-b-none max-h-[85vh] min-h-[200px] flex flex-col animate-in slide-in-from-bottom duration-300"
                   : "max-w-2xl rounded-sm max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"

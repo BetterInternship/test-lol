@@ -23,7 +23,7 @@ import {
   FileText,
   GraduationCap,
 } from "lucide-react";
-import { get_full_name } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
@@ -98,9 +98,9 @@ export const ApplicantModalContent = ({
                 </span>
               </div>
               <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2 md:mb-3 leading-tight">
-                {get_full_name(applicant) === ""
+                {getFullName(applicant) === ""
                   ? "No Name"
-                  : get_full_name(applicant)}
+                  : getFullName(applicant)}
               </h1>
               <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed mb-2 sm:mb-3 md:mb-4">
                 Applying for {job?.title ?? "Sample Position"}{" "}

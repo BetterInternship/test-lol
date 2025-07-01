@@ -25,7 +25,7 @@ export function useJobs(
   const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { job_categories, get_job_category_by_name } = useRefs();
+  const { get_job_category_by_name } = useRefs();
 
   // ! make sure last update depends on last update sent by server (should be a cookie instead, dont let client handle it on its own)
   const fetcher = async () => {

@@ -18,7 +18,7 @@ import { Pfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
 import ContentLayout from "@/components/features/hire/content-layout";
-import { get_full_name } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -198,7 +198,7 @@ export default function Dashboard() {
                                 )}
                                 <div>
                                   <p className="font-medium text-gray-900">
-                                    {get_full_name(application.user)} •{" "}
+                                    {getFullName(application.user)} •{" "}
                                     <Badge strength="medium">
                                       {application.job?.title}
                                     </Badge>
@@ -325,7 +325,7 @@ export default function Dashboard() {
               <div className="h-full flex flex-col">
                 <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
                   <h1 className="font-bold font-heading text-2xl text-gray-900">
-                    {get_full_name(selected_application?.user)} - Resume
+                    {getFullName(selected_application?.user)} - Resume
                   </h1>
                 </div>
                 <div className="flex-1 p-4">
@@ -401,7 +401,7 @@ const ReviewModalContent = ({
     <>
       <div className="flex flex-col items-center justify-center">
         <h1 className="font-bold font-heading text-4xl px-8 pb-4">
-          {get_full_name(application.user)} - Private Notes
+          {getFullName(application.user)} - Private Notes
         </h1>
       </div>
       <div className="flex flex-col items-center justify-center">

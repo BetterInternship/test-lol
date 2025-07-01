@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import { BooleanCheckIcon } from "./icons";
 
 const badge_variants = cva(
   [
@@ -22,7 +23,7 @@ const badge_variants = cva(
     variants: {
       type: {
         default: ["border-gray-300", "text-gray-700"],
-        primary: ["border-primary", "text-primary"],
+        primary: ["bg-primary", "text-primary-foreground"],
         accent: ["bg-accent", "text-accent-foreground"],
         supportive: ["bg-supportive", "text-supportive-foreground"],
         warning: ["bg-warning", "text-warning-foreground"],
@@ -54,4 +55,27 @@ export function Badge({ className, type, strength, ...props }: BadgeProps) {
     />
   );
 }
+
+export function BoolBadge({
+  state,
+  onValue,
+  offValue,
+  onScheme = "supportive",
+  offScheme = "accent",
+  ...props
+}: {
+  state: boolean | null | undefined;
+  onValue: string;
+  offValue: string;
+  onScheme?: "default" | "primary" | "accent" | "supportive" | "destructive";
+  offScheme?: "default" | "primary" | "accent" | "supportive" | "destructive";
+}) {
+  return (
+    <Badge type={state ? onScheme : offScheme}>
+      <BooleanCheckIcon checked={state} />
+      {state ? onValue : offValue}
+    </Badge>
+  );
+}
+
 Badge.displayName = "Badge";

@@ -10,7 +10,7 @@ import {
   EyeOff,
   CheckCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, BoolBadge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -30,15 +30,22 @@ import { Card } from "../ui/our-card";
 export const JobHead = ({
   title,
   employer,
+  size = "",
 }: {
   title: string | null | undefined;
   employer: string | null | undefined;
+  size?: string;
 }) => {
   return (
-    <div className="flex-1 min-w-0">
-      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 leading-tight truncate group-hover:text-primary transition-colors">
+    <div className="flex-1 min-w-0 text-wrap">
+      <h1
+        className={cn(
+          "text-" + size + "xl",
+          "font-semibold text-gray-800 leading-tight line-clamp-2 transition-colors"
+        )}
+      >
         {title}
-      </h3>
+      </h1>
       <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3 mt-1">
         <p className="text-sm text-gray-600 font-medium">
           {employer ?? "Unknown"}
@@ -95,6 +102,42 @@ export const JobSalary = ({
     </Badge>
   ) : (
     <></>
+  );
+};
+
+export const JobApplicationRequirements = ({ job }: { job: Job }) => {
+  return (
+    <div className="mb-6 p-4 bg-gray-50 rounded-sm border">
+      <h4 className="text-sm font-semibold text-gray-700 mb-3">
+        Application Requirements:
+      </h4>
+      <div className="flex flex-wrap gap-4">
+        <BoolBadge
+          state={true}
+          onScheme="primary"
+          onValue="Resume"
+          offValue="Resume"
+        />
+        <BoolBadge
+          state={job.require_github}
+          onScheme="primary"
+          onValue="Github Profile"
+          offValue="Github Profile"
+        />
+        <BoolBadge
+          state={job.require_portfolio}
+          onScheme="primary"
+          onValue="Portfolio"
+          offValue="Portfolio"
+        />
+        <BoolBadge
+          state={job.require_cover_letter}
+          onScheme="primary"
+          onValue="Cover Letter"
+          offValue="Cover Letter"
+        />
+      </div>
+    </div>
   );
 };
 
@@ -815,77 +858,7 @@ export const JobDetails = ({
           Requirements
         </h2>
 
-        {/* Application Requirements - Checkboxes */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">
-            Application Requirements:
-          </h4>
-          <div className="flex flex-wrap gap-4">
-            {/* Resume - Always required */}
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-gray-700 font-medium">Resume</span>
-            </div>
-            {/* GitHub Requirement */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_github ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                {job.require_github && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_github ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                GitHub Profile
-              </span>
-            </div>
-            {/* Portfolio Requirement */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_portfolio ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                {job.require_portfolio && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_portfolio ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                Portfolio
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_cover_letter ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                {job.require_cover_letter && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_cover_letter ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                Cover Letter
-              </span>
-            </div>
-          </div>
-        </div>
+        <JobApplicationRequirements job={job} />
 
         {/* Requirements Content */}
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
