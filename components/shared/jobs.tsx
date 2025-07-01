@@ -7,13 +7,10 @@ import {
   MapPin,
   Monitor,
   Clock,
-  Globe,
-  Lock,
   EyeOff,
   CheckCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { JobModeIcon } from "@/components/ui/icons";
+import { Badge, BoolBadge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -27,6 +24,142 @@ import { JobBooleanLabel, JobPropertyLabel, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
 import { useMoa } from "@/lib/db/use-moa";
+import { Toggle } from "../ui/toggle";
+import { Card } from "../ui/our-card";
+
+export const JobHead = ({
+  title,
+  employer,
+  size = "",
+}: {
+  title: string | null | undefined;
+  employer: string | null | undefined;
+  size?: string;
+}) => {
+  return (
+    <div className="flex-1 min-w-0 text-wrap">
+      <h1
+        className={cn(
+          "text-" + size + "xl",
+          "font-semibold text-gray-800 leading-tight line-clamp-2 transition-colors"
+        )}
+      >
+        {title}
+      </h1>
+      <div className="flex items-center gap-2 text-gray-700 mb-2 sm:mb-3 mt-1">
+        <p className="text-sm text-gray-600 font-medium">
+          {employer ?? "Unknown"}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export const JobLocation = ({
+  location,
+}: {
+  location: string | null | undefined;
+}) => {
+  return location ? (
+    <div className="flex items-center text-sm text-gray-500">
+      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+      <span className="truncate">{location}</span>
+    </div>
+  ) : (
+    <></>
+  );
+};
+
+export const JobType = ({ type }: { type: number | null | undefined }) => {
+  const { ref_is_not_null, to_job_type_name } = useRefs();
+  return ref_is_not_null(type) ? (
+    <Badge>{to_job_type_name(type)}</Badge>
+  ) : (
+    <></>
+  );
+};
+
+export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
+  const { ref_is_not_null, to_job_mode_name } = useRefs();
+  return ref_is_not_null(mode) ? (
+    <Badge>{to_job_mode_name(mode)}</Badge>
+  ) : (
+    <></>
+  );
+};
+
+export const JobSalary = ({
+  salary,
+  salary_freq,
+}: {
+  salary: number | null | undefined;
+  salary_freq: number | null | undefined;
+}) => {
+  const { ref_is_not_null, to_job_pay_freq_name } = useRefs();
+  return salary ? (
+    <Badge>
+      ₱{salary}/{to_job_pay_freq_name(salary_freq)}
+    </Badge>
+  ) : (
+    <></>
+  );
+};
+
+export const JobApplicationRequirements = ({ job }: { job: Job }) => {
+  return (
+    <div className="mb-6 p-4 bg-gray-50 rounded-sm border">
+      <h4 className="text-sm font-semibold text-gray-700 mb-3">
+        Application Requirements:
+      </h4>
+      <div className="flex flex-wrap gap-4">
+        <BoolBadge
+          state={true}
+          onScheme="primary"
+          onValue="Resume"
+          offValue="Resume"
+        />
+        <BoolBadge
+          state={job.require_github}
+          onScheme="primary"
+          onValue="Github Profile"
+          offValue="Github Profile"
+        />
+        <BoolBadge
+          state={job.require_portfolio}
+          onScheme="primary"
+          onValue="Portfolio"
+          offValue="Portfolio"
+        />
+        <BoolBadge
+          state={job.require_cover_letter}
+          onScheme="primary"
+          onValue="Cover Letter"
+          offValue="Cover Letter"
+        />
+      </div>
+    </div>
+  );
+};
+
+export const EmployerMOA = ({
+  university_id,
+  employer_id,
+}: {
+  university_id: string | null | undefined;
+  employer_id: string | null | undefined;
+}) => {
+  const { check } = useMoa();
+  const { get_university } = useRefs();
+
+  return check(employer_id ?? "", university_id ?? "") ? (
+    <Badge type="supportive">
+      <CheckCircle className="w-3 h-3 mr-1" />
+      {get_university(university_id)?.name?.split(" ")[0]} MOA
+    </Badge>
+  ) : (
+    <></>
+  );
+};
 
 /**
  * The scrollable job card component.
@@ -37,86 +170,41 @@ import { useMoa } from "@/lib/db/use-moa";
 export const JobCard = ({
   job,
   selected,
-  disabled,
   on_click,
 }: {
   job: Job;
   selected?: boolean;
-  disabled?: boolean;
   on_click?: (job: Job) => void;
 }) => {
-  const { check } = useMoa();
-  const {
-    ref_is_not_null,
-    to_job_mode_name,
-    to_job_type_name,
-    to_job_pay_freq_name,
-    universities,
-  } = useRefs();
+  const { universities } = useRefs();
 
   return (
-    <div
+    <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
-      className={cn(
-        "p-4 border-2 rounded-lg cursor-pointer transition-colors",
-        selected && !disabled
-          ? "selected ring-2 ring-primary ring-offset-2"
-          : "hover:shadow-lg hover:border-gray-300",
-        disabled ? "opacity-50 pointer-events-none" : "cursor-pointer"
-      )}
+      className={
+        selected
+          ? "selected ring-1 ring-primary ring-offset-1"
+          : "hover:shadow-md hover:border-gray-300 cursor-pointer"
+      }
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
-              {job.title}
-            </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-gray-600 font-medium">
-                {job.employer?.name ?? "Company Name"}
-              </p>
-            </div>
-          </div>
-          {selected && (
-            <div className="flex-shrink-0">
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-            </div>
-          )}
+          <JobHead title={job.title} employer={job.employer?.name} />
         </div>
-
-        {job.location && (
-          <div className="flex items-center text-sm text-gray-500">
-            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-            <span className="truncate">{job.location}</span>
-          </div>
-        )}
-
+        <JobLocation location={job.location} />
         <div className="flex flex-wrap gap-2">
-          {check(job.employer?.id ?? "", universities[0]?.id) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
-              <CheckCircle className="w-3 h-3 mr-1" />
-              DLSU MOA
-            </span>
-          )}
-          {ref_is_not_null(job.type) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
-              {to_job_type_name(job.type)}
-            </span>
-          )}
-          {job.salary && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
-              ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
-            </span>
-          )}
-          {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
-            </span>
-          )}
+          <EmployerMOA
+            employer_id={job.employer?.id}
+            university_id={universities[0]?.id}
+          />
+          <JobType type={job.type} />
+          <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
+          <JobMode mode={job.mode} />
         </div>
       </div>
-    </div>
+      {/* </div> */}
+    </Card>
   );
 };
 
@@ -129,132 +217,55 @@ export const JobCard = ({
 export const EmployerJobCard = ({
   job,
   selected,
-  disabled,
   on_click,
   update_job,
 }: {
   job: Job;
   selected?: boolean;
-  disabled?: boolean;
   on_click?: (job: Job) => void;
   update_job: (
     job_id: string,
     job: Partial<Job>
   ) => Promise<{ success: boolean }>;
 }) => {
-  const { check } = useMoa();
-  const {
-    universities,
-    ref_is_not_null,
-    to_job_mode_name,
-    to_job_type_name,
-    to_job_pay_freq_name,
-  } = useRefs();
-
   return (
-    <div
+    <Card
       key={job.id}
       onClick={() => on_click && on_click(job)}
       className={cn(
-        "job-card group relative",
-        selected && !disabled
-          ? "selected ring-2 ring-primary ring-offset-2"
-          : "hover:shadow-lg border-0 hover:border-0",
-        disabled ? "opacity-50" : "cursor-pointer"
+        selected ? "selected ring-1 ring-primary ring-offset-1" : "",
+        !job.is_active ? "opacity-50" : "cursor-pointer"
       )}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
-              {job.title}
-            </h3>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-sm text-gray-600 font-medium">
-                {job.employer?.name ?? "Company Name"}
-              </p>
-            </div>
-          </div>
-
+          <JobHead title={job.title} employer={job.employer?.name} />
           <div className="flex items-center gap-2 relative z-20">
-            {selected && (
-              <div className="w-2 h-2 bg-primary rounded-full"></div>
-            )}
-            {/* Toggle Slider for Active/Inactive */}
-            <div className="flex items-center">
-              <button
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  if (!job.id) return;
-                  await update_job(job.id, {
-                    is_active: !job.is_active,
-                  });
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 z-30 ${
-                  job.is_active ? "bg-green-600" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    job.is_active ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
-            </div>
+            <Toggle
+              state={job.is_active}
+              onClick={async () => {
+                if (!job.id) return;
+                await update_job(job.id, {
+                  is_active: !job.is_active,
+                });
+              }}
+            />
           </div>
         </div>
-
-        <div className="flex items-center text-sm text-gray-500">
-          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-          <span className="truncate">{job.location}</span>
-        </div>
-
+        <JobLocation location={job.location} />
         <div className="flex flex-wrap gap-2">
-          {check(job.employer?.id ?? "", universities[0]?.id) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
-              <CheckCircle className="w-3 h-3 mr-1" />
-              DLSU MOA
-            </span>
-          )}
           {job.is_unlisted && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-orange-100 text-orange-700 text-xs rounded-full font-medium border border-orange-200">
+            <Badge type="warning">
               <EyeOff className="w-3 h-3 mr-1" />
               Unlisted
-            </span>
+            </Badge>
           )}
-          {ref_is_not_null(job.type) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-purple-50 text-purple-700 text-xs rounded-full font-medium border border-purple-200">
-              {to_job_type_name(job.type)}
-            </span>
-          )}
-          {job.salary && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-green-50 text-green-700 text-xs rounded-full font-medium border border-green-200">
-              ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
-            </span>
-          )}
-          {ref_is_not_null(job.mode) && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-blue-50 text-blue-700 text-xs rounded-full font-medium border border-blue-200">
-              {to_job_mode_name(job.mode)}
-            </span>
-          )}
-          {!job.is_active && (
-            <span className="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium border border-gray-200">
-              <Lock className="w-3 h-3 mr-1" />
-              Inactive
-            </span>
-          )}
+          <JobType type={job.type} />
+          <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
+          <JobMode mode={job.mode} />
         </div>
       </div>
-
-      {!job.is_active && (
-        <div className="absolute inset-0 bg-gray-100 bg-opacity-60 rounded-lg flex items-center justify-center pointer-events-none">
-          <div className="text-center">
-            <EyeOff className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-            <p className="text-xs text-gray-500 font-medium">Inactive</p>
-          </div>
-        </div>
-      )}
-    </div>
+    </Card>
   );
 };
 
@@ -270,14 +281,7 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
-  const { check } = useMoa();
-  const {
-    universities,
-    ref_is_not_null,
-    to_job_mode_name,
-    to_job_type_name,
-    to_job_pay_freq_name,
-  } = useRefs();
+  const { universities } = useRefs();
   return (
     <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
       {/* Header */}
@@ -293,50 +297,15 @@ export const MobileJobCard = ({
         </div>
       </div>
 
-      {/* Location */}
-      {job.location && (
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-          <MapPin className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">{job.location}</span>
-        </div>
-      )}
-
       {/* Badges */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {check(job.employer?.id ?? "", universities[0]?.id) && (
-          <Badge
-            variant="outline"
-            className="text-xs border-green-200 bg-green-50 text-green-700"
-          >
-            <CheckCircle className="w-3 h-3 mr-1" />
-            DLSU MOA
-          </Badge>
-        )}
-        {ref_is_not_null(job.type) && (
-          <Badge
-            variant="outline"
-            className="text-xs border-purple-200 bg-purple-50 text-purple-700"
-          >
-            {to_job_type_name(job.type)}
-          </Badge>
-        )}
-        {job.salary && (
-          <Badge
-            variant="outline"
-            className="text-xs border-green-200 bg-green-50 text-green-700"
-          >
-            ₱{job.salary}/{to_job_pay_freq_name(job.salary_freq)}
-          </Badge>
-        )}
-        {ref_is_not_null(job.mode) && (
-          <Badge
-            variant="outline"
-            className="text-xs border-blue-200 bg-blue-50 text-blue-700"
-          >
-            <JobModeIcon mode={job.mode} />
-            {to_job_mode_name(job.mode)}
-          </Badge>
-        )}
+        <EmployerMOA
+          employer_id={job.employer?.id}
+          university_id={universities[0]?.id}
+        />
+        <JobType type={job.type} />
+        <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
+        <JobMode mode={job.mode} />
       </div>
 
       {/* Description Preview */}
@@ -346,16 +315,13 @@ export const MobileJobCard = ({
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        {job.location && (
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <MapPin className="w-3 h-3" />
-            <span className="truncate">{job.location}</span>
-          </div>
-        )}
+        <JobLocation location={job.location} />{" "}
       </div>
     </div>
   );
 };
+
+export const MobileJobDetails = ({}) => {};
 
 /**
  * The right panel that describes job details.
@@ -819,31 +785,26 @@ export const JobDetails = ({
   // Returns a non-editable version of it
   return (
     <div className="flex-1 border-gray-200 rounded-lg ml-4 p-6 pt-10 overflow-y-auto">
-      <div className="mb-6">
+      <div className="mb-6 flex flex-col space-y-2">
         <div className="max-w-prose">
           <JobTitleLabel value={job.title} />
         </div>
-        <div className="flex items-center gap-2">
-          <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+        <div className="flex items-center">
+          <p className="text-gray-600">{job.employer?.name}</p>
         </div>
-
-        <div className="flex gap-3">{actions}</div>
+        {job.location && (
+          <>
+            <JobLocation location={job.location} />
+            <br />
+          </>
+        )}
+        <div className="flex space-x-2 mt-4">{actions}</div>
       </div>
 
       {/* Job Details Grid */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
-        <div className="grid grid-cols-2 gap-6">
-          {job.location && (
-            <div className="flex flex-col items-start gap-3 max-w-prose">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
-                Location:
-              </label>
-              <JobPropertyLabel value={job.location} />
-            </div>
-          )}
-
+        <div className="grid grid-cols-3 gap-6">
           <DropdownGroup>
             <div className="flex flex-col items-start gap-3">
               <label className="flex items-center text-sm font-semibold text-gray-700">
@@ -897,77 +858,7 @@ export const JobDetails = ({
           Requirements
         </h2>
 
-        {/* Application Requirements - Checkboxes */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3">
-            Application Requirements:
-          </h4>
-          <div className="flex flex-wrap gap-4">
-            {/* Resume - Always required */}
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
-                <CheckCircle className="w-3 h-3 text-white" />
-              </div>
-              <span className="text-sm text-gray-700 font-medium">Resume</span>
-            </div>
-            {/* GitHub Requirement */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_github ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                {job.require_github && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_github ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                GitHub Profile
-              </span>
-            </div>
-            {/* Portfolio Requirement */}
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_portfolio ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                {job.require_portfolio && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_portfolio ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                Portfolio
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-5 h-5 rounded flex items-center justify-center ${
-                  job.require_cover_letter ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                {job.require_cover_letter && (
-                  <CheckCircle className="w-3 h-3 text-white" />
-                )}
-              </div>
-              <span
-                className={`text-sm font-medium ${
-                  job.require_cover_letter ? "text-gray-700" : "text-gray-400"
-                }`}
-              >
-                Cover Letter
-              </span>
-            </div>
-          </div>
-        </div>
+        <JobApplicationRequirements job={job} />
 
         {/* Requirements Content */}
         <div className="markdown prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">

@@ -1,13 +1,13 @@
 import React from "react";
-import { X } from 'lucide-react';
-import { Button } from '../ui/button';
+import { X } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface ModalWrapperProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  size?: "sm" | "md" | "lg" | "xl" | "full";
   showCloseButton?: boolean;
 }
 
@@ -16,25 +16,25 @@ export const ModalWrapper: React.FC<ModalWrapperProps> = ({
   onClose,
   title,
   children,
-  size = 'md',
-  showCloseButton = true
+  size = "md",
+  showCloseButton = true,
 }) => {
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-7xl'
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
+    full: "max-w-7xl",
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className={`bg-white rounded-lg shadow-xl ${sizeClasses[size]} w-full max-h-[90vh] overflow-hidden`}
         onClick={(e) => e.stopPropagation()}
       >

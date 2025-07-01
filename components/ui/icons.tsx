@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-16 05:05:48
- * @ Modified time: 2025-06-16 05:40:03
+ * @ Modified time: 2025-07-01 13:58:39
  * @ Description:
  *
  * A collection of the icons we use for different indicators.
@@ -16,6 +16,9 @@ import {
   GraduationCap,
   Clock,
   PhilippinePeso,
+  CheckCircle,
+  XCircle,
+  CircleAlert,
 } from "lucide-react";
 
 /**
@@ -63,4 +66,15 @@ export const JobTypeIcon = ({ type }: { type: number | null | undefined }) => {
  */
 export const SalaryIcon = () => {
   return <PhilippinePeso className="w-3 h-3 mr-1" />;
+};
+
+/**
+ * Just so we can keep this consistent
+ *
+ * @component
+ */
+export const BooleanCheckIcon = ({ checked }: { checked?: boolean | null }) => {
+  if (checked)
+    return <CircleAlert className="w-[0.9em] h-[0.9em] mr-1"></CircleAlert>;
+  else return <XCircle className="w-[1.1em] h-[1.1em] mr-1"></XCircle>;
 };

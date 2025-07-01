@@ -58,7 +58,11 @@ export default function RegisterPage() {
   // Validation functions - reusing patterns from profile page
   const isValidName = (name: string): boolean => {
     if (!name || name.trim() === "") return false;
-    return name.trim().length >= 2 && name.trim().length <= 32 && /^[a-zA-Z\s.-]+$/.test(name.trim());
+    return (
+      name.trim().length >= 2 &&
+      name.trim().length <= 32 &&
+      /^[a-zA-Z\s.-]+$/.test(name.trim())
+    );
   };
 
   const isValidPhoneNumber = (phone: string): boolean => {
@@ -89,10 +93,14 @@ export default function RegisterPage() {
 
     // Middle name validation (optional but must be valid if provided)
     if (form_data.middle_name && form_data.middle_name.trim()) {
-      if (form_data.middle_name.trim().length > 32 || !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())) {
-        errors.middle_name = form_data.middle_name.trim().length > 32
-          ? "Middle name must be 32 characters or less"
-          : "Middle name must contain only letters, spaces, dots, and hyphens";
+      if (
+        form_data.middle_name.trim().length > 32 ||
+        !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())
+      ) {
+        errors.middle_name =
+          form_data.middle_name.trim().length > 32
+            ? "Middle name must be 32 characters or less"
+            : "Middle name must contain only letters, spaces, dots, and hyphens";
       }
     }
 
@@ -108,14 +116,21 @@ export default function RegisterPage() {
     }
 
     // Phone number validation
-    if (!form_data.phone_number || !isValidPhoneNumber(form_data.phone_number)) {
+    if (
+      !form_data.phone_number ||
+      !isValidPhoneNumber(form_data.phone_number)
+    ) {
       errors.phone_number = !form_data.phone_number?.trim()
         ? "Phone number is required"
         : "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
     }
 
     // Linkage officer validation (only if taking for credit)
-    if (takingForCredit && (!form_data.linkage_officer || !isValidLinkageOfficer(form_data.linkage_officer))) {
+    if (
+      takingForCredit &&
+      (!form_data.linkage_officer ||
+        !isValidLinkageOfficer(form_data.linkage_officer))
+    ) {
       errors.linkage_officer = !form_data.linkage_officer?.trim()
         ? "Linkage officer is required when taking for credit"
         : form_data.linkage_officer.trim().length > 40
@@ -157,19 +172,29 @@ export default function RegisterPage() {
 
     // Run validation only on submit
     const isValid = validateFields();
-    
+
     // Check for missing required fields
     const missingFields = [];
     if (!form_data.first_name?.trim()) missingFields.push("First Name");
     if (!form_data.last_name?.trim()) missingFields.push("Last Name");
     if (!form_data.phone_number?.trim()) missingFields.push("Phone Number");
-    if (!form_data.year_level_name || form_data.year_level_name === defaultYearLevel) missingFields.push("Year Level");
-    if (!form_data.college_name || form_data.college_name === defaultCollege) missingFields.push("College");
-    if (takingForCredit && !form_data.linkage_officer?.trim()) missingFields.push("Linkage Officer");
+    if (
+      !form_data.year_level_name ||
+      form_data.year_level_name === defaultYearLevel
+    )
+      missingFields.push("Year Level");
+    if (!form_data.college_name || form_data.college_name === defaultCollege)
+      missingFields.push("College");
+    if (takingForCredit && !form_data.linkage_officer?.trim())
+      missingFields.push("Linkage Officer");
 
     // Show specific missing fields error
     if (missingFields.length > 0) {
-      setError(`Please fill in the following required fields: ${missingFields.join(", ")}`);
+      setError(
+        `Please fill in the following required fields: ${missingFields.join(
+          ", "
+        )}`
+      );
       return;
     }
 
@@ -250,7 +275,9 @@ export default function RegisterPage() {
                 First Name <span className="text-red-500">*</span>, Middle Name,
                 Last Name <span className="text-red-500">*</span>
               </label>
-              {(validationErrors.first_name || validationErrors.middle_name || validationErrors.last_name) && (
+              {(validationErrors.first_name ||
+                validationErrors.middle_name ||
+                validationErrors.last_name) && (
                 <div className="mb-2">
                   {validationErrors.first_name && (
                     <div className="flex items-center gap-1 text-red-600 text-xs mb-1">
@@ -597,7 +624,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={loading || !acceptTerms}
-              className="w-80 h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-80 h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating Profile..." : "Continue"}
             </Button>

@@ -12,12 +12,7 @@ import {
   AlertTriangle,
   User,
   Filter,
-  X,
   Building,
-  MapPin,
-  Monitor,
-  PhilippinePeso,
-  Clock,
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,7 +24,7 @@ import {
   useApplications,
 } from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { UserApplication, Job } from "@/lib/db/db.types";
+import { Job } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useRefs } from "@/lib/db/use-refs";
 import {
@@ -39,45 +34,37 @@ import {
 import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
-import { JobCard, JobDetails, MobileJobCard } from "@/components/shared/jobs";
-import { cn } from "@/lib/utils";
+import {
+  EmployerMOA,
+  JobCard,
+  JobDetails,
+  JobMode,
+  JobSalary,
+  JobType,
+  MobileJobCard,
+} from "@/components/shared/jobs";
+import { cn, formatDate } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import {
-  user_can_apply,
-  get_missing_profile_fields,
+  getMissingProfileFields,
+  isCompleteProfile,
 } from "@/lib/utils/user-utils";
-import {
-  areApplicationsEnabled,
-  getMaintenanceTitle,
-  getMaintenanceMessage,
-  getMaintenanceSubMessage,
-  getAvailableActions,
-} from "@/lib/config/application-config";
 import { user_service } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 
-// Utility function to format dates
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
-
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { is_authenticated, user } = useAuthContext();
+  const { is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
   const [showCoverLetterInput, setShowCoverLetterInput] = useState(false);
 
   // Initialize filters with URL synchronization and proper defaults
-  const { filters, set_filter, filter_setter, clear_filters } = useFilter<{
+  const { filters, filter_setter, clear_filters } = useFilter<{
     job_type: string;
     location: string;
     industry: string;
@@ -93,67 +80,49 @@ export default function SearchPage() {
   ); // Enable URL synchronization
 
   const {
-    open: open_application_modal,
-    close: close_application_modal,
-    Modal: ApplicationModal,
-  } = useModal("application-modal");
-  const {
-    open: open_success_modal,
-    close: close_success_modal,
+    open: openSuccessModal,
+    close: closeSuccessModal,
     Modal: SuccessModal,
   } = useModal("success-modal");
   const {
-    open: open_filter_modal,
-    close: close_filter_modal,
+    open: openFilterModal,
+    close: closeFilterModal,
     Modal: FilterModal,
   } = useModal("filter-modal");
   const {
-    open: open_job_modal,
-    close: close_job_modal,
+    open: openJobModal,
+    close: closeJobModal,
     Modal: JobModal,
   } = useModal("job-modal", { showCloseButton: false });
   const {
-    open: open_application_confirmation_modal,
-    close: close_application_confirmation_modal,
+    open: openApplicationConfirmationModal,
+    close: closeApplicationConfirmationModal,
     Modal: ApplicationConfirmationModal,
   } = useModal("application-confirmation-modal");
   const {
-    open: open_profile_preview_modal,
-    close: close_profile_preview_modal,
+    open: openProfilePreviewModal,
+    close: closeProfilePreviewModal,
     Modal: ProfilePreviewModal,
   } = useModal("profile-preview-modal");
   const {
-    open: open_incomplete_profile_modal,
-    close: close_incomplete_profile_modal,
+    open: openIncompleteProfileModal,
+    close: closeIncompleteProfileModal,
     Modal: IncompleteProfileModal,
   } = useModal("incomplete-profile-modal");
-  const {
-    open: open_maintenance_modal,
-    close: close_maintenance_modal,
-    Modal: MaintenanceModal,
-  } = useModal("maintenance-modal");
-  const {
-    open: open_resume_modal,
-    close: close_resume_modal,
-    Modal: ResumeModal,
-  } = useModal("resume-modal");
+
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
 
   const { is_mobile } = useAppContext();
   const { profile } = useProfile();
   const { client_width, client_height } = useClientDimensions();
 
   // Resume URL management for profile preview
-  const { url: resume_url, sync: sync_resume_url } = useFile({
+  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
     fetcher: user_service.get_my_resume_url,
     route: "/users/me/resume",
   });
-  const {
-    industries,
-    job_categories,
-    to_job_mode_name,
-    to_job_type_name,
-    to_job_pay_freq_name,
-  } = useRefs();
+  const { industries, universities, job_categories } = useRefs();
 
   // Check if job-specific requirements are met
   const areJobRequirementsMet = () => {
@@ -251,9 +220,7 @@ export default function SearchPage() {
     }
 
     // Check if profile is complete
-    const profileComplete = user_can_apply(profile);
-    console.log("Profile complete:", profileComplete);
-    console.log("Profile:", profile);
+    const profileComplete = isCompleteProfile(profile);
 
     // Check if requirements are met
     if (
@@ -274,13 +241,13 @@ export default function SearchPage() {
 
     if (!profileComplete) {
       console.log("Profile not complete, opening incomplete profile modal");
-      open_incomplete_profile_modal();
+      openIncompleteProfileModal();
       return;
     }
 
     // If profile is complete, show confirmation modal
     console.log("Opening application confirmation modal");
-    open_application_confirmation_modal();
+    openApplicationConfirmationModal();
   };
 
   const handleDirectApplication = async () => {
@@ -291,7 +258,7 @@ export default function SearchPage() {
         selectedJob.id ?? "",
         textarea_ref.current?.value ?? ""
       );
-      if (success) open_success_modal();
+      if (success) openSuccessModal();
       else alert("Could not apply to job.");
     } catch (error) {
       console.error("Failed to submit application:", error);
@@ -316,7 +283,7 @@ export default function SearchPage() {
 
   const handleJobCardClick = (job: Job) => {
     setSelectedJob(job);
-    if (is_mobile) open_job_modal();
+    if (is_mobile) openJobModal();
   };
 
   if (jobs_error) {
@@ -345,7 +312,7 @@ export default function SearchPage() {
           <div className="w-full flex flex-col h-full">
             {/* Fixed Mobile Search Bar */}
             <div className="bg-white border-b border-gray-100 p-6 flex-shrink-0">
-              <div className="bg-white rounded-2xl border border-gray-200 p-2">
+              <div className="bg-white rounded-md border border-gray-200 p-2">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
@@ -358,11 +325,7 @@ export default function SearchPage() {
                       className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                     />
                   </div>
-                  <Button
-                    onClick={() => open_filter_modal()}
-                    className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
-                    size="icon"
-                  >
+                  <Button onClick={() => openFilterModal()} size="icon">
                     <Filter className="h-4 w-4" />
                   </Button>
                 </div>
@@ -404,7 +367,7 @@ export default function SearchPage() {
             <div className="w-1/3 border-r overflow-x-hidden overflow-y-auto p-6">
               {/* Desktop Search Bar */}
               <div className="w-full max-w-4xl mx-auto mb-6">
-                <div className="bg-white rounded-2xl border border-gray-200 p-2">
+                <div className="bg-white rounded-md border border-gray-200 p-2">
                   <div className="flex items-center gap-3">
                     <div className="relative flex-1">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />
@@ -417,11 +380,7 @@ export default function SearchPage() {
                         className="w-full h-12 pl-12 pr-4 bg-transparent border-0 outline-none text-gray-900 placeholder:text-gray-500 text-base"
                       />
                     </div>
-                    <Button
-                      onClick={() => open_filter_modal()}
-                      className="h-12 w-12 flex-shrink-0 bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm"
-                      size="icon"
-                    >
+                    <Button onClick={() => openFilterModal()} size="icon">
                       <Filter className="h-4 w-4" />
                     </Button>
                   </div>
@@ -429,7 +388,7 @@ export default function SearchPage() {
               </div>
 
               {jobs.length ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {jobs.map((job) => (
                     <JobCard
                       key={job.id}
@@ -462,12 +421,12 @@ export default function SearchPage() {
                     <Button
                       key="1"
                       disabled={appliedJob(selectedJob.id ?? "")}
-                      onClick={handleApply}
-                      className={cn(
+                      scheme={
                         appliedJob(selectedJob.id ?? "")
-                          ? "bg-green-600 text-white"
-                          : "bg-blue-600 hover:bg-blue-700"
-                      )}
+                          ? "supportive"
+                          : "primary"
+                      }
+                      onClick={handleApply}
                     >
                       {appliedJob(selectedJob.id ?? "") && (
                         <CheckCircle className="w-4 h-4 mr-2" />
@@ -478,11 +437,9 @@ export default function SearchPage() {
                       key="2"
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
-                      className={cn(
-                        is_saved(selectedJob.id ?? "")
-                          ? "bg-red-50 border-red-200 text-red-600"
-                          : ""
-                      )}
+                      scheme={
+                        is_saved(selectedJob.id) ? "destructive" : "default"
+                      }
                     >
                       {is_saved(selectedJob.id ?? "") && <Heart />}
                       {is_saved(selectedJob.id ?? "")
@@ -524,35 +481,45 @@ export default function SearchPage() {
       <JobModal>
         <div className="h-full flex flex-col bg-white overflow-hidden">
           {/* Fixed Header with Close Button */}
-          <div className="flex justify-between items-center p-4 border-b bg-white flex-shrink-0">
-            <h2 className="text-lg font-bold text-gray-900">Job Details</h2>
+          <div className="flex flex-col justify-start items-start p-4 border-b bg-white flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => close_job_modal()}
-              className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+              onClick={() => closeJobModal()}
+              className="h-8 w-8 p-0 ml-[-8px] mb-2 hover:bg-gray-100 rounded-full"
             >
-              <X className="h-5 w-5 text-gray-500" />
+              <ArrowLeft className="h-5 w-5 text-gray-500" />
             </Button>
-          </div>
-
-          {/* Fixed Job Header - Non-scrollable */}
-          {selectedJob && (
-            <div className="p-4 bg-white flex-shrink-0 border-b">
-              <h1 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                {selectedJob.title}
-              </h1>
-              <div className="flex items-center gap-2 text-gray-600 mb-1">
-                <Building className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate text-sm">
-                  {selectedJob.employer?.name}
-                </span>
+            {/* Fixed Job Header - Non-scrollable */}
+            {selectedJob && (
+              <div className=" bg-white flex-shrink-0">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2 line-clamp-2">
+                  {selectedJob.title}
+                </h1>
+                <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <Building className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate text-sm">
+                    {selectedJob.employer?.name}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">
+                  Listed on {formatDate(selectedJob.created_at ?? "")}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <EmployerMOA
+                    employer_id={selectedJob.employer?.id}
+                    university_id={universities[0]?.id}
+                  />
+                  <JobType type={selectedJob.type} />
+                  <JobSalary
+                    salary={selectedJob.salary}
+                    salary_freq={selectedJob.salary_freq}
+                  />
+                  <JobMode mode={selectedJob.mode} />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                Listed on {formatDate(selectedJob.created_at ?? "")}
-              </p>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Scrollable Content Area - MUST be properly configured */}
           <div
@@ -561,74 +528,6 @@ export default function SearchPage() {
           >
             {selectedJob && (
               <div className="p-4">
-                {/* Mobile Job Details Grid */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-900">
-                    Job Details
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <MapPin className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Location:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {selectedJob.location || "Not specified"}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <Monitor className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Mode:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {to_job_mode_name(selectedJob.mode)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <PhilippinePeso className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Salary:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {!selectedJob.allowance && selectedJob.salary
-                              ? `${selectedJob.salary}/${to_job_pay_freq_name(
-                                  selectedJob.salary_freq
-                                )}`
-                              : "None"}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                      <Clock className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm">
-                          <span className="font-semibold text-gray-900">
-                            Work Schedule:{" "}
-                          </span>
-                          <span className="text-gray-700">
-                            {to_job_type_name(selectedJob.type)}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Job Description */}
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">
@@ -658,16 +557,16 @@ export default function SearchPage() {
           </div>
 
           {/* Fixed Action Buttons at Bottom - Always Visible and Prominent */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 border-blue-200 p-4 shadow-lg">
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 p-4">
             <div className="flex gap-3">
               <Button
                 disabled={appliedJob(selectedJob?.id ?? "")}
                 onClick={handleApply}
                 className={cn(
-                  "flex-1 h-14 font-bold rounded-2xl transition-all duration-300 shadow-lg text-base",
+                  "flex-1 h-14 transition-all duration-300",
                   appliedJob(selectedJob?.id ?? "")
-                    ? "bg-green-600 hover:bg-green-700 text-white shadow-green-200"
-                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-blue-200 hover:shadow-xl active:scale-95"
+                    ? "bg-supportive text-white"
+                    : "bg-primary  text-white"
                 )}
               >
                 {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
@@ -676,12 +575,10 @@ export default function SearchPage() {
               <Button
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
-                className={cn(
-                  "h-14 w-14 rounded-2xl border-2 transition-all duration-300 shadow-lg active:scale-95",
-                  is_saved(selectedJob?.id ?? "")
-                    ? "bg-red-50 border-red-300 text-red-600 shadow-red-200 hover:bg-red-100"
-                    : "border-gray-300 text-gray-600 hover:border-gray-400 bg-white shadow-gray-200 hover:shadow-xl"
-                )}
+                scheme={
+                  is_saved(selectedJob?.id ?? "") ? "destructive" : "default"
+                }
+                className="h-14 w-14"
               >
                 <Heart
                   className={cn(
@@ -694,45 +591,6 @@ export default function SearchPage() {
           </div>
         </div>
       </JobModal>
-
-      {/* Application Modal - Only for Missing Job Requirements */}
-      <ApplicationModal>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Apply to {selectedJob?.title}</h2>
-        </div>
-
-        {/* Missing Job Requirements Warning */}
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="font-medium text-orange-800 mb-2">
-                Missing Job Requirements
-              </h3>
-              <p className="text-sm text-orange-700 mb-3">
-                This job requires additional profile information:
-              </p>
-              <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
-                {getMissingJobRequirements().map((field, index) => (
-                  <li key={index}>{field}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Update Profile Button */}
-        <Button
-          onClick={() => {
-            close_application_modal();
-            router.push("/profile");
-          }}
-          className="w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium"
-        >
-          <User className="w-4 h-4 mr-2" />
-          Update Profile
-        </Button>
-      </ApplicationModal>
 
       {/* Success Modal */}
       <SuccessModal>
@@ -789,18 +647,6 @@ export default function SearchPage() {
               </span>{" "}
               has been successfully submitted.
             </motion.p>
-
-            <motion.div
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-            >
-              <p className="text-sm text-blue-800 max-w-prose">
-                💼 Check <span className="font-semibold">My Applications</span>{" "}
-                to keep track of all your submissions and updates.
-              </p>
-            </motion.div>
           </motion.div>
 
           {/* Action Buttons */}
@@ -811,9 +657,8 @@ export default function SearchPage() {
             transition={{ delay: 0.7, duration: 0.4 }}
           >
             <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
               onClick={() => {
-                close_success_modal();
+                closeSuccessModal();
                 router.push("/applications");
               }}
             >
@@ -826,10 +671,11 @@ export default function SearchPage() {
 
       {/* Filter Modal */}
       <FilterModal>
-        <div className="space-y-6 px-8">
+        <div className="space-y-3 px-8">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-900">Filter Jobs</h2>
           </div>
+          <br />
           <DropdownGroup>
             <GroupableRadioDropdown
               name="location"
@@ -859,15 +705,18 @@ export default function SearchPage() {
             />
           </DropdownGroup>
 
-          <div className="flex gap-3 pt-6 pb-8">
+          <br />
+          <div className="flex space-x-2">
             <Button
-              onClick={() => close_filter_modal()}
-              className="flex-[2] h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              onClick={() => closeFilterModal()}
+              size="sm"
+              className="transition-all duration-200"
             >
               Apply Filters
             </Button>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => {
                 clear_filters({
                   location: "Any location",
@@ -875,11 +724,12 @@ export default function SearchPage() {
                   category: "All categories",
                 });
               }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-300 rounded-xl transition-all duration-200"
+              className="transition-all duration-200"
             >
               Clear Filters
             </Button>
           </div>
+          <br />
         </div>
       </FilterModal>
 
@@ -915,15 +765,12 @@ export default function SearchPage() {
             <Button
               variant="outline"
               onClick={() => {
-                close_application_confirmation_modal();
-                open_profile_preview_modal();
+                closeApplicationConfirmationModal();
+                openProfilePreviewModal();
               }}
-              className="w-full h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium group transition-all duration-200"
+              className="w-full h-12 transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 group-hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
-                  <User className="w-4 h-4 text-gray-600" />
-                </div>
                 <span>Preview Your Profile</span>
               </div>
             </Button>
@@ -994,20 +841,20 @@ Best regards,
             <Button
               variant="outline"
               onClick={() => {
-                close_application_confirmation_modal();
+                closeApplicationConfirmationModal();
                 setShowCoverLetterInput(false);
               }}
-              className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+              className="flex-1 h-12 transition-all duration-200"
             >
               Cancel
             </Button>
             <Button
               onClick={() => {
-                close_application_confirmation_modal();
+                closeApplicationConfirmationModal();
                 handleDirectApplication();
                 setShowCoverLetterInput(false);
               }}
-              className="flex-1 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex-1 h-12 transition-all duration-200"
             >
               <div className="flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4" />
@@ -1024,8 +871,8 @@ Best regards,
           variant="ghost"
           size="sm"
           onClick={() => {
-            close_profile_preview_modal();
-            open_application_confirmation_modal();
+            closeProfilePreviewModal();
+            openApplicationConfirmationModal();
           }}
           className="h-8 w-8 p-0 ml-4 hover:bg-gray-100 rounded-full"
         >
@@ -1035,21 +882,22 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            resume_fetcher={user_service.get_my_resume_url}
             pfp_fetcher={user_service.get_my_pfp_url}
-            resume_route="/users/me/resume"
             pfp_route="/users/me/pic"
-            open_resume_modal={async () => {
-              close_profile_preview_modal();
-              await sync_resume_url();
-              open_resume_modal();
+            open_resume={async () => {
+              closeProfilePreviewModal();
+              await syncResumeUrl();
+              openResumeModal();
+            }}
+            open_calendar={async () => {
+              window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
             }}
           />
         )}
       </ProfilePreviewModal>
 
       {/* Resume Modal */}
-      {resume_url.length > 0 && (
+      {resumeUrl.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
@@ -1058,13 +906,13 @@ Best regards,
                 allowTransparency={true}
                 className="w-full border border-gray-200 rounded-lg"
                 style={{
-                  width: "100%",
+                  width: Math.min(client_width * 0.5, 600),
                   height: client_height * 0.75,
                   minHeight: "600px",
                   maxHeight: "800px",
                   background: "#FFFFFF",
                 }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
+                src={resumeUrl + "#toolbar=0&navpanes=0&scrollbar=1"}
               >
                 Resume could not be loaded.
               </iframe>
@@ -1077,7 +925,7 @@ Best regards,
       <IncompleteProfileModal>
         <div className="p-6">
           {(() => {
-            const { missing, labels } = get_missing_profile_fields(profile);
+            const { missing, labels } = getMissingProfileFields(profile);
             const missingCount = missing.length;
 
             return (
@@ -1122,17 +970,19 @@ Best regards,
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    onClick={() => close_incomplete_profile_modal()}
-                    className="flex-1 h-12 border-2 border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 rounded-xl font-medium transition-all duration-200"
+                    onClick={() => closeIncompleteProfileModal()}
+                    className="flex-1 h-12 transition-all duration-200"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={() => {
-                      close_incomplete_profile_modal();
+                      closeIncompleteProfileModal();
                       router.push("/profile");
                     }}
-                    className="flex-1 h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                    size="md"
+                    scheme="supportive"
+                    className="h-12"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <User className="w-4 h-4" />
@@ -1145,96 +995,6 @@ Best regards,
           })()}
         </div>
       </IncompleteProfileModal>
-
-      {/* Maintenance Mode Modal */}
-      <MaintenanceModal>
-        <div className="flex flex-col h-full max-h-[85vh]">
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {/* Header */}
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <div className="w-8 h-8 text-blue-600">
-                  <svg
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">
-                {getMaintenanceTitle()}
-              </h2>
-              <p className="text-gray-600 leading-relaxed max-w-sm mx-auto">
-                {getMaintenanceMessage()}
-              </p>
-            </div>
-
-            {/* Actions List */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">
-                {getMaintenanceSubMessage()}
-              </h3>
-
-              <div className="space-y-3">
-                {getAvailableActions().map((action, index) => {
-                  const getIcon = (iconName: string) => {
-                    switch (iconName) {
-                      case "heart":
-                        return <Heart className="w-5 h-5" />;
-                      case "user":
-                        return <User className="w-5 h-5" />;
-                      case "search":
-                        return <Search className="w-5 h-5" />;
-                      case "calendar":
-                        return (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                        );
-                      default:
-                        return (
-                          <div className="w-5 h-5 bg-blue-500 rounded-full" />
-                        );
-                    }
-                  };
-
-                  return (
-                    <div
-                      key={index}
-                      className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                        {getIcon(action.icon)}
-                      </div>
-                      <span className="text-gray-700 font-medium">
-                        {action.text}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </MaintenanceModal>
     </>
   );
 }

@@ -1,14 +1,13 @@
-import { PublicUser } from "../db/db.types";
-import { useRefs } from "../db/use-refs";
+import { Job, PublicUser } from "../db/db.types";
 
 /**
- * A utility that gets the full name of the user.
+ * @ Modified time: 2025-07-01 13:31:52
  * Does not include the middle name.
  *
  * @param user
  * @returns
  */
-export const get_full_name = (
+export const getFullName = (
   user: Partial<PublicUser> | null | undefined
 ): string => {
   let name = "";
@@ -30,7 +29,7 @@ export const get_full_name = (
  * Gets a detailed breakdown of missing profile fields for application.
  * Returns an object with missing fields and user-friendly labels.
  */
-export const get_missing_profile_fields = (
+export const getMissingProfileFields = (
   user: PublicUser | null
 ): {
   missing: string[];
@@ -91,9 +90,50 @@ export const get_missing_profile_fields = (
 };
 
 /**
- * Checks whether all the needed fields from the user have been filled for applying.
+ * Returns whether or not the profile has been completed by the user.
  *
+ * @param profile
  */
-export const user_can_apply = (user: PublicUser | null): boolean => {
-  return get_missing_profile_fields(user).canApply;
+export const isCompleteProfile = (user: PublicUser | null): boolean => {
+  const nullish = (val: any) => !(val || val === 0);
+  if (!user) return false;
+
+  if (
+    !user.first_name?.trim() ||
+    !user.last_name?.trim() ||
+    !user.phone_number?.trim()
+  )
+    return false;
+
+  if (
+    nullish(user.university) ||
+    nullish(user.college) ||
+    nullish(user.department) ||
+    nullish(user.degree) ||
+    nullish(user.year_level)
+  )
+    return false;
+
+  if (!user.calendar_link?.trim() || !user.resume?.trim()) return false;
+
+  return true;
+};
+
+/**
+ * Checks whether or not user quialifies for job.
+ *
+ * @param user
+ * @param job
+ */
+export const profileQualifiesFor = (
+  user: PublicUser | null,
+  job: Job | null
+): boolean => {
+  if (!user) return false;
+  if (!job) return false;
+
+  if (job.require_github && !user.github_link?.trim()) return false;
+  if (job.require_portfolio && !user.portfolio_link?.trim()) return false;
+
+  return true;
 };

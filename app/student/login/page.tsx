@@ -150,7 +150,7 @@ export default function LoginPage() {
               {!new_account ? (
                 <Button
                   type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                  className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer"
                 >
                   {loading ? "Checking..." : "Continue"}
                 </Button>
@@ -158,7 +158,7 @@ export default function LoginPage() {
                 <>
                   <Button
                     type="button"
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors cursor-pointer"
+                    className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer"
                     onClick={() =>
                       router.push(
                         `/register?email=${encodeURIComponent(email)}`
@@ -170,7 +170,7 @@ export default function LoginPage() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full h-12 border-gray-300 font-medium rounded-lg transition-colors cursor-pointer"
+                    className="w-full h-12 border-gray-300 transition-colors cursor-pointer"
                     onClick={handle_skip}
                   >
                     Skip for now

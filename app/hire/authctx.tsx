@@ -4,7 +4,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
 import { employer_auth_service } from "@/lib/api/employer.api";
-import { get_full_name } from "@/lib/utils/user-utils";
+import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface IAuthContext {
@@ -119,7 +119,7 @@ export const AuthContextProvider = ({
       return null;
     }
 
-    set_proxy(get_full_name(response.user));
+    set_proxy(getFullName(response.user));
     return response.user;
   };
 
