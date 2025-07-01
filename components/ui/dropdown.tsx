@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-02 06:00:05
+ * @ Modified time: 2025-07-02 06:25:19
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -29,8 +29,8 @@ import { useDetectClickOutside } from "react-detect-click-outside";
  * What's available in the group context to other components.
  */
 interface IDropdownGroupContext {
-  active_dropdown: string;
-  set_active_dropdown: (dropdown: string) => void;
+  activeDropdown: string;
+  setActiveDropdown: (dropdown: string) => void;
 }
 const DropdownGroupContext = createContext<IDropdownGroupContext>(
   {} as IDropdownGroupContext
@@ -139,8 +139,8 @@ const DropdownOptionButton = ({
 export const DropdownGroup = ({ children }: { children: React.ReactNode }) => {
   const [active_dropdown, set_active_dropdown] = useState("");
   const group_dropdown_context: IDropdownGroupContext = {
-    active_dropdown,
-    set_active_dropdown,
+    activeDropdown: active_dropdown,
+    setActiveDropdown: set_active_dropdown,
   };
 
   return (
@@ -159,58 +159,58 @@ export const DropdownGroup = ({ children }: { children: React.ReactNode }) => {
 export const GroupableRadioDropdown = ({
   name,
   options,
-  on_change,
-  default_value = options[0],
+  onChange,
+  defaultValue = options[0],
   size = "sm",
   className = "",
 }: {
   name: string;
   options: string[];
-  on_change: (option: string) => void;
-  default_value?: string;
+  onChange: (option: string) => void;
+  defaultValue?: string;
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) => {
-  const { isMobile: is_mobile } = useAppContext();
-  const { active_dropdown, set_active_dropdown } =
+  const { isMobile } = useAppContext();
+  const { activeDropdown, setActiveDropdown } =
     useContext(DropdownGroupContext);
-  const [is_open, set_is_open] = useState(false);
-  const [value, set_value] = useState(default_value);
-  const ref = useDetectClickOutside({ onTriggered: () => set_is_open(false) });
+  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState(defaultValue);
+  const ref = useDetectClickOutside({ onTriggered: () => setIsOpen(false) });
 
   // Just so it's not stuck at the first default when the default changes
   useEffect(() => {
-    set_value(default_value);
-  }, [default_value]);
+    setValue(defaultValue);
+  }, [defaultValue]);
 
   /**
    * Activates dropdown
    */
-  const handle_click = useCallback(
+  const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      set_is_open(!is_open);
-      set_active_dropdown(name);
+      setIsOpen(!isOpen);
+      setActiveDropdown(name);
     },
-    [is_open, name, set_active_dropdown]
+    [isOpen, name, setActiveDropdown]
   );
 
   /**
    * Changes dropdown value
    */
-  const handle_change = useCallback(
+  const handleChange = useCallback(
     (option: (typeof options)[number]) => {
-      set_value(option);
-      on_change(option);
-      set_is_open(false);
+      setValue(option);
+      onChange(option);
+      setIsOpen(false);
     },
-    [on_change]
+    [onChange]
   );
 
   // Check if it's still the active dropdown
   useEffect(() => {
-    if (active_dropdown !== name) set_is_open(false);
-  }, [active_dropdown, name]);
+    if (activeDropdown !== name) setIsOpen(false);
+  }, [activeDropdown, name]);
 
   return (
     <div className={cn("relative", className)} ref={ref}>
@@ -218,43 +218,43 @@ export const GroupableRadioDropdown = ({
         type="button"
         variant="outline"
         size={size}
-        onClick={handle_click}
+        onClick={handleClick}
         onTouchEnd={(e) => e.stopPropagation()}
-        className="w-full"
+        className="w-full flex flex-row justify-between"
       >
-        {value}
+        <span className="text-ellipsis overflow-hidden">{value}</span>
         <ChevronDown
           className={cn(
             "w-4 h-4 text-gray-600 transition-transform",
-            is_open ? "rotate-180" : ""
+            isOpen ? "rotate-180" : ""
           )}
         />
       </Button>
 
-      {is_open && (
+      {isOpen && (
         <div
           className={cn(
             "absolute bg-white rounded-md shadow-xl overflow-hidden border border-gray-100",
             "z-[9999] duration-200 ease-out transition-all", // Add smooth animation
-            is_mobile ? "min-w-full" : "min-w-[200px]",
+            isMobile ? "min-w-full" : "min-w-[200px]",
             className
           )}
         >
           <div
             className={cn(
               "max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-              is_mobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
+              isMobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
             )}
           >
             {options.map((option, index) => (
               <DropdownOptionButton
                 key={index}
-                set_is_open={set_is_open}
+                set_is_open={setIsOpen}
                 size={size}
               >
                 <DropdownOption
                   highlighted={value === option}
-                  on_click={() => handle_change(option)}
+                  on_click={() => handleChange(option)}
                 >
                   {option}
                 </DropdownOption>

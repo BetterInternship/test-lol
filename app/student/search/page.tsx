@@ -667,8 +667,8 @@ export default function SearchPage() {
             <GroupableRadioDropdown
               name="location"
               options={["Any work load", "In-Person", "Remote", "Hybrid"]}
-              on_change={filter_setter("location")}
-              default_value={filters.location}
+              onChange={filter_setter("location")}
+              defaultValue={filters.location}
             />
             <GroupableRadioDropdown
               name="industry"
@@ -676,8 +676,8 @@ export default function SearchPage() {
                 "All industries",
                 ...industries.map((industry) => industry.name),
               ]}
-              on_change={filter_setter("industry")}
-              default_value={filters.industry}
+              onChange={filter_setter("industry")}
+              defaultValue={filters.industry}
             />
             <GroupableRadioDropdown
               name="category"
@@ -687,8 +687,8 @@ export default function SearchPage() {
                   .toSorted((a, b) => a.order - b.order)
                   .map((c) => c.name),
               ]}
-              on_change={filter_setter("category")}
-              default_value={filters.category}
+              onChange={filter_setter("category")}
+              defaultValue={filters.category}
             />
           </DropdownGroup>
 

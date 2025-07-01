@@ -250,10 +250,10 @@ export default function Dashboard() {
                                   name="status"
                                   className="w-36"
                                   options={app_statuses.map((as) => as.name)}
-                                  default_value={
+                                  defaultValue={
                                     to_app_status_name(application.status) ?? ""
                                   }
-                                  on_change={async (status) => {
+                                  onChange={async (status) => {
                                     if (!application?.id) {
                                       console.error(
                                         "Not an application you can edit."
