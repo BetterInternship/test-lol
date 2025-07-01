@@ -126,6 +126,15 @@ export default function ProfilePage() {
     }
   };
 
+  // Sanitize urls
+  const urlPreprocess = (url: string | null) =>
+    !url
+      ? ""
+      : !url.toLowerCase().startsWith("http://") &&
+        !url.toLowerCase().startsWith("https://")
+      ? "https://" + url
+      : url;
+
   const isValidLinkedInURL = (url: string): boolean => {
     if (!url || url.trim() === "") return true;
     if (!url.startsWith("https://") && !url.startsWith("http://"))
@@ -465,11 +474,11 @@ export default function ProfilePage() {
           )?.id ?? undefined,
         university:
           get_university_by_name(form_data.university_name)?.id ?? undefined,
-        degree_notes: form_data.degree_notes ?? "",
-        portfolio_link: form_data.portfolio_link ?? "",
-        github_link: form_data.github_link ?? "",
-        linkedin_link: form_data.linkedin_link ?? "",
-        calendar_link: form_data.calendar_link ?? "",
+        degree_notes: form_data.degree_notes,
+        portfolio_link: urlPreprocess(form_data.portfolio_link),
+        github_link: urlPreprocess(form_data.github_link),
+        linkedin_link: urlPreprocess(form_data.linkedin_link),
+        calendar_link: urlPreprocess(form_data.calendar_link),
         bio: form_data.bio ?? "",
         taking_for_credit: form_data.taking_for_credit,
         linkage_officer: form_data.linkage_officer ?? "",
