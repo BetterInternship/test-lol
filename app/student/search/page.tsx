@@ -35,13 +35,10 @@ import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import {
-  EmployerMOA,
   JobApplicationRequirements,
+  JobBadges,
   JobCard,
   JobDetails,
-  JobMode,
-  JobSalary,
-  JobType,
   MobileJobCard,
 } from "@/components/shared/jobs";
 import { cn, formatDate } from "@/lib/utils";
@@ -494,18 +491,7 @@ export default function SearchPage() {
                 <p className="text-xs text-gray-500 mb-3">
                   Listed on {formatDate(selectedJob.created_at ?? "")}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <EmployerMOA
-                    employer_id={selectedJob.employer?.id}
-                    university_id={universities[0]?.id}
-                  />
-                  <JobType type={selectedJob.type} />
-                  <JobSalary
-                    salary={selectedJob.salary}
-                    salary_freq={selectedJob.salary_freq}
-                  />
-                  <JobMode mode={selectedJob.mode} />
-                </div>
+                <JobBadges job={selectedJob} />
               </div>
             )}
           </div>
