@@ -51,19 +51,22 @@ export default function SavedJobsPage() {
           </Button>
         </Card>
       ) : saved_jobs.length === 0 ? (
-        <Card className="max-w-md m-auto">
-          <Heart className="w-16 h-16 sm:w-20 sm:h-20 text-gray-300 mx-auto mb-6" />
-          <div className="text-gray-500 text-lg sm:text-xl mb-4 sm:mb-6 font-medium">
-            No saved jobs yet
-          </div>
-          <div className="text-gray-400 text-sm sm:text-base mb-6 sm:mb-8 px-4 sm:px-0 leading-relaxed max-w-md mx-auto">
-            Save jobs by clicking the heart icon on job listings to see them
-            here.
-          </div>
-          <Link href="/search">
-            <Button size="md">Browse Jobs</Button>
-          </Link>
-        </Card>
+        <div className="text-center py-16 animate-fade-in">
+          <Card className="max-w-md m-auto">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No saved jobs yet
+            </h3>
+            <p className="text-gray-500 mb-6 leading-relaxed">
+              Save jobs by clicking the heart icon on job listings to see them
+              here.
+            </p>
+            <Link href="/search">
+              <Button className="bg-primary hover:bg-primary/90">
+                Browse Jobs
+              </Button>
+            </Link>
+          </Card>
+        </div>
       ) : (
         <div className="space-y-3">
           {saved_jobs.map((savedJob) => (
