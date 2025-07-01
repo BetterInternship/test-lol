@@ -19,7 +19,7 @@ export const Pfp = ({
   size?: number;
 }) => {
   const fetcher = useCallback(
-    async () => UserService.get_user_pfp_url(user_id),
+    async () => UserService.getUserPfpURL(user_id),
     [user_id]
   );
   const { url, sync } = useFile({
@@ -51,7 +51,7 @@ export const Pfp = ({
  * @component
  */
 export const MyPfp = ({ size = 10 }: { size?: number }) => {
-  const fetcher = async () => UserService.get_my_pfp_url();
+  const fetcher = async () => UserService.getMyPfpURL();
   const { profile } = useProfile();
   const { url, sync } = useFile({
     route: "/users/me/pic",

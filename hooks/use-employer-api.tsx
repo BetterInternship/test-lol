@@ -1,99 +1,24 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { JobService, handleApiError, ApplicationService } from "@/lib/api/api";
 import {
-  Employer,
-  EmployerApplication,
-  Job,
-  PrivateUser,
-} from "@/lib/db/db.types";
+  JobService,
+  handleApiError,
+  ApplicationService,
+  EmployerService,
+} from "@/lib/api/api";
+import { EmployerApplication, Job } from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
-import { employer_auth_service } from "@/lib/api/employer.api";
+import { useQuery } from "@tanstack/react-query";
 
-export function useUsers() {
-  const [users, set_users] = useState<PrivateUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await employer_auth_service.get_all_users();
-      if (response.success)
-        // @ts-ignore
-        set_users(response.users ?? []);
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+export function useProfile() {
+  const { isPending, isFetching, isError, data, error } = useQuery({
+    queryKey: ["my-employer-profile"],
+    queryFn: () => EmployerService.getMyProfile(),
+  });
 
   return {
-    users,
-    loading,
-    error,
-  };
-}
-
-export function useEmployers() {
-  const [employers, set_employers] = useState<Employer[]>([]);
-  const [loading, set_loading] = useState(true);
-  const [error, set_error] = useState<string | null>(null);
-
-  const fetchEmployers = async () => {
-    try {
-      set_loading(true);
-      set_error(null);
-      const response = await employer_auth_service.get_all_employers();
-      if (response.success)
-        // @ts-ignore
-        set_employers(response.employers ?? []);
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      set_error(errorMessage);
-    } finally {
-      set_loading(false);
-    }
-  };
-
-  const verify = async (employer_id: string, new_status: boolean) => {
-    set_loading(true);
-
-    const old_employer = employers.filter((e) => e.id === employer_id)[0];
-    const response = new_status
-      ? await employer_auth_service.verify_employer(employer_id)
-      : await employer_auth_service.unverify_employer(employer_id);
-
-    // Error
-    if (!response.success) {
-      set_error(response.message ?? "");
-      return;
-    }
-
-    // Update cache
-    set_employers([
-      ...employers.filter((e) => e.id !== employer_id),
-      { ...old_employer, is_verified: new_status },
-    ]);
-
-    set_loading(false);
-  };
-
-  useEffect(() => {
-    fetchEmployers();
-  }, []);
-
-  return {
-    employers,
-    verify,
-    loading,
-    error,
+    loading: isPending || isFetching,
+    error: error,
+    profile: data?.employer,
   };
 }
 
@@ -205,9 +130,6 @@ export function useOwnedJobs(
     try {
       setLoading(true);
       setError(null);
-
-      // Check cache first
-      const cached_saved_jobs = null;
 
       // Otherwise, pull from server
       const response = await JobService.get_owned_jobs();

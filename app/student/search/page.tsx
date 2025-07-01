@@ -120,7 +120,7 @@ export default function SearchPage() {
 
   // Resume URL management for profile preview
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
-    fetcher: UserService.get_my_resume_url,
+    fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
   const { industries, universities, job_categories } = useRefs();
@@ -869,7 +869,7 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            pfp_fetcher={UserService.get_my_pfp_url}
+            pfp_fetcher={UserService.getMyPfpURL}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeProfilePreviewModal();

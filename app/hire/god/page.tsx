@@ -3,7 +3,7 @@
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
 import { TabGroup, Tab } from "@/components/ui/tabs";
-import { useEmployers, useUsers } from "@/hooks/use-employer-api";
+import { useEmployers, useUsers } from "@/lib/api/use-god-api";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../authctx";

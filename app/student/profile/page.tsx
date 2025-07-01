@@ -75,7 +75,7 @@ export default function ProfilePage() {
   const defaultDegree = "Select Degree";
   const [isEditing, setIsEditing] = useState(false);
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
-    fetcher: UserService.get_my_resume_url,
+    fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
@@ -306,7 +306,7 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("resume");
       form.file(file);
       // @ts-ignore
-      const result = await UserService.update_my_resume(form.build());
+      const result = await UserService.updateMyResume(form.build());
       alert("Resume uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload resume");
@@ -345,7 +345,7 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("pfp");
       form.file(file);
       // @ts-ignore
-      const result = await UserService.update_my_pfp(form.build());
+      const result = await UserService.updateMyPfp(form.build());
       if (!result.success) {
         alert("Could not upload profile picture.");
         return;
@@ -956,7 +956,7 @@ export default function ProfilePage() {
         <EmployerModal>
           <ApplicantModalContent
             applicant={profile}
-            pfp_fetcher={UserService.get_my_pfp_url}
+            pfp_fetcher={UserService.getMyPfpURL}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               close_employer_modal();

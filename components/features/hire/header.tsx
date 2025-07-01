@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuthContext } from "../../../app/hire/authctx";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Building2, UserPlus } from "lucide-react";
+import { User, LogOut, Building2, UserPlus, Building } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -96,6 +96,10 @@ export const ProfileButton = () => {
           </div>
         }
       >
+        <DropdownOption href="/company-profile">
+          <Building className="w-4 h-4 inline-block m-1 mr-2" />
+          Company Profile
+        </DropdownOption>
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>

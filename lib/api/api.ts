@@ -4,9 +4,29 @@ import {
   UserApplication,
   SavedJob,
   EmployerApplication,
+  Employer,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
+
+interface EmployerResponse extends FetchResponse {
+  employer: Partial<Employer>;
+}
+
+export const EmployerService = {
+  async getMyProfile() {
+    return APIClient.get<EmployerResponse>(
+      APIRoute("employer").r("me").build()
+    );
+  },
+
+  async updateMyProfile(data: Partial<Employer>) {
+    return APIClient.put<EmployerResponse>(
+      APIRoute("employer").r("me").build(),
+      data
+    );
+  },
+};
 
 // Auth Services
 interface AuthResponse extends FetchResponse {
@@ -102,33 +122,33 @@ interface SaveJobResponse extends FetchResponse {
 }
 
 export const UserService = {
-  async get_my_profile() {
+  async getMyProfile() {
     return APIClient.get<UserResponse>(APIRoute("users").r("me").build());
   },
 
-  async update_my_profile(data: Partial<PublicUser>) {
+  async updateMyProfile(data: Partial<PublicUser>) {
     return APIClient.put<UserResponse>(APIRoute("users").r("me").build(), data);
   },
 
-  async get_my_resume_url() {
+  async getMyResumeURL() {
     return APIClient.get<ResourceHashResponse>(
       APIRoute("users").r("me", "resume").build()
     );
   },
 
-  async get_my_pfp_url() {
+  async getMyPfpURL() {
     return APIClient.get<ResourceHashResponse>(
       APIRoute("users").r("me", "pic").build()
     );
   },
 
-  async get_user_pfp_url(user_id: string) {
+  async getUserPfpURL(user_id: string) {
     return APIClient.get<ResourceHashResponse>(
       APIRoute("users").r(user_id, "pic").build()
     );
   },
 
-  async update_my_pfp(file: Blob | null) {
+  async updateMyPfp(file: Blob | null) {
     return APIClient.put<ResourceHashResponse>(
       APIRoute("users").r("me", "pic").build(),
       file,
@@ -136,13 +156,13 @@ export const UserService = {
     );
   },
 
-  async get_user_resume_url(user_id: string) {
+  async getUserResumeURL(user_id: string) {
     return APIClient.get<ResourceHashResponse>(
       APIRoute("users").r(user_id, "resume").build()
     );
   },
 
-  async update_my_resume(file: Blob | null) {
+  async updateMyResume(file: Blob | null) {
     return APIClient.put<Response>(
       APIRoute("users").r("me", "resume").build(),
       file,
@@ -150,7 +170,7 @@ export const UserService = {
     );
   },
 
-  async save_job(job_id: string) {
+  async saveJob(job_id: string) {
     return APIClient.post<SaveJobResponse>(
       APIRoute("users").r("save-job").build(),
       { id: job_id }
