@@ -447,8 +447,6 @@ export function useApplications() {
     } catch (err) {
       const errorMessage = handle_api_error(err);
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -481,8 +479,7 @@ export function useApplications() {
   };
 
   useEffect(() => {
-    fetch_applications();
-    setLoading(false);
+    fetch_applications().then(() => setLoading(false));
   }, [fetch_applications]);
 
   return {
@@ -495,6 +492,9 @@ export function useApplications() {
     appliedJobs,
     appliedJob: (job_id: string) =>
       appliedJobs.map((aj) => aj.id).includes(job_id),
-    refetch: fetch_applications,
+    refetch: () => {
+      setLoading(true);
+      fetch_applications().then(() => setLoading(false));
+    },
   };
 }

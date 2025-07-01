@@ -5,12 +5,12 @@ export const Card = ({
   children,
   ...props
 }: {
-  className: string;
-  children: React.ReactNode;
+  className?: string;
+  children?: React.ReactNode;
 } & React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "p-4 border-2 rounded-[0.33em] transition-colors border-gray-200",
+      "p-[1.5em] border rounded-[0.33em] transition-colors bg-white border-gray-300",
       className
     )}
     {...props}

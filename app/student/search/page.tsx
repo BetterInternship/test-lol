@@ -12,12 +12,7 @@ import {
   AlertTriangle,
   User,
   Filter,
-  X,
   Building,
-  MapPin,
-  Monitor,
-  PhilippinePeso,
-  Clock,
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -398,7 +393,7 @@ export default function SearchPage() {
               </div>
 
               {jobs.length ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {jobs.map((job) => (
                     <JobCard
                       key={job.id}
