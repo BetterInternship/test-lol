@@ -36,6 +36,7 @@ import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import {
   EmployerMOA,
+  JobApplicationRequirements,
   JobCard,
   JobDetails,
   JobMode,
@@ -124,24 +125,12 @@ export default function SearchPage() {
   });
   const { industries, universities, job_categories } = useRefs();
 
-  // Check if job-specific requirements are met
-  const areJobRequirementsMet = () => {
-    if (!selectedJob || !profile) return false;
-    return true;
-  };
-
-  const getMissingJobRequirements = () => {
-    if (!selectedJob || !profile) return [];
-    return [];
-  };
-
   // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
   const {
     getJobsPage,
     jobs: filteredJobs,
-    allJobs,
     loading: jobs_loading,
     error: jobs_error,
     refetch,
@@ -544,6 +533,7 @@ export default function SearchPage() {
                     <h2 className="text-lg font-semibold mb-3 text-gray-900">
                       Requirements
                     </h2>
+                    <JobApplicationRequirements job={selectedJob} />
                     <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
                       <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                     </div>
