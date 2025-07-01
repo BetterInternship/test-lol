@@ -50,7 +50,7 @@ export const Header = () => {
  * @component
  */
 export const ProfileButton = () => {
-  const { user, is_authenticated, logout } = useAuthContext();
+  const { user, isAuthenticated: is_authenticated, logout } = useAuthContext();
   const router = useRouter();
 
   const handle_logout = () => {

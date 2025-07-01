@@ -1,5 +1,5 @@
 import { useFile } from "@/hooks/use-file";
-import { user_service } from "@/lib/api/api";
+import { UserService } from "@/lib/api/api";
 import { useCallback, useEffect } from "react";
 
 /**
@@ -16,7 +16,7 @@ export const Pfp = ({
   size?: number;
 }) => {
   const fetcher = useCallback(
-    async () => user_service.get_user_pfp_url(user_id),
+    async () => UserService.get_user_pfp_url(user_id),
     [user_id]
   );
   const { url, sync } = useFile({

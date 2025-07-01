@@ -48,7 +48,7 @@ import {
   getMissingProfileFields,
   isCompleteProfile,
 } from "@/lib/utils/user-utils";
-import { user_service } from "@/lib/api/api";
+import { UserService } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -56,7 +56,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { is_authenticated } = useAuthContext();
+  const { isAuthenticated: is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
@@ -119,7 +119,7 @@ export default function SearchPage() {
 
   // Resume URL management for profile preview
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
-    fetcher: user_service.get_my_resume_url,
+    fetcher: UserService.get_my_resume_url,
     route: "/users/me/resume",
   });
   const { industries, universities, job_categories } = useRefs();
@@ -860,7 +860,7 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            pfp_fetcher={user_service.get_my_pfp_url}
+            pfp_fetcher={UserService.get_my_pfp_url}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeProfilePreviewModal();

@@ -9,8 +9,11 @@ export default function VerifyPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { verify, refresh_authentication, redirect_if_logged_in } =
-    useAuthContext();
+  const {
+    verify,
+    refreshAuthentication: refresh_authentication,
+    redirectIfLoggedIn: redirect_if_logged_in,
+  } = useAuthContext();
 
   // Redirect if logged in
   redirect_if_logged_in();

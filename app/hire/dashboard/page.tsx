@@ -12,7 +12,7 @@ import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
 import { useFile } from "@/hooks/use-file";
-import { user_service } from "@/lib/api/api";
+import { UserService } from "@/lib/api/api";
 import { Pfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
@@ -72,7 +72,7 @@ export default function Dashboard() {
 
   const get_user_resume_url = useCallback(
     async () =>
-      user_service.get_user_resume_url(selected_application?.user?.id ?? ""),
+      UserService.get_user_resume_url(selected_application?.user?.id ?? ""),
     [selected_application]
   );
 
@@ -285,7 +285,7 @@ export default function Dashboard() {
             <ApplicantModalContent
               clickable={true}
               pfp_fetcher={async () =>
-                user_service.get_user_pfp_url(
+                UserService.get_user_pfp_url(
                   selected_application?.user?.id ?? ""
                 )
               }

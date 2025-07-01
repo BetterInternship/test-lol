@@ -9,10 +9,10 @@ import Countdown from "react-countdown";
 
 export default function OTPPage() {
   const {
-    send_otp_request,
-    resend_otp_request,
-    verify_otp,
-    redirect_if_logged_in,
+    sendOtpRequest: send_otp_request,
+    resendOtpRequest: resend_otp_request,
+    verifyOtp: verify_otp,
+    redirectIfLoggedIn: redirect_if_logged_in,
   } = useAuthContext();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
