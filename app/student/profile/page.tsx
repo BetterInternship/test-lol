@@ -19,7 +19,6 @@ import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
-import { useAppContext } from "@/lib/ctx-app";
 import { PublicUser } from "@/lib/db/db.types";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -28,8 +27,7 @@ import {
 } from "@/components/ui/editable";
 import { UserPropertyLabel, UserLinkLabel } from "@/components/ui/labels";
 import { DropdownGroup } from "@/components/ui/dropdown";
-import { user_service } from "@/lib/api/api";
-import { useClientDimensions } from "@/hooks/use-dimensions";
+import { UserService } from "@/lib/api/api";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
@@ -38,33 +36,36 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getFullName } from "@/lib/utils/user-utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function ProfilePage() {
-  const { is_authenticated } = useAuthContext();
+  const { isAuthenticated: is_authenticated } = useAuthContext();
   const { profile, error, updateProfile } = useProfile();
-  const { client_width, client_height } = useClientDimensions();
   const {
     ref_loading,
-    colleges,
     levels,
     degrees,
-    departments,
     to_college_name,
     to_level_name,
     to_department_name,
     to_degree_full_name,
+    to_university_name,
     get_college_by_name,
     get_level_by_name,
+    get_departments_by_college,
+    get_colleges_by_university,
     get_department_by_name,
     get_degree_by_type_and_name,
+    get_university_by_name,
+    get_universities_from_domain,
   } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
-  const { url: resume_url, sync: sync_resume_url } = useFile({
-    fetcher: user_service.get_my_resume_url,
+  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
+    fetcher: UserService.get_my_resume_url,
     route: "/users/me/resume",
   });
   const { url: pfp_url, sync: sync_pfp_url } = useFile({
-    fetcher: user_service.get_my_pfp_url,
+    fetcher: UserService.get_my_pfp_url,
     route: "/users/me/pic",
   });
   const { form_data, set_field, set_fields, field_setter } = useFormData<
@@ -73,6 +74,7 @@ export default function ProfilePage() {
       department_name: string | null;
       degree_name: string | null;
       year_level_name: string | null;
+      university_name: string | null;
     }
   >();
   const [saving, setSaving] = useState(false);
@@ -89,6 +91,7 @@ export default function ProfilePage() {
     middle_name?: string;
     last_name?: string;
     phone_number?: string;
+    university?: string;
     college?: string;
     department?: string;
     year_level?: string;
@@ -316,8 +319,6 @@ export default function ProfilePage() {
     close: close_resume_modal,
     Modal: ResumeModal,
   } = useModal("resume-modal");
-
-  const { is_mobile } = useAppContext();
   const router = useRouter();
 
   // File input refs
@@ -351,7 +352,7 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("resume");
       form.file(file);
       // @ts-ignore
-      const result = await user_service.update_my_resume(form.build());
+      const result = await UserService.update_my_resume(form.build());
       alert("Resume uploaded successfully!");
     } catch (error: any) {
       alert(error.message || "Failed to upload resume");
@@ -364,7 +365,7 @@ export default function ProfilePage() {
   };
 
   const handlePreviewResume = async () => {
-    await sync_resume_url();
+    await syncResumeUrl();
     open_resume_modal();
   };
 
@@ -390,7 +391,7 @@ export default function ProfilePage() {
       const form = FileUploadFormBuilder.new("pfp");
       form.file(file);
       // @ts-ignore
-      const result = await user_service.update_my_pfp(form.build());
+      const result = await UserService.update_my_pfp(form.build());
       if (!result.success) {
         alert("Could not upload profile picture.");
         return;
@@ -421,6 +422,7 @@ export default function ProfilePage() {
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
         department_name: to_department_name(profile.department),
+        university_name: to_university_name(profile.university),
         calendar_link: profile.calendar_link ?? "",
       });
   }, [profile, ref_loading]);
@@ -452,6 +454,8 @@ export default function ProfilePage() {
             form_data.degree_name?.split(" - ")[0],
             form_data.degree_name?.split(" - ")[1]
           )?.id ?? undefined,
+        university:
+          get_university_by_name(form_data.university_name)?.id ?? undefined,
         degree_notes: form_data.degree_notes ?? "",
         portfolio_link: form_data.portfolio_link ?? "",
         github_link: form_data.github_link ?? "",
@@ -479,6 +483,7 @@ export default function ProfilePage() {
         college_name: to_college_name(profile.college),
         year_level_name: to_level_name(profile.year_level),
         department_name: to_department_name(profile.department),
+        university_name: to_university_name(profile.university),
         degree_name: to_degree_full_name(profile.degree),
       });
     setIsEditing(false);
@@ -742,6 +747,50 @@ export default function ProfilePage() {
                       <DropdownGroup>
                         <div>
                           <label className="text-sm font-medium text-gray-700 mb-1 block">
+                            University
+                          </label>
+                          {fieldErrors.university && (
+                            <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
+                              <AlertCircle className="h-3 w-3" />
+                              <span>{fieldErrors.university}</span>
+                            </div>
+                          )}
+                          <EditableGroupableRadioDropdown
+                            is_editing={isEditing}
+                            name="college"
+                            value={form_data.university_name}
+                            setter={(value) => {
+                              set_fields({
+                                university_name: value,
+                                university: get_university_by_name(value)?.id,
+                                college_name: "Not specified",
+                                college: null,
+                                department_name: "Not specified",
+                                department: null,
+                              });
+
+                              // Clear college error when user selects a value (immediate feedback)
+                              if (value && value !== "Not specified") {
+                                setFieldErrors((prev) => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.university;
+                                  return newErrors;
+                                });
+                              }
+                            }}
+                            options={[
+                              "Not specified",
+                              ...get_universities_from_domain(
+                                profile.email.split("@")[1]
+                              ).map((uid) => to_university_name(uid) ?? ""),
+                            ]}
+                          >
+                            <UserPropertyLabel />
+                          </EditableGroupableRadioDropdown>
+                        </div>
+
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-1 block">
                             College
                           </label>
                           {fieldErrors.college && (
@@ -772,7 +821,11 @@ export default function ProfilePage() {
                             }}
                             options={[
                               "Not specified",
-                              ...colleges.map((c) => c.name),
+                              ...get_colleges_by_university(
+                                get_university_by_name(
+                                  form_data.university_name
+                                )?.id ?? ""
+                              ).map((cid) => to_college_name(cid) ?? ""),
                             ]}
                           >
                             <UserPropertyLabel />
@@ -808,13 +861,10 @@ export default function ProfilePage() {
                             }}
                             options={[
                               "Not specified",
-                              ...departments
-                                .filter(
-                                  (d) =>
-                                    form_data.college &&
-                                    d.college_id === form_data.college
-                                )
-                                .map((d) => d.name),
+                              ...get_departments_by_college(
+                                get_college_by_name(form_data.college_name)
+                                  ?.id ?? ""
+                              ).map((did) => to_department_name(did) ?? ""),
                             ]}
                           >
                             <UserPropertyLabel />
@@ -1179,26 +1229,11 @@ export default function ProfilePage() {
       </div>
 
       {/* Modals */}
-      {resume_url.length > 0 && (
+      {resumeUrl.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <div className="px-6 pb-6">
-              <iframe
-                allowTransparency={true}
-                className="w-full border border-gray-200 rounded-lg"
-                style={{
-                  width: Math.min(client_width * 0.5, 600),
-                  height: client_height * 0.75,
-                  minHeight: "600px",
-                  maxHeight: "800px",
-                  background: "#FFFFFF",
-                }}
-                src={resume_url + "#toolbar=0&navpanes=0&scrollbar=1"}
-              >
-                Resume could not be loaded.
-              </iframe>
-            </div>
+            <PDFPreview url={resumeUrl} />
           </div>
         </ResumeModal>
       )}
@@ -1206,11 +1241,11 @@ export default function ProfilePage() {
       <EmployerModal>
         <ApplicantModalContent
           applicant={profile}
-          pfp_fetcher={user_service.get_my_pfp_url}
+          pfp_fetcher={UserService.get_my_pfp_url}
           pfp_route="/users/me/pic"
           open_resume={async () => {
             close_employer_modal();
-            await sync_resume_url();
+            await syncResumeUrl();
             open_resume_modal();
           }}
           open_calendar={async () => {

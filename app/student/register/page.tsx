@@ -19,26 +19,31 @@ import { MultipartFormBuilder } from "@/lib/multipart-form";
 export default function RegisterPage() {
   const defaultYearLevel = "Select Year Level";
   const defaultCollege = "Select College";
+  const defaultUniversity = "Select University";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
+    ref_loading,
     levels,
-    colleges,
     universities,
+    to_college_name,
+    get_colleges_by_university,
     get_level_by_name,
     get_college_by_name,
-    get_university_by_domain,
+    get_universities_from_domain,
+    to_university_name,
+    get_university_by_name,
   } = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [takingForCredit, setTakingForCredit] = useState(false);
-  const { form_data, set_fields, set_field, field_setter } = useFormData<
+  const { form_data, set_field } = useFormData<
     PublicUser & {
       college_name: string;
       year_level_name: string;
+      university_name: string;
     }
   >();
-  const { register, redirect_if_logged_in } = useAuthContext();
+  const { register, redirectIfLoggedIn } = useAuthContext();
   const [email, setEmail] = useState("");
-  const [university, setUniversity] = useState<University>();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -53,7 +58,7 @@ export default function RegisterPage() {
   const searchParams = useSearchParams();
   const resumeInputRef = useRef<HTMLInputElement>(null);
 
-  redirect_if_logged_in();
+  redirectIfLoggedIn();
 
   // Validation functions - reusing patterns from profile page
   const isValidName = (name: string): boolean => {
@@ -144,23 +149,24 @@ export default function RegisterPage() {
 
   // Initialize form fields with default values
   useEffect(() => {
-    if (form_data.taking_for_credit === undefined) {
+    if (form_data.taking_for_credit === undefined)
       set_field("taking_for_credit", false);
-    }
   }, [form_data.taking_for_credit, set_field]);
 
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get("email");
-    if (!emailParam) return router.push("/login");
+    if (!emailParam && !ref_loading) return router.push("/login");
+    if (!emailParam) return;
+
     setEmail(emailParam);
     if (!universities.length) return;
 
     const domain = emailParam.split("@")[1];
-    const uni = get_university_by_domain(domain);
-    if (!uni) return router.push("/login");
-    setUniversity(uni);
-  }, [searchParams, universities, router]);
+    const unis = get_universities_from_domain(domain);
+    console.log(domain, unis);
+    if (!unis.length && !ref_loading) return router.push("/login");
+  }, [searchParams, universities, router, ref_loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,6 +189,11 @@ export default function RegisterPage() {
       form_data.year_level_name === defaultYearLevel
     )
       missingFields.push("Year Level");
+    if (
+      !form_data.university_name ||
+      form_data.university_name === defaultUniversity
+    )
+      missingFields.push("University");
     if (!form_data.college_name || form_data.college_name === defaultCollege)
       missingFields.push("College");
     if (takingForCredit && !form_data.linkage_officer?.trim())
@@ -211,11 +222,6 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!get_university_by_domain(domain)) {
-      setError("Please use your university email address (e.g. @dlsu.edu.ph)");
-      return;
-    }
-
     try {
       setLoading(true);
       setError("");
@@ -225,6 +231,7 @@ export default function RegisterPage() {
         email: email,
         year_level: get_level_by_name(form_data.year_level_name)?.id,
         college: get_college_by_name(form_data.college_name)?.id,
+        university: get_university_by_name(form_data.university_name)?.id,
       };
 
       // User form
@@ -376,6 +383,24 @@ export default function RegisterPage() {
             </div>
 
             <DropdownGroup>
+              {/* Universities */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  University <span className="text-red-500">*</span>
+                </label>
+                <GroupableRadioDropdown
+                  name="university"
+                  default_value={defaultUniversity}
+                  options={[
+                    defaultUniversity,
+                    ...(get_universities_from_domain(email?.split("@")[1])?.map(
+                      (uid) => to_university_name(uid) ?? ""
+                    ) ?? []),
+                  ]}
+                  on_change={(value) => set_field("university_name", value)}
+                ></GroupableRadioDropdown>
+              </div>
+
               {/* College */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -384,10 +409,9 @@ export default function RegisterPage() {
                 <GroupableRadioDropdown
                   name="college"
                   default_value={defaultCollege}
-                  options={colleges
-                    .filter((c) => c.university_id === university?.id)
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((college) => college.name)}
+                  options={get_colleges_by_university(
+                    get_university_by_name(form_data.university_name)?.id ?? ""
+                  ).map((cid) => to_college_name(cid) ?? "")}
                   on_change={(value) => set_field("college_name", value)}
                 ></GroupableRadioDropdown>
               </div>

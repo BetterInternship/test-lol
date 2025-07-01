@@ -66,7 +66,7 @@ const DropdownOptionButton = ({
   size?: "xs" | "sm" | "md" | "lg";
 }) => {
   const router = useRouter();
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const [scrolling, setScrolling] = useState(false);
   const dropdown_button_ref = useRef<HTMLInputElement>({} as HTMLInputElement);
 
@@ -169,7 +169,7 @@ export const GroupableRadioDropdown = ({
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const { active_dropdown, set_active_dropdown } =
     useContext(DropdownGroupContext);
   const [is_open, set_is_open] = useState(false);
@@ -443,7 +443,7 @@ export const GroupableNavDropdown = ({
   className?: string;
   showArrow?: boolean;
 }) => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const [is_open, set_is_open] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);

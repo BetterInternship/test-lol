@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicUser } from "@/lib/db/db.types";
-import { auth_service } from "@/lib/api/api";
+import { AuthService } from "@/lib/api/api";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -12,29 +12,27 @@ interface IAuthContext {
     user: Partial<PublicUser>
   ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
   verify: (
-    user_id: string,
+    userId: string,
     key: string
   ) => Promise<Partial<PublicUser> & FetchResponse>;
-  send_otp_request: (
+  sendOtpRequest: (email: string) => Promise<{ email: string } & FetchResponse>;
+  resendOtpRequest: (
     email: string
   ) => Promise<{ email: string } & FetchResponse>;
-  resend_otp_request: (
-    email: string
-  ) => Promise<{ email: string } & FetchResponse>;
-  verify_otp: (
+  verifyOtp: (
     email: string,
     otp: string
   ) => Promise<Partial<PublicUser> & FetchResponse>;
-  email_status: (
+  emailStatus: (
     email: string
   ) => Promise<
     { existing_user: boolean; verified_user: boolean } & FetchResponse
   >;
   logout: () => Promise<void>;
-  is_authenticated: () => boolean;
-  refresh_authentication: () => void;
-  redirect_if_not_logged_in: () => void;
-  redirect_if_logged_in: () => void;
+  isAuthenticated: () => boolean;
+  refreshAuthentication: () => void;
+  redirectIfNotLoggedIn: () => void;
+  redirectIfLoggedIn: () => void;
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
@@ -52,13 +50,13 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [is_loading, set_is_loading] = useState(true);
-  const [is_authenticated, set_is_authenticated] = useState(() => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === "undefined") return false;
-    const is_authed = sessionStorage.getItem("is_authenticated");
-    return is_authed ? JSON.parse(is_authed) : false;
+    const isAuthed = sessionStorage.getItem("is_authenticated");
+    return isAuthed ? JSON.parse(isAuthed) : false;
   });
-  const [user, set_user] = useState<Partial<PublicUser> | null>(() => {
+  const [user, setUser] = useState<Partial<PublicUser> | null>(() => {
     if (typeof window === "undefined") return null;
     const user = sessionStorage.getItem("user");
     return user ? JSON.parse(user) : null;
@@ -69,83 +67,83 @@ export const AuthContextProvider = ({
     if (user) sessionStorage.setItem("user", JSON.stringify(user));
     else sessionStorage.removeItem("user");
 
-    if (is_authenticated)
+    if (isAuthenticated)
       sessionStorage.setItem("is_authenticated", JSON.stringify(true));
     else sessionStorage.removeItem("is_authenticated");
-  }, [user, is_authenticated]);
+  }, [user, isAuthenticated]);
 
-  const refresh_authentication = async () => {
-    const response = await auth_service.loggedin();
+  const refreshAuthentication = async () => {
+    const response = await AuthService.isLoggedIn();
 
     if (!response.success) {
-      set_is_loading(false);
+      setIsLoading(false);
       return null;
     }
 
-    set_user(response.user as PublicUser);
-    set_is_authenticated(true);
-    set_is_loading(false);
+    setUser(response.user as PublicUser);
+    setIsAuthenticated(true);
+    setIsLoading(false);
     return response.user;
   };
 
   useEffect(() => {
-    refresh_authentication();
+    refreshAuthentication();
   }, []);
 
   const register = async (user: Partial<PublicUser>) => {
-    const response = await auth_service.register(user);
+    const response = await AuthService.register(user);
     if (!response.success) return null;
     return response;
   };
 
-  const verify = async (user_id: string, key: string) => {
-    const response = await auth_service.verify(user_id, key);
+  const verify = async (userId: string, key: string) => {
+    const response = await AuthService.verify(userId, key);
     if (!response.success) return null;
 
-    set_user(response.user as PublicUser);
-    set_is_authenticated(true);
+    setUser(response.user as PublicUser);
+    setIsAuthenticated(true);
     return response;
   };
 
-  const send_otp_request = async (email: string) => {
-    const response = await auth_service.send_otp_request(email);
+  const sendOtpRequest = async (email: string) => {
+    const response = await AuthService.sendOtpRequest(email);
     return response;
   };
 
-  const resend_otp_request = async (email: string) => {
-    const response = await auth_service.resend_otp_request(email);
+  const resendOtpRequest = async (email: string) => {
+    const response = await AuthService.resendOtpRequest(email);
     return response;
   };
 
-  const verify_otp = async (email: string, otp: string) => {
-    const response = await auth_service.verify_otp(email, otp);
+  const verifyOtp = async (email: string, otp: string) => {
+    const response = await AuthService.verifyOtp(email, otp);
     if (!response.success) return null;
 
-    set_user(response.user as PublicUser);
-    set_is_authenticated(true);
+    setUser(response.user as PublicUser);
+    setIsAuthenticated(true);
     return response;
   };
 
-  const email_status = async (email: string) => {
-    const response = await auth_service.email_status(email);
+  const emailStatus = async (email: string) => {
+    const response = await AuthService.emailStatus(email);
     return response;
   };
 
   const logout = async () => {
-    auth_service.logout();
-    set_user(null);
-    set_is_authenticated(false);
+    AuthService.logout();
+    setUser(null);
+    setIsAuthenticated(false);
   };
 
-  const redirect_if_not_logged_in = () =>
+  const redirectIfNotLoggedIn = () =>
     useEffect(() => {
-      if (!is_loading && !is_authenticated) router.push("/login");
-    }, [is_authenticated, is_loading]);
+      if (!isLoading && !isAuthenticated) router.push("/login");
+    }, [isAuthenticated, isLoading]);
 
-  const redirect_if_logged_in = () =>
+  const redirectIfLoggedIn = () =>
     useEffect(() => {
-      if (!is_loading && is_authenticated) router.push("/");
-    }, [is_authenticated, is_loading]);
+      if (!isLoading && isAuthenticated) router.push("/");
+    }, [isAuthenticated, isLoading]);
 
   return (
     <AuthContext.Provider
@@ -155,16 +153,16 @@ export const AuthContextProvider = ({
         register,
         // @ts-ignore
         verify,
-        send_otp_request,
-        resend_otp_request,
+        sendOtpRequest,
+        resendOtpRequest,
         // @ts-ignore
-        verify_otp,
-        email_status,
+        verifyOtp,
+        emailStatus,
         logout,
-        refresh_authentication,
-        is_authenticated: () => is_authenticated,
-        redirect_if_not_logged_in,
-        redirect_if_logged_in,
+        refreshAuthentication,
+        isAuthenticated: () => isAuthenticated,
+        redirectIfNotLoggedIn,
+        redirectIfLoggedIn,
       }}
     >
       {children}

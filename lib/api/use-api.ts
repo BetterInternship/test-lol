@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  job_service,
-  user_service,
-  application_service,
-  handle_api_error,
+  JobService,
+  UserService,
+  ApplicationService,
+  handleApiError,
 } from "@/lib/api/api";
 import { Job, PublicUser, UserApplication } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
@@ -29,7 +29,7 @@ export function useJobs(
 
   // ! make sure last update depends on last update sent by server (should be a cookie instead, dont let client handle it on its own)
   const fetcher = async () => {
-    const response = await job_service.get_jobs({
+    const response = await JobService.get_jobs({
       last_update: new Date(0).getTime(),
     });
     if (!response.success) setError(response.message ?? "");
@@ -49,7 +49,7 @@ export function useJobs(
       if (jobs) setAllJobs(jobs);
       else setError("Could not load jobs.");
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -182,7 +182,7 @@ export function useJob(job_id: string | null) {
       setError(null);
 
       // @ts-ignore
-      const { job, error } = await job_service.get_job_by_id(job_id ?? "");
+      const { job, error } = await JobService.get_job_by_id(job_id ?? "");
       if (error) {
         setError(error);
         setLoading(false);
@@ -191,7 +191,7 @@ export function useJob(job_id: string | null) {
 
       setJob(job);
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -211,7 +211,7 @@ export function useJob(job_id: string | null) {
 
 // User Profile Hook
 export function useProfile() {
-  const { is_authenticated } = useAuthContext();
+  const { isAuthenticated: is_authenticated } = useAuthContext();
   const [profile, setProfile] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -220,10 +220,10 @@ export function useProfile() {
     try {
       setLoading(true);
       setError(null);
-      const { user } = await user_service.get_my_profile();
+      const { user } = await UserService.get_my_profile();
       if (user) setProfile(user as PublicUser);
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -241,11 +241,11 @@ export function useProfile() {
   const updateProfile = async (data: Partial<PublicUser>) => {
     try {
       setError(null);
-      const { user } = await user_service.update_my_profile(data);
+      const { user } = await UserService.update_my_profile(data);
       if (user) setProfile(user as PublicUser);
       return user;
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
       throw err;
     }
@@ -322,7 +322,7 @@ const listFromDBInternalHook = <
       }
       return response;
     } catch (error) {
-      handle_api_error(error);
+      handleApiError(error);
       throw error;
     } finally {
       setUpdating(false);
@@ -353,7 +353,7 @@ const listFromDBInternalHook = <
         set_cache(gotten_data);
       }
     } catch (err) {
-      setError(handle_api_error(err));
+      setError(handleApiError(err));
     } finally {
       setLoading(false);
     }
@@ -381,9 +381,9 @@ const listFromDBInternalHook = <
 export const useSavedJobs = () => {
   // Mapping of fetch outputs
   const get_data = async () =>
-    await job_service.get_saved_jobs().then((r) => ({ ...r, data: r.jobs }));
+    await JobService.get_saved_jobs().then((r) => ({ ...r, data: r.jobs }));
   const add_data = async (id: string) =>
-    await user_service.save_job(id).then((r) => ({ ...r, data: r.job }));
+    await UserService.save_job(id).then((r) => ({ ...r, data: r.job }));
 
   // Makes our lives easier
   const {
@@ -439,20 +439,20 @@ export function useApplications() {
       setError(null);
 
       // Otherwise, pull from server
-      const response = await application_service.get_applications();
+      const response = await ApplicationService.get_applications();
       if (response.success) {
         setApplications(response.applications);
         set_cache(applications);
       }
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     }
   }, []);
 
   const apply = async (job_id: string, cover_letter: string) => {
     try {
-      const response = await application_service.create_application({
+      const response = await ApplicationService.create_application({
         job_id,
         cover_letter,
       });
@@ -469,7 +469,7 @@ export function useApplications() {
 
       return response;
     } catch (error) {
-      handle_api_error(error);
+      handleApiError(error);
       throw error;
     }
   };

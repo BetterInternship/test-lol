@@ -20,7 +20,7 @@ import { getFullName } from "@/lib/utils/user-utils";
  */
 export const Header = () => {
   const { proxy, god } = useAuthContext();
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
 

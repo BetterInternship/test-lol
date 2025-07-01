@@ -49,7 +49,7 @@ export default function JobPage() {
   const params = useParams();
   const { job_id } = params;
   const { job, loading, error, refetch } = useJob(job_id as string);
-  const { is_authenticated } = useAuthContext();
+  const { isAuthenticated: is_authenticated } = useAuthContext();
   const {
     open: open_application_modal,
     close: close_application_modal,

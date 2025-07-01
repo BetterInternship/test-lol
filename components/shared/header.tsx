@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export const HeaderTitle = () => {
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   return (
     <Link
       href="/"

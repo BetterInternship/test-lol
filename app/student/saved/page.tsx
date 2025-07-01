@@ -12,7 +12,10 @@ import { JobHead } from "@/components/shared/jobs";
 import { Job } from "@/lib/db/db.types";
 
 export default function SavedJobsPage() {
-  const { is_authenticated, redirect_if_not_logged_in } = useAuthContext();
+  const {
+    isAuthenticated: is_authenticated,
+    redirectIfNotLoggedIn: redirect_if_not_logged_in,
+  } = useAuthContext();
   const { save_job, saved_jobs, saving, loading, error, refetch } =
     useSavedJobs();
 

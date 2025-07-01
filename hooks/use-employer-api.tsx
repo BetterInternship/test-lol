@@ -1,9 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {
-  job_service,
-  handle_api_error,
-  application_service,
-} from "@/lib/api/api";
+import { JobService, handleApiError, ApplicationService } from "@/lib/api/api";
 import {
   Employer,
   EmployerApplication,
@@ -27,7 +23,7 @@ export function useUsers() {
         // @ts-ignore
         set_users(response.users ?? []);
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -59,7 +55,7 @@ export function useEmployers() {
         // @ts-ignore
         set_employers(response.employers ?? []);
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       set_error(errorMessage);
     } finally {
       set_loading(false);
@@ -125,13 +121,13 @@ export function useEmployerApplications() {
       }
 
       // Otherwise, pull from server
-      const response = await application_service.get_employer_applications();
+      const response = await ApplicationService.get_employer_applications();
       if (response.success) {
         setEmployerApplications(response.applications ?? []);
         set_cache(response.applications ?? []);
       }
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -143,7 +139,7 @@ export function useEmployerApplications() {
     review_options: { review?: string; notes?: string; status?: number }
   ) => {
     const cache = get_cache() as EmployerApplication[];
-    const response = await application_service.review_application(
+    const response = await ApplicationService.review_application(
       app_id,
       review_options
     );
@@ -214,13 +210,13 @@ export function useOwnedJobs(
       const cached_saved_jobs = null;
 
       // Otherwise, pull from server
-      const response = await job_service.get_owned_jobs();
+      const response = await JobService.get_owned_jobs();
       if (response.success) {
         setOwnedJobs(response.jobs ?? []);
         set_cache(response.jobs ?? []);
       }
     } catch (err) {
-      const errorMessage = handle_api_error(err);
+      const errorMessage = handleApiError(err);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -228,7 +224,7 @@ export function useOwnedJobs(
   }, []);
 
   const update_job = async (job_id: string, job: Partial<Job>) => {
-    const response = await job_service.update_job(job_id, job);
+    const response = await JobService.update_job(job_id, job);
     if (response.success) {
       // @ts-ignore
       const job = response.job;
@@ -243,7 +239,7 @@ export function useOwnedJobs(
   };
 
   const create_job = async (job: Partial<Job>) => {
-    const response = await job_service.create_job(job);
+    const response = await JobService.create_job(job);
     if (response.success) {
       // @ts-ignore
       const job = response.job;
@@ -254,7 +250,7 @@ export function useOwnedJobs(
   };
 
   const delete_job = async (job_id: string) => {
-    const response = await job_service.delete_job(job_id);
+    const response = await JobService.delete_job(job_id);
     if (response.success) {
       set_cache(ownedJobs.filter((job) => job.id !== job_id));
       setOwnedJobs(get_cache() ?? []);

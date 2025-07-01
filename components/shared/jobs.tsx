@@ -95,7 +95,7 @@ export const JobSalary = ({
   salary: number | null | undefined;
   salary_freq: number | null | undefined;
 }) => {
-  const { ref_is_not_null, to_job_pay_freq_name } = useRefs();
+  const { to_job_pay_freq_name } = useRefs();
   return salary ? (
     <Badge>
       ₱{salary}/{to_job_pay_freq_name(salary_freq)}
@@ -137,6 +137,37 @@ export const JobApplicationRequirements = ({ job }: { job: Job }) => {
           offValue="Cover Letter"
         />
       </div>
+    </div>
+  );
+};
+
+export const JobBadges = ({
+  job,
+  excludes = [],
+}: {
+  job: Job;
+  excludes?: string[];
+}) => {
+  const { universities } = useRefs();
+  return (
+    <div className="flex flex-wrap gap-2 mb-4">
+      {!excludes.includes("moa") && (
+        <EmployerMOA
+          employer_id={job.employer?.id}
+          university_id={universities[0]?.id}
+        />
+      )}
+      {!excludes.includes("unlisted") && job.is_unlisted && (
+        <Badge type="warning">
+          <EyeOff className="w-3 h-3 mr-1" />
+          Unlisted
+        </Badge>
+      )}
+      {!excludes.includes("type") && <JobType type={job.type} />}
+      {!excludes.includes("salary") && (
+        <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
+      )}
+      {!excludes.includes("mode") && <JobMode mode={job.mode} />}
     </div>
   );
 };
@@ -193,17 +224,8 @@ export const JobCard = ({
           <JobHead title={job.title} employer={job.employer?.name} />
         </div>
         <JobLocation location={job.location} />
-        <div className="flex flex-wrap gap-2">
-          <EmployerMOA
-            employer_id={job.employer?.id}
-            university_id={universities[0]?.id}
-          />
-          <JobType type={job.type} />
-          <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
-          <JobMode mode={job.mode} />
-        </div>
+        <JobBadges job={job} />
       </div>
-      {/* </div> */}
     </Card>
   );
 };
@@ -253,17 +275,7 @@ export const EmployerJobCard = ({
           </div>
         </div>
         <JobLocation location={job.location} />
-        <div className="flex flex-wrap gap-2">
-          {job.is_unlisted && (
-            <Badge type="warning">
-              <EyeOff className="w-3 h-3 mr-1" />
-              Unlisted
-            </Badge>
-          )}
-          <JobType type={job.type} />
-          <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
-          <JobMode mode={job.mode} />
-        </div>
+        <JobBadges job={job} excludes={["moa"]} />
       </div>
     </Card>
   );
@@ -281,10 +293,8 @@ export const MobileJobCard = ({
   job: Job;
   on_click: () => void;
 }) => {
-  const { universities } = useRefs();
   return (
     <div className="card hover-lift p-6 animate-fade-in" onClick={on_click}>
-      {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight truncate">
@@ -296,24 +306,10 @@ export const MobileJobCard = ({
           </div>
         </div>
       </div>
-
-      {/* Badges */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        <EmployerMOA
-          employer_id={job.employer?.id}
-          university_id={universities[0]?.id}
-        />
-        <JobType type={job.type} />
-        <JobSalary salary={job.salary} salary_freq={job.salary_freq} />
-        <JobMode mode={job.mode} />
-      </div>
-
-      {/* Description Preview */}
+      <JobBadges job={job} />
       <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
         {job.description || "No description available."}
       </p>
-
-      {/* Footer */}
       <div className="flex items-center justify-between pt-3 border-t border-gray-100">
         <JobLocation location={job.location} />{" "}
       </div>

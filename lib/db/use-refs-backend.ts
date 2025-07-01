@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 03:09:57
- * @ Modified time: 2025-06-24 01:19:37
+ * @ Modified time: 2025-07-01 21:46:46
  * @ Description:
  *
  * The actual backend connection to provide the refs data
@@ -68,7 +68,6 @@ export interface IRefsContext {
   get_university_by_name: (
     name: string | null | undefined
   ) => University | null;
-  get_university_by_domain: (name: string) => University | null;
 
   get_job_type: (id: number | null | undefined) => JobType | null;
   to_job_type_name: (
@@ -149,6 +148,9 @@ export interface IRefsContext {
     name: string | null | undefined
   ) => Degree | null;
 
+  get_departments_by_college: (college_id: string) => string[];
+  get_colleges_by_university: (university_id: string) => string[];
+  get_universities_from_domain: (domain: string) => string[];
   ref_is_not_null: (ref: any) => boolean;
 }
 
@@ -338,28 +340,27 @@ export const createRefsContext = () => {
     loading: l12,
   } = createRefInternalHook<string, Degree>("ref_degrees");
 
+  const { data: domains, loading: l13 } = createRefInternalHook<string, Degree>(
+    "ref_domains"
+  );
+
   useEffect(() => {
     setLoading(
-      l1 || l2 || l3 || l4 || l5 || l6 || l7 || l8 || l9 || l10 || l11 || l12
+      l1 ||
+        l2 ||
+        l3 ||
+        l4 ||
+        l5 ||
+        l6 ||
+        l7 ||
+        l8 ||
+        l9 ||
+        l10 ||
+        l11 ||
+        l12 ||
+        l13
     );
-  }, [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12]);
-
-  /**
-   * An additional helper for grabbing uni from email
-   *
-   * @param domain
-   * @returns
-   */
-  const get_university_by_domain = useCallback(
-    (domain: string) => {
-      const f = universities.filter(
-        (u) => u.domains.includes(domain) || u.domains.includes("@" + domain)
-      );
-      if (!f.length) return null;
-      return f[0];
-    },
-    [universities]
-  );
+  }, [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13]);
 
   /**
    * An additional helper for grabbing uni from email
@@ -411,6 +412,7 @@ export const createRefsContext = () => {
     job_pay_freq,
     industries,
     app_statuses,
+    domains,
 
     to_level_name,
     to_college_name,
@@ -444,7 +446,6 @@ export const createRefsContext = () => {
     get_degree_by_name,
     get_department_by_name,
     get_university_by_name,
-    get_university_by_domain,
     get_job_type_by_name,
     get_job_mode_by_name,
     get_job_allowance_by_name,
@@ -454,6 +455,16 @@ export const createRefsContext = () => {
     get_industry_by_name,
     get_degree_by_type_and_name,
 
+    get_departments_by_college: (college_id: string) =>
+      departments.filter((d) => d.college_id === college_id).map((d) => d.id),
+
+    get_colleges_by_university: (university_id: string) =>
+      colleges
+        .filter((c) => c.university_id === university_id)
+        .map((c) => c.id),
+
+    get_universities_from_domain: (domain: string) =>
+      domains.filter((d) => d.name === domain).map((d) => d.university_id),
     ref_is_not_null: (ref: any) => ref || ref === 0,
   };
 

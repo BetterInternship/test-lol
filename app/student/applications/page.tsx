@@ -20,7 +20,7 @@ import { JobHead } from "@/components/shared/jobs";
 import { UserApplication } from "@/lib/db/db.types";
 
 export default function ApplicationsPage() {
-  const { redirect_if_not_logged_in } = useAuthContext();
+  const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
   const { applications, loading, error, refetch } = useApplications();
   redirect_if_not_logged_in();
 

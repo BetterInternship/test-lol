@@ -11,9 +11,8 @@ import { useRefs } from "@/lib/db/use-refs";
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
-import { useClientDimensions } from "@/hooks/use-dimensions";
 import { useFile } from "@/hooks/use-file";
-import { user_service } from "@/lib/api/api";
+import { UserService } from "@/lib/api/api";
 import { Pfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
@@ -21,6 +20,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import { getFullName } from "@/lib/utils/user-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function Dashboard() {
   const {
@@ -29,7 +29,6 @@ export default function Dashboard() {
     loading,
   } = useEmployerApplications();
   const { redirect_if_not_logged_in } = useAuthContext();
-  const { client_width, client_height } = useClientDimensions();
   const { ownedJobs } = useOwnedJobs();
   const {
     app_statuses,
@@ -42,15 +41,15 @@ export default function Dashboard() {
   const [selected_application, set_selected_application] =
     useState<EmployerApplication | null>(null);
   const {
-    open: open_applicant_modal,
-    close: close_applicant_modal,
+    open: openApplicantModal,
+    close: closeApplicantModal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-  const { open: open_resume_modal, Modal: ResumeModal } =
+  const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
   const {
-    open: open_review_modal,
-    close: close_review_modal,
+    open: openReviewModal,
+    close: closeReviewModal,
     Modal: ReviewModal,
   } = useModal("review-modal");
 
@@ -73,11 +72,11 @@ export default function Dashboard() {
 
   const get_user_resume_url = useCallback(
     async () =>
-      user_service.get_user_resume_url(selected_application?.user?.id ?? ""),
+      UserService.get_user_resume_url(selected_application?.user?.id ?? ""),
     [selected_application]
   );
 
-  const { url: resume_url, sync: sync_resume_url } = useFile({
+  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
     fetcher: get_user_resume_url,
     route: selected_resume,
   });
@@ -188,7 +187,7 @@ export default function Dashboard() {
                             className={`w-full flex flex-row items-center justify-between border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors`}
                             onClick={() => {
                               set_application(application);
-                              open_applicant_modal();
+                              openApplicantModal();
                             }}
                           >
                             <td className="px-6 py-4">
@@ -224,7 +223,7 @@ export default function Dashboard() {
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     set_application(application);
-                                    open_review_modal();
+                                    openReviewModal();
                                   }}
                                 >
                                   Notes
@@ -286,14 +285,14 @@ export default function Dashboard() {
             <ApplicantModalContent
               clickable={true}
               pfp_fetcher={async () =>
-                user_service.get_user_pfp_url(
+                UserService.get_user_pfp_url(
                   selected_application?.user?.id ?? ""
                 )
               }
               pfp_route={`/users/${selected_application?.user?.id}/pic`}
               applicant={selected_application?.user}
               open_calendar={async () => {
-                close_applicant_modal();
+                closeApplicantModal();
                 window
                   ?.open(
                     selected_application?.user?.calendar_link ?? "",
@@ -302,9 +301,9 @@ export default function Dashboard() {
                   ?.focus();
               }}
               open_resume={async () => {
-                close_applicant_modal();
-                await sync_resume_url();
-                open_resume_modal();
+                closeApplicantModal();
+                await syncResumeUrl();
+                openResumeModal();
               }}
               job={selected_application?.job}
             />
@@ -315,7 +314,7 @@ export default function Dashboard() {
               <ReviewModalContent
                 application={selected_application}
                 review_app={review_app}
-                close={close_review_modal}
+                close={closeReviewModal}
               />
             )}
           </ReviewModal>
@@ -323,25 +322,10 @@ export default function Dashboard() {
           <ResumeModal>
             {selected_application?.user?.resume ? (
               <div className="h-full flex flex-col">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                  <h1 className="font-bold font-heading text-2xl text-gray-900">
-                    {getFullName(selected_application?.user)} - Resume
-                  </h1>
-                </div>
-                <div className="flex-1 p-4">
-                  <iframe
-                    allowTransparency={true}
-                    className="w-full h-full border border-gray-200 rounded-lg"
-                    style={{
-                      width: Math.min(client_width * 0.6, 600),
-                      minHeight: "70vh",
-                      background: "#FFFFFF",
-                    }}
-                    src={resume_url + "#toolbar=0&navpanes=0&scrollbar=0"}
-                  >
-                    Resume could not be loaded.
-                  </iframe>
-                </div>
+                <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
+                  {getFullName(selected_application?.user)} - Resume
+                </h1>
+                <PDFPreview url={resumeUrl} />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-96 px-8">

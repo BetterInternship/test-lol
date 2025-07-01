@@ -39,7 +39,7 @@ export default function HomePage() {
     close: closeIndustryModal,
     Modal: IndustryModal,
   } = useModal("industry-modal");
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const router = useRouter();
   const justBetterRef = useRef<HTMLSpanElement>(null);
 

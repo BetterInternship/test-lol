@@ -35,13 +35,10 @@ import { useFilter } from "@/lib/filter";
 import { useAppContext } from "@/lib/ctx-app";
 import { useModal } from "@/hooks/use-modal";
 import {
-  EmployerMOA,
   JobApplicationRequirements,
+  JobBadges,
   JobCard,
   JobDetails,
-  JobMode,
-  JobSalary,
-  JobType,
   MobileJobCard,
 } from "@/components/shared/jobs";
 import { cn, formatDate } from "@/lib/utils";
@@ -51,14 +48,15 @@ import {
   getMissingProfileFields,
   isCompleteProfile,
 } from "@/lib/utils/user-utils";
-import { user_service } from "@/lib/api/api";
+import { UserService } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { is_authenticated } = useAuthContext();
+  const { isAuthenticated: is_authenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
@@ -114,13 +112,14 @@ export default function SearchPage() {
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
 
-  const { is_mobile } = useAppContext();
+  const { isMobile: is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { client_width, client_height } = useClientDimensions();
+  const { clientWidth: client_width, clientHeight: client_height } =
+    useClientDimensions();
 
   // Resume URL management for profile preview
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
-    fetcher: user_service.get_my_resume_url,
+    fetcher: UserService.get_my_resume_url,
     route: "/users/me/resume",
   });
   const { industries, universities, job_categories } = useRefs();
@@ -494,18 +493,7 @@ export default function SearchPage() {
                 <p className="text-xs text-gray-500 mb-3">
                   Listed on {formatDate(selectedJob.created_at ?? "")}
                 </p>
-                <div className="flex flex-wrap gap-2">
-                  <EmployerMOA
-                    employer_id={selectedJob.employer?.id}
-                    university_id={universities[0]?.id}
-                  />
-                  <JobType type={selectedJob.type} />
-                  <JobSalary
-                    salary={selectedJob.salary}
-                    salary_freq={selectedJob.salary_freq}
-                  />
-                  <JobMode mode={selectedJob.mode} />
-                </div>
+                <JobBadges job={selectedJob} />
               </div>
             )}
           </div>
@@ -872,7 +860,7 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            pfp_fetcher={user_service.get_my_pfp_url}
+            pfp_fetcher={UserService.get_my_pfp_url}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeProfilePreviewModal();
@@ -891,22 +879,7 @@ Best regards,
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <div className="px-6 pb-6">
-              <iframe
-                allowTransparency={true}
-                className="w-full border border-gray-200 rounded-lg"
-                style={{
-                  width: Math.min(client_width * 0.5, 600),
-                  height: client_height * 0.75,
-                  minHeight: "600px",
-                  maxHeight: "800px",
-                  background: "#FFFFFF",
-                }}
-                src={resumeUrl + "#toolbar=0&navpanes=0&scrollbar=1"}
-              >
-                Resume could not be loaded.
-              </iframe>
-            </div>
+            <PDFPreview url={resumeUrl} />
           </div>
         </ResumeModal>
       )}
