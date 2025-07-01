@@ -7,6 +7,7 @@ import { AppContextProvider } from "@/lib/ctx-app";
 import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
+import TanstackProvider from "../tanstack-provider";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -49,17 +50,19 @@ const HTMLContent = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <html lang="en">
-      <body>
-        <div className="h-screen bg-gray-50 flex flex-col">
-          <Header />
-          <div className="flex-grow overflow-auto flex flex-col">
-            {children}
+    <TanstackProvider>
+      <html lang="en">
+        <body>
+          <div className="h-screen bg-gray-50 flex flex-col">
+            <Header />
+            <div className="flex-grow overflow-auto flex flex-col">
+              {children}
+            </div>
+            <Footer />
           </div>
-          <Footer />
-        </div>
-      </body>
-    </html>
+        </body>
+      </html>
+    </TanstackProvider>
   );
 };
 

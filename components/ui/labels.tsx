@@ -1,14 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-06-24 21:36:02
+ * @ Modified time: 2025-07-02 04:45:05
  * @ Description:
  *
  * Commonly used label components
  * All of them must have the value prop
  */
 
-import { CheckCircle, CircleX } from "lucide-react";
+import { AlertCircle, CheckCircle, CircleX } from "lucide-react";
 import React from "react";
 
 const DEFAULT_LABEL = "Not specified";
@@ -31,9 +31,9 @@ export const UserPropertyLabel: LabelComponent = ({
   fallback,
 }: LabelComponentProps) => {
   return (
-    <p className="text-gray-500 font-medium text-sm">
+    <p className="text-gray-700 font-medium text-sm">
       {value || (
-        <span className="text-gray-400 italic">
+        <span className="text-gray-400 font-normal italic">
           {fallback ?? DEFAULT_LABEL}
         </span>
       )}
@@ -126,5 +126,16 @@ export const JobTitleLabel: LabelComponent = ({
         </span>
       )}
     </p>
+  );
+};
+
+export const ErrorLabel: LabelComponent = ({ value, fallback }) => {
+  return value ? (
+    <div className="flex items-center gap-1 text-destructive text-xs mb-1">
+      <AlertCircle className="h-3 w-3" />
+      <span>{value ?? fallback}</span>
+    </div>
+  ) : (
+    <></>
   );
 };

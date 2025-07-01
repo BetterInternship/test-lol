@@ -52,6 +52,7 @@ import { UserService } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
 import { PDFPreview } from "@/components/shared/pdf-preview";
+import { openURL } from "@/lib/utils/url-utils";
 
 export default function SearchPage() {
   const router = useRouter();
@@ -119,7 +120,7 @@ export default function SearchPage() {
 
   // Resume URL management for profile preview
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
-    fetcher: UserService.get_my_resume_url,
+    fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
   const { industries, universities, job_categories } = useRefs();
@@ -666,8 +667,8 @@ export default function SearchPage() {
             <GroupableRadioDropdown
               name="location"
               options={["Any work load", "In-Person", "Remote", "Hybrid"]}
-              on_change={filter_setter("location")}
-              default_value={filters.location}
+              onChange={filter_setter("location")}
+              defaultValue={filters.location}
             />
             <GroupableRadioDropdown
               name="industry"
@@ -675,8 +676,8 @@ export default function SearchPage() {
                 "All industries",
                 ...industries.map((industry) => industry.name),
               ]}
-              on_change={filter_setter("industry")}
-              default_value={filters.industry}
+              onChange={filter_setter("industry")}
+              defaultValue={filters.industry}
             />
             <GroupableRadioDropdown
               name="category"
@@ -686,8 +687,8 @@ export default function SearchPage() {
                   .toSorted((a, b) => a.order - b.order)
                   .map((c) => c.name),
               ]}
-              on_change={filter_setter("category")}
-              default_value={filters.category}
+              onChange={filter_setter("category")}
+              defaultValue={filters.category}
             />
           </DropdownGroup>
 
@@ -868,7 +869,7 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            pfp_fetcher={UserService.get_my_pfp_url}
+            pfp_fetcher={UserService.getMyPfpURL}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeProfilePreviewModal();
@@ -876,7 +877,7 @@ Best regards,
               openResumeModal();
             }}
             open_calendar={async () => {
-              window?.open(profile?.calendar_link ?? "", "_blank")?.focus();
+              openURL(profile?.calendar_link);
             }}
           />
         )}

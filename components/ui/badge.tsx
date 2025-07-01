@@ -62,6 +62,7 @@ export function BoolBadge({
   offValue,
   onScheme = "supportive",
   offScheme = "accent",
+  className = "",
   ...props
 }: {
   state: boolean | null | undefined;
@@ -69,9 +70,14 @@ export function BoolBadge({
   offValue: string;
   onScheme?: "default" | "primary" | "accent" | "supportive" | "destructive";
   offScheme?: "default" | "primary" | "accent" | "supportive" | "destructive";
+  className?: string;
 }) {
   return (
-    <Badge type={state ? onScheme : offScheme}>
+    <Badge
+      type={state ? onScheme : offScheme}
+      {...props}
+      className={cn("pointer-events-none", className)}
+    >
       <BooleanCheckIcon checked={state} />
       {state ? onValue : offValue}
     </Badge>

@@ -9,12 +9,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
+import TanstackProvider from "../tanstack-provider";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
   description: "Manage applications and candidates",
 };
 
+/**
+ * Hire root layout
+ *
+ * @component
+ */
 export default function RootLayout({
   children,
 }: {
@@ -25,25 +31,42 @@ export default function RootLayout({
       <AuthContextProvider>
         <RefsContextProvider>
           <MoaContextProvider>
-            <TooltipProvider>
-              <Sonner />
-              <PostHogProvider>
-                <html lang="en" className="overflow-hidden">
-                  <body>
-                    <div className="h-screen bg-gray-50 flex flex-col">
-                      <Header />
-                      <div className="flex-grow overflow-auto flex">
-                        {children}
-                      </div>
-                      <Footer />
-                    </div>
-                  </body>
-                </html>
-              </PostHogProvider>
-            </TooltipProvider>
+            <HTMLContent>{children}</HTMLContent>
           </MoaContextProvider>
         </RefsContextProvider>
       </AuthContextProvider>
     </AppContextProvider>
   );
 }
+
+/**
+ * I don't like overly-nested components lol.
+ *
+ * @component
+ */
+const HTMLContent = ({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) => {
+  "use client";
+
+  return (
+    <TanstackProvider>
+      <TooltipProvider>
+        <Sonner />
+        <PostHogProvider>
+          <html lang="en" className="overflow-hidden">
+            <body>
+              <div className="h-screen bg-gray-50 flex flex-col">
+                <Header />
+                <div className="flex-grow overflow-auto flex">{children}</div>
+                <Footer />
+              </div>
+            </body>
+          </html>
+        </PostHogProvider>
+      </TooltipProvider>
+    </TanstackProvider>
+  );
+};

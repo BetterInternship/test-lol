@@ -274,13 +274,13 @@ export default function RegisterPage() {
                   <GroupableRadioDropdown
                     name="industry"
                     options={[...industries.map((industry) => industry.name)]}
-                    on_change={(selected_name) => {
+                    onChange={(selected_name) => {
                       const selected_industry = industries.find(
                         (industry) => industry.name === selected_name
                       );
                       handle_change("industry", selected_industry?.id || "");
                     }}
-                    default_value="Not Selected"
+                    defaultValue="Not Selected"
                   />
                 </DropdownGroup>
               </div>

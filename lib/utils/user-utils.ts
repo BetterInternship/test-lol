@@ -1,7 +1,6 @@
 import { Job, PublicUser } from "../db/db.types";
 
 /**
- * @ Modified time: 2025-07-01 13:31:52
  * Does not include the middle name.
  *
  * @param user

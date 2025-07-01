@@ -79,9 +79,9 @@ export const EditableGroupableRadioDropdown = ({
   return is_editing ? (
     <GroupableRadioDropdown
       name={name}
-      default_value={value as string}
+      defaultValue={value as string}
       options={options}
-      on_change={setter}
+      onChange={setter}
     ></GroupableRadioDropdown>
   ) : (
     Children.map(children, (child) => {
