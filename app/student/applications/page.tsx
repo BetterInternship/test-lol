@@ -25,6 +25,7 @@ import { useApplications } from "@/lib/api/use-api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
 import { useMoa } from "@/lib/db/use-moa";
+import { formatDate } from "@/lib/utils";
 
 export default function ApplicationsPage() {
   const { redirect_if_not_logged_in: redirect_if_not_logged_in } =
@@ -41,14 +42,6 @@ export default function ApplicationsPage() {
   } = useRefs();
 
   redirect_if_not_logged_in();
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   return (
     <div className="flex-1 p-4 sm:p-8 overflow-y-auto bg-gray-50">

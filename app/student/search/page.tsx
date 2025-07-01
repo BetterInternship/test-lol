@@ -48,7 +48,7 @@ import {
   JobType,
   MobileJobCard,
 } from "@/components/shared/jobs";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import {
@@ -58,15 +58,6 @@ import {
 import { user_service } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
 import { useClientDimensions } from "@/hooks/use-dimensions";
-
-// Utility function to format dates
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-};
 
 export default function SearchPage() {
   const router = useRouter();
