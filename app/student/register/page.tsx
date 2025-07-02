@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Upload, Award, AlertCircle } from "lucide-react";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
-import { PublicUser, University } from "@/lib/db/db.types";
+import { PublicUser } from "@/lib/db/db.types";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
@@ -17,31 +17,22 @@ import { useFormData } from "@/lib/form-data";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 
 export default function RegisterPage() {
-  const defaultYearLevel = "Select Year Level";
-  const defaultCollege = "Select College";
-  const defaultUniversity = "Select University";
   const validFieldClassName = "border-green-600 border-opacity-50";
   const {
     ref_loading,
     levels,
+    colleges,
     universities,
-    to_college_name,
     get_colleges_by_university,
     get_level_by_name,
     get_college_by_name,
     get_universities_from_domain,
-    to_university_name,
     get_university_by_name,
   } = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [takingForCredit, setTakingForCredit] = useState(false);
-  const { form_data, set_field } = useFormData<
-    PublicUser & {
-      college_name: string;
-      year_level_name: string;
-      university_name: string;
-    }
-  >();
+  const { formData: form_data, setField: set_field } =
+    useFormData<PublicUser>();
   const { register, redirectIfLoggedIn } = useAuthContext();
   const [email, setEmail] = useState("");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -170,7 +161,6 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const domain = email.split("@")[1];
 
     // Clear previous errors
     setError("");
@@ -184,18 +174,10 @@ export default function RegisterPage() {
     if (!form_data.first_name?.trim()) missingFields.push("First Name");
     if (!form_data.last_name?.trim()) missingFields.push("Last Name");
     if (!form_data.phone_number?.trim()) missingFields.push("Phone Number");
-    if (
-      !form_data.year_level_name ||
-      form_data.year_level_name === defaultYearLevel
-    )
+    if (!form_data.year_level && form_data.year_level !== 0)
       missingFields.push("Year Level");
-    if (
-      !form_data.university_name ||
-      form_data.university_name === defaultUniversity
-    )
-      missingFields.push("University");
-    if (!form_data.college_name || form_data.college_name === defaultCollege)
-      missingFields.push("College");
+    if (!form_data.university?.trim()) missingFields.push("University");
+    if (!form_data.college?.trim()) missingFields.push("College");
     if (takingForCredit && !form_data.linkage_officer?.trim())
       missingFields.push("Linkage Officer");
 
@@ -229,9 +211,6 @@ export default function RegisterPage() {
       const new_user = {
         ...form_data,
         email: email,
-        year_level: get_level_by_name(form_data.year_level_name)?.id,
-        college: get_college_by_name(form_data.college_name)?.id,
-        university: get_university_by_name(form_data.university_name)?.id,
       };
 
       // User form
@@ -390,14 +369,12 @@ export default function RegisterPage() {
                 </label>
                 <GroupableRadioDropdown
                   name="university"
-                  defaultValue={defaultUniversity}
-                  options={[
-                    defaultUniversity,
-                    ...(get_universities_from_domain(email?.split("@")[1])?.map(
-                      (uid) => to_university_name(uid) ?? ""
-                    ) ?? []),
-                  ]}
-                  onChange={(value) => set_field("university_name", value)}
+                  options={universities.filter((u) =>
+                    get_universities_from_domain(email?.split("@")[1]).includes(
+                      u.id
+                    )
+                  )}
+                  onChange={(value) => set_field("university", value)}
                 ></GroupableRadioDropdown>
               </div>
 
@@ -408,11 +385,12 @@ export default function RegisterPage() {
                 </label>
                 <GroupableRadioDropdown
                   name="college"
-                  defaultValue={defaultCollege}
-                  options={get_colleges_by_university(
-                    get_university_by_name(form_data.university_name)?.id ?? ""
-                  ).map((cid) => to_college_name(cid) ?? "")}
-                  onChange={(value) => set_field("college_name", value)}
+                  options={colleges.filter((c) =>
+                    get_colleges_by_university(
+                      form_data.university ?? ""
+                    ).includes(c.id)
+                  )}
+                  onChange={(value) => set_field("college", value)}
                 ></GroupableRadioDropdown>
               </div>
 
@@ -423,14 +401,10 @@ export default function RegisterPage() {
                 </label>
                 <GroupableRadioDropdown
                   name="yearLevel"
-                  defaultValue={defaultYearLevel}
-                  options={levels
-                    .sort(
-                      (a, b) =>
-                        a.order - b.order || a.name.localeCompare(b.name)
-                    )
-                    .map((level) => level.name)}
-                  onChange={(value) => set_field("year_level_name", value)}
+                  options={levels.sort(
+                    (a, b) => a.order - b.order || a.name.localeCompare(b.name)
+                  )}
+                  onChange={(value) => set_field("year_level", value)}
                 ></GroupableRadioDropdown>
               </div>
             </DropdownGroup>

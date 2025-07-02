@@ -16,10 +16,7 @@ import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { useFormData } from "@/lib/form-data";
-import {
-  EditableGroupableRadioDropdown,
-  EditableInput,
-} from "@/components/ui/editable";
+import { EditableInput } from "@/components/ui/editable";
 import {
   UserPropertyLabel,
   UserLinkLabel,
@@ -50,6 +47,9 @@ import { BoolBadge } from "@/components/ui/badge";
 import { cn, isValidOptionalPhoneNumber } from "@/lib/utils";
 import { MyPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
+import { createEditForm } from "@/components/EditForm";
+
+const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
   const { isAuthenticated } = useAuthContext();
@@ -82,15 +82,12 @@ export default function ProfilePage() {
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
-  const { form_data, set_field, set_fields, field_setter } = useFormData<
-    PublicUser & {
-      college_name: string | null;
-      department_name: string | null;
-      degree_name: string | null;
-      year_level_name: string | null;
-      university_name: string | null;
-    }
-  >();
+  const {
+    formData: formData,
+    setField: setField,
+    setFields: setFields,
+    fieldSetter: fieldSetter,
+  } = useFormData<PublicUser>();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<boolean>(false);
   const [linkErrors, setLinkErrors] = useState<{
@@ -124,67 +121,61 @@ export default function ProfilePage() {
     const errors: typeof fieldErrors = {};
 
     // First name validation
-    if (!form_data.first_name || !isValidName(form_data.first_name)) {
-      errors.first_name = !form_data.first_name?.trim()
+    if (!formData.first_name || !isValidName(formData.first_name)) {
+      errors.first_name = !formData.first_name?.trim()
         ? "First name is required"
-        : form_data.first_name.trim().length < 2
+        : formData.first_name.trim().length < 2
         ? "First name must be at least 2 characters"
-        : form_data.first_name.trim().length > 32
+        : formData.first_name.trim().length > 32
         ? "First name must be 32 characters or less"
         : "First name must contain only letters, spaces, dots, and hyphens";
     }
 
     // Middle name validation (optional but must be valid if provided)
-    if (form_data.middle_name && form_data.middle_name.trim()) {
+    if (formData.middle_name && formData.middle_name.trim()) {
       if (
-        form_data.middle_name.trim().length > 32 ||
-        !/^[a-zA-Z\s.-]+$/.test(form_data.middle_name.trim())
+        formData.middle_name.trim().length > 32 ||
+        !/^[a-zA-Z\s.-]+$/.test(formData.middle_name.trim())
       ) {
         errors.middle_name =
-          form_data.middle_name.trim().length > 32
+          formData.middle_name.trim().length > 32
             ? "Middle name must be 32 characters or less"
             : "Middle name must contain only letters, spaces, dots, and hyphens";
       }
     }
 
     // Last name validation
-    if (!form_data.last_name || !isValidName(form_data.last_name)) {
-      errors.last_name = !form_data.last_name?.trim()
+    if (!formData.last_name || !isValidName(formData.last_name)) {
+      errors.last_name = !formData.last_name?.trim()
         ? "Last name is required"
-        : form_data.last_name.trim().length < 2
+        : formData.last_name.trim().length < 2
         ? "Last name must be at least 2 characters"
-        : form_data.last_name.trim().length > 32
+        : formData.last_name.trim().length > 32
         ? "Last name must be 32 characters or less"
         : "Last name must contain only letters, spaces, dots, and hyphens";
     }
 
     // Phone number validation
     if (
-      form_data.phone_number &&
-      !isValidOptionalPhoneNumber(form_data.phone_number)
+      formData.phone_number &&
+      !isValidOptionalPhoneNumber(formData.phone_number)
     ) {
       errors.phone_number =
         "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
     }
 
     // College validation
-    if (!form_data.college_name || form_data.college_name === defaultCollege) {
+    if (!formData.college?.trim()) {
       errors.college = "Please select your college";
     }
 
     // College validation
-    if (
-      !form_data.department_name ||
-      form_data.department_name === defaultDepartment
-    ) {
+    if (!formData.department?.trim()) {
       errors.department = "Please select your department";
     }
 
     // Year level validation
-    if (
-      !form_data.year_level_name ||
-      form_data.year_level_name === "Not specified"
-    ) {
+    if (!formData.year_level && formData.year_level !== 0) {
       errors.year_level = "Please select your year level";
     }
 
@@ -196,32 +187,32 @@ export default function ProfilePage() {
     const errors: typeof linkErrors = {};
 
     if (
-      form_data.portfolio_link &&
-      !isValidOptionalURL(form_data.portfolio_link)
+      formData.portfolio_link &&
+      !isValidOptionalURL(formData.portfolio_link)
     ) {
       errors.portfolio_link =
         "Please enter a valid URL (e.g., https://example.com)";
     }
 
     if (
-      form_data.github_link &&
-      !isValidOptionalGitHubURL(form_data.github_link)
+      formData.github_link &&
+      !isValidOptionalGitHubURL(formData.github_link)
     ) {
       errors.github_link =
         "Please enter a valid GitHub URL (e.g., https://github.com/username)";
     }
 
     if (
-      form_data.linkedin_link &&
-      !isValidOptionalLinkedinURL(form_data.linkedin_link)
+      formData.linkedin_link &&
+      !isValidOptionalLinkedinURL(formData.linkedin_link)
     ) {
       errors.linkedin_link =
         "Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/username)";
     }
 
     if (
-      form_data.calendar_link &&
-      !isValidOptionalCalendarURL(form_data.calendar_link)
+      formData.calendar_link &&
+      !isValidOptionalCalendarURL(formData.calendar_link)
     ) {
       errors.calendar_link =
         "Please enter a valid calendar URL (e.g., https://calendar.app.google/link or https://calendar.google.com/link)";
@@ -233,7 +224,7 @@ export default function ProfilePage() {
 
   // Enhanced field setters - simplified without real-time validation
   const validatedFieldSetter = (field: keyof PublicUser) => (value: string) => {
-    field_setter(field)(value);
+    fieldSetter(field)(value);
 
     // Clear field error when user starts typing (immediate feedback)
     const fieldErrorKey = field as keyof typeof fieldErrors;
@@ -259,7 +250,7 @@ export default function ProfilePage() {
   // Field setter for basic fields - simplified without real-time validation
   const validatedBasicFieldSetter =
     (field: keyof PublicUser) => (value: string) => {
-      field_setter(field)(value);
+      fieldSetter(field)(value);
 
       // Clear field error when user starts typing (immediate feedback)
       const fieldErrorKey = field as keyof typeof fieldErrors;
@@ -373,13 +364,8 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (profile)
-      set_fields({
+      setFields({
         ...(profile as PublicUser),
-        degree_name: to_degree_full_name(profile.degree),
-        college_name: to_college_name(profile.college),
-        year_level_name: to_level_name(profile.year_level),
-        department_name: to_department_name(profile.department),
-        university_name: to_university_name(profile.university),
         calendar_link: profile.calendar_link ?? "",
       });
   }, [profile, ref_loading]);
@@ -394,30 +380,23 @@ export default function ProfilePage() {
     try {
       setSaving(true);
       const dataToSend = {
-        first_name: form_data.first_name ?? "",
-        middle_name: form_data.middle_name ?? "",
-        last_name: form_data.last_name ?? "",
-        phone_number: form_data.phone_number ?? "",
-        college: get_college_by_name(form_data.college_name)?.id ?? undefined,
-        year_level:
-          get_level_by_name(form_data.year_level_name)?.id ?? undefined,
-        department:
-          get_department_by_name(form_data.department_name)?.id ?? undefined,
-        degree:
-          get_degree_by_type_and_name(
-            form_data.degree_name?.split(" - ")[0],
-            form_data.degree_name?.split(" - ")[1]
-          )?.id ?? undefined,
-        university:
-          get_university_by_name(form_data.university_name)?.id ?? undefined,
-        degree_notes: form_data.degree_notes ?? undefined,
-        portfolio_link: toURL(form_data.portfolio_link)?.toString(),
-        github_link: toURL(form_data.github_link)?.toString(),
-        linkedin_link: toURL(form_data.linkedin_link)?.toString(),
-        calendar_link: toURL(form_data.calendar_link)?.toString(),
-        bio: form_data.bio ?? "",
-        taking_for_credit: form_data.taking_for_credit,
-        linkage_officer: form_data.linkage_officer ?? "",
+        first_name: formData.first_name ?? "",
+        middle_name: formData.middle_name ?? "",
+        last_name: formData.last_name ?? "",
+        phone_number: formData.phone_number ?? "",
+        college: formData.college ?? undefined,
+        year_level: formData.year_level ?? undefined,
+        department: formData.department ?? undefined,
+        degree: formData.degree ?? undefined,
+        university: formData.university ?? undefined,
+        degree_notes: formData.degree_notes ?? undefined,
+        portfolio_link: toURL(formData.portfolio_link)?.toString(),
+        github_link: toURL(formData.github_link)?.toString(),
+        linkedin_link: toURL(formData.linkedin_link)?.toString(),
+        calendar_link: toURL(formData.calendar_link)?.toString(),
+        bio: formData.bio ?? "",
+        taking_for_credit: formData.taking_for_credit,
+        linkage_officer: formData.linkage_officer ?? "",
       };
       await updateProfile(dataToSend);
       setIsEditing(false);
@@ -431,15 +410,7 @@ export default function ProfilePage() {
   };
 
   const handleCancel = () => {
-    if (profile)
-      set_fields({
-        ...profile,
-        college_name: to_college_name(profile.college),
-        year_level_name: to_level_name(profile.year_level),
-        department_name: to_department_name(profile.department),
-        university_name: to_university_name(profile.university),
-        degree_name: to_degree_full_name(profile.degree),
-      });
+    if (profile) setFields(profile);
     setIsEditing(false);
     setLinkErrors({}); // Clear errors when cancelling
     setFieldErrors({}); // Clear field errors when cancelling
@@ -530,12 +501,8 @@ export default function ProfilePage() {
                   <Button
                     onClick={() => (
                       setIsEditing(true),
-                      set_fields({
+                      setFields({
                         ...profile,
-                        degree_name: to_degree_full_name(profile.degree),
-                        college_name: to_college_name(profile.college),
-                        year_level_name: to_level_name(profile.year_level),
-                        department_name: to_department_name(profile.department),
                         calendar_link: profile.calendar_link ?? "",
                       })
                     )}
@@ -552,14 +519,14 @@ export default function ProfilePage() {
             {isEditing ? (
               <div className="space-y-1 mb-4 transition-all">
                 <textarea
-                  value={form_data.bio || ""}
-                  onChange={(e) => set_field("bio", e.target.value)}
+                  value={formData.bio || ""}
+                  onChange={(e) => setField("bio", e.target.value)}
                   placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
                   className="w-full border border-gray-200 rounded-[0.33em] px-3 py-2 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
                   maxLength={500}
                 />
                 <p className="text-xs text-muted-foreground text-right">
-                  {(form_data.bio || "").length}/500 characters
+                  {(formData.bio || "").length}/500 characters
                 </p>
               </div>
             ) : (
@@ -578,7 +545,7 @@ export default function ProfilePage() {
             <Card className="px-5">
               <div
                 className={cn(
-                  isEditing || isMobile
+                  isMobile
                     ? "grid grid-cols-1 space-y-5 mb-8"
                     : "grid grid-cols-2 gap-y-5"
                 )}
@@ -587,55 +554,18 @@ export default function ProfilePage() {
                   <label className="text-xs text-gray-400 italic mb-1 block">
                     Full Name, Middle Name, Last Name
                   </label>
-                  <div className="">
-                    <ErrorLabel value={fieldErrors.first_name} />
-                    <ErrorLabel value={fieldErrors.middle_name} />
-                    <ErrorLabel value={fieldErrors.last_name} />
-                  </div>
-                  <div className="flex flex-row space-x-1">
-                    <EditableInput
-                      is_editing={isEditing}
-                      value={form_data.first_name}
-                      setter={validatedBasicFieldSetter("first_name")}
-                      placeholder="First name"
-                      maxLength={32}
-                    >
-                      <UserPropertyLabel />
-                    </EditableInput>
-                    <EditableInput
-                      is_editing={isEditing}
-                      value={form_data.middle_name}
-                      setter={validatedBasicFieldSetter("middle_name")}
-                      placeholder="Middle name"
-                      maxLength={32}
-                    >
-                      <UserPropertyLabel fallback="" />
-                    </EditableInput>
-                    <EditableInput
-                      is_editing={isEditing}
-                      value={form_data.last_name}
-                      setter={validatedBasicFieldSetter("last_name")}
-                      placeholder="Last name"
-                      maxLength={32}
-                    >
-                      <UserPropertyLabel />
-                    </EditableInput>
-                  </div>
+                  <span className="text-gray-700 text-sm">
+                    {`${profile.first_name} ${profile.middle_name} ${profile.last_name}`}
+                  </span>
                 </div>
 
                 <div>
                   <label className="text-xs text-gray-400 italic mb-1 block">
                     Phone Number
                   </label>
-                  <ErrorLabel value={fieldErrors.phone_number} />
-                  <EditableInput
-                    is_editing={isEditing}
-                    value={form_data.phone_number}
-                    setter={validatedBasicFieldSetter("phone_number")}
-                    placeholder="09XXXXXXXXX"
-                  >
-                    <UserPropertyLabel />
-                  </EditableInput>
+                  <span className="text-gray-700 text-sm">
+                    {profile.phone_number}
+                  </span>
                 </div>
 
                 <DropdownGroup>
@@ -643,155 +573,21 @@ export default function ProfilePage() {
                     <label className="text-xs text-gray-400 italic mb-1 block">
                       Year Level
                     </label>
-                    <ErrorLabel value={fieldErrors.year_level} />
-                    <EditableGroupableRadioDropdown
-                      is_editing={isEditing}
-                      name="year_level"
-                      value={form_data.year_level_name}
-                      setter={(value) => {
-                        field_setter("year_level_name")(value);
-                        // Clear year level error when user selects a value (immediate feedback)
-                        if (value && value !== "Not specified") {
-                          setFieldErrors((prev) => {
-                            const newErrors = { ...prev };
-                            delete newErrors.year_level;
-                            return newErrors;
-                          });
-                        }
-                      }}
-                      options={["Not specified", ...levels.map((l) => l.name)]}
-                    >
-                      <UserPropertyLabel />
-                    </EditableGroupableRadioDropdown>
+                    <span className="text-gray-700 text-sm">
+                      {to_level_name(profile.year_level)}
+                    </span>
                   </div>
 
                   <div>
-                    <label className="text-xs text-gray-400 italic block mb-1">
+                    <label className="text-xs text-gray-400 italic mb-1 block">
                       Education
                     </label>
-                    <div
-                      className={cn(
-                        isEditing ? "space-y-2" : "space-y-1 text-nowrap"
-                      )}
-                    >
-                      <ErrorLabel value={fieldErrors.university} />
-                      <EditableGroupableRadioDropdown
-                        is_editing={isEditing}
-                        name="university"
-                        value={form_data.university_name}
-                        setter={(value) => {
-                          set_fields({
-                            university_name: value,
-                            university: get_university_by_name(value)?.id,
-                            college_name: defaultCollege,
-                            college: null,
-                            department_name: defaultDepartment,
-                            department: null,
-                            degree_name: defaultDegree,
-                            degree: null,
-                          });
-
-                          // Clear college error when user selects a value (immediate feedback)
-                          if (value && value !== defaultUniversity) {
-                            setFieldErrors((prev) => {
-                              const newErrors = { ...prev };
-                              delete newErrors.university;
-                              return newErrors;
-                            });
-                          }
-                        }}
-                        options={[
-                          defaultUniversity,
-                          ...get_universities_from_domain(
-                            profile.email.split("@")[1]
-                          ).map((uid) => to_university_name(uid) ?? ""),
-                        ]}
-                      >
-                        <UserPropertyLabel />
-                      </EditableGroupableRadioDropdown>
-                      <ErrorLabel value={fieldErrors.college} />
-                      <EditableGroupableRadioDropdown
-                        is_editing={isEditing}
-                        name="college"
-                        value={form_data.college_name}
-                        setter={(value) => {
-                          set_fields({
-                            college_name: value,
-                            college: get_college_by_name(value)?.id,
-                            department_name: defaultDepartment,
-                            department: null,
-                          });
-                          // Clear college error when user selects a value (immediate feedback)
-                          if (value && value !== defaultCollege) {
-                            setFieldErrors((prev) => {
-                              const newErrors = { ...prev };
-                              delete newErrors.college;
-                              return newErrors;
-                            });
-                          }
-                        }}
-                        options={[
-                          defaultCollege,
-                          ...get_colleges_by_university(
-                            get_university_by_name(form_data.university_name)
-                              ?.id ?? ""
-                          ).map((cid) => to_college_name(cid) ?? ""),
-                        ]}
-                      >
-                        <UserPropertyLabel />
-                      </EditableGroupableRadioDropdown>
-                      <ErrorLabel value={fieldErrors.department} />
-                      <EditableGroupableRadioDropdown
-                        is_editing={isEditing}
-                        name="department"
-                        value={form_data.department_name}
-                        setter={(value: string) => {
-                          set_field(
-                            "department",
-                            get_department_by_name(value)
-                          );
-                          set_field("department_name", value);
-                          setFieldErrors((prev) => {
-                            const newErrors = { ...prev };
-                            if (value && value !== defaultDepartment)
-                              delete newErrors.department;
-                            return newErrors;
-                          });
-                        }}
-                        options={[
-                          defaultDepartment,
-                          ...get_departments_by_college(
-                            get_college_by_name(form_data.college_name)?.id ??
-                              ""
-                          ).map((did) => to_department_name(did) ?? ""),
-                        ]}
-                      >
-                        <UserPropertyLabel />
-                      </EditableGroupableRadioDropdown>
-                      <EditableGroupableRadioDropdown
-                        is_editing={isEditing}
-                        name="degree"
-                        value={form_data.degree_name}
-                        setter={field_setter("degree_name")}
-                        options={[
-                          defaultDegree,
-                          ...get_degrees_by_university(
-                            get_university_by_name(form_data.university_name)
-                              ?.id ?? ""
-                          ).map((did) => to_degree_full_name(did) ?? ""),
-                        ]}
-                      >
-                        <UserPropertyLabel />
-                      </EditableGroupableRadioDropdown>
-                      <EditableInput
-                        is_editing={isEditing}
-                        value={form_data.degree_notes}
-                        setter={field_setter("degree_notes")}
-                        placeholder="Degree Notes (e.g. Major in Electronics, Minor in Robotics)"
-                      >
-                        <UserPropertyLabel fallback="" />
-                      </EditableInput>
-                    </div>
+                    <span className="text-gray-700 text-sm flex flex-col space-y-1">
+                      <div>{to_university_name(profile.university)}</div>
+                      <div>{to_college_name(profile.college)}</div>
+                      <div>{to_department_name(profile.department)}</div>
+                      <div>{to_degree_full_name(profile.degree)}</div>
+                    </span>
                   </div>
                 </DropdownGroup>
               </div>
@@ -809,32 +605,32 @@ export default function ProfilePage() {
               >
                 <EditableProfileLink
                   title={"Portfolio Link"}
-                  link={form_data.portfolio_link}
-                  setter={field_setter("portfolio_link")}
+                  link={formData.portfolio_link}
+                  setter={fieldSetter("portfolio_link")}
                   placeholder={"https://myportfolio.com"}
                   isEditing={isEditing}
                 />
 
                 <EditableProfileLink
                   title={"Github Profile"}
-                  link={form_data.github_link}
-                  setter={field_setter("github_link")}
+                  link={formData.github_link}
+                  setter={fieldSetter("github_link")}
                   placeholder={"https://github.com/me"}
                   isEditing={isEditing}
                 />
 
                 <EditableProfileLink
                   title={"Linkedin Profile"}
-                  link={form_data.linkedin_link}
-                  setter={field_setter("linkedin_link")}
+                  link={formData.linkedin_link}
+                  setter={fieldSetter("linkedin_link")}
                   placeholder={"https://linkedin.com/in/me"}
                   isEditing={isEditing}
                 />
 
                 <EditableProfileLink
                   title={"Calendar Link"}
-                  link={form_data.calendar_link}
-                  setter={field_setter("calendar_link")}
+                  link={formData.calendar_link}
+                  setter={fieldSetter("calendar_link")}
                   placeholder={"https://calendar.app.google/your-link"}
                   isEditing={isEditing}
                   LabelComponent={() => {
@@ -901,12 +697,12 @@ export default function ProfilePage() {
                   <div className="space-y-3 mt-4">
                     <div className="flex items-center space-x-2">
                       <Checkbox
-                        checked={form_data.taking_for_credit ?? false}
+                        checked={formData.taking_for_credit ?? false}
                         onCheckedChange={(value) => {
-                          set_fields({
+                          setFields({
                             taking_for_credit: !!value,
                             linkage_officer: !!value
-                              ? form_data.linkage_officer
+                              ? formData.linkage_officer
                               : "",
                           });
                         }}
@@ -915,15 +711,15 @@ export default function ProfilePage() {
                         Taking internships for credit
                       </span>
                     </div>
-                    {form_data.taking_for_credit && (
+                    {formData.taking_for_credit && (
                       <div>
                         <label className="text-xs text-gray-400 italic mb-1 block">
                           Linkage Officer
                         </label>
                         <EditableInput
                           is_editing={isEditing}
-                          value={form_data.linkage_officer}
-                          setter={field_setter("linkage_officer")}
+                          value={formData.linkage_officer}
+                          setter={fieldSetter("linkage_officer")}
                           maxLength={32}
                         >
                           <UserPropertyLabel />
@@ -1031,4 +827,8 @@ const EditableProfileLink = ({
       <ErrorLabel value={error} />
     </div>
   );
+};
+
+const ProfileEditFormComponent = () => {
+  return <div></div>;
 };

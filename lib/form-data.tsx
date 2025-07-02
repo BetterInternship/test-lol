@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 00:52:43
- * @ Modified time: 2025-06-15 17:50:19
+ * @ Modified time: 2025-07-03 02:00:26
  * @ Description:
  *
  * Form data utility so we don't pollute our components with too much logic.
@@ -9,12 +9,8 @@
 
 import { useState } from "react";
 
-interface IFormData {
+export interface IFormData {
   [field: string]: any;
-}
-
-interface IFormDataStringified {
-  [field: string]: string;
 }
 
 /**
@@ -23,34 +19,34 @@ interface IFormDataStringified {
  *
  * @hook
  */
-export const useFormData = <T extends IFormData>() => {
-  const [form_data, set_form_data] = useState<T>({} as T);
+export const useFormData = <T extends IFormData>(initialValue?: Partial<T>) => {
+  const [formData, setFormData] = useState<T>((initialValue as T) ?? ({} as T));
 
   // Sets and individual filter
-  const set_field = (field: keyof T, value: any) => {
-    set_form_data({
-      ...form_data,
+  const setField = (field: keyof T, value: any) => {
+    setFormData({
+      ...formData,
       [field]: value,
     });
   };
 
   // Sets multiple fields at once
-  const set_fields = (partial_data: Partial<T>) => {
-    set_form_data({
-      ...form_data,
-      ...partial_data,
+  const setFields = (partialValue: Partial<T>) => {
+    setFormData({
+      ...formData,
+      ...partialValue,
     });
   };
 
   // Creates a function that sets the filter
-  const field_setter = (field: keyof T) => (value: string) => {
-    set_form_data({ ...form_data, [field]: value });
+  const fieldSetter = (field: keyof T) => (value: any) => {
+    setFormData({ ...formData, [field]: value });
   };
 
   return {
-    form_data,
-    set_field,
-    set_fields,
-    field_setter,
+    formData,
+    setField,
+    setFields,
+    fieldSetter,
   };
 };

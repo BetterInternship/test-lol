@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-02 06:25:19
+ * @ Modified time: 2025-07-03 03:42:03
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -137,10 +137,10 @@ const DropdownOptionButton = ({
  * @component
  */
 export const DropdownGroup = ({ children }: { children: React.ReactNode }) => {
-  const [active_dropdown, set_active_dropdown] = useState("");
+  const [activeDropdown, setActiveDropdown] = useState("");
   const group_dropdown_context: IDropdownGroupContext = {
-    activeDropdown: active_dropdown,
-    setActiveDropdown: set_active_dropdown,
+    activeDropdown,
+    setActiveDropdown,
   };
 
   return (
@@ -150,24 +150,31 @@ export const DropdownGroup = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+interface IRadioDropdownOption<ID> {
+  id: ID;
+  name: string;
+}
+
 /**
  * This represents a single dropdown inside the group with mobile optimization.
  * Inherits the provided context (if there is none, that's fine).
  *
  * @component
  */
-export const GroupableRadioDropdown = ({
+export const GroupableRadioDropdown = <ID extends number | string>({
   name,
   options,
   onChange,
-  defaultValue = options[0],
+  disabled,
+  defaultValue = null,
   size = "sm",
   className = "",
 }: {
   name: string;
-  options: string[];
-  onChange: (option: string) => void;
-  defaultValue?: string;
+  options: IRadioDropdownOption<ID>[];
+  onChange: (option: ID) => void;
+  defaultValue?: ID | null;
+  disabled?: boolean | undefined;
   size?: "xs" | "sm" | "md" | "lg";
   className?: string;
 }) => {
@@ -199,7 +206,7 @@ export const GroupableRadioDropdown = ({
    * Changes dropdown value
    */
   const handleChange = useCallback(
-    (option: (typeof options)[number]) => {
+    (option: ID) => {
       setValue(option);
       onChange(option);
       setIsOpen(false);
@@ -217,12 +224,19 @@ export const GroupableRadioDropdown = ({
       <Button
         type="button"
         variant="outline"
+        disabled={disabled}
         size={size}
         onClick={handleClick}
         onTouchEnd={(e) => e.stopPropagation()}
         className="w-full flex flex-row justify-between"
       >
-        <span className="text-ellipsis overflow-hidden">{value}</span>
+        {(value || value === 0) && options.filter((o) => o.id === value)[0] ? (
+          <span className="text-ellipsis overflow-hidden">
+            {options.filter((o) => o.id === value)[0]?.name}
+          </span>
+        ) : (
+          <span className="text-gray-400">Select Option</span>
+        )}
         <ChevronDown
           className={cn(
             "w-4 h-4 text-gray-600 transition-transform",
@@ -253,10 +267,10 @@ export const GroupableRadioDropdown = ({
                 size={size}
               >
                 <DropdownOption
-                  highlighted={value === option}
-                  on_click={() => handleChange(option)}
+                  highlighted={value === option.id}
+                  on_click={() => handleChange(option.id)}
                 >
-                  {option}
+                  {option.name}
                 </DropdownOption>
               </DropdownOptionButton>
             ))}

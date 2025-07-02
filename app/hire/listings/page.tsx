@@ -307,27 +307,14 @@ const CreateModalForm = ({
   close: () => void;
 }) => {
   const [creating, set_creating] = useState(false);
-  const { form_data, set_field, set_fields, field_setter } = useFormData<
-    Job & {
-      salary_freq_name: string;
-      mode_name: string;
-      type_name: string;
-      job_allowance_name: string;
-      industry_name: string;
-    }
-  >();
   const {
-    get_job_mode_by_name,
-    get_job_type_by_name,
-    get_job_pay_freq_by_name,
-    job_types,
-    job_modes,
-    job_pay_freq,
-    job_allowances,
-  } = useRefs();
+    formData: form_data,
+    setField: set_field,
+    setFields: setFields,
+    fieldSetter: field_setter,
+  } = useFormData<Job>();
+  const { job_types, job_modes, job_pay_freq, job_allowances } = useRefs();
 
-  const clean_int = (s: string | undefined): number | undefined =>
-    s && s.trim().length ? parseInt(s.trim()) : undefined;
   const handleSaveEdit = async () => {
     const job: Partial<Job> = {
       id: form_data.id,
@@ -335,21 +322,11 @@ const CreateModalForm = ({
       description: form_data.description ?? "",
       requirements: form_data.requirements ?? "",
       location: form_data.location ?? "",
-      allowance: clean_int(
-        `${get_job_mode_by_name(form_data.job_allowance_name)?.id}`
-      ),
-      mode: clean_int(`${get_job_mode_by_name(form_data.mode_name)?.id}`),
-      type: clean_int(`${get_job_type_by_name(form_data.type_name)?.id}`),
-      salary:
-        form_data.job_allowance_name === job_allowances[1].name
-          ? form_data.salary
-          : null,
-      salary_freq:
-        form_data.job_allowance_name === job_allowances[1].name
-          ? clean_int(
-              `${get_job_pay_freq_by_name(form_data.salary_freq_name)?.id}`
-            )
-          : null,
+      allowance: form_data.allowance,
+      mode: form_data.mode,
+      type: form_data.type,
+      salary: form_data.allowance === 0 ? form_data.salary : null,
+      salary_freq: form_data.allowance === 0 ? form_data.salary_freq : null,
       require_github: form_data.require_github,
       require_portfolio: form_data.require_portfolio,
       require_cover_letter: form_data.require_cover_letter,
@@ -359,6 +336,7 @@ const CreateModalForm = ({
       is_year_round: form_data.is_year_round,
     };
 
+    console.log(job);
     set_creating(true);
     try {
       const response = await create_job(job);
@@ -374,15 +352,6 @@ const CreateModalForm = ({
       alert("Error creating job");
     }
   };
-
-  useEffect(() => {
-    set_fields({
-      mode_name: job_modes[0].name,
-      type_name: job_types[0].name,
-      salary_freq_name: job_pay_freq[0].name,
-      job_allowance_name: job_allowances[0].name,
-    });
-  }, []);
 
   return (
     <>
@@ -443,7 +412,7 @@ const CreateModalForm = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
-                  Location
+                  Location <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   value={form_data.location ?? ""}
@@ -456,45 +425,45 @@ const CreateModalForm = ({
               <DropdownGroup>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Work Load
+                    Work Load <span className="text-destructive">*</span>
                   </Label>
                   <GroupableRadioDropdown
                     name="type"
-                    defaultValue={form_data.type_name}
-                    options={job_types.map((jt) => jt.name)}
-                    onChange={field_setter("type_name")}
+                    defaultValue={form_data.type}
+                    options={job_types}
+                    onChange={field_setter("type")}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Work Mode
+                    Work Mode <span className="text-destructive">*</span>
                   </Label>
                   <GroupableRadioDropdown
                     name="mode"
-                    defaultValue={form_data.mode_name}
-                    options={job_modes.map((jm) => jm.name)}
-                    onChange={field_setter("mode_name")}
+                    defaultValue={form_data.mode}
+                    options={job_modes}
+                    onChange={field_setter("mode")}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Compensations
+                    Compensations <span className="text-destructive">*</span>
                   </Label>
                   <GroupableRadioDropdown
                     name="allowance"
-                    defaultValue={form_data.job_allowance_name}
-                    options={job_allowances.map((ja) => ja.name).reverse()}
-                    onChange={field_setter("job_allowance_name")}
+                    defaultValue={form_data.allowance}
+                    options={job_allowances.reverse()}
+                    onChange={field_setter("allowance")}
                   />
                 </div>
 
-                {form_data.job_allowance_name === "Paid" && (
+                {form_data.allowance === 0 && (
                   <>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">
-                        Salary
+                        Salary <span className="text-destructive">*</span>
                       </Label>
                       <Input
                         value={form_data.salary ?? ""}
@@ -506,13 +475,14 @@ const CreateModalForm = ({
 
                     <div className="space-y-2">
                       <Label className="text-sm font-medium text-gray-700">
-                        Pay Frequency
+                        Pay Frequency{" "}
+                        <span className="text-destructive">*</span>
                       </Label>
                       <GroupableRadioDropdown
                         name="pay_freq"
-                        defaultValue={form_data.salary_freq_name}
-                        options={job_pay_freq.map((jpf) => jpf.name)}
-                        onChange={field_setter("salary_freq_name")}
+                        defaultValue={form_data.salary_freq}
+                        options={job_pay_freq}
+                        onChange={field_setter("salary_freq")}
                       />
                     </div>
                   </>
@@ -542,14 +512,14 @@ const CreateModalForm = ({
 
               <div className="space-y-3">
                 <Label className="text-sm font-medium text-gray-700">
-                  Duration
+                  Duration <span className="text-destructive">*</span>
                 </Label>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={form_data.is_year_round ?? false}
                       onCheckedChange={(value) => {
-                        set_fields({
+                        setFields({
                           is_year_round: !!value,
                         });
                       }}
