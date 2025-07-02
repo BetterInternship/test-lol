@@ -262,14 +262,6 @@ export default function HomePage() {
         {/* Mobile Job Suggestions - Mobile specific layout */}
         {is_mobile && (
           <div className="w-full mt-8 px-2">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 text-center">
-                Popular Jobs
-              </h3>
-              <p className="text-sm text-gray-500 text-center mt-1">
-                Tap to search
-              </p>
-            </div>
             <MobileJobScroller />
           </div>
         )}

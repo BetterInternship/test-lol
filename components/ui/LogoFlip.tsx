@@ -1,30 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import ReactCardFlip from 'react-card-flip';
 import { useRouter } from "next/navigation";
+import { useAppContext } from '@/lib/ctx-app';
+import { cn } from '@/lib/utils';
 
-interface Job {
+interface Company {
   name: string;
   image: string;
 }
 
-interface JobPair {
-  front: Job;
-  back: Job;
+interface CompanyPair {
+  front: Company;
+  back: Company;
 }
 
-interface JobScrollerProps {
-  data: Job[];
+interface CompanyCardProps {
+  data: Company[];
 }
 
-function JobCard({
-  jobPair: { front, back },
+function CompanyCard({
+  companyPair: { front, back },
   index,
 }: {
-  jobPair: JobPair;
+  companyPair: CompanyPair;
   index: number;
 }) {
   const [isFlipped, setIsFlipped] = useState(false);
   const router = useRouter();
+  const { isMobile } = useAppContext();
 
   useEffect(() => {
     // Random initial delay for each card
@@ -44,15 +47,15 @@ function JobCard({
     };
   }, []);
 
-  const handleSearchClick = (jobName: string) => {
-    router.push(`/search?q=${encodeURIComponent(jobName)}`);
+  const handleSearchClick = (companyName: string) => {
+    router.push(`/search?q=${encodeURIComponent(companyName)}`);
   };
 
   return (
     <ReactCardFlip isFlipped={isFlipped} flipDirection="vertical">
       <div 
         key="front" 
-        className="h-24 w-36 overflow-hidden rounded-xl border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 flex items-center justify-center p-3"
+        className={cn(isMobile ? "h-16 w-28" : "h-20 w-36", "overflow-hidden rounded-[0.33em] border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 flex items-center justify-center p-3")}
         onClick={() => handleSearchClick(front.name)}
       >
         <img 
@@ -69,7 +72,7 @@ function JobCard({
 
       <div 
         key="back" 
-        className="h-24 w-36 overflow-hidden rounded-xl border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 relative flex items-center justify-center p-3"
+        className={cn(isMobile ? "h-16 w-28" : "h-20 w-36", "overflow-hidden rounded-[0.33em] border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 flex items-center justify-center p-3")}
         onClick={() => handleSearchClick(back.name)}
       >
         <img 
@@ -87,28 +90,24 @@ function JobCard({
   );
 }
 
-export default function JobScroller({ data }: JobScrollerProps) {
+export default function CompanyScroller({ data }: CompanyCardProps) {
   // Create pairs of companies and limit to 5 cards (10 companies total)
-  const jobPairs: JobPair[] = [];
-  const limitedData = data.slice(0, 10); // Take first 10 companies for 5 cards
+  const jobPairs: CompanyPair[] = [];
   
-  for (let i = 0; i < limitedData.length; i += 2) {
-    if (i + 1 < limitedData.length) {
+  for (let i = 0; i < data.length; i += 2) {
+    if (i + 1 < data.length) {
       jobPairs.push({
-        front: limitedData[i],
-        back: limitedData[i + 1]
+        front: data[i],
+        back: data[i + 1]
       });
     }
   }
 
-  // Ensure we have exactly 5 pairs
-  const displayPairs = jobPairs.slice(0, 5);
-
   return (
     <div className="w-full flex justify-center">
-      <div className="flex gap-4 justify-center">
-        {displayPairs.map((jobPair, index) => (
-          <JobCard key={`${jobPair.front.name}-${jobPair.back.name}`} jobPair={jobPair} index={index} />
+      <div className="w-full flex gap-1 justify-center">
+        {jobPairs.map((jobPair, index) => (
+          <CompanyCard key={`${jobPair.front.name}-${jobPair.back.name}`} companyPair={jobPair} index={index} />
         ))}
       </div>
     </div>

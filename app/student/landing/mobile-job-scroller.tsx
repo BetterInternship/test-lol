@@ -2,8 +2,7 @@ import LogoFlip from '@/components/ui/LogoFlip';
 
 export default function JobScrollerPage() {
   return (
-    <div className="gap-4 space-y-4">
-      <h1 className="text-2xl font-bold mb-6">Featured Companies</h1>
+    <div className="gap-1 space-y-4">
       <LogoFlip
         data={[
           {
@@ -13,6 +12,14 @@ export default function JobScrollerPage() {
           {
             image: '/logos/jollibee.png',
             name: 'Jollibee'
+          },
+          {
+            image: '/logos/manulife.png',
+            name: 'Manulife'
+          },
+          {
+            image: '/logos/sunlife.png',
+            name: 'Sun Life Financial'
           },
           {
             image: '/logos/manulife.png',
@@ -41,19 +48,14 @@ export default function JobScrollerPage() {
           {
             image: '/logos/aim.png',
             name: 'Asian Institute of Management'
-          }
-        ]}
-        
-      />
-      <LogoFlip
-        data={[
-          {
-            image: '/logos/oracle.png',
-            name: 'Oracle'
           },
           {
-            image: '/logos/apc.jpeg',
-            name: 'APC'
+            image: '/logos/manulife.png',
+            name: 'Manulife'
+          },
+          {
+            image: '/logos/sunlife.png',
+            name: 'Sun Life Financial'
           }
         ]}
         

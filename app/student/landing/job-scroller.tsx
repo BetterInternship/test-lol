@@ -3,7 +3,6 @@ import LogoFlip from '@/components/ui/LogoFlip';
 export default function JobScrollerPage() {
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Featured Companies</h1>
       <LogoFlip
         data={[
           {
@@ -45,7 +44,15 @@ export default function JobScrollerPage() {
           {
             image: '/logos/apc.jpeg',
             name: 'APC'
-          }
+          },
+          {
+            image: '/logos/jollibee.png',
+            name: 'Jollibee'
+          },
+          {
+            image: '/logos/sunlife.png',
+            name: 'Sun Life Financial'
+          },
         ]}
       />
     </div>
