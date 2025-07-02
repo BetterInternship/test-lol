@@ -429,9 +429,9 @@ export const EditableJobDetails = ({
           </EditableInput>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-gray-600 mb-1 mt-4">{job.employer?.name}</p>
+          <p className="text-gray-600 mb-4 mt-2">{job.employer?.name}</p>
         </div>
-        <div className="flex gap-3">{actions}</div>
+        <div className="flex gap-2">{actions}</div>
       </div>
 
       {/* Job Details Grid */}
