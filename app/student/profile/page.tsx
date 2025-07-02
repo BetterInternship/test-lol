@@ -52,12 +52,11 @@ import { MyPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function ProfilePage() {
-  const { isAuthenticated: is_authenticated } = useAuthContext();
+  const { isAuthenticated } = useAuthContext();
   const { profile, loading, error, updateProfile } = useProfile();
   const { isMobile } = useAppContext();
   const {
     ref_loading,
-    ref_is_not_null,
     levels,
     to_college_name,
     to_level_name,
@@ -367,10 +366,10 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (!is_authenticated()) {
+    if (!isAuthenticated()) {
       router.push("/login");
     }
-  }, [is_authenticated(), router]);
+  }, [isAuthenticated(), router]);
 
   useEffect(() => {
     if (profile)
@@ -446,8 +445,7 @@ export default function ProfilePage() {
     setFieldErrors({}); // Clear field errors when cancelling
   };
 
-  if (!is_authenticated() || loading)
-    return <Loader>Loading profile...</Loader>;
+  if (!isAuthenticated() || loading) return <Loader>Loading profile...</Loader>;
 
   if (error) {
     return (

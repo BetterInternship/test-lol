@@ -96,10 +96,10 @@ export const ProfileButton = () => {
           </div>
         }
       >
-        {/* <DropdownOption href="/company-profile">
+        <DropdownOption href="/company-profile">
           <Building className="w-4 h-4 inline-block m-1 mr-2" />
           Company Profile
-        </DropdownOption> */}
+        </DropdownOption>
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>

@@ -4,13 +4,16 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Mail, Phone } from "lucide-react";
+import { MapPin, Mail, Phone, Camera, Edit2 } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
+import { Pfp } from "@/components/shared/pfp";
+import { Button } from "@/components/ui/button";
 
 export default function CompanyProfile() {
   const { loading, error, profile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {};
 
@@ -20,107 +23,60 @@ export default function CompanyProfile() {
     setIsEditing(false);
   };
 
+  const handleCancel = () => {};
+
   return !profile ? (
     <></>
   ) : (
     <ContentLayout>
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div
-              className="bg-white border-2 border-gray-200 rounded-lg p-8"
-              data-tour="company-details"
-            >
-              <div className="mb-6">
-                {isEditing ? (
-                  <Input
-                    id="company-name"
-                    value={profile.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    className="mt-2"
-                    placeholder="Enter company name"
-                  />
-                ) : (
-                  <p className="text-gray-900 text-lg font-medium mt-2">
-                    {profile.name}
-                  </p>
-                )}
+      <div className="min-h-screen bg-background p-6 py-12">
+        <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
+              {profile.name}
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              <div>
+                {/* <BoolBadge
+                  state={profile.taking_for_credit}
+                  onValue="Taking for credit"
+                  offValue="Not taking for credit"
+                /> */}
               </div>
-
-              <div className="mb-6" data-tour="branding-section">
-                {isEditing ? (
-                  <Textarea
-                    id="company-description"
-                    value={profile.description ?? ""}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    className="mt-2 min-h-[120px]"
-                    placeholder="Enter company description"
-                  />
-                ) : (
-                  <p className="text-gray-700 mt-2 leading-relaxed">
-                    {profile.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Company Locations */}
-              <div className="mb-6">
-                <Label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Company Location(s)
-                </Label>
-                <div className="mt-2 space-y-2">{profile.location}</div>
-              </div>
-
-              {/* HR Email */}
-              <div className="mb-6" data-tour="signatory-info">
-                <Label
-                  htmlFor="hr-email"
-                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
+            </p>
+            <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-10">
+              {isEditing ? (
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSave} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() =>
+                    // setIsEditing(true),
+                    // set_fields({
+                    //   ...profile,
+                    //   degree_name: to_degree_full_name(profile.degree),
+                    //   college_name: to_college_name(profile.college),
+                    //   year_level_name: to_level_name(profile.year_level),
+                    //   department_name: to_department_name(profile.department),
+                    //   calendar_link: profile.calendar_link ?? "",
+                    // })
+                    null
+                  }
                 >
-                  <Mail className="h-4 w-4" />
-                  HR Email
-                </Label>
-                {isEditing ? (
-                  <Input
-                    id="hr-email"
-                    type="email"
-                    value={profile.email ?? ""}
-                    onChange={(e) =>
-                      handleInputChange("hrEmail", e.target.value)
-                    }
-                    className="mt-2"
-                    placeholder="hr@company.com"
-                  />
-                ) : (
-                  <p className="text-gray-700 mt-2">{profile.email ?? ""}</p>
-                )}
-              </div>
-
-              {/* Phone Number */}
-              <div className="mb-8">
-                <Label
-                  htmlFor="phone"
-                  className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2"
-                >
-                  <Phone className="h-4 w-4" />
-                  Contact Number
-                </Label>
-                {isEditing ? (
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={profile.phone_number ?? ""}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="mt-2"
-                    placeholder="+63 2 1234 5678"
-                  />
-                ) : (
-                  <p className="text-gray-700 mt-2">{profile.phone_number}</p>
-                )}
-              </div>
+                  <Edit2 className="h-4 w-4" />
+                  Edit
+                </Button>
+              )}
             </div>
           </div>
         </div>
