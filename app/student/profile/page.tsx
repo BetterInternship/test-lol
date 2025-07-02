@@ -411,7 +411,7 @@ export default function ProfilePage() {
           )?.id ?? undefined,
         university:
           get_university_by_name(form_data.university_name)?.id ?? undefined,
-        degree_notes: form_data.degree_notes,
+        degree_notes: form_data.degree_notes ?? undefined,
         portfolio_link: toURL(form_data.portfolio_link)?.toString(),
         github_link: toURL(form_data.github_link)?.toString(),
         linkedin_link: toURL(form_data.linkedin_link)?.toString(),
