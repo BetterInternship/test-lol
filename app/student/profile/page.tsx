@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, JSX } from "react";
 import Link from "next/link";
-import { Edit2, Upload, FileText, Eye, Camera, HelpCircle } from "lucide-react";
+import {
+  Edit2,
+  Upload,
+  Eye,
+  Camera,
+  MessageCircleQuestion,
+} from "lucide-react";
 import { useProfile } from "@/lib/api/use-api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
@@ -26,7 +32,6 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { useFile } from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getFullName } from "@/lib/utils/user-utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -461,11 +466,11 @@ export default function ProfilePage() {
         <div className="min-h-screen bg-background p-6 py-12">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
-              <MyPfp size={20} />
+              <MyPfp size="36" />
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute -bottom-0 -right-0 h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                className="absolute -bottom-[-10] -right-[-10] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
                 onClick={() => profilePictureInputRef.current?.click()}
                 disabled={uploading}
               >
@@ -474,7 +479,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold font-heading mb-1">
+              <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
                 {getFullName(profile)}
               </h1>
               <p className="text-muted-foreground text-sm">
@@ -486,7 +491,7 @@ export default function ProfilePage() {
                   />
                 </div>
               </p>
-              <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-5">
+              <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-10">
                 <Button
                   variant="outline"
                   scheme="primary"
@@ -834,14 +839,22 @@ export default function ProfilePage() {
                   setter={field_setter("calendar_link")}
                   placeholder={"https://calendar.app.google/your-link"}
                   isEditing={isEditing}
+                  LabelComponent={() => {
+                    return (
+                      isEditing && (
+                        <Link
+                          href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
+                          target="_blank"
+                          className="inline-block mx-2"
+                        >
+                          <span className="text-xs italic">
+                            <MessageCircleQuestion className="w-4 h-4" />
+                          </span>
+                        </Link>
+                      )
+                    );
+                  }}
                 />
-                {isEditing && (
-                  <Link href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit">
-                    <span className="text-xs italic">
-                      What's the calendar link for?
-                    </span>
-                  </Link>
-                )}
               </div>
               {profile.resume ? (
                 <div className="w-full flex items-end gap-1">
@@ -980,6 +993,7 @@ const EditableProfileLink = ({
   setter,
   placeholder,
   isEditing,
+  LabelComponent,
 }: {
   title: string;
   link?: string | null;
@@ -987,6 +1001,7 @@ const EditableProfileLink = ({
   setter: (value: string) => void;
   placeholder: string;
   isEditing: boolean;
+  LabelComponent?: React.ComponentType<{}>;
 }) => {
   return (
     <div>
@@ -1003,6 +1018,7 @@ const EditableProfileLink = ({
         <>
           <label className="text-xs text-gray-400 italic mb-1 block">
             {title}
+            {LabelComponent && <LabelComponent />}
           </label>
           <EditableInput
             is_editing={isEditing}

@@ -67,7 +67,7 @@ export const ProfileButton = () => {
         display={
           <>
             <div className="overflow-hidden border border-gray-400 rounded-full flex flex-row items-center justify-center">
-              <MyPfp size={7} />
+              <MyPfp size="7" />
             </div>
             {getFullName(user)}
           </>

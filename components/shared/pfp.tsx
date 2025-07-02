@@ -13,13 +13,13 @@ import { useProfile } from "@/lib/api/use-api";
  */
 export const Pfp = ({
   user_id,
-  size = 10,
+  size = "10",
 }: {
   user_id: string;
-  size?: number;
+  size?: string;
 }) => {
   const fetcher = useCallback(
-    async () => UserService.get_user_pfp_url(user_id),
+    async () => UserService.getUserPfpURL(user_id),
     [user_id]
   );
   const { url, sync } = useFile({
@@ -50,7 +50,7 @@ export const Pfp = ({
  *
  * @component
  */
-export const MyPfp = ({ size = 10 }: { size?: number }) => {
+export const MyPfp = ({ size = "10" }: { size?: string }) => {
   const fetcher = async () => UserService.getMyPfpURL();
   const { profile } = useProfile();
   const { url, sync } = useFile({
@@ -63,15 +63,19 @@ export const MyPfp = ({ size = 10 }: { size?: number }) => {
   }, []);
 
   return (
-    <Avatar className={`w-${size} h-${size} rounded-full overflow-hidden`}>
+    <div
+      className={`w-${size} h-${size} flex items-center rounded-full overflow-hidden aspect-square`}
+    >
       {profile?.profile_picture ? (
-        <img src={url}></img>
+        <img className="object-cover h-full" src={url}></img>
       ) : (
-        <AvatarFallback className="text-base sm:text-lg font-semibold">
-          {profile?.first_name?.[0]?.toUpperCase()}
-          {profile?.last_name?.[0]?.toUpperCase()}
-        </AvatarFallback>
+        <Avatar>
+          <AvatarFallback className="text-base sm:text-lg font-semibold">
+            {profile?.first_name?.[0]?.toUpperCase()}
+            {profile?.last_name?.[0]?.toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
       )}
-    </Avatar>
+    </div>
   );
 };
