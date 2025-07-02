@@ -514,7 +514,6 @@ export default function SearchPage() {
           >
             {selectedJob && (
               <div className="p-4">
-                {/* Job Description */}
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">
                     Description
@@ -523,21 +522,15 @@ export default function SearchPage() {
                     <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
                   </div>
                 </div>
-
-                {/* Job Requirements */}
-                {selectedJob.requirements && (
-                  <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-3 text-gray-900">
-                      Requirements
-                    </h2>
-                    <JobApplicationRequirements job={selectedJob} />
-                    <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-                      <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
-                    </div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold mb-3 text-gray-900">
+                    Requirements
+                  </h2>
+                  <JobApplicationRequirements job={selectedJob} />
+                  <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
+                    <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                   </div>
-                )}
-
-                {/* Extra bottom padding to ensure content isn't hidden behind buttons */}
+                </div>
                 <div className="pb-20"></div>
               </div>
             )}
