@@ -268,7 +268,12 @@ export default function HomePage() {
 
         {/* Desktop Job Suggestions - Only show on desktop */}
         {!is_mobile && (
-          <div className="w-full max-w-4xl mt-8">
+          <div className="w-full max-w-4xl mt-12">
+            <div className="text-center">
+              <h2 className="text-lg font-semibold text-gray-700 tracking-wide">
+                Trusted by the biggest Philippine companies
+              </h2>
+            </div>
             <JobScroller />
           </div>
         )}
