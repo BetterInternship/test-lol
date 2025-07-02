@@ -461,7 +461,7 @@ export default function ProfilePage() {
         <div className="min-h-screen bg-background p-6 py-12">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
-              <MyPfp size={28} />
+              <MyPfp size={20} />
               <Button
                 variant="outline"
                 size="icon"
