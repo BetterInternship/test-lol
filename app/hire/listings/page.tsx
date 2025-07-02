@@ -23,6 +23,7 @@ import { useAuthContext } from "../authctx";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import ContentLayout from "@/components/features/hire/content-layout";
+import { Card } from "@/components/ui/our-card";
 
 export default function MyListings() {
   const { redirect_if_not_logged_in } = useAuthContext();
@@ -30,21 +31,25 @@ export default function MyListings() {
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
-  const [is_editing, set_is_editing] = useState(false);
+  const [is_editing, setIsEditing] = useState(false);
   const [jobsPage, setJobsPage] = useState(1);
   const jobs_page_size = 10;
   const {
-    open: open_create_modal,
-    close: close_create_modal,
+    open: openCreateModal,
+    close: closeCreateModal,
     Modal: CreateModal,
   } = useModal("create-modal");
   const {
-    open: open_delete_modal,
-    close: close_delete_modal,
+    open: openDeleteModal,
+    close: closeDeleteModal,
     Modal: DeleteModal,
   } = useModal("delete-modal");
 
   redirect_if_not_logged_in();
+
+  const getJobLink = (job: Job) => {
+    return `${process.env.NEXT_PUBLIC_CLIENT_URL}/search/${job.id}`;
+  };
 
   // Filter jobs based on search term
   const filteredJobs = useMemo(() => {
@@ -100,7 +105,7 @@ export default function MyListings() {
                 </div>
                 <Button
                   size="icon"
-                  onClick={() => open_create_modal()}
+                  onClick={() => openCreateModal()}
                   data-tour="add-job-btn"
                 >
                   <Plus className="h-4 w-4" />
@@ -135,7 +140,7 @@ export default function MyListings() {
             {selectedJob?.id ? (
               <EditableJobDetails
                 is_editing={is_editing}
-                set_is_editing={set_is_editing}
+                set_is_editing={setIsEditing}
                 job={selectedJob}
                 saving={saving}
                 // @ts-ignore
@@ -147,7 +152,7 @@ export default function MyListings() {
                         key="1"
                         variant="outline"
                         disabled={saving}
-                        onClick={() => set_is_editing(true)}
+                        onClick={() => setIsEditing(true)}
                       >
                         Edit
                       </Button>,
@@ -155,8 +160,21 @@ export default function MyListings() {
                         key="2"
                         variant="outline"
                         disabled={saving}
+                        onClick={() => {
+                          alert("Copied link to clipboard!");
+                          navigator.clipboard.writeText(
+                            getJobLink(selectedJob)
+                          );
+                        }}
+                      >
+                        Share
+                      </Button>,
+                      <Button
+                        key="3"
+                        variant="outline"
+                        disabled={saving}
                         className="text-red-500 border border-red-300 hover:bg-red-50 hover:text-red-500"
-                        onClick={() => open_delete_modal()}
+                        onClick={() => openDeleteModal()}
                       >
                         Delete
                       </Button>,
@@ -182,7 +200,7 @@ export default function MyListings() {
                       variant="outline"
                       scheme="destructive"
                       disabled={saving}
-                      onClick={() => set_is_editing(false)}
+                      onClick={() => setIsEditing(false)}
                     >
                       Cancel
                     </Button>
@@ -219,7 +237,7 @@ export default function MyListings() {
         <CreateModal>
           <CreateModalForm
             create_job={create_job}
-            close={() => close_create_modal()}
+            close={() => closeCreateModal()}
           ></CreateModalForm>
         </CreateModal>
 
@@ -229,7 +247,7 @@ export default function MyListings() {
             job={selectedJob}
             delete_job={delete_job}
             clear_job={() => setSelectedJob({} as Partial<Job>)}
-            close={() => close_delete_modal()}
+            close={() => closeDeleteModal()}
           ></DeleteModalForm>
         </DeleteModal>
       </>
