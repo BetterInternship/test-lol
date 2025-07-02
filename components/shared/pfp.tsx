@@ -19,7 +19,7 @@ export const Pfp = ({
   size?: number;
 }) => {
   const fetcher = useCallback(
-    async () => UserService.getUserPfpURL(user_id),
+    async () => UserService.get_user_pfp_url(user_id),
     [user_id]
   );
   const { url, sync } = useFile({
