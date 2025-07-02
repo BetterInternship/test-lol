@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-07-02 04:45:05
+ * @ Modified time: 2025-07-02 09:30:06
  * @ Description:
  *
  * Commonly used label components
@@ -31,7 +31,7 @@ export const UserPropertyLabel: LabelComponent = ({
   fallback,
 }: LabelComponentProps) => {
   return (
-    <p className="text-gray-700 font-medium text-sm">
+    <p className="text-gray-700 font-medium text-sm overflow-hidden text-ellipsis">
       {value || (
         <span className="text-gray-400 font-normal italic">
           {fallback ?? DEFAULT_LABEL}
@@ -122,6 +122,26 @@ export const JobTitleLabel: LabelComponent = ({
     <p className="text-gray-900 font-heading font-bold text-4xl">
       {value || (
         <span className="text-gray-400 italic">
+          {fallback ?? DEFAULT_LABEL}
+        </span>
+      )}
+    </p>
+  );
+};
+
+/**
+ * Used in employer profile page
+ *
+ * @component
+ */
+export const EmployerPropertyLabel: LabelComponent = ({
+  value,
+  fallback,
+}: LabelComponentProps) => {
+  return (
+    <p className="text-gray-700 font-medium text-sm overflow-hidden text-ellipsis">
+      {value || (
+        <span className="text-gray-400 font-normal italic">
           {fallback ?? DEFAULT_LABEL}
         </span>
       )}

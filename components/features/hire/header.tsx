@@ -3,7 +3,7 @@
 import React from "react";
 import { useAuthContext } from "../../../app/hire/authctx";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Building2, UserPlus, Building } from "lucide-react";
+import { User, LogOut, Building } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,7 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
 import { getFullName } from "@/lib/utils/user-utils";
+import { MobilePlaceholder } from "@/app/hire/mobile-placeholder";
 
 /**
  * The header present on every page
@@ -59,6 +60,7 @@ export const Header = () => {
 export const ProfileButton = () => {
   const router = useRouter();
   const { user, is_authenticated, logout } = useAuthContext();
+  const { isMobile } = useAppContext();
 
   const handle_logout = () => {
     logout().then(() => {
@@ -71,6 +73,8 @@ export const ProfileButton = () => {
     if (getFullName(user) === "") return "User";
     return getFullName(user);
   };
+
+  if (isMobile) return <MobilePlaceholder />;
 
   return is_authenticated() ? (
     <div className="relative">
@@ -96,10 +100,10 @@ export const ProfileButton = () => {
           </div>
         }
       >
-        {/* <DropdownOption href="/company-profile">
+        <DropdownOption href="/company-profile">
           <Building className="w-4 h-4 inline-block m-1 mr-2" />
           Company Profile
-        </DropdownOption> */}
+        </DropdownOption>
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>
