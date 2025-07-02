@@ -70,10 +70,7 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
     <>
       <aside className="hidden lg:block fixed top-16 left-0 z-20 h-screen w-[280px] border-r bg-muted/40">
         <div className="flex h-full flex-col gap-2 overflow-y-auto py-4">
-          <div className="px-4 text-sm font-medium text-muted-foreground">
-            Pages
-          </div>
-          <div className="p-2">
+          <div className="p-2 tyext-gray-500">
             <SideNav items={navItems} />
           </div>
         </div>
@@ -97,9 +94,7 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
             </SheetContent>
           </Sheet>
         </header>
-        <main className=" flex-1 flex overflow-auto p-4 mb-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
+        <main className=" flex-1 flex overflow-auto">{children}</main>
       </div>
     </>
   );
