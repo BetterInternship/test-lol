@@ -64,13 +64,15 @@ export const MyPfp = ({ size = "10" }: { size?: string }) => {
 
   return (
     <div
-      className={`w-${size} h-${size} flex items-center rounded-full overflow-hidden aspect-square`}
+      className={`w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
     >
       {profile?.profile_picture ? (
         <img className="object-cover h-full" src={url}></img>
       ) : (
-        <Avatar>
-          <AvatarFallback className="text-base sm:text-lg font-semibold">
+        <Avatar className={`w-${size} h-${size} aspect-square`}>
+          <AvatarFallback
+            className={`w-${size} h-${size} font-semibold opacity-70`}
+          >
             {profile?.first_name?.[0]?.toUpperCase()}
             {profile?.last_name?.[0]?.toUpperCase()}
           </AvatarFallback>
