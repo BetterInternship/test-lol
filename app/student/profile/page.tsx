@@ -912,7 +912,7 @@ export default function ProfilePage() {
                         }}
                       />
                       <span className="text-sm">
-                        Taking for internships credit
+                        Taking internships for credit
                       </span>
                     </div>
                     {form_data.taking_for_credit && (
