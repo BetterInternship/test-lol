@@ -468,7 +468,7 @@ export default function ProfilePage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="absolute -bottom-[-10] -right-[-10] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
                 onClick={() => profilePictureInputRef.current?.click()}
                 disabled={uploading}
               >
@@ -480,7 +480,7 @@ export default function ProfilePage() {
               <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
                 {getFullName(profile)}
               </h1>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-sm mt-2">
                 <div>
                   <BoolBadge
                     state={profile.taking_for_credit}
