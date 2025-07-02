@@ -23,7 +23,6 @@ import { useAuthContext } from "../authctx";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import ContentLayout from "@/components/features/hire/content-layout";
-import { Card } from "@/components/ui/our-card";
 
 export default function MyListings() {
   const { redirect_if_not_logged_in } = useAuthContext();
