@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-07-02 09:30:06
+ * @ Modified time: 2025-07-03 06:28:14
  * @ Description:
  *
  * Commonly used label components
@@ -12,43 +12,33 @@ import { AlertCircle, CheckCircle, CircleX } from "lucide-react";
 import React from "react";
 
 const DEFAULT_LABEL = "Not specified";
-type Value = string | null | undefined;
-type LabelComponentProps = { value?: Value; fallback?: Value };
-type LinkLabelComponentProps = {
-  name?: Value;
-  value?: Value;
-  fallback?: Value;
+type OptionalString = string | null | undefined;
+type ValueComponentProps = {
+  value?: OptionalString;
+  fallback?: OptionalString;
 };
-export type LabelComponent = React.FC<LabelComponentProps>;
-
-/**
- * Used in profile page
- *
- * @component
- */
-export const UserPropertyLabel: LabelComponent = ({
-  value,
-  fallback,
-}: LabelComponentProps) => {
-  return (
-    <p className="text-gray-700 font-medium text-sm overflow-hidden text-ellipsis">
-      {value || (
-        <span className="text-gray-400 font-normal italic">
-          {fallback ?? DEFAULT_LABEL}
-        </span>
-      )}
-    </p>
-  );
+type ValueLinkComponentProps = {
+  name?: OptionalString;
+  value?: OptionalString;
+  fallback?: OptionalString;
 };
+type LabeledComponentProps = {
+  label?: OptionalString;
+  name?: OptionalString;
+  value?: OptionalString;
+  fallback?: OptionalString;
+};
+export type ValueComponent = React.FC<ValueComponentProps>;
+export type LabeledComponent = React.FC<LabeledComponentProps>;
 
 /**
  * Displays links on profile page
  *
  * @component
  */
-export const UserLinkLabel: LabelComponent = ({
+export const LinkLabel: ValueComponent = ({
   value,
-}: LinkLabelComponentProps) => {
+}: ValueLinkComponentProps) => {
   return (
     <div>
       {value ? (
@@ -72,13 +62,13 @@ export const UserLinkLabel: LabelComponent = ({
  *
  * @component
  */
-export const JobPropertyLabel: LabelComponent = ({
+export const Property: ValueComponent = ({
   value,
   fallback,
-}: LabelComponentProps) => {
+}: ValueComponentProps) => {
   return (
-    <p className="text-gray-500 font-medium text-sm">
-      {value || (
+    <p className="text-gray-700 text-sm overflow-hidden text-ellipsis">
+      {value?.split("\n")?.map((v) => <div>{v}</div>) || (
         <span className="text-gray-400 italic">
           {fallback ?? DEFAULT_LABEL}
         </span>
@@ -87,15 +77,29 @@ export const JobPropertyLabel: LabelComponent = ({
   );
 };
 
+export const LabeledProperty: LabeledComponent = ({
+  label,
+  value,
+  fallback,
+}: LabeledComponentProps) => {
+  return (
+    <div>
+      <label className="text-xs text-gray-400 italic mb-1 block">{label}</label>
+      <Property value={value} fallback={fallback} />
+    </div>
+  );
+};
+
 /**
  * Used in job details
+ * // ! REMOVE THIS AND REPLACE WITH BOOLBADGE
  *
  * @component
  */
-export const JobBooleanLabel: LabelComponent = ({
+export const JobBooleanLabel: ValueComponent = ({
   value,
   fallback,
-}: LabelComponentProps) => {
+}: ValueComponentProps) => {
   return (
     <p className="text-gray-500 font-medium text-sm">
       {!["", "false", "null", "undefined"].includes(
@@ -114,10 +118,10 @@ export const JobBooleanLabel: LabelComponent = ({
  *
  * @component
  */
-export const JobTitleLabel: LabelComponent = ({
+export const JobTitleLabel: ValueComponent = ({
   value,
   fallback,
-}: LabelComponentProps) => {
+}: ValueComponentProps) => {
   return (
     <p className="text-gray-900 font-heading font-bold text-4xl">
       {value || (
@@ -134,10 +138,10 @@ export const JobTitleLabel: LabelComponent = ({
  *
  * @component
  */
-export const EmployerPropertyLabel: LabelComponent = ({
+export const EmployerPropertyLabel: ValueComponent = ({
   value,
   fallback,
-}: LabelComponentProps) => {
+}: ValueComponentProps) => {
   return (
     <p className="text-gray-700 font-medium text-sm overflow-hidden text-ellipsis">
       {value || (
@@ -149,7 +153,7 @@ export const EmployerPropertyLabel: LabelComponent = ({
   );
 };
 
-export const ErrorLabel: LabelComponent = ({ value, fallback }) => {
+export const ErrorLabel: ValueComponent = ({ value, fallback }) => {
   return value ? (
     <div className="flex items-center gap-1 text-destructive text-xs mb-1">
       <AlertCircle className="h-3 w-3" />

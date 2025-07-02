@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, JSX } from "react";
-import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import {
   Edit2,
   Upload,
@@ -17,12 +16,7 @@ import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { useFormData } from "@/lib/form-data";
 import { EditableInput } from "@/components/ui/editable";
-import {
-  UserPropertyLabel,
-  UserLinkLabel,
-  ErrorLabel,
-} from "@/components/ui/labels";
-import { DropdownGroup } from "@/components/ui/dropdown";
+import { LinkLabel, ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/api";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
@@ -30,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { useFile } from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
 import { getFullName } from "@/lib/utils/user-utils";
-import { Checkbox } from "@/components/ui/checkbox";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import {
   isValidOptionalLinkedinURL,
@@ -47,47 +40,27 @@ import { BoolBadge } from "@/components/ui/badge";
 import { cn, isValidOptionalPhoneNumber } from "@/lib/utils";
 import { MyPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
-import { createEditForm } from "@/components/EditForm";
+import {
+  createEditForm,
+  FormCheckbox,
+  FormDropdown,
+  FormInput,
+} from "@/components/EditForm";
+import { Divider } from "@/components/ui/divider";
+import Link from "next/link";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
   const { isAuthenticated } = useAuthContext();
   const { profile, loading, error, updateProfile } = useProfile();
-  const { isMobile } = useAppContext();
-  const {
-    ref_loading,
-    levels,
-    to_college_name,
-    to_level_name,
-    to_department_name,
-    to_degree_full_name,
-    to_university_name,
-    get_college_by_name,
-    get_level_by_name,
-    get_departments_by_college,
-    get_colleges_by_university,
-    get_degrees_by_university,
-    get_department_by_name,
-    get_degree_by_type_and_name,
-    get_university_by_name,
-    get_universities_from_domain,
-  } = useRefs();
-  const defaultUniversity = "Select University";
-  const defaultCollege = "Select College";
-  const defaultDepartment = "Select Department";
-  const defaultDegree = "Select Degree";
+  const { ref_loading } = useRefs();
   const [isEditing, setIsEditing] = useState(false);
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
-  const {
-    formData: formData,
-    setField: setField,
-    setFields: setFields,
-    fieldSetter: fieldSetter,
-  } = useFormData<PublicUser>();
+  const { formData, setFields, fieldSetter } = useFormData<PublicUser>();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<boolean>(false);
   const [linkErrors, setLinkErrors] = useState<{
@@ -247,75 +220,21 @@ export default function ProfilePage() {
     }
   };
 
-  // Field setter for basic fields - simplified without real-time validation
-  const validatedBasicFieldSetter =
-    (field: keyof PublicUser) => (value: string) => {
-      fieldSetter(field)(value);
-
-      // Clear field error when user starts typing (immediate feedback)
-      const fieldErrorKey = field as keyof typeof fieldErrors;
-      if (fieldErrors[fieldErrorKey]) {
-        setFieldErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[fieldErrorKey];
-          return newErrors;
-        });
-      }
-    };
   const {
-    open: open_employer_modal,
-    close: close_employer_modal,
+    open: openEmployerModal,
+    close: closeEmployerModal,
     Modal: EmployerModal,
   } = useModal("employer-modal");
-  const {
-    open: open_resume_modal,
-    close: close_resume_modal,
-    Modal: ResumeModal,
-  } = useModal("resume-modal");
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
   const router = useRouter();
 
   // File input refs
-  const resumeInputRef = useRef<HTMLInputElement>(null);
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
-
-  // File upload handlers
-  const handleResumeUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ["application/pdf"];
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a PDF document");
-      return;
-    }
-
-    if (file.size > 3 * 1024 * 1024) {
-      alert("File size must be less than 3MB");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const form = FileUploadFormBuilder.new("resume");
-      form.file(file);
-      // @ts-ignore
-      const result = await UserService.updateMyResume(form.build());
-      alert("Resume uploaded successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to upload resume");
-    } finally {
-      setUploading(false);
-      if (resumeInputRef.current) {
-        resumeInputRef.current.value = "";
-      }
-    }
-  };
 
   const handlePreviewResume = async () => {
     await syncResumeUrl();
-    open_resume_modal();
+    openResumeModal();
   };
 
   const handleProfilePictureUpload = async (
@@ -445,6 +364,13 @@ export default function ProfilePage() {
               >
                 <Camera className="h-3 w-3" />
               </Button>
+              <input
+                type="file"
+                ref={profilePictureInputRef}
+                onChange={handleProfilePictureUpload}
+                accept="image/*"
+                style={{ display: "none" }}
+              />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -465,7 +391,7 @@ export default function ProfilePage() {
                   variant="outline"
                   scheme="primary"
                   disabled={isEditing}
-                  onClick={() => open_employer_modal()}
+                  onClick={() => openEmployerModal()}
                 >
                   <Eye className="h-4 w-4" />
                   Preview
@@ -516,241 +442,20 @@ export default function ProfilePage() {
           </div>
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
-            {isEditing ? (
-              <div className="space-y-1 mb-4 transition-all">
-                <textarea
-                  value={formData.bio || ""}
-                  onChange={(e) => setField("bio", e.target.value)}
-                  placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
-                  className="w-full border border-gray-200 rounded-[0.33em] px-3 py-2 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-                  maxLength={500}
-                />
-                <p className="text-xs text-muted-foreground text-right">
-                  {(formData.bio || "").length}/500 characters
-                </p>
-              </div>
-            ) : (
-              <Card className="bg-muted/50 p-3 px-5 overflow-hidden text-wrap">
-                <p className="text-sm leading-relaxed">
-                  {profile.bio || (
-                    <span className="text-muted-foreground italic">
-                      No bio provided. Click "Edit" to add information about
-                      yourself.
-                    </span>
-                  )}
-                </p>
-              </Card>
+            {!isEditing && (
+              <ProfileDetails
+                profile={profile}
+                openResumeModal={handlePreviewResume}
+              />
             )}
-
-            <Card className="px-5">
-              <div
-                className={cn(
-                  isMobile
-                    ? "grid grid-cols-1 space-y-5 mb-8"
-                    : "grid grid-cols-2 gap-y-5"
-                )}
-              >
-                <div>
-                  <label className="text-xs text-gray-400 italic mb-1 block">
-                    Full Name, Middle Name, Last Name
-                  </label>
-                  <span className="text-gray-700 text-sm">
-                    {`${profile.first_name} ${profile.middle_name} ${profile.last_name}`}
-                  </span>
-                </div>
-
-                <div>
-                  <label className="text-xs text-gray-400 italic mb-1 block">
-                    Phone Number
-                  </label>
-                  <span className="text-gray-700 text-sm">
-                    {profile.phone_number}
-                  </span>
-                </div>
-
-                <DropdownGroup>
-                  <div>
-                    <label className="text-xs text-gray-400 italic mb-1 block">
-                      Year Level
-                    </label>
-                    <span className="text-gray-700 text-sm">
-                      {to_level_name(profile.year_level)}
-                    </span>
-                  </div>
-
-                  <div>
-                    <label className="text-xs text-gray-400 italic mb-1 block">
-                      Education
-                    </label>
-                    <span className="text-gray-700 text-sm flex flex-col space-y-1">
-                      <div>{to_university_name(profile.university)}</div>
-                      <div>{to_college_name(profile.college)}</div>
-                      <div>{to_department_name(profile.department)}</div>
-                      <div>{to_degree_full_name(profile.degree)}</div>
-                    </span>
-                  </div>
-                </DropdownGroup>
-              </div>
-              <br />
-              <hr />
-              <br />
-
-              <div
-                className={cn(
-                  "mb-8",
-                  isEditing || isMobile
-                    ? "grid grid-cols-1 space-y-5"
-                    : "flex flex-row space-x-2 items-center"
-                )}
-              >
-                <EditableProfileLink
-                  title={"Portfolio Link"}
-                  link={formData.portfolio_link}
-                  setter={fieldSetter("portfolio_link")}
-                  placeholder={"https://myportfolio.com"}
-                  isEditing={isEditing}
-                />
-
-                <EditableProfileLink
-                  title={"Github Profile"}
-                  link={formData.github_link}
-                  setter={fieldSetter("github_link")}
-                  placeholder={"https://github.com/me"}
-                  isEditing={isEditing}
-                />
-
-                <EditableProfileLink
-                  title={"Linkedin Profile"}
-                  link={formData.linkedin_link}
-                  setter={fieldSetter("linkedin_link")}
-                  placeholder={"https://linkedin.com/in/me"}
-                  isEditing={isEditing}
-                />
-
-                <EditableProfileLink
-                  title={"Calendar Link"}
-                  link={formData.calendar_link}
-                  setter={fieldSetter("calendar_link")}
-                  placeholder={"https://calendar.app.google/your-link"}
-                  isEditing={isEditing}
-                  LabelComponent={() => {
-                    return (
-                      isEditing && (
-                        <Link
-                          href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
-                          target="_blank"
-                          className="inline-block mx-2"
-                        >
-                          <span className="text-xs italic">
-                            <MessageCircleQuestion className="w-4 h-4" />
-                          </span>
-                        </Link>
-                      )
-                    );
-                  }}
-                />
-              </div>
-              {profile.resume ? (
-                <div className="w-full flex items-end gap-1">
-                  <Button
-                    variant="outline"
-                    scheme="primary"
-                    onClick={handlePreviewResume}
-                  >
-                    View Resume
-                  </Button>
-                  <Button
-                    variant="outline"
-                    scheme="primary"
-                    onClick={() => resumeInputRef.current?.click()}
-                    disabled={uploading}
-                  >
-                    Upload Resume
-                  </Button>
-                </div>
-              ) : (
-                <Card>
-                  <div className="flex flex-col items-center justify-center">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {uploading ? "Uploading..." : "No resume uploaded"}
-                    </p>
-                    <Button
-                      onClick={() => resumeInputRef.current?.click()}
-                      disabled={uploading}
-                    >
-                      <Upload className="h-4 w-4" />
-                      {uploading ? "Uploading..." : "Upload"}
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      PDF up to 2.5MB
-                    </p>
-                  </div>
-                </Card>
-              )}
-
-              {isEditing && (
-                <>
-                  <br />
-                  <hr />
-                  <br />
-
-                  <div className="space-y-3 mt-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        checked={formData.taking_for_credit ?? false}
-                        onCheckedChange={(value) => {
-                          setFields({
-                            taking_for_credit: !!value,
-                            linkage_officer: !!value
-                              ? formData.linkage_officer
-                              : "",
-                          });
-                        }}
-                      />
-                      <span className="text-sm">
-                        Taking internships for credit
-                      </span>
-                    </div>
-                    {formData.taking_for_credit && (
-                      <div>
-                        <label className="text-xs text-gray-400 italic mb-1 block">
-                          Linkage Officer
-                        </label>
-                        <EditableInput
-                          is_editing={isEditing}
-                          value={formData.linkage_officer}
-                          setter={fieldSetter("linkage_officer")}
-                          maxLength={32}
-                        >
-                          <UserPropertyLabel />
-                        </EditableInput>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </Card>
-            <br />
-            <br />
+            {isEditing && (
+              <ProfileEditForm data={profile}>
+                <ProfileEditor />
+              </ProfileEditForm>
+            )}
           </div>
         </div>
 
-        <input
-          type="file"
-          ref={resumeInputRef}
-          onChange={handleResumeUpload}
-          accept=".pdf"
-          style={{ display: "none" }}
-        />
-        <input
-          type="file"
-          ref={profilePictureInputRef}
-          onChange={handleProfilePictureUpload}
-          accept="image/*"
-          style={{ display: "none" }}
-        />
-
-        {/* Modals */}
         {resumeUrl.length > 0 && (
           <ResumeModal>
             <div className="space-y-4">
@@ -766,9 +471,9 @@ export default function ProfilePage() {
             pfp_fetcher={UserService.getMyPfpURL}
             pfp_route="/users/me/pic"
             open_resume={async () => {
-              close_employer_modal();
+              closeEmployerModal();
               await syncResumeUrl();
-              open_resume_modal();
+              openResumeModal();
             }}
             open_calendar={async () => {
               openURL(profile?.calendar_link);
@@ -779,6 +484,393 @@ export default function ProfilePage() {
     )
   );
 }
+
+const ProfileDetails = ({
+  profile,
+  openResumeModal,
+}: {
+  profile: PublicUser;
+  openResumeModal: () => void;
+}) => {
+  const { isMobile } = useAppContext();
+  const {
+    to_college_name,
+    to_level_name,
+    to_department_name,
+    to_degree_full_name,
+    to_university_name,
+  } = useRefs();
+
+  return (
+    <>
+      <Card className="bg-muted/50 p-3 px-5 overflow-hidden text-wrap">
+        <p className="text-sm leading-relaxed">
+          {profile.bio || (
+            <span className="text-muted-foreground italic">
+              No bio provided. Click "Edit" to add information about yourself.
+            </span>
+          )}
+        </p>
+      </Card>
+
+      <Card className="px-5">
+        <div
+          className={cn(
+            isMobile
+              ? "grid grid-cols-1 space-y-5 mb-8"
+              : "grid grid-cols-2 gap-y-5"
+          )}
+        >
+          <LabeledProperty
+            label="Full Name"
+            value={`${profile.first_name} ${profile.middle_name} ${profile.last_name}`}
+          />
+
+          <LabeledProperty label="Phone Number" value={profile.phone_number} />
+
+          <LabeledProperty
+            label="Year Level"
+            value={to_level_name(profile.year_level)}
+          />
+
+          <LabeledProperty
+            label="Education"
+            value={`${to_university_name(profile.university)}\n
+              ${to_college_name(profile.college)}\n
+              ${to_department_name(profile.department)}\n
+              ${to_degree_full_name(profile.degree)}`}
+          />
+        </div>
+        <Divider />
+        <div
+          className={cn(
+            "mb-8",
+            isMobile
+              ? "grid grid-cols-1 space-y-2"
+              : "flex flex-row space-x-2 items-center justify-start"
+          )}
+        >
+          <ProfileLinkBadge
+            title="Portfolio Link"
+            link={profile.portfolio_link}
+          />
+          <ProfileLinkBadge title="Github Profile" link={profile.github_link} />
+          <ProfileLinkBadge
+            title="Linkedin Profile"
+            link={profile.linkedin_link}
+          />
+          <ProfileLinkBadge
+            title="Calendar Link"
+            link={profile.calendar_link}
+          />
+        </div>
+        <ResumeBox profile={profile} openResumeModal={openResumeModal} />
+      </Card>
+      <br />
+    </>
+  );
+};
+
+const ProfileEditor = () => {
+  const { formData, setField, fieldSetter } = useProfileEditForm();
+  const { isMobile } = useAppContext();
+  const {
+    levels,
+    universities,
+    colleges,
+    departments,
+    degrees,
+    get_universities_from_domain,
+    get_colleges_by_university,
+    get_departments_by_college,
+    get_degrees_by_university,
+  } = useRefs();
+
+  const [universityOptions, setUniversityOptions] = useState(universities);
+  const [collegeOptions, setCollegeOptions] = useState(colleges);
+  const [departmentOptions, setDepartmentOptions] = useState(departments);
+  const [degreeOptions, setDegreeOptions] = useState(degrees);
+
+  useEffect(() => {
+    setUniversityOptions(
+      universities.filter((u) =>
+        get_universities_from_domain(formData.email.split("@")[1]).includes(
+          u.id
+        )
+      )
+    );
+    setCollegeOptions(
+      colleges.filter((c) =>
+        get_colleges_by_university(formData.university).includes(c.id)
+      )
+    );
+    setDepartmentOptions(
+      departments.filter((d) =>
+        get_departments_by_college(formData.college ?? "").includes(d.id)
+      )
+    );
+    setDegreeOptions(
+      degrees
+        .filter((d) =>
+          get_degrees_by_university(formData.university ?? "").includes(d.id)
+        )
+        .map((d) => ({ ...d, name: `${d.type} ${d.name}` }))
+    );
+
+    console.log("updated");
+  }, [formData]);
+
+  return (
+    <>
+      <Card>
+        <div className="text-xl tracking-tight font-medium text-gray-700 mb-6">
+          Identity
+        </div>
+        <div
+          className={cn(
+            "mb-4",
+            isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
+          )}
+        >
+          <FormInput
+            label="First Name"
+            value={formData.first_name ?? ""}
+            setter={fieldSetter("first_name")}
+            maxLength={32}
+          />
+          <FormInput
+            label="Middle Name"
+            value={formData.middle_name ?? ""}
+            setter={fieldSetter("middle_name")}
+            maxLength={2}
+          />
+          <FormInput
+            label="Last Name"
+            value={formData.last_name ?? ""}
+            setter={fieldSetter("last_name")}
+          />
+        </div>
+        <div
+          className={cn(
+            "mb-8",
+            isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
+          )}
+        >
+          <FormInput
+            label="Phone Number"
+            value={formData.phone_number ?? ""}
+            setter={fieldSetter("phone_number")}
+          />
+        </div>
+        <div className="text-xl tracking-tight font-medium text-gray-700 my-6 mt-12">
+          Personal Bio
+        </div>
+        <textarea
+          value={formData.bio || ""}
+          onChange={(e) => setField("bio", e.target.value)}
+          placeholder="Tell us about yourself, your interests, goals, and what makes you unique..."
+          className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+          maxLength={500}
+        />
+        <p className="text-xs text-muted-foreground text-right">
+          {(formData.bio || "").length}/500 characters
+        </p>
+        <div className="text-xl tracking-tight font-medium text-gray-700 my-6">
+          Educational Background
+        </div>
+        <div className="flex flex-col space-y-3">
+          <FormDropdown
+            label={"University"}
+            value={formData.university ?? ""}
+            options={universityOptions}
+            setter={fieldSetter("university")}
+          />
+          <FormDropdown
+            label={"College"}
+            value={formData.college ?? ""}
+            options={collegeOptions}
+            setter={fieldSetter("college")}
+          />
+          <FormDropdown
+            label={"Department"}
+            value={formData.department ?? ""}
+            options={departmentOptions}
+            setter={fieldSetter("department")}
+          />
+          <FormDropdown
+            label={"Degree"}
+            value={formData.degree ?? ""}
+            options={degreeOptions}
+            setter={fieldSetter("degree")}
+          />
+          <FormDropdown
+            label="Year Level"
+            value={formData.year_level ?? ""}
+            options={levels}
+            setter={fieldSetter("year_level")}
+          />
+          <div className="flex flex-row items-center justify-start mt-5">
+            <div className="text-sm text-gray-500 mr-2">
+              Taking internships for credit?
+            </div>
+            <FormCheckbox
+              checked={formData.taking_for_credit}
+              setter={fieldSetter("taking_for_credit")}
+            />
+          </div>
+        </div>
+        <div className="text-xl tracking-tight font-medium text-gray-700 my-6 mt-12">
+          External Profiles
+        </div>
+        <div className="flex flex-col space-y-3">
+          <FormInput
+            label={"Portfolio Link"}
+            value={formData.portfolio_link ?? ""}
+            setter={fieldSetter("portfolio_link")}
+          />
+          <FormInput
+            label={"Github Profile"}
+            value={formData.github_link ?? ""}
+            setter={fieldSetter("github_link")}
+          />
+          <FormInput
+            label={"Linkedin Profile"}
+            value={formData.linkedin_link ?? ""}
+            setter={fieldSetter("linkedin_link")}
+          />
+          <div className="relative">
+            <div className="absolute ml-24">
+              <Link
+                href="https://www.canva.com/design/DAGrKQdRG-8/XDGzebwKdB4CMWLOszcheg/edit"
+                target="_blank"
+                className="opacity-70 hover:opacity-90"
+              >
+                <MessageCircleQuestion className="w-4 h-4 text-blue-500" />
+              </Link>
+            </div>
+            <FormInput
+              label={"Calendar Link"}
+              value={formData.calendar_link ?? ""}
+              setter={fieldSetter("calendar_link")}
+            />
+          </div>
+        </div>
+      </Card>
+      <br />
+      <br />
+    </>
+  );
+};
+
+const ResumeBox = ({
+  profile,
+  openResumeModal,
+}: {
+  profile: PublicUser;
+  openResumeModal: () => void;
+}) => {
+  const [uploading, setUploading] = useState(false);
+  const resumeInputRef = useRef<HTMLInputElement>(null);
+
+  // File upload handlers
+  const handleResumeUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["application/pdf"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Please upload a PDF document");
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert("File size must be less than 3MB");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const form = FileUploadFormBuilder.new("resume");
+      form.file(file);
+      // @ts-ignore
+      const result = await UserService.updateMyResume(form.build());
+      alert("Resume uploaded successfully!");
+    } catch (error: any) {
+      alert(error.message || "Failed to upload resume");
+    } finally {
+      setUploading(false);
+      if (resumeInputRef.current) {
+        resumeInputRef.current.value = "";
+      }
+    }
+  };
+
+  return (
+    <div className="mt-5">
+      {profile.resume ? (
+        <div className="w-full flex justify-start gap-2">
+          <Button variant="outline" scheme="primary" onClick={openResumeModal}>
+            View Resume
+          </Button>
+          <Button
+            variant="outline"
+            scheme="primary"
+            onClick={() => resumeInputRef.current?.click()}
+            disabled={uploading}
+          >
+            Upload Resume
+          </Button>
+        </div>
+      ) : (
+        <Card>
+          <div className="flex flex-col items-center justify-center">
+            <p className="text-sm text-muted-foreground mb-2">
+              {uploading ? "Uploading..." : "No resume uploaded"}
+            </p>
+            <Button
+              onClick={() => resumeInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Upload className="h-4 w-4" />
+              {uploading ? "Uploading..." : "Upload"}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">
+              PDF up to 2.5MB
+            </p>
+          </div>
+        </Card>
+      )}
+      <input
+        type="file"
+        ref={resumeInputRef}
+        onChange={handleResumeUpload}
+        accept=".pdf"
+        style={{ display: "none" }}
+      />
+    </div>
+  );
+};
+
+const ProfileLinkBadge = ({
+  title,
+  link,
+}: {
+  title: string;
+  link?: string | null;
+}) => {
+  return (
+    <Button
+      variant="ghost"
+      className="p-0 h-6 w-fit"
+      disabled={!link}
+      onClick={() => openURL(link)}
+    >
+      <BoolBadge state={!!link} onValue={title} offValue={title} />
+    </Button>
+  );
+};
 
 const EditableProfileLink = ({
   title,
@@ -820,15 +912,11 @@ const EditableProfileLink = ({
             setter={setter}
             placeholder={placeholder}
           >
-            <UserLinkLabel />
+            <LinkLabel />
           </EditableInput>
         </>
       )}
       <ErrorLabel value={error} />
     </div>
   );
-};
-
-const ProfileEditFormComponent = () => {
-  return <div></div>;
 };

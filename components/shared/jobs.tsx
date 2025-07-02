@@ -1,6 +1,6 @@
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import {
   Building,
   PhilippinePeso,
@@ -20,7 +20,7 @@ import {
   EditableInput,
 } from "@/components/ui/editable";
 import { useEffect } from "react";
-import { JobBooleanLabel, JobPropertyLabel, JobTitleLabel } from "../ui/labels";
+import { JobBooleanLabel, Property, JobTitleLabel } from "../ui/labels";
 import { MDXEditor } from "../MDXEditor";
 import { DropdownGroup } from "../ui/dropdown";
 import { useMoa } from "@/lib/db/use-moa";
@@ -428,7 +428,7 @@ export const EditableJobDetails = ({
               value={formData.location ?? "Not specified"}
               setter={fieldSetter("location")}
             >
-              <JobPropertyLabel />
+              <Property />
             </EditableInput>
           </div>
 
@@ -445,7 +445,7 @@ export const EditableJobDetails = ({
               setter={fieldSetter("mode")}
               options={job_modes}
             >
-              <JobPropertyLabel />
+              <Property />
             </EditableGroupableRadioDropdown>
           </div>
 
@@ -462,7 +462,7 @@ export const EditableJobDetails = ({
               name={"job_type"}
               options={job_types}
             >
-              <JobPropertyLabel />
+              <Property />
             </EditableGroupableRadioDropdown>
           </div>
 
@@ -482,7 +482,7 @@ export const EditableJobDetails = ({
                     options={job_allowances}
                     setter={fieldSetter("allowance")}
                   >
-                    <JobPropertyLabel />
+                    <Property />
                   </EditableGroupableRadioDropdown>
                 </div>
 
@@ -498,7 +498,7 @@ export const EditableJobDetails = ({
                         value={formData.salary?.toString() ?? "Not specified"}
                         setter={fieldSetter("salary")}
                       >
-                        <JobPropertyLabel />
+                        <Property />
                       </EditableInput>
                     </div>
                     <div className="space-y-2">
@@ -512,7 +512,7 @@ export const EditableJobDetails = ({
                         options={job_pay_freq}
                         setter={fieldSetter("salary_freq")}
                       >
-                        <JobPropertyLabel fallback="" />
+                        <Property fallback="" />
                       </EditableGroupableRadioDropdown>
                     </div>
                   </>
@@ -525,7 +525,7 @@ export const EditableJobDetails = ({
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 {formData.allowance ? "Allowance:" : "Salary:"}
               </label>
-              <JobPropertyLabel
+              <Property
                 value={
                   formData.allowance
                     ? to_job_allowance_name(formData.allowance)
@@ -597,7 +597,7 @@ export const EditableJobDetails = ({
                             // @ts-ignore
                             setter={fieldSetter("start_date")}
                           >
-                            <JobPropertyLabel />
+                            <Property />
                           </EditableDatePicker>
                         </div>
                         <div>
@@ -614,7 +614,7 @@ export const EditableJobDetails = ({
                             // @ts-ignore
                             setter={fieldSetter("end_date")}
                           >
-                            <JobPropertyLabel />
+                            <Property />
                           </EditableDatePicker>
                         </div>
                       </div>
@@ -783,7 +783,7 @@ export const JobDetails = ({
                 <Monitor className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Work Mode:
               </label>
-              <JobPropertyLabel value={to_job_mode_name(job.mode)} />
+              <Property value={to_job_mode_name(job.mode)} />
             </div>
 
             <div className="flex flex-col items-start gap-3 max-w-prose">
@@ -791,7 +791,7 @@ export const JobDetails = ({
                 <PhilippinePeso className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Salary:
               </label>
-              <JobPropertyLabel
+              <Property
                 value={
                   job.salary
                     ? `${job.salary}/${to_job_pay_freq_name(job.salary_freq)}`
@@ -804,7 +804,7 @@ export const JobDetails = ({
                 <Clock className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
                 Work Load:
               </label>
-              <JobPropertyLabel value={to_job_type_name(job.type)} />
+              <Property value={to_job_type_name(job.type)} />
             </div>
           </DropdownGroup>
 

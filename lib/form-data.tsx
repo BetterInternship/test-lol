@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 00:52:43
- * @ Modified time: 2025-07-03 02:00:26
+ * @ Modified time: 2025-07-03 05:19:40
  * @ Description:
  *
  * Form data utility so we don't pollute our components with too much logic.
@@ -12,6 +12,10 @@ import { useState } from "react";
 export interface IFormData {
   [field: string]: any;
 }
+
+export type IFormErrors<T extends IFormData> = {
+  [K in keyof T]: string;
+};
 
 /**
  * The useFilter hook.
@@ -48,5 +52,29 @@ export const useFormData = <T extends IFormData>(initialValue?: Partial<T>) => {
     setField,
     setFields,
     fieldSetter,
+  };
+};
+
+/**
+ * Good for dealing with form errors.
+ *
+ * @hook
+ */
+export const useFormErrors = <T extends IFormData>() => {
+  const [formErrors, setFormErrors] = useState<IFormErrors<T>>(
+    {} as IFormErrors<T>
+  );
+
+  // Sets and individual filter
+  const setError = (field: keyof T, value: string) => {
+    setFormErrors({
+      ...formErrors,
+      [field]: value,
+    });
+  };
+
+  return {
+    formErrors,
+    setError,
   };
 };
