@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Mail, Phone, Plus, X } from "lucide-react";
+import { MapPin, Mail, Phone } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
 
