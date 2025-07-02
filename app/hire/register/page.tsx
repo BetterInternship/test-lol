@@ -16,6 +16,7 @@ import { useAuthContext } from "../authctx";
 import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { EditableDatePicker } from "@/components/ui/editable";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function RegisterPage() {
   const { register } = useAuthContext();
@@ -160,7 +161,7 @@ export default function RegisterPage() {
         phone_number: form_data.contact_phone,
         accepted_universities: `[${universities
           .map((u) => `"${u.id}"`)
-          .join("")}]`,
+          .join(",")}]`,
         acceps_non_university: form_data.accept_outside_dlsu,
 
         // Moa instances, in this case DLSU only for now
@@ -240,9 +241,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. Google"
                   maxLength={100}
-                  className={
+                  className={cn(
+                    "text-sm",
                     fieldErrors.doing_business_as ? "border-red-500" : ""
-                  }
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -257,9 +259,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. Google inc."
                   maxLength={100}
-                  className={
+                  className={cn(
+                    "text-sm",
                     fieldErrors.legal_entity_name ? "border-red-500" : ""
-                  }
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -296,9 +299,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. Makati, Manila"
                   maxLength={100}
-                  className={
+                  className={cn(
+                    "text-sm",
                     fieldErrors.office_location ? "border-red-500" : ""
-                  }
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -313,7 +317,10 @@ export default function RegisterPage() {
                   value={form_data.website}
                   onChange={(e) => handle_change("website", e.target.value)}
                   placeholder="e.g. https://google.com"
-                  className={fieldErrors.website ? "border-red-500" : ""}
+                  className={cn(
+                    "text-sm",
+                    fieldErrors.website ? "border-red-500" : ""
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -366,7 +373,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. John Doe"
                   maxLength={50}
-                  className={fieldErrors.contact_name ? "border-red-500" : ""}
+                  className={cn(
+                    "text-sm",
+                    fieldErrors.contact_name ? "border-red-500" : ""
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -381,7 +391,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. 09XXXXXXXXX"
                   maxLength={11}
-                  className={fieldErrors.contact_phone ? "border-red-500" : ""}
+                  className={cn(
+                    "text-sm",
+                    fieldErrors.contact_phone ? "border-red-500" : ""
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -399,7 +412,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. john@google.com"
                   type="email"
-                  className={fieldErrors.contact_email ? "border-red-500" : ""}
+                  className={cn(
+                    "text-sm",
+                    fieldErrors.contact_email ? "border-red-500" : ""
+                  )}
                   disabled={loading}
                 />
               </div>
@@ -414,9 +430,10 @@ export default function RegisterPage() {
                   }
                   placeholder="e.g. CTO/CEO"
                   maxLength={50}
-                  className={
+                  className={cn(
+                    "text-sm",
                     fieldErrors.contact_position ? "border-red-500" : ""
-                  }
+                  )}
                   disabled={loading}
                 />
               </div>
