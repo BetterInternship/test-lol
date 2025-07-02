@@ -15,8 +15,8 @@ export default function JobScrollerPage() {
             name: 'Jollibee'
           },
           {
-            image: '/logos/firstgen.png',
-            name: 'First Gen'
+            image: '/logos/manulife.png',
+            name: 'Manulife'
           },
           {
             image: '/logos/sunlife.png',
@@ -48,12 +48,12 @@ export default function JobScrollerPage() {
       <LogoFlip
         data={[
           {
-            image: '/logos/manulife.png',
-            name: 'Manulife'
-          },
-          {
             image: '/logos/oracle.png',
             name: 'Oracle'
+          },
+          {
+            image: '/logos/apc.jpeg',
+            name: 'APC'
           }
         ]}
         

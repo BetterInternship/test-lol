@@ -15,10 +15,6 @@ export default function JobScrollerPage() {
             name: 'Jollibee'
           },
           {
-            image: '/logos/firstgen.png',
-            name: 'First Gen'
-          },
-          {
             image: '/logos/sunlife.png',
             name: 'Sun Life Financial'
           },
@@ -45,6 +41,10 @@ export default function JobScrollerPage() {
           {
             image: '/logos/oracle.png',
             name: 'Oracle'
+          },
+          {
+            image: '/logos/apc.jpeg',
+            name: 'APC'
           }
         ]}
       />
