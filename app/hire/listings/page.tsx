@@ -84,7 +84,7 @@ export default function MyListings() {
             <div className="w-96 flex flex-col h-full">
               {/* Search Bar and Filter Button - Fixed */}
               <div
-                className="flex items-center gap-3 mb-4 flex-shrink-0"
+                className="flex items-center gap-3 pl-1 pr-4 mb-4 flex-shrink-0"
                 data-tour="job-filters"
               >
                 <div className="relative flex-1">
@@ -108,7 +108,7 @@ export default function MyListings() {
               </div>
 
               {/* Job Cards - Scrollable */}
-              <div className="flex-1 overflow-y-auto space-y-3 pr-2 border-r pt-4 pl-2">
+              <div className="flex-1 overflow-y-auto space-y-3 pr-4 border-r pt-4 pl-2">
                 {filteredJobs.map((job) => (
                   <EmployerJobCard
                     key={job.id}
@@ -404,7 +404,7 @@ const CreateModalForm = ({
             <Input
               value={form_data.title || ""}
               onChange={(e) => set_field("title", e.target.value)}
-              className="text-lg font-medium"
+              className="text-lg font-medium h-12"
               placeholder="Enter job title here..."
             />
           </div>
@@ -432,7 +432,7 @@ const CreateModalForm = ({
                   value={form_data.location ?? ""}
                   onChange={(e) => set_field("location", e.target.value)}
                   placeholder="Enter location"
-                  className="h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className="text-sm"
                 />
               </div>
 
@@ -483,7 +483,7 @@ const CreateModalForm = ({
                         value={form_data.salary ?? ""}
                         onChange={(e) => set_field("salary", e.target.value)}
                         placeholder="Enter salary amount"
-                        className="h-10 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        className="text-sm"
                       />
                     </div>
 
