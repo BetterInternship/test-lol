@@ -1,4 +1,4 @@
-import LogoFlip from '../../../components/ui/LogoFlip';
+import LogoFlip from '@/components/ui/LogoFlip';
 
 export default function JobScrollerPage() {
   return (
@@ -7,43 +7,43 @@ export default function JobScrollerPage() {
       <LogoFlip
         data={[
           {
-            image: '/manulife.png',
+            image: '/logos/manulife.png',
             name: 'Manulife'
           },
           {
-            image: '/jollibee.png',
+            image: '/logos/jollibee.png',
             name: 'Jollibee'
           },
           {
-            image: '/firstgen.png',
+            image: '/logos/firstgen.png',
             name: 'First Gen'
           },
           {
-            image: '/sunlife.png',
+            image: '/logos/sunlife.png',
             name: 'Sun Life Financial'
           },
           {
-            image: '/oracle.png',
+            image: '/logos/oracle.png',
             name: 'Oracle'
           },
           {
-            image: '/alaska.png',
+            image: '/logos/alaska.png',
             name: 'Alaska Milk Corporation'
           },
           {
-            image: '/wwf.png',
+            image: '/logos/wwf.png',
             name: 'WWF'
           },
           {
-            image: '/aim.png',
+            image: '/logos/AIM.png',
             name: 'Asian Institute of Management'
           },
           {
-            image: '/manulife.png',
+            image: '/logos/Manulife.png',
             name: 'Manulife'
           },
           {
-            image: '/oracle.png',
+            image: '/logos/oracle.png',
             name: 'Oracle'
           }
         ]}

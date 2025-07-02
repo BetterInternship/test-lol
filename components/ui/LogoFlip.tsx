@@ -32,7 +32,7 @@ function JobCard({
     
     const flipInterval = setInterval(() => {
       setIsFlipped(prev => !prev);
-    }, 3000 + Math.random() * 2000); // Flip every 3-5 seconds randomly
+    }, 5000 + Math.random() * 4000); // Flip every 3-5 seconds randomly
 
     const timeoutId = setTimeout(() => {
       // Start the interval after initial delay
@@ -55,7 +55,16 @@ function JobCard({
         className="h-24 w-36 overflow-hidden rounded-xl border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 flex items-center justify-center p-3"
         onClick={() => handleSearchClick(front.name)}
       >
-        <img src={front.image} alt={front.name} className="h-full w-full object-contain" />
+        <img 
+          src={front.image} 
+          alt={front.name} 
+          className="h-full w-full object-contain"
+          onError={(e) => {
+            console.error(`Failed to load image: ${front.image}`);
+            e.currentTarget.style.display = 'none';
+          }}
+          onLoad={() => console.log(`Successfully loaded: ${front.image}`)}
+        />
       </div>
 
       <div 
@@ -63,7 +72,16 @@ function JobCard({
         className="h-24 w-36 overflow-hidden rounded-xl border bg-white dark:border-zinc-700 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-200 relative flex items-center justify-center p-3"
         onClick={() => handleSearchClick(back.name)}
       >
-        <img src={back.image} alt={back.name} className="h-full w-full object-contain" />
+        <img 
+          src={back.image} 
+          alt={back.name} 
+          className="h-full w-full object-contain"
+          onError={(e) => {
+            console.error(`Failed to load image: ${back.image}`);
+            e.currentTarget.style.display = 'none';
+          }}
+          onLoad={() => console.log(`Successfully loaded: ${back.image}`)}
+        />
       </div>
     </ReactCardFlip>
   );
