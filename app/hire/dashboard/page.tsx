@@ -181,10 +181,12 @@ export default function Dashboard() {
                                 <GroupableRadioDropdown
                                   name="status"
                                   className="w-36"
-                                  options={app_statuses.map((as) => as.name)}
-                                  defaultValue={
-                                    to_app_status_name(application.status) ?? ""
+                                  disabled={
+                                    to_app_status_name(application.status) ===
+                                    "Withdrawn"
                                   }
+                                  options={app_statuses}
+                                  defaultValue={application.status}
                                   onChange={async (status) => {
                                     if (!application?.id) {
                                       console.error(
@@ -198,11 +200,8 @@ export default function Dashboard() {
                                       application: updated_app,
                                       success,
                                     } = await review_app(application.id, {
-                                      status:
-                                        get_app_status_by_name(status)?.id,
+                                      status,
                                     });
-
-                                    console.log(success, updated_app);
                                   }}
                                 ></GroupableRadioDropdown>
                               </div>

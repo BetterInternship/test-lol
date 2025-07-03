@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-07-01 22:23:46
+ * @ Modified time: 2025-07-03 03:02:03
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -56,12 +56,17 @@ export const EditableInput = ({
   );
 };
 
+interface IDropdownOption<ID> {
+  id: ID;
+  name: string;
+}
+
 /**
  * A dropdown display that can be toggle to become editable.
  *
  * @component
  */
-export const EditableGroupableRadioDropdown = ({
+export const EditableGroupableRadioDropdown = <ID extends number | string>({
   is_editing,
   name,
   value,
@@ -71,22 +76,24 @@ export const EditableGroupableRadioDropdown = ({
 }: {
   is_editing: boolean;
   name: string;
-  value: Value;
-  setter: (value: string) => void;
-  options: string[];
+  value: ID;
+  setter: (value: ID) => void;
+  options: IDropdownOption<ID>[];
   children?: React.ReactElement<{ value?: Value }>;
 }) => {
   return is_editing ? (
     <GroupableRadioDropdown
       name={name}
-      defaultValue={value as string}
+      defaultValue={value}
       options={options}
       onChange={setter}
     ></GroupableRadioDropdown>
   ) : (
     Children.map(children, (child) => {
       if (React.isValidElement(child))
-        return React.cloneElement(child, { value });
+        return React.cloneElement(child, {
+          value: options.filter((o) => o.id === value)[0]?.name,
+        });
       return <></>;
     })
   );

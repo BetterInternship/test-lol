@@ -151,7 +151,7 @@
   /* Button and interactive elements */
   button, .btn {
     @apply font-medium transition-all duration-200;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+    @apply focus:outline-none;
   }
 
   /* Enhanced link styles */

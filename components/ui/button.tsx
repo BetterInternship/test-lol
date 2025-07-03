@@ -29,7 +29,7 @@ const buttonVariants = cva(
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         outline:
           "border border-gray-300 text-gray-700 bg-background hover:bg-accent",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent text-gray-700 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       scheme: {

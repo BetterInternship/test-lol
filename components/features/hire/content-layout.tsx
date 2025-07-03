@@ -42,19 +42,20 @@ function SideNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-2">
+    <nav className="flex flex-col">
       {items.map(({ href, label, icon }) => (
-        <Link
-          key={label}
-          href={href}
-          className={cn(
-            "flex border border-opacity-0 items-center gap-3 text-gray-900 p-3 mx-1 rounded-sm font-medium hover:cursor-pointer",
-            pathname === href &&
-              "bg-muted text-primary border-opacity-80 bg-white"
-          )}
-        >
-          {icon}
-          {label}
+        <Link key={label} href={href} className="w-full">
+          <Button
+            variant="ghost"
+            scheme="default"
+            className={cn(
+              "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
+              pathname === href ? "text-primary bg-gray-200" : "font-normal"
+            )}
+          >
+            {icon}
+            {label}
+          </Button>
         </Link>
       ))}
     </nav>
@@ -70,9 +71,7 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
     <>
       <aside className="hidden lg:block fixed top-16 left-0 z-20 h-screen w-[280px] border-r bg-muted/40">
         <div className="flex h-full flex-col gap-2 overflow-y-auto py-4">
-          <div className="p-2 tyext-gray-500">
-            <SideNav items={navItems} />
-          </div>
+          <SideNav items={navItems} />
         </div>
       </aside>
 

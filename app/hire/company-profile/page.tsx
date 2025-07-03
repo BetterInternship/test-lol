@@ -18,7 +18,11 @@ import { useAppContext } from "@/lib/ctx-app";
 
 export default function CompanyProfile() {
   const { loading, error, profile } = useProfile();
-  const { form_data, set_field, field_setter } = useFormData<Employer>();
+  const {
+    formData: form_data,
+    setField: set_field,
+    fieldSetter: field_setter,
+  } = useFormData<Employer>();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const { check } = useMoa();

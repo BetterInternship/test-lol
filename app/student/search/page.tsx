@@ -50,7 +50,6 @@ import {
 } from "@/lib/utils/user-utils";
 import { UserService } from "@/lib/api/api";
 import { useFile } from "@/hooks/use-file";
-import { useClientDimensions } from "@/hooks/use-dimensions";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { openURL } from "@/lib/utils/url-utils";
 
@@ -115,15 +114,13 @@ export default function SearchPage() {
 
   const { isMobile: is_mobile } = useAppContext();
   const { profile } = useProfile();
-  const { clientWidth: client_width, clientHeight: client_height } =
-    useClientDimensions();
 
   // Resume URL management for profile preview
   const { url: resumeUrl, sync: syncResumeUrl } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
-  const { industries, universities, job_categories } = useRefs();
+  const { industries, job_modes, job_categories } = useRefs();
 
   // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
@@ -136,9 +133,10 @@ export default function SearchPage() {
     refetch,
   } = useJobs({
     search: searchTerm.trim() || undefined,
-    category: filters.category,
-    mode: filters.location,
-    industry: filters.industry,
+    category: job_categories.filter((c) => c.id === filters.category)[0]?.name,
+    mode: job_modes.filter((j) => j.id.toString() === filters.location)[0]
+      ?.name,
+    industry: industries.filter((i) => i.id === filters.industry)[0]?.name,
   });
 
   // Get paginated jobs directly from getJobsPage
@@ -514,7 +512,6 @@ export default function SearchPage() {
           >
             {selectedJob && (
               <div className="p-4">
-                {/* Job Description */}
                 <div className="mb-6">
                   <h2 className="text-lg font-semibold mb-3 text-gray-900">
                     Description
@@ -523,21 +520,15 @@ export default function SearchPage() {
                     <ReactMarkdown>{selectedJob.description}</ReactMarkdown>
                   </div>
                 </div>
-
-                {/* Job Requirements */}
-                {selectedJob.requirements && (
-                  <div className="mb-6">
-                    <h2 className="text-lg font-semibold mb-3 text-gray-900">
-                      Requirements
-                    </h2>
-                    <JobApplicationRequirements job={selectedJob} />
-                    <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
-                      <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
-                    </div>
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold mb-3 text-gray-900">
+                    Requirements
+                  </h2>
+                  <JobApplicationRequirements job={selectedJob} />
+                  <div className="prose prose-sm max-w-none text-gray-700 text-sm leading-relaxed">
+                    <ReactMarkdown>{selectedJob.requirements}</ReactMarkdown>
                   </div>
-                )}
-
-                {/* Extra bottom padding to ensure content isn't hidden behind buttons */}
+                </div>
                 <div className="pb-20"></div>
               </div>
             )}
@@ -665,16 +656,10 @@ export default function SearchPage() {
           <br />
           <DropdownGroup>
             <GroupableRadioDropdown
-              name="location"
-              options={["Any work load", "In-Person", "Remote", "Hybrid"]}
-              onChange={filter_setter("location")}
-              defaultValue={filters.location}
-            />
-            <GroupableRadioDropdown
               name="industry"
               options={[
-                "All industries",
-                ...industries.map((industry) => industry.name),
+                { id: "All industries", name: "All industries" },
+                ...industries,
               ]}
               onChange={filter_setter("industry")}
               defaultValue={filters.industry}
@@ -682,10 +667,8 @@ export default function SearchPage() {
             <GroupableRadioDropdown
               name="category"
               options={[
-                "All categories",
-                ...job_categories
-                  .toSorted((a, b) => a.order - b.order)
-                  .map((c) => c.name),
+                { id: "All categories", name: "All categories" },
+                ...job_categories.toSorted((a, b) => a.order - b.order),
               ]}
               onChange={filter_setter("category")}
               defaultValue={filters.category}
