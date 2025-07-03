@@ -4,7 +4,7 @@ import {
   IFormErrors,
   useFormErrors,
 } from "@/lib/form-data";
-import { createContext, JSX, useContext } from "react";
+import { createContext, JSX, useContext, useRef } from "react";
 import { Input } from "./ui/input";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Checkbox } from "@radix-ui/react-checkbox";
@@ -15,10 +15,10 @@ interface EditFormContext<T extends IFormData> {
   formData: T;
   formErrors: IFormErrors<T>;
   setField: (k: keyof T, v: any) => void;
-  setFields: (p: Partial<T>) => void;
   fieldSetter: (k: keyof T) => (v: any) => void;
   addValidator: (k: keyof T, c: (v: any) => string | false) => void;
-  hasErrors: () => boolean;
+  validateFormData: () => boolean;
+  cleanFormData: () => T;
 }
 
 /**
@@ -49,23 +49,43 @@ export const createEditForm = <T extends IFormData>(): [
     data: Partial<T>;
     children: React.ReactNode;
   }) => {
-    const { formData, setField, setFields, fieldSetter } = useFormData<T>(data);
-    const { formErrors, setError } = useFormErrors<T>();
+    const { formData, setField } = useFormData<T>(data);
+    const { formErrors, setError, setErrors } = useFormErrors<T>();
+    const validators = useRef<Function[]>([]);
+    const errs = useRef<IFormErrors<T>>({} as IFormErrors<T>);
 
     // Validates a field; callback returns false when nothing is wrong.
     const addValidator = (
       field: keyof T,
       hasError: (value: any) => string | false
     ) => {
-      const error = hasError(formData[field]);
-      if (typeof error === "boolean") return;
-      else setError(field, error);
+      validators.current.push((data: T) => {
+        const error = hasError(data[field]);
+        if (typeof error === "boolean") return false; // NO ERROR OCCURED
+        else errs.current[field] = error;
+        return true; // AN ERROR OCCURED
+      });
     };
 
-    // Checks if any errors exist
-    const hasErrors = () => {
-      for (const k in formErrors) if (formErrors[k].trim()) return true;
-      return false;
+    // Validates all fields with validators
+    // Run map first to execute all validations
+    // Returns true if good to go!
+    const validateFormData = () => {
+      errs.current = {} as IFormErrors<T>;
+      const result = !validators.current
+        .map((validator) => validator(formData))
+        .some((r) => r);
+      setErrors(errs.current);
+      return result;
+    };
+
+    // Cleans the data and providses undefined defaults
+    const cleanFormData = () => {
+      const result: { [k in keyof T]: any } = {} as T;
+      for (const field in formData) {
+        result[field] = formData[field] ?? undefined;
+      }
+      return result;
     };
 
     return (
@@ -73,11 +93,11 @@ export const createEditForm = <T extends IFormData>(): [
         value={{
           formData,
           formErrors,
-          setField,
-          setFields,
-          fieldSetter,
+          setField: (k, v) => (setError(k, null), setField(k, v)),
+          fieldSetter: (k) => (v) => (setError(k, null), setField(k, v)),
           addValidator,
-          hasErrors,
+          validateFormData,
+          cleanFormData,
         }}
       >
         {children}
@@ -96,6 +116,7 @@ export const createEditForm = <T extends IFormData>(): [
 interface FormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   setter?: (value: any) => void;
+  required?: boolean;
   className?: string;
 }
 
@@ -103,6 +124,7 @@ export const FormInput = ({
   label,
   value,
   setter,
+  required = true,
   className,
   ...props
 }: FormInputProps) => {
@@ -110,7 +132,7 @@ export const FormInput = ({
     <div>
       {label && (
         <label className="text-xs text-gray-400 italic mb-1 block">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <Input
@@ -132,6 +154,7 @@ interface FormDropdownProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
+  required?: boolean;
   setter?: (value: any) => void;
   className?: string;
 }
@@ -141,6 +164,7 @@ export const FormDropdown = ({
   value,
   options,
   setter,
+  required = true,
   className,
   ...props
 }: FormDropdownProps) => {
@@ -148,7 +172,7 @@ export const FormDropdown = ({
     <div>
       {label && (
         <label className="text-xs text-gray-400 italic mb-1 block">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <GroupableRadioDropdown

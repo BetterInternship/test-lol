@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-15 00:52:43
- * @ Modified time: 2025-07-03 05:19:40
+ * @ Modified time: 2025-07-03 07:17:22
  * @ Description:
  *
  * Form data utility so we don't pollute our components with too much logic.
@@ -14,7 +14,7 @@ export interface IFormData {
 }
 
 export type IFormErrors<T extends IFormData> = {
-  [K in keyof T]: string;
+  [K in keyof T]: string | null;
 };
 
 /**
@@ -66,15 +66,24 @@ export const useFormErrors = <T extends IFormData>() => {
   );
 
   // Sets and individual filter
-  const setError = (field: keyof T, value: string) => {
+  const setError = (field: keyof T, value: string | null) => {
     setFormErrors({
       ...formErrors,
       [field]: value,
     });
   };
 
+  // Sets multiple errors
+  const setErrors = (partialErrors: Partial<IFormErrors<T>>) => {
+    setFormErrors({
+      ...formErrors,
+      ...partialErrors,
+    });
+  };
+
   return {
     formErrors,
+    setErrors,
     setError,
   };
 };
