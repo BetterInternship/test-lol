@@ -27,7 +27,7 @@ function TestimonialCard({
   return (
     <div
       className={cn(
-        isMobile ? "h-16 w-28" : "h-20 w-36",
+        isMobile ? "h-16 w-28" : "h-16 w-24",
         "overflow-hidden cursor-pointer hover:scale-105 transition-all duration-200 flex items-center justify-center p-3"
       )}
       onClick={() => handleSearchClick(name)}

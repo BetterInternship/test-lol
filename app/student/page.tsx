@@ -264,7 +264,7 @@ export default function HomePage() {
           <div className="w-full mt-8 px-2">
             <div className="text-center">
               <h2 className="text-base font-semibold text-gray-700 tracking-wide">
-                Trusted by the Biggest Philippine Companies.
+                Internships From These Companies and More.
               </h2>
             </div>
             <MobileJobScroller />
@@ -276,7 +276,7 @@ export default function HomePage() {
           <div className="w-full max-w-4xl mt-12">
             <div className="text-center">
               <h2 className="text-base font-semibold text-gray-700 tracking-wide">
-                Trusted by the Biggest Philippine Companies.
+                Internships From These Companies and More.
               </h2>
             </div>
             <JobScroller />

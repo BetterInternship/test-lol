@@ -7,12 +7,12 @@ export default function Page() {
         <ScrollingTestimonials
           data={[
             {
-              image: "/logos/manulife.png",
-              name: "Manulife",
-            },
-            {
               image: "/logos/jollibee.png",
               name: "Jollibee",
+            },
+            {
+              image: "/logos/manulife.png",
+              name: "Manulife",
             },
             {
               image: "/logos/sunlife.png",
