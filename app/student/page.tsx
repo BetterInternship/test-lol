@@ -262,6 +262,11 @@ export default function HomePage() {
         {/* Mobile Job Suggestions - Mobile specific layout */}
         {is_mobile && (
           <div className="w-full mt-8 px-2">
+            <div className="text-center">
+              <h2 className="text-base font-semibold text-gray-700 tracking-wide">
+                Trusted by the Biggest Philippine Companies.
+              </h2>
+            </div>
             <MobileJobScroller />
           </div>
         )}
