@@ -15,7 +15,7 @@ export default function Page() {
               name: "Manulife",
             },
             {
-              image: "/logos/Sunlife.png",
+              image: "/logos/SunLife.png",
               name: "Sun Life Financial",
             },
             {
