@@ -7,27 +7,27 @@ export default function Page() {
         <ScrollingTestimonials
           data={[
             {
-              image: "/logos/jollibee.png",
+              image: "/logos/Jollibee.png",
               name: "Jollibee",
             },
             {
-              image: "/logos/manulife.png",
+              image: "/logos/Manulife.png",
               name: "Manulife",
             },
             {
-              image: "/logos/sunlife.png",
+              image: "/logos/Sunlife.png",
               name: "Sun Life Financial",
             },
             {
-              image: "/logos/oracle.png",
+              image: "/logos/Oracle.png",
               name: "Oracle",
             },
             {
-              image: "/logos/alaska.png",
+              image: "/logos/Alaska.png",
               name: "Alaska Milk Corporation",
             },
             {
-              image: "/logos/wwf.png",
+              image: "/logos/WWF.png",
               name: "WWF",
             },
             {
@@ -35,7 +35,7 @@ export default function Page() {
               name: "Asian Institute of Management",
             },
             {
-              image: "/logos/apc.jpeg",
+              image: "/logos/APC.jpeg",
               name: "APC",
             },
           ]}
