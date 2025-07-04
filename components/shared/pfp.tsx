@@ -84,7 +84,7 @@ export const EmployerPfp = ({
     <Pfp
       id={employer_id}
       size={size}
-      source={"employers"}
+      source={"employer"}
       pfp_fetcher={pfp_fetcher}
     />
   );

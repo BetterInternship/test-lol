@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { Edit2 } from "lucide-react";
+import { Camera, Edit2 } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
@@ -16,23 +16,66 @@ import { useRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/our-card";
 import { Employer } from "@/lib/db/db.types";
-import { cn, isValidEmail, isValidPHNumber } from "@/lib/utils";
+import { cn, isValidEmail, isValidPHNumber, isValidUUID } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { Divider } from "@/components/ui/divider";
 import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
+import { MyEmployerPfp } from "@/components/shared/pfp";
+import { FileUploadFormBuilder } from "@/lib/multipart-form";
+import { EmployerService } from "@/lib/api/api";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
 export default function CompanyProfile() {
-  const { loading, error, profile } = useProfile();
+  const { loading, error, profile, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const { check } = useMoa();
   const { get_university_by_name } = useRefs();
   const { to_industry_name } = useRefs();
   const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
+  const profilePictureInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProfilePictureUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Please upload a JPEG, PNG, GIF, or WebP image");
+      return;
+    }
+
+    if (file.size > (1024 * 1024) / 4) {
+      alert("Image size must be less than 0.25MB");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const form = FileUploadFormBuilder.new("logo");
+      form.file(file);
+      // @ts-ignore
+      const result = await EmployerService.updateMyPfp(form.build());
+      if (!result.success) {
+        alert("Could not upload profile picture.");
+        return;
+      }
+      alert("Profile picture uploaded successfully!");
+    } catch (error: any) {
+      alert(error.message || "Failed to upload profile picture");
+    } finally {
+      setUploading(false);
+      if (profilePictureInputRef.current) {
+        profilePictureInputRef.current.value = "";
+      }
+    }
+  };
 
   return !profile ? (
     <></>
@@ -40,6 +83,25 @@ export default function CompanyProfile() {
     <ContentLayout>
       <div className="h-fit min-h-screen bg-background p-6 py-12 w-full">
         <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
+          <div className="relative flex-shrink-0">
+            <MyEmployerPfp size="36" />
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+              onClick={() => profilePictureInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Camera className="h-3 w-3" />
+            </Button>
+            <input
+              type="file"
+              ref={profilePictureInputRef}
+              onChange={handleProfilePictureUpload}
+              accept="image/*"
+              style={{ display: "none" }}
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
               {profile.name}
@@ -62,12 +124,12 @@ export default function CompanyProfile() {
                   onValue="Verified"
                   offValue="Not Verified"
                 />
-                {profile.industry && (
+                {to_industry_name(profile.industry, null) && (
                   <Badge>{to_industry_name(profile.industry)}</Badge>
                 )}
               </div>
             </p>
-            <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-10">
+            <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-4">
               {isEditing ? (
                 <div className="flex gap-2 w-full sm:w-auto">
                   <Button
@@ -80,7 +142,7 @@ export default function CompanyProfile() {
                   <Button
                     onClick={async () => {
                       setSaving(true);
-                      // await profileEditorRef.current?.save();
+                      await profileEditorRef.current?.save();
                       setSaving(false);
                       setIsEditing(false);
                     }}
@@ -104,8 +166,7 @@ export default function CompanyProfile() {
           {isEditing && (
             <ProfileEditForm data={profile}>
               <ProfileEditor
-                // @ts-ignore
-                updateProfile={() => {}} // updateProfile}
+                updateProfile={updateProfile}
                 ref={profileEditorRef}
               />
             </ProfileEditForm>
@@ -201,7 +262,6 @@ const ProfileEditor = forwardRef<
     validateFormData,
     cleanFormData,
   } = useProfileEditForm();
-  const { isMobile } = useAppContext();
   const { industries } = useRefs();
 
   // Provide an external link to save profile
@@ -210,7 +270,10 @@ const ProfileEditor = forwardRef<
       try {
         const updatedProfile = {
           ...cleanFormData(),
-          portfolio_link: toURL(formData.website)?.toString(),
+          website: toURL(formData.website)?.toString(),
+          industry: isValidUUID(formData.industry ?? "")
+            ? formData.industry
+            : undefined,
         };
         await updateProfile(updatedProfile);
         return;
@@ -254,22 +317,23 @@ const ProfileEditor = forwardRef<
         <div className="flex flex-col space-y-1 mb-2">
           <ErrorLabel value={formErrors.name} />
         </div>
-        <div
-          className={cn(
-            "mb-4",
-            isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
-          )}
-        >
+        <div className={"mb-4 flex flex-col space-y-3"}>
           <FormInput
             label="Company Name"
             value={formData.name ?? ""}
             setter={fieldSetter("name")}
             maxLength={32}
           />
+          <FormInput
+            label="Legal Entity Name"
+            value={formData.legal_entity_name ?? ""}
+            setter={fieldSetter("legal_entity_name")}
+            maxLength={32}
+          />
           <FormDropdown
             label="Industry"
             value={formData.industry ?? ""}
-            options={industries}
+            options={industries.sort((a, b) => a.name.localeCompare(b.name))}
             setter={fieldSetter("industry")}
           />
         </div>
@@ -281,17 +345,15 @@ const ProfileEditor = forwardRef<
           onChange={(e) => setField("description", e.target.value)}
           placeholder="Let applicants know what they're in for..."
           className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
-          maxLength={500}
+          maxLength={750}
         />
         <p className="text-xs text-muted-foreground text-right">
-          {(formData.description || "").length}/500 characters
+          {(formData.description || "").length}/750 characters
         </p>
         <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
           Contact Information
         </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.email} />
-        </div>
+        <ErrorLabel value={formErrors.email} />
         <div className="mb-8">
           <FormInput
             label="Company Email"
@@ -299,9 +361,7 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("email")}
           />
         </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.phone_number} />
-        </div>
+        <ErrorLabel value={formErrors.phone_number} />
         <div className="mb-8">
           <FormInput
             label="Phone Number"
@@ -309,9 +369,7 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("phone_number")}
           />
         </div>
-        <div className="flex flex-col space-y-1 mb-2">
-          <ErrorLabel value={formErrors.website} />
-        </div>
+        <ErrorLabel value={formErrors.website} />
         <div className="mb-8">
           <FormInput
             label="Website"

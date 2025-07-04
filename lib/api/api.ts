@@ -32,6 +32,14 @@ export const EmployerService = {
       data
     );
   },
+
+  async updateMyPfp(file: Blob | null) {
+    return APIClient.put<ResourceHashResponse>(
+      APIRoute("employer").r("me", "pic").build(),
+      file,
+      "form-data"
+    );
+  },
 };
 
 // Auth Services
