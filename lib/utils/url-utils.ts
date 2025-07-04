@@ -5,7 +5,7 @@
  * @param url
  * @returns
  */
-export const toURL = (url: string | null): URL | null =>
+export const toURL = (url?: string | null): URL | null =>
   !url
     ? null
     : !url.toLowerCase().startsWith("http://") &&

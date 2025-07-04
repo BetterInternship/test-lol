@@ -1,6 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { Edit2 } from "lucide-react";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
@@ -9,13 +15,15 @@ import { useMoa } from "@/lib/db/use-moa";
 import { useRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/our-card";
-import { useFormData } from "@/lib/form-data";
 import { Employer } from "@/lib/db/db.types";
-import { cn } from "@/lib/utils";
+import { cn, isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { Divider } from "@/components/ui/divider";
-import { openURL } from "@/lib/utils/url-utils";
-import { LabeledProperty } from "@/components/ui/labels";
+import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
+import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
+import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
+
+const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
 export default function CompanyProfile() {
   const { loading, error, profile } = useProfile();
@@ -24,18 +32,13 @@ export default function CompanyProfile() {
   const { check } = useMoa();
   const { get_university_by_name } = useRefs();
   const { to_industry_name } = useRefs();
-
-  const handleSave = () => {
-    // Here you would typically save all data to a backend
-    console.log("Saving company data:", profile);
-    setIsEditing(false);
-  };
+  const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
 
   return !profile ? (
     <></>
   ) : (
     <ContentLayout>
-      <div className="min-h-screen bg-background p-6 py-12">
+      <div className="h-fit min-h-screen bg-background p-6 py-12 w-full">
         <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
           <div className="flex-1 min-w-0">
             <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
@@ -96,16 +99,17 @@ export default function CompanyProfile() {
           </div>
         </div>
 
-        <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
+        <div className="w-full max-w-[600px] m-auto space-y-2 mt-8 ">
           {!isEditing && <ProfileDetails profile={profile} />}
-          {/* {isEditing && (
-            // <ProfileEditForm data={profile}>
-            //   <ProfileEditor
-            //     updateProfile={updateProfile}
-            //     ref={profileEditorRef}
-            //   />
-            // </ProfileEditForm>
-          )} */}
+          {isEditing && (
+            <ProfileEditForm data={profile}>
+              <ProfileEditor
+                // @ts-ignore
+                updateProfile={() => {}} // updateProfile}
+                ref={profileEditorRef}
+              />
+            </ProfileEditForm>
+          )}
         </div>
       </div>
     </ContentLayout>
@@ -179,3 +183,145 @@ const ProfileLinkBadge = ({
     </Button>
   );
 };
+
+const ProfileEditor = forwardRef<
+  { save: () => Promise<void> },
+  {
+    updateProfile: (
+      updatedProfile: Partial<Employer>
+    ) => Promise<Partial<Employer>>;
+  }
+>(({ updateProfile }, ref) => {
+  const {
+    formData,
+    formErrors,
+    setField,
+    fieldSetter,
+    addValidator,
+    validateFormData,
+    cleanFormData,
+  } = useProfileEditForm();
+  const { isMobile } = useAppContext();
+  const { industries } = useRefs();
+
+  // Provide an external link to save profile
+  useImperativeHandle(ref, () => ({
+    save: async () => {
+      try {
+        const updatedProfile = {
+          ...cleanFormData(),
+          portfolio_link: toURL(formData.website)?.toString(),
+        };
+        await updateProfile(updatedProfile);
+        return;
+      } catch (error) {
+        console.error("Failed to update profile:", error);
+        alert("Failed to update profile. Please try again.");
+        return;
+      }
+    },
+  }));
+
+  // Update dropdown options
+  useEffect(() => {
+    const debouncedValidation = setTimeout(() => validateFormData(), 500);
+    return () => clearTimeout(debouncedValidation);
+  }, [formData]);
+
+  // Data validators
+  useEffect(() => {
+    addValidator(
+      "phone_number",
+      (number: string) =>
+        !isValidPHNumber(number) && "Invalid Philippine number."
+    );
+    addValidator(
+      "phone_number",
+      (email: string) => !isValidEmail(email) && "Invalid Philippine number."
+    );
+    addValidator(
+      "website",
+      (link: string) => !isValidOptionalURL(link) && "Invalid website link."
+    );
+  }, []);
+
+  return (
+    <>
+      <Card>
+        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+          Identity
+        </div>
+        <div className="flex flex-col space-y-1 mb-2">
+          <ErrorLabel value={formErrors.name} />
+        </div>
+        <div
+          className={cn(
+            "mb-4",
+            isMobile ? "flex flex-col space-y-3" : "flex flex-row space-x-2"
+          )}
+        >
+          <FormInput
+            label="Company Name"
+            value={formData.name ?? ""}
+            setter={fieldSetter("name")}
+            maxLength={32}
+          />
+          <FormDropdown
+            label="Industry"
+            value={formData.industry ?? ""}
+            options={industries}
+            setter={fieldSetter("industry")}
+          />
+        </div>
+        <label className="text-xs text-gray-400 italic mb-1 block">
+          Description
+        </label>
+        <textarea
+          value={formData.description || ""}
+          onChange={(e) => setField("description", e.target.value)}
+          placeholder="Let applicants know what they're in for..."
+          className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm min-h-24 resize-none focus:border-opacity-70 focus:ring-transparent"
+          maxLength={500}
+        />
+        <p className="text-xs text-muted-foreground text-right">
+          {(formData.description || "").length}/500 characters
+        </p>
+        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+          Contact Information
+        </div>
+        <div className="flex flex-col space-y-1 mb-2">
+          <ErrorLabel value={formErrors.email} />
+        </div>
+        <div className="mb-8">
+          <FormInput
+            label="Company Email"
+            value={formData.email ?? ""}
+            setter={fieldSetter("email")}
+          />
+        </div>
+        <div className="flex flex-col space-y-1 mb-2">
+          <ErrorLabel value={formErrors.phone_number} />
+        </div>
+        <div className="mb-8">
+          <FormInput
+            label="Phone Number"
+            value={formData.phone_number ?? ""}
+            setter={fieldSetter("phone_number")}
+          />
+        </div>
+        <div className="flex flex-col space-y-1 mb-2">
+          <ErrorLabel value={formErrors.website} />
+        </div>
+        <div className="mb-8">
+          <FormInput
+            label="Website"
+            value={formData.website ?? ""}
+            setter={fieldSetter("website")}
+          />
+        </div>
+      </Card>
+      <br />
+      <br />
+    </>
+  );
+});

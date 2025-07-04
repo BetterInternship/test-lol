@@ -147,7 +147,7 @@ export default function ProfilePage() {
   return (
     profile && (
       <>
-        <div className="min-h-screen bg-background p-6 py-12">
+        <div className="min-h-screen bg-transparent p-6 py-12 w-full">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
               <MyPfp size="36" />
@@ -289,7 +289,7 @@ const ProfileDetails = ({
 
   return (
     <>
-      <Card className="bg-muted/50 p-3 px-5 overflow-hidden text-wrap">
+      <Card className="bg-white p-3 px-5 overflow-hidden text-wrap">
         <p className="text-sm leading-relaxed">
           {profile.bio || (
             <span className="text-muted-foreground italic">
@@ -491,7 +491,7 @@ const ProfileEditor = forwardRef<
   return (
     <>
       <Card>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 mb-4">
           Identity
         </div>
         <div className="flex flex-col space-y-1 mb-2">
@@ -534,7 +534,7 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("phone_number")}
           />
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-6 mt-12">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6 mt-12">
           Personal Bio
         </div>
         <textarea
@@ -547,7 +547,7 @@ const ProfileEditor = forwardRef<
         <p className="text-xs text-muted-foreground text-right">
           {(formData.bio || "").length}/500 characters
         </p>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-6">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6">
           Educational Background
         </div>
         <div className="flex flex-col space-y-3">
@@ -607,7 +607,7 @@ const ProfileEditor = forwardRef<
             )}
           </div>
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-4 mt-12">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-4 mt-12">
           External Profiles
         </div>
         <div className="flex flex-col space-y-1 mb-2">
