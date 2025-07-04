@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { useEmployers, useUsers } from "@/lib/api/use-god-api";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthContext } from "../authctx";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { cn, formatDate } from "@/lib/utils";
 import { getFullName } from "@/lib/utils/user-utils";
 import { BooleanCheckIcon } from "@/components/ui/icons";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { useRefs } from "@/lib/db/use-refs";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -18,7 +20,14 @@ export default function GodLandingPage() {
   const { users } = useUsers();
   const [search_name, set_search_name] = useState<string | null>();
   const [selected, set_selected] = useState("");
+  const { to_app_status_name } = useRefs();
   const router = useRouter();
+  const applications = useMemo(() => {
+    const apps: EmployerApplication[] = [];
+    // @ts-ignore
+    employers.forEach((e) => e?.applications?.map((a) => apps.push(a)));
+    return apps;
+  }, [employers]);
 
   // Redirect if no employers found (not god)
   useEffect(() => {
@@ -80,6 +89,16 @@ export default function GodLandingPage() {
                       : "Unverify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
+                  <Badge
+                    // @ts-ignore
+                    type={!e?.applications?.length ? "destructive" : "default"}
+                  >
+                    {
+                      // @ts-ignore
+                      e?.applications?.length ?? 0
+                    }{" "}
+                    applications
+                  </Badge>
                   <Badge type={e.is_verified ? "supportive" : "destructive"}>
                     <BooleanCheckIcon checked={e.is_verified} />
                     {e.is_verified ? "verified" : "unverified"}
@@ -129,6 +148,16 @@ export default function GodLandingPage() {
                     {loading && e.id === selected ? "Verifying..." : "Verify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
+                  <Badge
+                    // @ts-ignore
+                    type={!e?.applications?.length ? "destructive" : "default"}
+                  >
+                    {
+                      // @ts-ignore
+                      e?.applications?.length ?? 0
+                    }{" "}
+                    applications
+                  </Badge>
                   <BoolBadge
                     state={e.is_verified}
                     onValue="verified"
@@ -175,6 +204,49 @@ export default function GodLandingPage() {
 
                   <Badge strength="medium">
                     {formatDate(u.created_at ?? "")}
+                  </Badge>
+                </div>
+              ))}
+          </div>
+        </Tab>
+
+        <Tab name="applications">
+          <div className="absolute w-full px-4 py-4 border-b">
+            <Autocomplete
+              setter={set_search_name}
+              options={applications.map(
+                (a) => `${a.job?.employers?.name} ${getFullName(a.users)}`
+              )}
+              placeholder="Search name..."
+            ></Autocomplete>
+          </div>
+          <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
+            {applications
+              .filter((a) =>
+                `${a.job?.employers?.name} ${getFullName(a.users)}`
+                  ?.toLowerCase()
+                  .includes(search_name?.toLowerCase() ?? "")
+              )
+              .toSorted(
+                (a, b) =>
+                  new Date(b.applied_at ?? "").getTime() -
+                  new Date(a.applied_at ?? "").getTime()
+              )
+              .map((a) => (
+                <div
+                  key={a.id}
+                  className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
+                >
+                  <div className="text-gray-700 w-full">
+                    {a.users?.email}{" "}
+                    <Badge strength="medium">{a?.jobs?.title}</Badge>
+                  </div>
+
+                  <Badge strength="medium">
+                    {to_app_status_name(a.status)}
+                  </Badge>
+                  <Badge strength="medium">
+                    {formatDate(a.applied_at ?? "")}
                   </Badge>
                 </div>
               ))}
