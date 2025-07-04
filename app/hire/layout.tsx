@@ -27,15 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AppContextProvider>
-      <AuthContextProvider>
-        <RefsContextProvider>
-          <MoaContextProvider>
-            <HTMLContent>{children}</HTMLContent>
-          </MoaContextProvider>
-        </RefsContextProvider>
-      </AuthContextProvider>
-    </AppContextProvider>
+    <RefsContextProvider>
+      <MoaContextProvider>
+        <HTMLContent>{children}</HTMLContent>
+      </MoaContextProvider>
+    </RefsContextProvider>
   );
 }
 
@@ -53,20 +49,26 @@ const HTMLContent = ({
 
   return (
     <TanstackProvider>
-      <TooltipProvider>
-        <Sonner />
-        <PostHogProvider>
-          <html lang="en" className="overflow-hidden">
-            <body>
-              <div className="h-screen bg-gray-50 flex flex-col">
-                <Header />
-                <div className="flex-grow overflow-auto flex">{children}</div>
-                <Footer />
-              </div>
-            </body>
-          </html>
-        </PostHogProvider>
-      </TooltipProvider>
+      <AppContextProvider>
+        <AuthContextProvider>
+          <TooltipProvider>
+            <Sonner />
+            <PostHogProvider>
+              <html lang="en" className="overflow-hidden">
+                <body>
+                  <div className="h-screen bg-gray-50 flex flex-col">
+                    <Header />
+                    <div className="flex-grow overflow-auto flex">
+                      {children}
+                    </div>
+                    <Footer />
+                  </div>
+                </body>
+              </html>
+            </PostHogProvider>
+          </TooltipProvider>
+        </AuthContextProvider>
+      </AppContextProvider>
     </TanstackProvider>
   );
 };

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { employer_auth_service } from "@/lib/api/employer.api";
 import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
@@ -47,13 +48,14 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [proxy, set_proxy] = useState("");
+  const [proxy, setProxy] = useState("");
   const [is_loading, set_is_loading] = useState(true);
   const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("isAuthenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
+  const queryClient = useQueryClient();
   const [god, setGod] = useState(false);
   const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
     if (typeof window === "undefined") return null;
@@ -119,7 +121,9 @@ export const AuthContextProvider = ({
       return null;
     }
 
-    set_proxy(getFullName(response.user));
+    queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    setProxy(getFullName(response.user));
+    setUser(response.user);
     return response.user;
   };
 
