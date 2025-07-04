@@ -16,7 +16,7 @@ export default function Page() {
             },
             {
               image: "/logos/SunLife.png",
-              name: "Sun Life Financial",
+              name: "Sun Life",
             },
             {
               image: "/logos/Oracle.png",
