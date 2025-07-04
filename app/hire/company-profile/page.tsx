@@ -212,7 +212,10 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
               : "grid grid-cols-2 gap-y-5"
           )}
         >
+          <LabeledProperty label="Email" value={profile.email} />
+          <LabeledProperty label="Phone Number" value={profile.phone_number} />
           <LabeledProperty label="Location" value={profile.location} />
+          <LabeledProperty label="Website" value={profile.website} />
         </div>
         <Divider />
         <div
