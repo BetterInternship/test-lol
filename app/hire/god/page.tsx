@@ -215,7 +215,10 @@ export default function GodLandingPage() {
             <Autocomplete
               setter={set_search_name}
               options={applications.map(
-                (a) => `${a.job?.employers?.name} ${getFullName(a.users)}`
+                (a) =>
+                  `${a.job?.employers?.name} ${getFullName(a.users)} ${
+                    a.jobs?.employers?.name
+                  }`
               )}
               placeholder="Search name..."
             ></Autocomplete>
@@ -223,7 +226,9 @@ export default function GodLandingPage() {
           <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {applications
               .filter((a) =>
-                `${a.job?.employers?.name} ${getFullName(a.users)}`
+                `${a.job?.employers?.name} ${getFullName(a.users)} ${
+                  a.jobs?.employers?.name
+                }`
                   ?.toLowerCase()
                   .includes(search_name?.toLowerCase() ?? "")
               )
@@ -237,11 +242,11 @@ export default function GodLandingPage() {
                   key={a.id}
                   className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
                 >
-                  <div className="text-gray-700 w-full">
-                    {a.users?.email}{" "}
+                  <div className="text-gray-700 w-full flex flex-row space-x-2">
+                    <div className="inline-block">{a.users?.email} </div>
                     <Badge strength="medium">{a?.jobs?.title}</Badge>
+                    <Badge strength="medium">{a.jobs?.employers?.name}</Badge>
                   </div>
-
                   <Badge strength="medium">
                     {to_app_status_name(a.status)}
                   </Badge>
