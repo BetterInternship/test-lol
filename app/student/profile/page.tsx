@@ -42,7 +42,7 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
 import { cn, isValidPHNumber } from "@/lib/utils";
-import { MyPfp } from "@/components/shared/pfp";
+import { MyUserPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
@@ -99,9 +99,9 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a JPEG, PNG, GIF, or WebP image");
+      alert("Please upload a JPEG, PNG, or WebP image");
       return;
     }
 
@@ -147,10 +147,10 @@ export default function ProfilePage() {
   return (
     profile && (
       <>
-        <div className="min-h-screen bg-background p-6 py-12">
+        <div className="min-h-screen bg-transparent p-6 py-12 w-full">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
-              <MyPfp size="36" />
+              <MyUserPfp size="36" />
               <Button
                 variant="outline"
                 size="icon"
@@ -254,7 +254,7 @@ export default function ProfilePage() {
         <EmployerModal>
           <ApplicantModalContent
             applicant={profile}
-            pfp_fetcher={UserService.getMyPfpURL}
+            pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeEmployerModal();
@@ -289,7 +289,7 @@ const ProfileDetails = ({
 
   return (
     <>
-      <Card className="bg-muted/50 p-3 px-5 overflow-hidden text-wrap">
+      <Card className="bg-white p-3 px-5 overflow-hidden text-wrap">
         <p className="text-sm leading-relaxed">
           {profile.bio || (
             <span className="text-muted-foreground italic">
@@ -425,7 +425,7 @@ const ProfileEditor = forwardRef<
     );
     setCollegeOptions(
       colleges.filter((c) =>
-        get_colleges_by_university(formData.university).includes(c.id)
+        get_colleges_by_university(formData.university ?? "").includes(c.id)
       )
     );
     setDepartmentOptions(
@@ -491,7 +491,7 @@ const ProfileEditor = forwardRef<
   return (
     <>
       <Card>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 mb-4">
           Identity
         </div>
         <div className="flex flex-col space-y-1 mb-2">
@@ -534,7 +534,7 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("phone_number")}
           />
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-6 mt-12">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6 mt-12">
           Personal Bio
         </div>
         <textarea
@@ -547,7 +547,7 @@ const ProfileEditor = forwardRef<
         <p className="text-xs text-muted-foreground text-right">
           {(formData.bio || "").length}/500 characters
         </p>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-6">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6">
           Educational Background
         </div>
         <div className="flex flex-col space-y-3">
@@ -607,7 +607,7 @@ const ProfileEditor = forwardRef<
             )}
           </div>
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-4 mt-12">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-4 mt-12">
           External Profiles
         </div>
         <div className="flex flex-col space-y-1 mb-2">

@@ -8,6 +8,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const isValidUUID = (uuid: string) => {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    uuid
+  );
+};
+
 export const getURL = () => {
   let url =
     process?.env?.NEXT_PUBLIC_SITE_URL ?? // Production Url
@@ -54,7 +60,7 @@ export function isValidEmail(email?: string | null) {
 }
 
 export const normalizePhoneNumber = (
-  phoneNumber: string | null | undefined,
+  phoneNumber: string | null | undefined
 ): string | null => {
   if (!phoneNumber) {
     return null;
@@ -80,14 +86,14 @@ export const normalizePhoneNumber = (
     }
   }
   console.warn(
-    `Could not normalize phone number: "${phoneNumber}" to a valid PH mobile format.`,
+    `Could not normalize phone number: "${phoneNumber}" to a valid PH mobile format.`
   );
   return null;
 };
 
 export const isPhoneNumberSame = (
   num1: string | null | undefined,
-  num2: string | null | undefined,
+  num2: string | null | undefined
 ): boolean => {
   if (!num1 || !num2) return false;
   const normalizedNum1 = normalizePhoneNumber(num1);
@@ -97,7 +103,7 @@ export const isPhoneNumberSame = (
 
 export const createSearchFilterString = (
   columns: string[],
-  searchTerm: string,
+  searchTerm: string
 ): string => {
   if (!searchTerm || searchTerm.trim() === "") {
     return "";

@@ -13,7 +13,7 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
 import { useFile } from "@/hooks/use-file";
 import { UserService } from "@/lib/api/api";
-import { Pfp } from "@/components/shared/pfp";
+import { UserPfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
 import ContentLayout from "@/components/features/hire/content-layout";
@@ -125,7 +125,9 @@ export default function Dashboard() {
                             <td className="px-4 py-2">
                               <div className="flex items-center gap-3">
                                 {application.user?.id && (
-                                  <Pfp user_id={application.user?.id}></Pfp>
+                                  <UserPfp
+                                    user_id={application.user?.id}
+                                  ></UserPfp>
                                 )}
                                 <div>
                                   <p className="font-medium text-gray-900">
@@ -217,6 +219,7 @@ export default function Dashboard() {
 
           <ApplicantModal>
             <ApplicantModalContent
+              is_employer={true}
               clickable={true}
               pfp_fetcher={async () =>
                 UserService.getUserPfpURL(selected_application?.user?.id ?? "")

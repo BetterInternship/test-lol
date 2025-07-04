@@ -93,7 +93,9 @@ const ContentLayout: React.FC<ContentLayoutProps> = ({ children }) => {
             </SheetContent>
           </Sheet>
         </header>
-        <main className=" flex-1 flex overflow-auto">{children}</main>
+        <main className="flex-1 flex overflow-auto justify-center bg-white">
+          {children}
+        </main>
       </div>
     </>
   );

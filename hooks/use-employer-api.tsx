@@ -5,20 +5,29 @@ import {
   ApplicationService,
   EmployerService,
 } from "@/lib/api/api";
-import { EmployerApplication, Job } from "@/lib/db/db.types";
+import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useProfile() {
+  const queryClient = useQueryClient();
   const { isPending, data, error } = useQuery({
     queryKey: ["my-employer-profile"],
     queryFn: () => EmployerService.getMyProfile(),
   });
 
+  const updateProfile = async (updatedProfile: Partial<Employer>) => {
+    const response = await EmployerService.updateMyProfile(updatedProfile);
+    if (response.success)
+      queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    return response.employer;
+  };
+
   return {
     loading: isPending,
     error: error,
     profile: data?.employer,
+    updateProfile,
   };
 }
 

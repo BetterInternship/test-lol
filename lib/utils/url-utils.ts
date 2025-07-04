@@ -5,13 +5,13 @@
  * @param url
  * @returns
  */
-export const toURL = (url: string | null): URL | null =>
+export const toURL = (url?: string | null): URL | null =>
   !url
     ? null
     : !url.toLowerCase().startsWith("http://") &&
       !url.toLowerCase().startsWith("https://")
-    ? URL.parse("https://" + url)
-    : URL.parse(url);
+    ? new URL("https://" + url)
+    : new URL(url);
 
 /**
  * Checks if the URL is valid.

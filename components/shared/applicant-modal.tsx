@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-07-01 23:57:24
+ * @ Modified time: 2025-07-04 15:59:08
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -24,14 +24,14 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { getFullName } from "@/lib/utils/user-utils";
+import { MyUserPfp, UserPfp } from "./pfp";
 
 export const ApplicantModalContent = ({
   applicant = {} as Partial<PublicUser>,
   clickable = true,
-  pfp_fetcher,
-  pfp_route,
   open_resume,
   open_calendar,
+  is_employer = false,
   job = {} as Partial<Job>,
 }: {
   applicant?: Partial<PublicUser>;
@@ -40,6 +40,7 @@ export const ApplicantModalContent = ({
   pfp_route: string;
   open_resume: () => void;
   open_calendar: () => void;
+  is_employer?: boolean;
   job?: Partial<Job>;
 }) => {
   const {
@@ -48,17 +49,6 @@ export const ApplicantModalContent = ({
     to_job_type_name,
     to_university_name,
   } = useRefs();
-  const { url: pfp_url, sync: sync_pfp_url } = useFile({
-    fetcher: pfp_fetcher,
-    route: pfp_route,
-  });
-
-  // Sync profile picture when modal opens - avoid infinite re-renders
-  useEffect(() => {
-    if (applicant?.id && applicant?.profile_picture) {
-      sync_pfp_url();
-    }
-  }, [applicant?.id, applicant?.profile_picture]); // Removed sync_pfp_url from dependencies
 
   // Handle resume button click - memoize to prevent re-renders
   const handleResumeClick = useCallback(async () => {
@@ -82,16 +72,11 @@ export const ApplicantModalContent = ({
           <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 md:gap-6 mb-3 sm:mb-4 md:mb-6">
             {/* Profile Picture */}
             <div className="flex-shrink-0 self-center sm:self-start">
-              <Avatar className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 lg:h-24 lg:w-24">
-                {pfp_url ? (
-                  <AvatarImage src={pfp_url} alt="Profile picture" />
-                ) : (
-                  <AvatarFallback className="text-sm sm:text-lg md:text-xl font-semibold bg-blue-100 text-blue-700">
-                    {applicant?.first_name?.[0]?.toUpperCase() || ""}
-                    {applicant?.last_name?.[0]?.toUpperCase() || ""}
-                  </AvatarFallback>
-                )}
-              </Avatar>
+              {is_employer ? (
+                <UserPfp user_id={applicant.id ?? ""} size="28" />
+              ) : (
+                <MyUserPfp size="28" />
+              )}
             </div>
 
             {/* Name and Status */}

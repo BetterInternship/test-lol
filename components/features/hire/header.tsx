@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useAuthContext } from "../../../app/hire/authctx";
 import { useRouter } from "next/navigation";
 import { User, LogOut, Building } from "lucide-react";
@@ -13,6 +13,8 @@ import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
 import { getFullName } from "@/lib/utils/user-utils";
 import { MobilePlaceholder } from "@/app/hire/mobile-placeholder";
+import { MyEmployerPfp } from "@/components/shared/pfp";
+import { useProfile } from "@/hooks/use-employer-api";
 
 /**
  * The header present on every page
@@ -20,7 +22,7 @@ import { MobilePlaceholder } from "@/app/hire/mobile-placeholder";
  * @component
  */
 export const Header = () => {
-  const { proxy, god } = useAuthContext();
+  const { god } = useAuthContext();
   const { isMobile: is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
@@ -59,6 +61,7 @@ export const Header = () => {
  */
 export const ProfileButton = () => {
   const router = useRouter();
+  const { profile } = useProfile();
   const { user, is_authenticated, logout } = useAuthContext();
   const { isMobile } = useAppContext();
 
@@ -68,11 +71,11 @@ export const ProfileButton = () => {
     });
   };
 
-  const get_display_name = () => {
-    if (!user) return "User";
-    if (getFullName(user) === "") return "User";
-    return getFullName(user);
-  };
+  const displayName = useMemo(() => {
+    if (!profile) return "Employer";
+    const name = profile?.name ?? "";
+    return name.length > 32 ? name.slice(0, 32) + "..." : name;
+  }, [profile]);
 
   if (isMobile) return <MobilePlaceholder />;
 
@@ -81,12 +84,10 @@ export const ProfileButton = () => {
       <GroupableNavDropdown
         display={
           <>
-            <div className="w-6 h-6 rounded-md border-2 border-gray-400 flex items-center justify-center">
-              <User className="w-4 h-4 text-gray-600" />
+            <div className="overflow-hidden rounded-full flex flex-row items-center justify-center">
+              <MyEmployerPfp size="7" />
             </div>
-            <span className="text-gray-700 font-medium">
-              {is_authenticated() ? get_display_name() : "Account"}
-            </span>
+            {displayName}
           </>
         }
         content={
