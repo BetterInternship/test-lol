@@ -45,36 +45,42 @@ export default function CompanyProfile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a JPEG, PNG, GIF, or WebP image");
-      return;
-    }
-
-    if (file.size > (1024 * 1024) / 4) {
-      alert("Image size must be less than 0.25MB");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const form = FileUploadFormBuilder.new("logo");
-      form.file(file);
-      // @ts-ignore
-      const result = await EmployerService.updateMyPfp(form.build());
-      if (!result.success) {
-        alert("Could not upload profile picture.");
+    const img = new Image();
+    img.onload = async () => {
+      if (img.width !== img.height) {
+        alert("Image must be square!");
         return;
       }
-      alert("Profile picture uploaded successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to upload profile picture");
-    } finally {
-      setUploading(false);
-      if (profilePictureInputRef.current) {
-        profilePictureInputRef.current.value = "";
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        alert("Please upload a JPEG, PNG, or WebP image");
+        return;
       }
-    }
+      if (file.size > (1024 * 1024) / 4) {
+        alert("Image size must be less than 0.25MB");
+        return;
+      }
+      try {
+        setUploading(true);
+        const form = FileUploadFormBuilder.new("logo");
+        form.file(file);
+        // @ts-ignore
+        const result = await EmployerService.updateMyPfp(form.build());
+        if (!result.success) {
+          alert("Could not upload profile picture.");
+          return;
+        }
+        alert("Profile picture uploaded successfully!");
+      } catch (error: any) {
+        alert(error.message || "Failed to upload profile picture");
+      } finally {
+        setUploading(false);
+        if (profilePictureInputRef.current) {
+          profilePictureInputRef.current.value = "";
+        }
+      }
+    };
+    img.src = URL.createObjectURL(file);
   };
 
   return !profile ? (
