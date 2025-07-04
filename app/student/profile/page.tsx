@@ -99,9 +99,9 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a JPEG, PNG, GIF, or WebP image");
+      alert("Please upload a JPEG, PNG, or WebP image");
       return;
     }
 
