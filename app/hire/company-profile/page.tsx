@@ -21,7 +21,12 @@ import { useAppContext } from "@/lib/ctx-app";
 import { Divider } from "@/components/ui/divider";
 import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
-import { createEditForm, FormDropdown, FormInput } from "@/components/EditForm";
+import {
+  createEditForm,
+  FormCheckbox,
+  FormDropdown,
+  FormInput,
+} from "@/components/EditForm";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { EmployerService } from "@/lib/api/api";
@@ -207,7 +212,6 @@ const ProfileDetails = ({ profile }: { profile: Employer }) => {
               : "grid grid-cols-2 gap-y-5"
           )}
         >
-          <LabeledProperty label="Company Name" value={profile.name} />
           <LabeledProperty label="Location" value={profile.location} />
         </div>
         <Divider />
@@ -325,16 +329,22 @@ const ProfileEditor = forwardRef<
         </div>
         <div className={"mb-4 flex flex-col space-y-3"}>
           <FormInput
-            label="Company Name"
+            label="Doing Business As"
             value={formData.name ?? ""}
             setter={fieldSetter("name")}
-            maxLength={32}
+            maxLength={100}
           />
           <FormInput
             label="Legal Entity Name"
             value={formData.legal_entity_name ?? ""}
             setter={fieldSetter("legal_entity_name")}
-            maxLength={32}
+            maxLength={100}
+          />
+          <FormInput
+            label="Location"
+            value={formData.location ?? ""}
+            setter={fieldSetter("location")}
+            maxLength={100}
           />
           <FormDropdown
             label="Industry"
@@ -359,29 +369,44 @@ const ProfileEditor = forwardRef<
         <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
           Contact Information
         </div>
-        <ErrorLabel value={formErrors.email} />
-        <div className="mb-8">
+        <div className="mb-3">
+          <ErrorLabel value={formErrors.email} />
           <FormInput
             label="Company Email"
             value={formData.email ?? ""}
             setter={fieldSetter("email")}
           />
         </div>
-        <ErrorLabel value={formErrors.phone_number} />
-        <div className="mb-8">
+        <div className="mb-3">
+          <ErrorLabel value={formErrors.phone_number} />
           <FormInput
             label="Phone Number"
             value={formData.phone_number ?? ""}
             setter={fieldSetter("phone_number")}
           />
         </div>
-        <ErrorLabel value={formErrors.website} />
-        <div className="mb-8">
+        <div className="mb-3">
+          <ErrorLabel value={formErrors.website} />
           <FormInput
             label="Website"
             value={formData.website ?? ""}
             setter={fieldSetter("website")}
           />
+        </div>
+        <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
+          Miscellaneous
+        </div>
+        <div className="mb-3">
+          <ErrorLabel value={formErrors.website} />
+          <div className="flex flex-row items-center justify-start my-4">
+            <FormCheckbox
+              checked={formData.accepts_non_university}
+              setter={fieldSetter("accepts_non_university")}
+            />
+            <div className="text-sm text-gray-500 ml-3">
+              Accept students outside of DLSU?
+            </div>
+          </div>
         </div>
       </Card>
       <br />
