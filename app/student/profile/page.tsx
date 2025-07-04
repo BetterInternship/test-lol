@@ -425,7 +425,7 @@ const ProfileEditor = forwardRef<
     );
     setCollegeOptions(
       colleges.filter((c) =>
-        get_colleges_by_university(formData.university).includes(c.id)
+        get_colleges_by_university(formData.university ?? "").includes(c.id)
       )
     );
     setDepartmentOptions(
