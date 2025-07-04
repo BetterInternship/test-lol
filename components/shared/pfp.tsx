@@ -2,6 +2,7 @@ import { useFile } from "@/hooks/use-file";
 import { EmployerService, UserService } from "@/lib/api/api";
 import { useCallback, useEffect } from "react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Loader } from "../ui/loader";
 
 /**
  * A profile picture of a given user.
@@ -20,7 +21,7 @@ const Pfp = ({
   pfp_fetcher: () => Promise<any>;
   size?: string;
 }) => {
-  const { url, sync } = useFile({
+  const { url, sync, loading } = useFile({
     route: `/${source}/` + id + "/pic",
     fetcher: pfp_fetcher,
     defaultUrl: "/images/default-pfp.jpg",
@@ -32,9 +33,13 @@ const Pfp = ({
 
   return (
     <Avatar
-      className={`w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
+      className={`relative w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
     >
-      <img src={url}></img>
+      {loading ? (
+        <div className="animate-spin rounded-full w-[100%] h-[100%] border-b-2 border-primary mx-auto"></div>
+      ) : (
+        <img src={url}></img>
+      )}
     </Avatar>
   );
 };
