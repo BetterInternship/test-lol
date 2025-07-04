@@ -219,7 +219,7 @@ export default function Dashboard() {
 
           <ApplicantModal>
             <ApplicantModalContent
-              is_employer={false}
+              is_employer={true}
               clickable={true}
               pfp_fetcher={async () =>
                 UserService.getUserPfpURL(selected_application?.user?.id ?? "")
