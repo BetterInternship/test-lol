@@ -20,10 +20,24 @@ export const EmployerService = {
     );
   },
 
+  async getEmployerPfpURL(employer_id: string) {
+    return APIClient.get<EmployerResponse>(
+      APIRoute("employer").r(employer_id, "pic").build()
+    );
+  },
+
   async updateMyProfile(data: Partial<Employer>) {
     return APIClient.put<EmployerResponse>(
       APIRoute("employer").r("me").build(),
       data
+    );
+  },
+
+  async updateMyPfp(file: Blob | null) {
+    return APIClient.put<ResourceHashResponse>(
+      APIRoute("employer").r("me", "pic").build(),
+      file,
+      "form-data"
     );
   },
 };

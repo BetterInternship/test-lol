@@ -50,20 +50,23 @@ export interface IRefsContext {
   industries: Industry[];
 
   get_level: (id: number | null | undefined) => Level | null;
-  to_level_name: (id: number | null | undefined, def?: string) => string | null;
+  to_level_name: (
+    id: number | null | undefined,
+    def?: string | null
+  ) => string | null;
   get_level_by_name: (name: string | null | undefined) => Level | null;
 
   get_college: (id: string | null | undefined) => College | null;
   to_college_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_college_by_name: (name: string | null | undefined) => College | null;
 
   get_university: (id: string | null | undefined) => University | null;
   to_university_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_university_by_name: (
     name: string | null | undefined
@@ -72,21 +75,21 @@ export interface IRefsContext {
   get_job_type: (id: number | null | undefined) => JobType | null;
   to_job_type_name: (
     id: number | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_job_type_by_name: (name: string | null | undefined) => JobType | null;
 
   get_job_mode: (id: number | null | undefined) => JobMode | null;
   to_job_mode_name: (
     id: number | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_job_mode_by_name: (name: string | null | undefined) => JobMode | null;
 
   get_job_allowance: (id: number | null | undefined) => JobAllowance | null;
   to_job_allowance_name: (
     id: number | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_job_allowance_by_name: (
     name: string | null | undefined
@@ -95,7 +98,7 @@ export interface IRefsContext {
   get_job_pay_freq: (id: number | null | undefined) => JobPayFreq | null;
   to_job_pay_freq_name: (
     id: number | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_job_pay_freq_by_name: (
     name: string | null | undefined
@@ -104,21 +107,21 @@ export interface IRefsContext {
   get_app_status: (id: number | null | undefined) => AppStatus | null;
   to_app_status_name: (
     id: number | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_app_status_by_name: (name: string | null | undefined) => AppStatus | null;
 
   get_industry: (id: string | null | undefined) => Industry | null;
   to_industry_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_industry_by_name: (name: string | null | undefined) => Industry | null;
 
   get_job_category: (id: string | null | undefined) => JobCategory | null;
   to_job_category_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_job_category_by_name: (
     name: string | null | undefined
@@ -127,7 +130,7 @@ export interface IRefsContext {
   get_department: (id: string | null | undefined) => Department | null;
   to_department_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_department_by_name: (
     name: string | null | undefined
@@ -136,11 +139,11 @@ export interface IRefsContext {
   get_degree: (id: string | null | undefined) => Degree | null;
   to_degree_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   to_degree_full_name: (
     id: string | null | undefined,
-    def?: string
+    def?: string | null
   ) => string | null;
   get_degree_by_name: (name: string | null | undefined) => Degree | null;
   get_degree_by_type_and_name: (

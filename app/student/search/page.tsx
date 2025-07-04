@@ -852,7 +852,7 @@ Best regards,
         {profile && (
           <ApplicantModalContent
             applicant={profile as any}
-            pfp_fetcher={UserService.getMyPfpURL}
+            pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeProfilePreviewModal();
