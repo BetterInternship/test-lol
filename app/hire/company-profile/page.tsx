@@ -236,7 +236,7 @@ const ProfileEditor = forwardRef<
         !isValidPHNumber(number) && "Invalid Philippine number."
     );
     addValidator(
-      "phone_number",
+      "email",
       (email: string) => !isValidEmail(email) && "Invalid Philippine number."
     );
     addValidator(

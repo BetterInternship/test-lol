@@ -1,7 +1,7 @@
 /**
  * @ Author: Mo David
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2025-06-24 02:05:59
+ * @ Modified time: 2025-07-04 14:09:09
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
@@ -23,11 +23,13 @@ interface IUseFile {
 export const useFile = ({
   route,
   fetcher,
+  defaultUrl = "",
 }: {
   route: string;
   fetcher: () => Promise<any>;
+  defaultUrl?: string;
 }): IUseFile => {
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(defaultUrl);
 
   /**
    * Performs a sync by requesting for the hash of the file from the server.
@@ -36,11 +38,16 @@ export const useFile = ({
    * @returns
    */
   const synchronize = useCallback(async () => {
-    const { success, hash } = await fetcher();
+    const { success, empty, hash } = await fetcher();
 
     // Something went wrong
     if (!success) {
       console.error("Could not fetch file.");
+      return;
+    }
+
+    // File has not been uploaded by host / source
+    if (empty) {
       return;
     }
 

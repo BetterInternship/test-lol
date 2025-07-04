@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
-import { MyPfp } from "@/components/shared/pfp";
+import { MyUserPfp } from "@/components/shared/pfp";
 import { getFullName } from "@/lib/utils/user-utils";
 
 /**
@@ -67,7 +67,7 @@ export const ProfileButton = () => {
         display={
           <>
             <div className="overflow-hidden rounded-full flex flex-row items-center justify-center">
-              <MyPfp size="7" />
+              <MyUserPfp size="7" />
             </div>
             {getFullName(user)}
           </>

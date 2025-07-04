@@ -1,9 +1,7 @@
 import { useFile } from "@/hooks/use-file";
-import { UserService } from "@/lib/api/api";
-import { useAuthContext } from "@/lib/ctx-auth";
+import { EmployerService, UserService } from "@/lib/api/api";
 import { useCallback, useEffect } from "react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { useProfile } from "@/lib/api/use-api";
 
 /**
  * A profile picture of a given user.
@@ -11,20 +9,21 @@ import { useProfile } from "@/lib/api/use-api";
  *
  * @component
  */
-export const Pfp = ({
-  user_id,
+const Pfp = ({
+  id,
+  source,
+  pfp_fetcher,
   size = "10",
 }: {
-  user_id: string;
+  id: string;
+  source: string;
+  pfp_fetcher: () => Promise<any>;
   size?: string;
 }) => {
-  const fetcher = useCallback(
-    async () => UserService.getUserPfpURL(user_id),
-    [user_id]
-  );
   const { url, sync } = useFile({
-    route: "/users/" + user_id + "/pic",
-    fetcher: fetcher,
+    route: `/${source}/` + id + "/pic",
+    fetcher: pfp_fetcher,
+    defaultUrl: "/images/default-pfp.jpg",
   });
 
   useEffect(() => {
@@ -32,15 +31,62 @@ export const Pfp = ({
   }, []);
 
   return (
-    <Avatar className={`w-${size} h-${size} rounded-full overflow-hidden`}>
-      {url ? (
-        <img src={url}></img>
-      ) : (
-        <AvatarFallback className="text-base sm:text-lg font-semibold">
-          "?"
-        </AvatarFallback>
-      )}
+    <Avatar
+      className={`w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
+    >
+      <img src={url}></img>
     </Avatar>
+  );
+};
+
+/**
+ * A profile picture of a given user.
+ * Accessible only to employers.
+ *
+ * @component
+ */
+export const UserPfp = ({
+  user_id,
+  size = "10",
+}: {
+  user_id: string;
+  size?: string;
+}) => {
+  const pfp_fetcher = useCallback(
+    async () => UserService.getUserPfpURL(user_id),
+    [user_id]
+  );
+
+  return (
+    <Pfp id={user_id} size={size} source={"users"} pfp_fetcher={pfp_fetcher} />
+  );
+};
+
+/**
+ * A profile picture of a given employer.
+ * Accessible to users.
+ *
+ * @component
+ */
+export const EmployerPfp = ({
+  employer_id,
+  size = "10",
+}: {
+  employer_id: string;
+  size?: string;
+}) => {
+  const pfp_fetcher = useCallback(
+    async () => EmployerService.getEmployerPfpURL(employer_id),
+    [employer_id]
+  );
+
+  return (
+    <Pfp
+      id={employer_id}
+      size={size}
+      source={"employers"}
+      pfp_fetcher={pfp_fetcher}
+    />
   );
 };
 
@@ -50,34 +96,16 @@ export const Pfp = ({
  *
  * @component
  */
-export const MyPfp = ({ size = "10" }: { size?: string }) => {
-  const fetcher = async () => UserService.getMyPfpURL();
-  const { profile } = useProfile();
-  const { url, sync } = useFile({
-    route: "/users/me/pic",
-    fetcher: fetcher,
-  });
+export const MyUserPfp = ({ size = "10" }: { size?: string }) => {
+  return <UserPfp user_id={"me"} size={size} />;
+};
 
-  useEffect(() => {
-    sync();
-  }, []);
-
-  return (
-    <div
-      className={`w-${size} h-${size} flex items-center border border-gray-300 rounded-full overflow-hidden aspect-square`}
-    >
-      {profile?.profile_picture ? (
-        <img className="object-cover h-full" src={url}></img>
-      ) : (
-        <Avatar className={`w-${size} h-${size} aspect-square`}>
-          <AvatarFallback
-            className={`w-${size} h-${size} font-semibold opacity-70`}
-          >
-            {profile?.first_name?.[0]?.toUpperCase()}
-            {profile?.last_name?.[0]?.toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      )}
-    </div>
-  );
+/**
+ * A profile picture of a given user.
+ * Accessible only to owners of pfp.
+ *
+ * @component
+ */
+export const MyEmployerPfp = ({ size = "10" }: { size?: string }) => {
+  return <EmployerPfp employer_id={"me"} size={size} />;
 };

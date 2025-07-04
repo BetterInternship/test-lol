@@ -42,7 +42,7 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
 import { cn, isValidPHNumber } from "@/lib/utils";
-import { MyPfp } from "@/components/shared/pfp";
+import { MyUserPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
@@ -150,7 +150,7 @@ export default function ProfilePage() {
         <div className="min-h-screen bg-transparent p-6 py-12 w-full">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
-              <MyPfp size="36" />
+              <MyUserPfp size="36" />
               <Button
                 variant="outline"
                 size="icon"
@@ -254,7 +254,7 @@ export default function ProfilePage() {
         <EmployerModal>
           <ApplicantModalContent
             applicant={profile}
-            pfp_fetcher={UserService.getMyPfpURL}
+            pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeEmployerModal();

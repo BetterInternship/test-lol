@@ -20,6 +20,12 @@ export const EmployerService = {
     );
   },
 
+  async getEmployerPfpURL(employer_id: string) {
+    return APIClient.get<EmployerResponse>(
+      APIRoute("employer").r(employer_id, "pic").build()
+    );
+  },
+
   async updateMyProfile(data: Partial<Employer>) {
     return APIClient.put<EmployerResponse>(
       APIRoute("employer").r("me").build(),
