@@ -105,13 +105,9 @@ export const ApplicationTable = ({
                       name="status"
                       className="w-36"
                       options={app_statuses.map((as) => as.name)}
-<<<<<<< Updated upstream
-                      defaultValue={to_app_status_name(application.status) ?? ""}
-=======
                       defaultValue={
                         to_app_status_name(application.status) ?? ""
                       }
->>>>>>> Stashed changes
                       onChange={(status) => onStatusChange(application, status)}
                     />
                   </div>
@@ -123,8 +119,4 @@ export const ApplicationTable = ({
       </div>
     </div>
   );
-<<<<<<< Updated upstream
 };
-=======
-};
->>>>>>> Stashed changes
