@@ -324,7 +324,7 @@ export const MobileJobDetails = ({}) => {};
  *
  * @component
  */
-export const EditableJobDetails = ({
+export const EmployerJobDetails = ({
   job,
   is_editing = false,
   set_is_editing = () => {},
@@ -347,14 +347,8 @@ export const EditableJobDetails = ({
     job_types,
     job_allowances,
     job_pay_freq,
-    to_job_mode_name,
-    to_job_type_name,
     to_job_pay_freq_name,
     to_job_allowance_name,
-    get_job_mode_by_name,
-    get_job_type_by_name,
-    get_job_pay_freq_by_name,
-    get_job_allowance_by_name,
   } = useRefs();
   const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
 

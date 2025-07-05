@@ -14,7 +14,7 @@ import { useFormData } from "@/lib/form-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { Paginator } from "@/components/ui/paginator";
-import { EditableJobDetails, EmployerJobCard } from "@/components/shared/jobs";
+import { EmployerJobDetails, EmployerJobCard } from "@/components/shared/jobs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
@@ -145,7 +145,7 @@ export default function MyListings() {
 
             {/* Right Panel - Job Details */}
             {selectedJob?.id ? (
-              <EditableJobDetails
+              <EmployerJobDetails
                 is_editing={is_editing}
                 set_is_editing={setIsEditing}
                 job={selectedJob}
