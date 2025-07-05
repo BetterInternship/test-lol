@@ -33,7 +33,7 @@ export const showUnverifiedBanner = () => {
         You can add listings while we are working to verify your account. Your
         listings won't be visible publicly until verification is complete.
         <br />
-        If you have any questions, email us at hello@betterinternship.com
+        If you have any questions, email us at hello@betterinternship.com.
       </p>
     </Banner>
   );
