@@ -1,3 +1,5 @@
+// Container for all dashboard modals - applicant details, resume viewer, review notes
+// Takes modal components and selected application, renders the right content
 "use client";
 
 import { FileText } from "lucide-react";

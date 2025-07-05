@@ -1,32 +1,37 @@
+// Main dashboard page - uses clean architecture with focused hooks and context
+// Wraps everything in DashboardProvider for shared state management
 "use client";
 
 import { useAuthContext } from "../authctx";
-import { useDashboardState } from "@/hooks/use-dashboard-state";
+import { useDashboard } from "@/hooks/hire/dashboard/use-dashboard";
+import { DashboardProvider } from "@/lib/context/hire/dashboard/DashboardContext";
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicationsTable } from "@/components/features/hire/dashboard/ApplicationsTable";
 import { DashboardModals } from "@/components/features/hire/dashboard/DashboardModals";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 
-export default function Dashboard() {
+function DashboardContent() {
   const { redirect_if_not_logged_in } = useAuthContext();
   const {
     // Data
-    employer_applications,
+    applications,
     profile,
     loading,
     profileLoading,
     selectedApplication,
     resumeURL,
     
-    // Functions
+    // Reference data
     app_statuses,
     to_level_name,
     to_university_name,
     to_app_status_name,
-    review_app,
+    
+    // Actions
+    updateNotes,
     syncResumeURL,
     
-    // Handlers
+    // Event handlers
     handleApplicationClick,
     handleNotesClick,
     handleScheduleClick,
@@ -39,7 +44,30 @@ export default function Dashboard() {
     closeApplicantModal,
     closeReviewModal,
     openResumeModal,
-  } = useDashboardState();
+  } = useDashboard();
+
+  // Wrapper functions to handle null returns from useRefs
+  const safeToUniversityName = (university?: any): string => {
+    return to_university_name(university) || '';
+  };
+  
+  const safeToLevelName = (level?: any): string => {
+    return to_level_name(level) || '';
+  };
+  
+  const safeToAppStatusName = (status?: any): string => {
+    return to_app_status_name(status) || '';
+  };
+
+  // Wrapper for review function to match expected signature
+  const reviewApp = (
+    id: string,
+    reviewOptions: { review?: string; notes?: string; status?: number }
+  ) => {
+    if (reviewOptions.notes) {
+      updateNotes(id, reviewOptions.notes);
+    }
+  };
 
   redirect_if_not_logged_in();
 
@@ -61,15 +89,15 @@ export default function Dashboard() {
             <ShowUnverifiedBanner />
           ) : (
             <ApplicationsTable
-              applications={employer_applications}
+              applications={applications}
               appStatuses={app_statuses}
               onApplicationClick={handleApplicationClick}
               onNotesClick={handleNotesClick}
               onScheduleClick={handleScheduleClick}
               onStatusChange={handleStatusChange}
-              toUniversityName={(university) => to_university_name(university) ?? ''}
-              toLevelName={(level) => to_level_name(level) ?? ''}
-              toAppStatusName={(status) => to_app_status_name(status) ?? ''}
+              toUniversityName={safeToUniversityName}
+              toLevelName={safeToLevelName}
+              toAppStatusName={safeToAppStatusName}
             />
           )}
         </div>
@@ -82,11 +110,19 @@ export default function Dashboard() {
         ResumeModal={ResumeModal}
         ReviewModal={ReviewModal}
         closeApplicantModal={closeApplicantModal}
-        reviewApp={review_app}
+        reviewApp={reviewApp}
         closeReviewModal={closeReviewModal}
         syncResumeURL={syncResumeURL}
         openResumeModal={openResumeModal}
       />
     </ContentLayout>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <DashboardProvider>
+      <DashboardContent />
+    </DashboardProvider>
   );
 }

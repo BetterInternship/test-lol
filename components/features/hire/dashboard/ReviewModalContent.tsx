@@ -1,3 +1,5 @@
+// Modal content for editing private notes/reviews on applications
+// Handles the MDX editor and save/cancel actions
 "use client";
 
 import { useState, useEffect } from "react";
