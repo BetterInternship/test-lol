@@ -5,13 +5,13 @@
  * @param url
  * @returns
  */
-export const toURL = (url: string | null): URL | null =>
+export const toURL = (url?: string | null): URL | null =>
   !url
     ? null
     : !url.toLowerCase().startsWith("http://") &&
       !url.toLowerCase().startsWith("https://")
-    ? URL.parse("https://" + url)
-    : URL.parse(url);
+    ? new URL("https://" + url)
+    : new URL(url);
 
 /**
  * Checks if the URL is valid.
@@ -63,11 +63,8 @@ export const isValidOptionalLinkedinURL = isValidOptionalSiteURL([
   "www.linkedin.com",
 ]);
 export const isValidOptionalCalendarURL = isValidOptionalSiteURL([
-  "calendar.app.google.com",
   "calendar.app.google",
-  "calendar.google.com",
-  "calendly.com",
-  "cal.com",
+  "calendar.google.com/calendar/u/0/appointments",
 ]);
 
 /**

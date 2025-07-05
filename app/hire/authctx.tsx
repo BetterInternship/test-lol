@@ -3,9 +3,10 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { employer_auth_service } from "@/lib/api/employer.api";
+import { EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IAuthContext {
   user: Partial<PublicEmployerUser> | null;
@@ -47,13 +48,14 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
-  const [proxy, set_proxy] = useState("");
+  const [proxy, setProxy] = useState("");
   const [is_loading, set_is_loading] = useState(true);
   const [is_authenticated, set_is_authenticated] = useState(() => {
     if (typeof window === "undefined") return false;
     const isAuthed = sessionStorage.getItem("isAuthenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
+  const queryClient = useQueryClient();
   const [god, setGod] = useState(false);
   const [user, setUser] = useState<Partial<PublicEmployerUser> | null>(() => {
     if (typeof window === "undefined") return null;
@@ -73,7 +75,7 @@ export const AuthContextProvider = ({
 
   const refresh_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
-      const response = await employer_auth_service.loggedin();
+      const response = await EmployerAuthService.loggedin();
 
       if (!response.success) {
         set_is_loading(false);
@@ -91,7 +93,7 @@ export const AuthContextProvider = ({
     };
 
   const register = async (employer: Partial<Employer>) => {
-    const response = await employer_auth_service.register(employer);
+    const response = await EmployerAuthService.register(employer);
     if (!response.success) {
       return null;
     }
@@ -100,7 +102,7 @@ export const AuthContextProvider = ({
   };
 
   const login = async (email: string, password: string) => {
-    const response = await employer_auth_service.login(email, password);
+    const response = await EmployerAuthService.login(email, password);
     if (!response.success) return null;
 
     setUser(response.user as PublicEmployerUser);
@@ -113,23 +115,25 @@ export const AuthContextProvider = ({
   };
 
   const login_as = async (employer_id: string) => {
-    const response = await employer_auth_service.login_as_employer(employer_id);
+    const response = await EmployerAuthService.loginAsEmployer(employer_id);
     if (!response.success) {
       alert("Error logging in by proxy.");
       return null;
     }
 
-    set_proxy(getFullName(response.user));
+    queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    setProxy(getFullName(response.user));
+    setUser(response.user);
     return response.user;
   };
 
   const email_status = async (email: string) => {
-    const response = await employer_auth_service.email_status(email);
+    const response = await EmployerAuthService.email_status(email);
     return response;
   };
 
   const logout = async () => {
-    employer_auth_service.logout();
+    EmployerAuthService.logout();
     router.push("/login");
     setUser(null);
     setGod(false);

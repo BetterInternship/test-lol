@@ -20,10 +20,24 @@ export const EmployerService = {
     );
   },
 
+  async getEmployerPfpURL(employer_id: string) {
+    return APIClient.get<EmployerResponse>(
+      APIRoute("employer").r(employer_id, "pic").build()
+    );
+  },
+
   async updateMyProfile(data: Partial<Employer>) {
     return APIClient.put<EmployerResponse>(
       APIRoute("employer").r("me").build(),
       data
+    );
+  },
+
+  async updateMyPfp(file: Blob | null) {
+    return APIClient.put<ResourceHashResponse>(
+      APIRoute("employer").r("me", "pic").build(),
+      file,
+      "form-data"
     );
   },
 };
@@ -112,7 +126,7 @@ export const AuthService = {
   },
 };
 interface UserResponse extends FetchResponse {
-  user: Partial<PublicUser>;
+  user: PublicUser;
 }
 
 interface SaveJobResponse extends FetchResponse {
@@ -148,7 +162,7 @@ export const UserService = {
     );
   },
 
-  async updateMyPfp(file: Blob | null) {
+  async updateMyPfp(file: FormData) {
     return APIClient.put<ResourceHashResponse>(
       APIRoute("users").r("me", "pic").build(),
       file,
@@ -162,7 +176,7 @@ export const UserService = {
     );
   },
 
-  async updateMyResume(file: Blob | null) {
+  async updateMyResume(file: FormData) {
     return APIClient.put<Response>(
       APIRoute("users").r("me", "resume").build(),
       file,
@@ -196,15 +210,15 @@ interface OwnedJobsResponse extends FetchResponse {
 }
 
 export const JobService = {
-  async get_jobs(params: { last_update: number }) {
+  async getAllJobs(params: { last_update: number }) {
     return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
   },
 
-  async get_job_by_id(job_id: string) {
+  async getJobById(job_id: string) {
     return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
   },
 
-  async get_saved_jobs() {
+  async getSavedJobs() {
     return APIClient.get<SavedJobsResponse>(
       APIRoute("jobs").r("saved").build()
     );
@@ -257,7 +271,7 @@ interface CreateApplicationResponse extends FetchResponse {
 }
 
 export const ApplicationService = {
-  async get_applications(
+  async getApplications(
     params: {
       page?: number;
       limit?: number;
@@ -269,7 +283,7 @@ export const ApplicationService = {
     );
   },
 
-  async create_application(data: { job_id: string; cover_letter?: string }) {
+  async createApplication(data: { job_id: string; cover_letter?: string }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRoute("applications").r("create").build(),
       data

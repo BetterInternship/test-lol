@@ -22,9 +22,9 @@ import {
   useSavedJobs,
   useProfile,
   useApplications,
-} from "@/lib/api/use-api";
+} from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { Job } from "@/lib/db/db.types";
+import { Job, PublicUser } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
 import { useRefs } from "@/lib/db/use-refs";
 import {
@@ -48,7 +48,7 @@ import {
   getMissingProfileFields,
   isCompleteProfile,
 } from "@/lib/utils/user-utils";
-import { UserService } from "@/lib/api/api";
+import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { openURL } from "@/lib/utils/url-utils";
@@ -113,10 +113,10 @@ export default function SearchPage() {
     useModal("resume-modal");
 
   const { isMobile: is_mobile } = useAppContext();
-  const { profile } = useProfile();
+  const profile = useProfile();
 
   // Resume URL management for profile preview
-  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
@@ -125,13 +125,7 @@ export default function SearchPage() {
   // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
-  const {
-    getJobsPage,
-    jobs: filteredJobs,
-    loading: jobs_loading,
-    error: jobs_error,
-    refetch,
-  } = useJobs({
+  const jobs = useJobs({
     search: searchTerm.trim() || undefined,
     category: job_categories.filter((c) => c.id === filters.category)[0]?.name,
     mode: job_modes.filter((j) => j.id.toString() === filters.location)[0]
@@ -140,10 +134,9 @@ export default function SearchPage() {
   });
 
   // Get paginated jobs directly from getJobsPage
-  const jobs = getJobsPage({ page: jobs_page, limit: jobs_page_size });
-
-  const { is_saved, saving, save_job } = useSavedJobs();
-  const { appliedJob, apply } = useApplications();
+  const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
+  const savedJobs = useSavedJobs();
+  const applications = useApplications();
 
   // Initialize search term from URL
   useEffect(() => {
@@ -166,27 +159,22 @@ export default function SearchPage() {
   useEffect(() => {
     const jobId = searchParams.get("jobId");
 
-    if (jobId && jobs.length > 0) {
-      const targetJob = jobs.find((job) => job.id === jobId);
+    if (jobId && jobsPage.length > 0) {
+      const targetJob = jobsPage.find((job) => job.id === jobId);
       if (targetJob && targetJob.id !== selectedJob?.id) {
         setSelectedJob(targetJob);
       }
-    } else if (jobs.length > 0 && !selectedJob?.id) {
-      setSelectedJob(jobs[0]);
+    } else if (jobsPage.length > 0 && !selectedJob?.id) {
+      setSelectedJob(jobsPage[0]);
     }
-  }, [jobs.length, searchParams]);
+  }, [jobsPage.length, searchParams]);
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
       window.location.href = "/login";
       return;
     }
-
-    try {
-      await save_job(job.id ?? "");
-    } catch (error) {
-      console.error("Failed to save job:", error);
-    }
+    await savedJobs.toggle(job.id ?? "");
   };
 
   const handleApply = () => {
@@ -199,7 +187,7 @@ export default function SearchPage() {
     }
 
     // Check if already applied
-    const applicationStatus = appliedJob(selectedJob?.id ?? "");
+    const applicationStatus = applications.appliedJob(selectedJob?.id ?? "");
     if (applicationStatus) {
       console.log("Already applied to this job");
       alert("You have already applied to this job!");
@@ -207,12 +195,12 @@ export default function SearchPage() {
     }
 
     // Check if profile is complete
-    const profileComplete = isCompleteProfile(profile);
+    const profileComplete = isCompleteProfile(profile.data);
 
     // Check if requirements are met
     if (
       selectedJob?.require_github &&
-      (!profile?.github_link || profile.github_link === "")
+      (!profile.data?.github_link || profile.data.github_link === "")
     ) {
       alert("This job requires a github link, but you don't have one yet!");
       return;
@@ -220,7 +208,7 @@ export default function SearchPage() {
 
     if (
       selectedJob?.require_portfolio &&
-      (!profile?.portfolio_link || profile.portfolio_link === "")
+      (!profile.data?.portfolio_link || profile.data.portfolio_link === "")
     ) {
       alert("This job requires a portfolio link, but you don't have one yet!");
       return;
@@ -248,18 +236,14 @@ export default function SearchPage() {
       return;
     }
 
-    try {
-      const { success } = await apply(
-        selectedJob.id ?? "",
-        textarea_ref.current?.value ?? ""
-      );
-      if (success) openSuccessModal();
-      else alert("Could not apply to job.");
-    } catch (error) {
-      console.error("Failed to submit application:", error);
-      alert("Failed to submit application. Please try again.");
-    } finally {
-    }
+    await applications
+      .create({
+        job_id: selectedJob.id ?? "",
+        cover_letter: textarea_ref.current?.value ?? "",
+      })
+      .then(() => {
+        if (applications.createError) alert(applications.createError.message);
+      });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -281,12 +265,13 @@ export default function SearchPage() {
     if (is_mobile) openJobModal();
   };
 
-  if (jobs_error) {
+  if (jobs.error) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load jobs: {jobs_error}</p>
-          <Button onClick={refetch}>Try Again</Button>
+          <p className="text-red-600 mb-4">
+            Failed to load jobs: {jobs.error.message}
+          </p>
         </div>
       </div>
     );
@@ -296,7 +281,7 @@ export default function SearchPage() {
     <>
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
-        {jobs_loading ? (
+        {jobs.isPending ? (
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -329,9 +314,9 @@ export default function SearchPage() {
 
             {/* Scrollable Job Cards Area */}
             <div className="flex-1 overflow-y-auto p-6 pt-4">
-              {jobs.length ? (
+              {jobsPage.length ? (
                 <div className="space-y-4">
-                  {jobs.map((job) => (
+                  {jobsPage.map((job) => (
                     <MobileJobCard
                       key={job.id}
                       job={job}
@@ -348,7 +333,7 @@ export default function SearchPage() {
               {/* Mobile Paginator */}
               <div className="mt-6">
                 <Paginator
-                  totalItems={filteredJobs.length}
+                  totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobs_page_size}
                   onPageChange={(page) => setJobsPage(page)}
                 />
@@ -382,9 +367,9 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {jobs.length ? (
+              {jobsPage.length ? (
                 <div className="space-y-3">
-                  {jobs.map((job) => (
+                  {jobsPage.map((job) => (
                     <JobCard
                       key={job.id}
                       job={job}
@@ -401,7 +386,7 @@ export default function SearchPage() {
 
               {/* Desktop Paginator */}
               <Paginator
-                totalItems={filteredJobs.length}
+                totalItems={jobs.filteredJobs.length}
                 itemsPerPage={jobs_page_size}
                 onPageChange={(page) => setJobsPage(page)}
               />
@@ -415,31 +400,37 @@ export default function SearchPage() {
                   actions={[
                     <Button
                       key="1"
-                      disabled={appliedJob(selectedJob.id ?? "")}
+                      disabled={applications.appliedJob(selectedJob.id ?? "")}
                       scheme={
-                        appliedJob(selectedJob.id ?? "")
+                        applications.appliedJob(selectedJob.id ?? "")
                           ? "supportive"
                           : "primary"
                       }
                       onClick={handleApply}
                     >
-                      {appliedJob(selectedJob.id ?? "") && (
+                      {applications.appliedJob(selectedJob.id ?? "") && (
                         <CheckCircle className="w-4 h-4 mr-2" />
                       )}
-                      {appliedJob(selectedJob.id ?? "") ? "Applied" : "Apply"}
+                      {applications.appliedJob(selectedJob.id ?? "")
+                        ? "Applied"
+                        : "Apply"}
                     </Button>,
                     <Button
                       key="2"
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
                       scheme={
-                        is_saved(selectedJob.id) ? "destructive" : "default"
+                        savedJobs.isJobSaved(selectedJob.id)
+                          ? "destructive"
+                          : "default"
                       }
                     >
-                      {is_saved(selectedJob.id ?? "") && <Heart />}
-                      {is_saved(selectedJob.id ?? "")
-                        ? "Saved"
-                        : saving
+                      {savedJobs.isJobSaved(selectedJob.id ?? "") && <Heart />}
+                      {savedJobs.isJobSaved(selectedJob.id ?? "")
+                        ? savedJobs.isToggling
+                          ? "Unsaving..."
+                          : "Saved"
+                        : savedJobs.isToggling
                         ? "Saving..."
                         : "Save"}
                     </Button>,
@@ -538,30 +529,36 @@ export default function SearchPage() {
           <div className="absolute bottom-0 left-0 right-0 bg-white border-t-2 p-4">
             <div className="flex gap-3">
               <Button
-                disabled={appliedJob(selectedJob?.id ?? "")}
+                disabled={applications.appliedJob(selectedJob?.id ?? "")}
                 onClick={handleApply}
                 className={cn(
                   "flex-1 h-14 transition-all duration-300",
-                  appliedJob(selectedJob?.id ?? "")
+                  applications.appliedJob(selectedJob?.id ?? "")
                     ? "bg-supportive text-white"
                     : "bg-primary  text-white"
                 )}
               >
-                {appliedJob(selectedJob?.id ?? "") ? "Applied" : "Apply Now"}
+                {applications.appliedJob(selectedJob?.id ?? "")
+                  ? "Applied"
+                  : "Apply Now"}
               </Button>
 
               <Button
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
                 scheme={
-                  is_saved(selectedJob?.id ?? "") ? "destructive" : "default"
+                  savedJobs.isJobSaved(selectedJob?.id ?? "")
+                    ? "destructive"
+                    : "default"
                 }
                 className="h-14 w-14"
               >
                 <Heart
                   className={cn(
                     "w-6 h-6",
-                    is_saved(selectedJob?.id ?? "") ? "fill-current" : ""
+                    savedJobs.isJobSaved(selectedJob?.id ?? "")
+                      ? "fill-current"
+                      : ""
                   )}
                 />
               </Button>
@@ -849,29 +846,29 @@ Best regards,
           <ArrowLeft className="h-4 w-4 text-gray-500" />
         </Button>
 
-        {profile && (
+        {profile.data && (
           <ApplicantModalContent
-            applicant={profile as any}
-            pfp_fetcher={UserService.getMyPfpURL}
+            applicant={profile.data}
+            pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeProfilePreviewModal();
-              await syncResumeUrl();
+              await syncResumeURL();
               openResumeModal();
             }}
             open_calendar={async () => {
-              openURL(profile?.calendar_link);
+              openURL(profile.data?.calendar_link);
             }}
           />
         )}
       </ProfilePreviewModal>
 
       {/* Resume Modal */}
-      {resumeUrl.length > 0 && (
+      {resumeURL.length > 0 && (
         <ResumeModal>
           <div className="space-y-4">
             <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-            <PDFPreview url={resumeUrl} />
+            <PDFPreview url={resumeURL} />
           </div>
         </ResumeModal>
       )}
@@ -880,7 +877,7 @@ Best regards,
       <IncompleteProfileModal>
         <div className="p-6">
           {(() => {
-            const { missing, labels } = getMissingProfileFields(profile);
+            const { missing, labels } = getMissingProfileFields(profile.data);
             const missingCount = missing.length;
 
             return (

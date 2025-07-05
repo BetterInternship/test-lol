@@ -39,7 +39,7 @@ interface Student {
 interface InternshipDataForm {
   prefix: string;
   baseName: string;
-  pdfUrl: string;
+  pdfURL: string;
   interns: Student[];
 }
 
@@ -103,19 +103,19 @@ const internshipData: InternshipCategory[] = [
       {
         prefix: COMMON_PREFIX,
         baseName: "OJT Student MOA",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents.slice(0, 5), // 5 interns
       },
       {
         prefix: COMMON_PREFIX,
         baseName: "Internship Plan",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents.slice(2, 6), // 4 interns
       },
       {
         prefix: COMMON_PREFIX,
         baseName: "Training Plan",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents.slice(0, 3), // 3 interns
       },
     ],
@@ -127,13 +127,13 @@ const internshipData: InternshipCategory[] = [
       {
         prefix: COMMON_PREFIX,
         baseName: "Weekly/Monthly Status Report",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents.slice(1, 8),
       },
       {
         prefix: COMMON_PREFIX,
         baseName: "Weekly/Monthly Attendance Sheet",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents.slice(1, 8),
       },
     ],
@@ -145,19 +145,19 @@ const internshipData: InternshipCategory[] = [
       {
         prefix: COMMON_PREFIX,
         baseName: "Certificate of Completion",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents,
       },
       {
         prefix: COMMON_PREFIX,
         baseName: "Certificate of Attendance",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents,
       },
       {
         prefix: COMMON_PREFIX,
         baseName: "Student Evaluation",
-        pdfUrl: "/Company_Information_Project_Details_Form.pdf",
+        pdfURL: "/Company_Information_Project_Details_Form.pdf",
         interns: mockStudents,
       },
     ],
@@ -182,10 +182,10 @@ const DocumentsManagement = () => {
 
     for (const intern of form.interns) {
       try {
-        const response = await fetch(form.pdfUrl);
+        const response = await fetch(form.pdfURL);
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch ${form.pdfUrl}: ${response.statusText}`
+            `Failed to fetch ${form.pdfURL}: ${response.statusText}`
           );
         }
         const pdfBlob = await response.blob();
@@ -298,7 +298,7 @@ const DocumentsManagement = () => {
                           <TableRow key={formIndex}>
                             <TableCell className="font-medium py-3">
                               <a
-                                href={form.pdfUrl}
+                                href={form.pdfURL}
                                 download
                                 className="text-blue-600 hover:underline flex items-center gap-2"
                               >

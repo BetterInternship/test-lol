@@ -115,7 +115,7 @@ export default function HomePage() {
             >
               <div className="group flex flex-row justify-center">
                 <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 m-0 translate-x-[10%] group-hover:translate-x-0 transition-transform duration-300 ease-in-out">
-                  By DLSU students, for DLSU students. Not official.
+                  By students, for students. Not official.
                 </div>
                 <div className="inline-block relative text-base sm:text-lg lg:text-xl text-gray-600 overflow-hidden ">
                   <span className="invisible m-0">Just Better...</span>
@@ -132,7 +132,7 @@ export default function HomePage() {
           )}
           {is_mobile && (
             <p className="text-lg text-gray-500 font-medium">
-              By DLSU students, for DLSU students. Not official. Just Better.
+              By students, for students. Not official. Just Better.
             </p>
           )}
         </div>

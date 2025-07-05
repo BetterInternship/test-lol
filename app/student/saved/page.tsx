@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Building } from "lucide-react";
-import { useSavedJobs } from "@/lib/api/use-api";
+import { Heart } from "lucide-react";
+import { useSavedJobs } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/our-card";
@@ -16,8 +16,7 @@ export default function SavedJobsPage() {
     isAuthenticated: is_authenticated,
     redirectIfNotLoggedIn: redirect_if_not_logged_in,
   } = useAuthContext();
-  const { save_job, saved_jobs, saving, loading, error, refetch } =
-    useSavedJobs();
+  const savedJobs = useSavedJobs();
 
   redirect_if_not_logged_in();
 
@@ -32,25 +31,22 @@ export default function SavedJobsPage() {
             <h1 className="text-4xl font-bold tracking-tight mb-2">
               Saved Jobs
             </h1>
-            <Badge>{saved_jobs.length} saved</Badge>
+            <Badge>{savedJobs.data?.length} saved</Badge>
           </div>
         </div>
       </div>
       <hr />
       <br />
 
-      {loading || !is_authenticated() ? (
+      {savedJobs.isPending || !is_authenticated() ? (
         <Loader>Loading saved jobs...</Loader>
-      ) : error ? (
+      ) : savedJobs.error ? (
         <Card className="max-w-md m-auto">
           <p className="text-red-600 mb-4 text-base sm:text-lg">
-            Failed to load saved jobs: {error}
+            Failed to load saved jobs: {savedJobs.error.message}
           </p>
-          <Button onClick={refetch} size="default">
-            Try Again
-          </Button>
         </Card>
-      ) : saved_jobs.length === 0 ? (
+      ) : savedJobs.data?.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">
           <Card className="max-w-md m-auto">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -69,11 +65,13 @@ export default function SavedJobsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {saved_jobs.map((savedJob) => (
+          {savedJobs.data?.map((savedJob) => (
             <SavedJobCard
               savedJob={savedJob}
-              handleUnsaveJob={async () => await save_job(savedJob.id ?? "")}
-              saving={saving}
+              handleUnsaveJob={async () =>
+                await savedJobs.toggle(savedJob.id ?? "")
+              }
+              saving={savedJobs.isToggling}
             />
           ))}
         </div>

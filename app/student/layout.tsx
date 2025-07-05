@@ -25,17 +25,13 @@ export const RootLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <AppContextProvider>
-      <AuthContextProvider>
-        <RefsContextProvider>
-          <MoaContextProvider>
-            <PostHogProvider>
-              <HTMLContent>{children}</HTMLContent>
-            </PostHogProvider>
-          </MoaContextProvider>
-        </RefsContextProvider>
-      </AuthContextProvider>
-    </AppContextProvider>
+    <RefsContextProvider>
+      <MoaContextProvider>
+        <PostHogProvider>
+          <HTMLContent>{children}</HTMLContent>
+        </PostHogProvider>
+      </MoaContextProvider>
+    </RefsContextProvider>
   );
 };
 
@@ -51,17 +47,21 @@ const HTMLContent = ({
 }>) => {
   return (
     <TanstackProvider>
-      <html lang="en">
-        <body>
-          <div className="h-screen bg-gray-50 flex flex-col">
-            <Header />
-            <div className="flex-grow overflow-auto flex flex-col">
-              {children}
-            </div>
-            <Footer />
-          </div>
-        </body>
-      </html>
+      <AppContextProvider>
+        <AuthContextProvider>
+          <html lang="en">
+            <body>
+              <div className="h-screen bg-gray-50 flex flex-col">
+                <Header />
+                <div className="flex-grow overflow-auto flex flex-col">
+                  {children}
+                </div>
+                <Footer />
+              </div>
+            </body>
+          </html>
+        </AuthContextProvider>
+      </AppContextProvider>
     </TanstackProvider>
   );
 };

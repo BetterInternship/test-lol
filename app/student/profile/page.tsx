@@ -14,18 +14,23 @@ import {
   Camera,
   MessageCircleQuestion,
 } from "lucide-react";
-import { useProfile } from "@/lib/api/use-api";
+import { useProfile } from "@/lib/api/student.api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
-import { UserService } from "@/lib/api/api";
+import { UserService } from "@/lib/api/services";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
-import { useFile } from "@/hooks/use-file";
+import {
+  FileUploadInput,
+  IFileUploadRef,
+  useFile,
+  useFileUpload,
+} from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
 import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -42,7 +47,7 @@ import {
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
 import { cn, isValidPHNumber } from "@/lib/utils";
-import { MyPfp } from "@/components/shared/pfp";
+import { MyUserPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
   createEditForm,
@@ -61,11 +66,10 @@ const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
   const { isAuthenticated } = useAuthContext();
-  const { profile, loading, error, updateProfile } = useProfile();
+  const profile = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState<boolean>(false);
-  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
@@ -85,59 +89,23 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated(), router]);
 
-  // File input refs
-  const profilePictureInputRef = useRef<HTMLInputElement>(null);
+  const {
+    fileInputRef: pfpFileInputRef,
+    upload: pfpUpload,
+    isUploading: pfpIsUploading,
+  } = useFileUpload({
+    uploader: UserService.updateMyPfp,
+    filename: "pfp",
+  });
 
-  const handlePreviewResume = async () => {
-    await syncResumeUrl();
-    openResumeModal();
-  };
+  if (!isAuthenticated() || profile.isPending)
+    return <Loader>Loading profile...</Loader>;
 
-  const handleProfilePictureUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a JPEG, PNG, GIF, or WebP image");
-      return;
-    }
-
-    if (file.size > (1024 * 1024) / 4) {
-      alert("Image size must be less than 0.25MB");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const form = FileUploadFormBuilder.new("pfp");
-      form.file(file);
-      // @ts-ignore
-      const result = await UserService.updateMyPfp(form.build());
-      if (!result.success) {
-        alert("Could not upload profile picture.");
-        return;
-      }
-      alert("Profile picture uploaded successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to upload profile picture");
-    } finally {
-      setUploading(false);
-      if (profilePictureInputRef.current) {
-        profilePictureInputRef.current.value = "";
-      }
-    }
-  };
-
-  if (!isAuthenticated() || loading) return <Loader>Loading profile...</Loader>;
-
-  if (error) {
+  if (profile.error) {
     return (
       <Card className="flex flex-col items-center justify-center max-w-md m-auto">
         <p className="text-red-600 mb-4 text-base sm:text-lg">
-          Failed to load profile: {error}
+          Failed to load profile: {profile.error.message}
         </p>
         <Button onClick={() => window.location.reload()}>Try Again</Button>
       </Card>
@@ -145,38 +113,37 @@ export default function ProfilePage() {
   }
 
   return (
-    profile && (
+    profile.data && (
       <>
-        <div className="min-h-screen bg-background p-6 py-12">
+        <div className="min-h-screen bg-transparent p-6 py-12 w-full">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
             <div className="relative flex-shrink-0">
-              <MyPfp size="36" />
+              <MyUserPfp size="36" />
               <Button
                 variant="outline"
                 size="icon"
                 className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
-                onClick={() => profilePictureInputRef.current?.click()}
-                disabled={uploading}
+                onClick={() => pfpFileInputRef.current?.open()}
+                disabled={pfpIsUploading}
               >
                 <Camera className="h-3 w-3" />
               </Button>
-              <input
-                type="file"
-                ref={profilePictureInputRef}
-                onChange={handleProfilePictureUpload}
-                accept="image/*"
-                style={{ display: "none" }}
+              <FileUploadInput
+                ref={pfpFileInputRef}
+                allowedTypes={["image/jpeg", "image/png", "image/webp"]}
+                maxSize={1}
+                onSelect={pfpUpload}
               />
             </div>
 
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
-                {getFullName(profile)}
+                {getFullName(profile.data)}
               </h1>
               <p className="text-muted-foreground text-sm mt-2">
                 <div>
                   <BoolBadge
-                    state={profile.taking_for_credit}
+                    state={profile.data.taking_for_credit}
                     onValue="Taking for credit"
                     offValue="Not taking for credit"
                   />
@@ -225,44 +192,45 @@ export default function ProfilePage() {
           </div>
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
-            {!isEditing && (
-              <ProfileDetails
-                profile={profile}
-                openResumeModal={handlePreviewResume}
-              />
-            )}
+            {!isEditing && <ProfileDetails profile={profile.data} />}
             {isEditing && (
-              <ProfileEditForm data={profile}>
+              <ProfileEditForm data={profile.data}>
                 <ProfileEditor
-                  updateProfile={updateProfile}
+                  updateProfile={profile.update}
                   ref={profileEditorRef}
                 />
               </ProfileEditForm>
             )}
+            <ResumeBox
+              profile={profile.data}
+              openResumeModal={openResumeModal}
+            />
+            <br />
+            <br />
           </div>
         </div>
 
-        {resumeUrl.length > 0 && (
+        {resumeURL.length > 0 && (
           <ResumeModal>
             <div className="space-y-4">
               <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-              <PDFPreview url={resumeUrl} />
+              <PDFPreview url={resumeURL} />
             </div>
           </ResumeModal>
         )}
 
         <EmployerModal>
           <ApplicantModalContent
-            applicant={profile}
-            pfp_fetcher={UserService.getMyPfpURL}
+            applicant={profile.data}
+            pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeEmployerModal();
-              await syncResumeUrl();
+              await syncResumeURL();
               openResumeModal();
             }}
             open_calendar={async () => {
-              openURL(profile?.calendar_link);
+              openURL(profile.data?.calendar_link);
             }}
           />
         </EmployerModal>
@@ -271,13 +239,7 @@ export default function ProfilePage() {
   );
 }
 
-const ProfileDetails = ({
-  profile,
-  openResumeModal,
-}: {
-  profile: PublicUser;
-  openResumeModal: () => void;
-}) => {
+const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
   const { isMobile } = useAppContext();
   const {
     to_college_name,
@@ -289,7 +251,7 @@ const ProfileDetails = ({
 
   return (
     <>
-      <Card className="bg-muted/50 p-3 px-5 overflow-hidden text-wrap">
+      <Card className="bg-white p-3 px-5 overflow-hidden text-wrap">
         <p className="text-sm leading-relaxed">
           {profile.bio || (
             <span className="text-muted-foreground italic">
@@ -350,7 +312,6 @@ const ProfileDetails = ({
             link={profile.calendar_link}
           />
         </div>
-        <ResumeBox profile={profile} openResumeModal={openResumeModal} />
       </Card>
       <br />
     </>
@@ -360,9 +321,7 @@ const ProfileDetails = ({
 const ProfileEditor = forwardRef<
   { save: () => Promise<void> },
   {
-    updateProfile: (
-      updatedProfile: Partial<PublicUser>
-    ) => Promise<Partial<PublicUser>>;
+    updateProfile: (updatedProfile: Partial<PublicUser>) => void;
   }
 >(({ updateProfile }, ref) => {
   const {
@@ -390,21 +349,15 @@ const ProfileEditor = forwardRef<
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
-      try {
-        const updatedProfile = {
-          ...cleanFormData(),
-          portfolio_link: toURL(formData.portfolio_link)?.toString(),
-          github_link: toURL(formData.github_link)?.toString(),
-          linkedin_link: toURL(formData.linkedin_link)?.toString(),
-          calendar_link: toURL(formData.calendar_link)?.toString(),
-        };
-        await updateProfile(updatedProfile);
-        return;
-      } catch (error) {
-        console.error("Failed to update profile:", error);
-        alert("Failed to update profile. Please try again.");
-        return;
-      }
+      const updatedProfile = {
+        ...cleanFormData(),
+        portfolio_link: toURL(formData.portfolio_link)?.toString(),
+        github_link: toURL(formData.github_link)?.toString(),
+        linkedin_link: toURL(formData.linkedin_link)?.toString(),
+        calendar_link: toURL(formData.calendar_link)?.toString(),
+      };
+      await updateProfile(updatedProfile);
+      return;
     },
   }));
 
@@ -425,7 +378,7 @@ const ProfileEditor = forwardRef<
     );
     setCollegeOptions(
       colleges.filter((c) =>
-        get_colleges_by_university(formData.university).includes(c.id)
+        get_colleges_by_university(formData.university ?? "").includes(c.id)
       )
     );
     setDepartmentOptions(
@@ -491,7 +444,7 @@ const ProfileEditor = forwardRef<
   return (
     <>
       <Card>
-        <div className="text-xl tracking-tight font-medium text-gray-700 mb-4">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 mb-4">
           Identity
         </div>
         <div className="flex flex-col space-y-1 mb-2">
@@ -534,7 +487,7 @@ const ProfileEditor = forwardRef<
             setter={fieldSetter("phone_number")}
           />
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-6 mt-12">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6 mt-12">
           Personal Bio
         </div>
         <textarea
@@ -547,7 +500,7 @@ const ProfileEditor = forwardRef<
         <p className="text-xs text-muted-foreground text-right">
           {(formData.bio || "").length}/500 characters
         </p>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-6">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-6">
           Educational Background
         </div>
         <div className="flex flex-col space-y-3">
@@ -607,7 +560,7 @@ const ProfileEditor = forwardRef<
             )}
           </div>
         </div>
-        <div className="text-xl tracking-tight font-medium text-gray-700 my-4 mt-12">
+        <div className="text-2xl tracking-tight font-medium text-gray-700 my-4 mt-12">
           External Profiles
         </div>
         <div className="flex flex-col space-y-1 mb-2">
@@ -666,87 +619,50 @@ const ResumeBox = ({
   profile: PublicUser;
   openResumeModal: () => void;
 }) => {
-  const [uploading, setUploading] = useState(false);
-  const resumeInputRef = useRef<HTMLInputElement>(null);
-
   // File upload handlers
-  const handleResumeUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ["application/pdf"];
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a PDF document");
-      return;
-    }
-
-    if (file.size > 3 * 1024 * 1024) {
-      alert("File size must be less than 3MB");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const form = FileUploadFormBuilder.new("resume");
-      form.file(file);
-      // @ts-ignore
-      const result = await UserService.updateMyResume(form.build());
-      alert("Resume uploaded successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to upload resume");
-    } finally {
-      setUploading(false);
-      if (resumeInputRef.current) {
-        resumeInputRef.current.value = "";
-      }
-    }
-  };
+  const {
+    fileInputRef: resumeFileInputRef,
+    upload: resumeUpload,
+    isUploading: resumeIsUploading,
+  } = useFileUpload({
+    uploader: UserService.updateMyResume,
+    filename: "resume",
+  });
 
   return (
-    <div className="mt-5">
-      {profile.resume ? (
-        <div className="w-full flex justify-start gap-2">
-          <Button variant="outline" scheme="primary" onClick={openResumeModal}>
-            View Resume
-          </Button>
-          <Button
-            variant="outline"
-            scheme="primary"
-            onClick={() => resumeInputRef.current?.click()}
-            disabled={uploading}
-          >
-            Upload Resume
-          </Button>
-        </div>
-      ) : (
+    <>
+      {profile.resume && (
         <Card>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              {uploading ? "Uploading..." : "No resume uploaded"}
-            </p>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <BoolBadge
+              state={!!profile.resume}
+              onValue="Resume Uploaded"
+              offValue="No Resume"
+            />
             <Button
-              onClick={() => resumeInputRef.current?.click()}
-              disabled={uploading}
+              onClick={() => resumeFileInputRef.current?.open()}
+              disabled={resumeIsUploading}
             >
               <Upload className="h-4 w-4" />
-              {uploading ? "Uploading..." : "Upload"}
+              {resumeIsUploading
+                ? "Uploading..."
+                : !!profile.resume
+                ? "Upload New"
+                : "Upload"}
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
               PDF up to 2.5MB
             </p>
           </div>
+          <FileUploadInput
+            ref={resumeFileInputRef}
+            maxSize={2.5}
+            allowedTypes={["application/pdf"]}
+            onSelect={resumeUpload}
+          />
         </Card>
       )}
-      <input
-        type="file"
-        ref={resumeInputRef}
-        onChange={handleResumeUpload}
-        accept=".pdf"
-        style={{ display: "none" }}
-      />
-    </div>
+    </>
   );
 };
 

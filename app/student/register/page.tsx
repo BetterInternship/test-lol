@@ -236,25 +236,28 @@ export default function RegisterPage() {
 
   if (!email) return <></>;
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-white px-3 sm:px-6 py-4 sm:py-12 sm:flex sm:items-center sm:justify-center">
       <div className="w-full max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="text-center mb-4 sm:mb-8 pt-16 sm:pt-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2">
             Let's Create your Profile
           </h2>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg max-w-2xl mx-auto">
+          <div className="mb-3 sm:mb-6 p-3 bg-red-50 border border-red-200 rounded-lg max-w-2xl mx-auto">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
         {/* Profile Form */}
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <form
+          onSubmit={handleSubmit}
+          className="max-w-2xl mx-auto px-1 sm:px-0"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
             {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -285,7 +288,7 @@ export default function RegisterPage() {
                   )}
                 </div>
               )}
-              <div className="w-full flex flex-row space-x-2">
+              <div className="w-full flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <Input
                   type="text"
                   value={form_data.first_name ?? undefined}
@@ -296,7 +299,7 @@ export default function RegisterPage() {
                     (form_data.first_name === ""
                       ? "border-gray-300"
                       : validFieldClassName) +
-                    " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                    " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
                   }
                   disabled={loading}
                   required
@@ -311,7 +314,7 @@ export default function RegisterPage() {
                     (form_data.middle_name === ""
                       ? "border-gray-300"
                       : validFieldClassName) +
-                    " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                    " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
                   }
                   disabled={loading}
                 />
@@ -325,7 +328,7 @@ export default function RegisterPage() {
                     (form_data.last_name === ""
                       ? "border-gray-300"
                       : validFieldClassName) +
-                    " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                    " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
                   }
                   disabled={loading}
                   required
@@ -354,7 +357,7 @@ export default function RegisterPage() {
                   (form_data.phone_number === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
                 required
@@ -424,7 +427,7 @@ export default function RegisterPage() {
                   (form_data.portfolio_link === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
               />
@@ -445,7 +448,7 @@ export default function RegisterPage() {
                   (form_data.linkedin_link === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 text-gray-900 input-box hover:cursor-text focus:ring-0"
+                  " w-full h-11 sm:h-12 px-3 sm:px-4 text-gray-900 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
               />
@@ -466,7 +469,7 @@ export default function RegisterPage() {
                   (form_data.github_link === ""
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 input-box hover:cursor-text focus:ring-0"
+                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
                 }
                 disabled={loading}
               />
@@ -493,7 +496,7 @@ export default function RegisterPage() {
                   (!resumeFile || !resumeFile.name
                     ? "border-gray-300"
                     : validFieldClassName) +
-                  " w-full h-12 px-4 input-box flex items-center justify-between"
+                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box flex items-center justify-between"
                 }
               >
                 <span
@@ -514,7 +517,7 @@ export default function RegisterPage() {
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Academic Credit
               </label>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-start sm:items-center space-x-3">
                 <input
                   type="checkbox"
                   id="academic-credit-checkbox"
@@ -565,7 +568,7 @@ export default function RegisterPage() {
                     (form_data.linkage_officer === ""
                       ? "border-gray-300"
                       : validFieldClassName) +
-                    " w-full h-12 px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
+                    " w-full h-11 sm:h-12 px-3 sm:px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
                   }
                   disabled={loading}
                 />
@@ -578,8 +581,8 @@ export default function RegisterPage() {
           </div>
 
           {/* Terms & Conditions Acceptance */}
-          <div className="mb-8">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+          <div className="mb-4 sm:mb-8">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-6">
               <div className="flex items-start gap-3">
                 <Checkbox
                   id="accept-terms"
@@ -618,11 +621,11 @@ export default function RegisterPage() {
           </div>
 
           {/* Continue Button */}
-          <div className="flex justify-center">
+          <div className="flex justify-center pb-4 sm:pb-0">
             <Button
               type="submit"
               disabled={loading || !acceptTerms}
-              className="w-80 h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-80 h-10 sm:h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {loading ? "Creating Profile..." : "Continue"}
             </Button>
