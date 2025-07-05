@@ -6,11 +6,7 @@ import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { MDXEditor } from "@/components/MDXEditor";
-<<<<<<< Updated upstream
-import { UserService } from "@/lib/api/api";
-=======
 import { UserService } from "@/lib/api/services";
->>>>>>> Stashed changes
 import { getFullName } from "@/lib/utils/user-utils";
 
 interface ApplicationModalsProps {
@@ -40,19 +36,10 @@ export const ApplicationModals = ({
     close: closeApplicantModal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-<<<<<<< Updated upstream
-  
-  const { 
-    open: openResumeModal, 
-    Modal: ResumeModal 
-  } = useModal("resume-modal");
-  
-=======
 
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
 
->>>>>>> Stashed changes
   const {
     open: openReviewModal,
     close: closeReviewModal,
@@ -186,8 +173,4 @@ const ReviewModalContent = ({
       </div>
     </>
   );
-<<<<<<< Updated upstream
 };
-=======
-};
->>>>>>> Stashed changes

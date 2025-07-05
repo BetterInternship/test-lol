@@ -1,11 +1,7 @@
 import { EmployerApplication } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-<<<<<<< Updated upstream
-import { Pfp } from "@/components/shared/pfp";
-=======
 import { UserPfp } from "@/components/shared/pfp";
->>>>>>> Stashed changes
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { getFullName } from "@/lib/utils/user-utils";
 
@@ -45,12 +41,8 @@ export const ApplicationTable = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-sm text-gray-500">
-<<<<<<< Updated upstream
-              Showing {applications.length} of {applications.length} applications
-=======
               {applications.length}{" "}
               {applications.length === 1 ? "application" : "applications"}
->>>>>>> Stashed changes
             </div>
           </div>
         </div>
@@ -69,23 +61,14 @@ export const ApplicationTable = ({
                 <td className="px-4 py-4">
                   <div className="flex items-center gap-3">
                     {application.user?.id && (
-<<<<<<< Updated upstream
-                      <Pfp user_id={application.user.id} />
-=======
                       <UserPfp user_id={application.user.id} size="10" />
->>>>>>> Stashed changes
                     )}
                     <div>
                       <p className="font-medium text-gray-900">
                         {getFullName(application.user)}{" "}
                         <span className="opacity-70">
-<<<<<<< Updated upstream
-                          — {to_university_name(application.user?.university)}{" "}
-                          • {to_level_name(application.user?.year_level)}
-=======
                           — {to_university_name(application.user?.university)} •{" "}
                           {to_level_name(application.user?.year_level)}
->>>>>>> Stashed changes
                         </span>
                       </p>
                       <div className="text-sm text-gray-500">
