@@ -692,33 +692,25 @@ const ResumeBox = ({
   };
 
   return (
-    <div className="mt-5">
-      {profile.resume ? (
-        <div className="w-full flex justify-start gap-2">
-          <Button variant="outline" scheme="primary" onClick={openResumeModal}>
-            View Resume
-          </Button>
-          <Button
-            variant="outline"
-            scheme="primary"
-            onClick={() => resumeInputRef.current?.click()}
-            disabled={uploading}
-          >
-            Upload Resume
-          </Button>
-        </div>
-      ) : (
+    <>
+      {profile.resume && (
         <Card>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              {uploading ? "Uploading..." : "No resume uploaded"}
-            </p>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <BoolBadge
+              state={!!profile.resume}
+              onValue="Resume Uploaded"
+              offValue="No Resume"
+            />
             <Button
               onClick={() => resumeInputRef.current?.click()}
               disabled={uploading}
             >
               <Upload className="h-4 w-4" />
-              {uploading ? "Uploading..." : "Upload"}
+              {uploading
+                ? "Uploading..."
+                : !!profile.resume
+                ? "Upload New"
+                : "Upload"}
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
               PDF up to 2.5MB
@@ -733,7 +725,7 @@ const ResumeBox = ({
         accept=".pdf"
         style={{ display: "none" }}
       />
-    </div>
+    </>
   );
 };
 
