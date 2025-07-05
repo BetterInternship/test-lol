@@ -22,15 +22,9 @@ import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
-import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
-import {
-  FileUploadInput,
-  IFileUploadRef,
-  useFile,
-  useFileUpload,
-} from "@/hooks/use-file";
+import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
 import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
