@@ -352,9 +352,9 @@ export default function RegisterPage() {
 
             <div className="w-max-prose text-sm text-gray-700 border border-gray-200 p-4 rounded-sm">
               <span className="text-yellow-400">*</span>
-              An admin account will be created for the person as soon as
-              registration is finished. Their email will be sent a password
-              after completing this form.{" "}
+              Your account will be created using the email address you provide
+              below. We will provide the Login details to the same email created
+              with the account.{" "}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
