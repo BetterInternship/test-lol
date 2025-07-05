@@ -226,12 +226,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
-            {!isEditing && (
-              <ProfileDetails
-                profile={profile.data}
-                openResumeModal={handlePreviewResume}
-              />
-            )}
+            {!isEditing && <ProfileDetails profile={profile.data} />}
             {isEditing && (
               <ProfileEditForm data={profile.data}>
                 <ProfileEditor
@@ -240,6 +235,12 @@ export default function ProfilePage() {
                 />
               </ProfileEditForm>
             )}
+            <ResumeBox
+              profile={profile.data}
+              openResumeModal={openResumeModal}
+            />
+            <br />
+            <br />
           </div>
         </div>
 
@@ -272,13 +273,7 @@ export default function ProfilePage() {
   );
 }
 
-const ProfileDetails = ({
-  profile,
-  openResumeModal,
-}: {
-  profile: PublicUser;
-  openResumeModal: () => void;
-}) => {
+const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
   const { isMobile } = useAppContext();
   const {
     to_college_name,
@@ -351,7 +346,6 @@ const ProfileDetails = ({
             link={profile.calendar_link}
           />
         </div>
-        <ResumeBox profile={profile} openResumeModal={openResumeModal} />
       </Card>
       <br />
     </>
