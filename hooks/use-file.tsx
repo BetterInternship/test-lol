@@ -1,13 +1,14 @@
 /**
  * @ Author: Mo David
  * @ Create Time: 2025-06-19 06:01:21
- * @ Modified time: 2025-07-05 23:25:23
+ * @ Modified time: 2025-07-05 23:48:43
  * @ Description:
  *
  * Properly handles dealing with files stored in GCS and their local state.
  * Synchronizes the hash for caching and shit.
  */
 
+import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { useCallback, useImperativeHandle, useRef, useState } from "react";
 
 interface IUseFile {
@@ -94,7 +95,7 @@ export interface IFileUploadRef {
  *
  * @component
  */
-export const FileUpload = ({
+export const FileUploadInput = ({
   allowedTypes,
   maxSize = 1,
   onSelect,
@@ -107,7 +108,7 @@ export const FileUpload = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  const accept = allowedTypes?.join(", ").slice(0, -2);
+  const accept = allowedTypes?.join(", ");
 
   // Expose the API of the FileUpload component
   useImperativeHandle(
@@ -158,4 +159,51 @@ export const FileUpload = ({
       />
     </>
   );
+};
+
+/**
+ * A hook for all the infra for uploading a file.
+ *
+ * @hook
+ */
+export const useFileUpload = ({
+  uploader,
+  filename,
+}: {
+  uploader: (formData: FormData) => Promise<any>;
+  filename: string;
+}) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<IFileUploadRef>(null);
+
+  /**
+   * Upload the file.
+   *
+   * @param file
+   * @returns
+   */
+  const upload = async (file?: File | null) => {
+    if (!file) return;
+
+    // Perform the file upload
+    setIsUploading(true);
+    const form = FileUploadFormBuilder.new(filename);
+    form.file(file);
+
+    // Check for success
+    const result = await uploader(form.build());
+    if (!result.success) {
+      alert("Could not upload file.");
+      return;
+    }
+
+    alert("File uploaded successfully!");
+    setIsUploading(false);
+  };
+
+  return {
+    upload,
+    isUploading,
+    fileInputRef,
+  };
 };
