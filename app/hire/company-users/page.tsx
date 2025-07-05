@@ -6,30 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   User,
-  BarChart3,
-  FileText,
-  Building2,
   UserPlus,
-  LogOut,
-  Mail,
   Trash2,
-  Plus,
   Search,
-  MoreVertical,
   Shield,
   Edit2,
   Check,
   X,
-  FileEdit,
 } from "lucide-react";
-import Link from "next/link";
 import ContentLayout from "@/components/features/hire/content-layout";
 
 interface UserData {
@@ -81,7 +66,7 @@ export default function AddUsers() {
     role: "Recruiter",
   });
 
-  const handleAddUser = () => {
+  const handleInviteUser = () => {
     if (newUser.name && newUser.email) {
       const user: UserData = {
         id: users.length + 1,
@@ -131,43 +116,11 @@ export default function AddUsers() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleLogout = () => {
-    // Clear any stored authentication data (if you add localStorage/sessionStorage later)
-    // localStorage.removeItem('authToken') // Future implementation
-
-    // Redirect to login page
-    router.push("/login");
-  };
-
   return (
     <ContentLayout>
       <div className="h-screen w-full bg-white flex">
-        {/* Main Content */}
         <div className="flex-1 flex flex-col">
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b">
-            <h1 className="text-2xl font-bold text-gray-800">Manage Users</h1>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem
-                  className="cursor-pointer text-red-600"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Content Area */}
           <div className="flex-1 p-6 overflow-hidden flex flex-col">
-            {/* Search and Add Button */}
             <div className="flex justify-between items-center mb-6">
               <div className="relative w-96">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -179,16 +132,11 @@ export default function AddUsers() {
                   className="pl-10"
                 />
               </div>
-              <Button
-                onClick={() => setShowAddForm(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
+              <Button onClick={() => setShowAddForm(true)}>
                 <UserPlus className="h-4 w-4 mr-2" />
-                Add User
+                Add Account
               </Button>
             </div>
-
-            {/* Add User Form */}
             {showAddForm && (
               <div className="mb-6 p-6 bg-gray-50 border-2 border-gray-200 rounded-lg">
                 <h3 className="text-lg font-semibold mb-4">Add New User</h3>
@@ -244,12 +192,7 @@ export default function AddUsers() {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    onClick={handleAddUser}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Add User
-                  </Button>
+                  <Button onClick={handleInviteUser}>Invite User</Button>
                 </div>
               </div>
             )}
