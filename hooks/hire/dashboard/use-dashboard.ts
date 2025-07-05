@@ -18,7 +18,6 @@ export function useDashboard() {
   // Focused hooks for specific concerns
   const { applications, loading, profile, profileLoading } = useApplicationsData();
   const { updateStatus, updateNotes } = useApplicationActions();
-  const modalState = useModalState();
   const { selectedApplication, setSelectedApplication } = useDashboardContext();
   
   // Reference data
