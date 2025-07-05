@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { Search, FileText, FileEdit, Plus } from "lucide-react";
-import { useOwnedJobs } from "@/hooks/use-employer-api";
+import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
@@ -23,10 +23,12 @@ import { useAuthContext } from "../authctx";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import ContentLayout from "@/components/features/hire/content-layout";
+import { ShowUnverifiedBanner } from "@/components/ui/banner";
 
 export default function MyListings() {
   const { redirect_if_not_logged_in } = useAuthContext();
   const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
+  const { profile, loading: profileLoading } = useProfile();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
@@ -82,6 +84,12 @@ export default function MyListings() {
       <>
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
+          {/* Unverified Banner */}
+          {!profileLoading && !profile?.is_verified && (
+            <div className="p-6 pb-0">
+              <ShowUnverifiedBanner />
+            </div>
+          )}
           {/* Content Area */}
           <div className="flex-1 p-6 flex gap-6 overflow-hidden">
             {/* Left Panel - Job List */}

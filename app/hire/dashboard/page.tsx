@@ -21,6 +21,8 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PDFPreview } from "@/components/shared/pdf-preview";
+import { useProfile } from "@/hooks/use-employer-api";
+import { ShowUnverifiedBanner } from "@/components/ui/banner";
 
 export default function Dashboard() {
   const {
@@ -52,6 +54,7 @@ export default function Dashboard() {
     close: closeReviewModal,
     Modal: ReviewModal,
   } = useModal("review-modal");
+  const { profile, loading: profileLoading } = useProfile();
 
   redirect_if_not_logged_in();
 
@@ -89,131 +92,139 @@ export default function Dashboard() {
           <div className="flex-1 flex flex-col">
             {/* Enhanced Dashboard */}
             <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
-              {/* Enhanced Table */}
-              <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
-                {/* Table Header with Filters */}
-                <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="text-sm text-gray-500">
-                        Showing {employer_applications.length} of{" "}
-                        {employer_applications.length} applications
+              {!profileLoading && !profile?.is_verified ? (
+                <ShowUnverifiedBanner />
+              ) : (
+                <>
+                  {/* Enhanced Table */}
+                  <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
+                    {/* Table Header with Filters */}
+                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm text-gray-500">
+                            Showing {employer_applications.length} of{" "}
+                            {employer_applications.length} applications
+                          </div>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Table Content */}
+                    <div className="flex-1 overflow-auto">
+                      <table className="relative w-full">
+                        <tbody className="absolute w-[100%]">
+                          {employer_applications
+                            .toSorted(
+                              (a, b) =>
+                                new Date(b.applied_at ?? "").getTime() -
+                                new Date(a.applied_at ?? "").getTime()
+                            )
+                            .map((application, index) => (
+                              <tr
+                                key={application.id}
+                                className={`w-full flex flex-row items-center justify-between border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors`}
+                                onClick={() => {
+                                  set_application(application);
+                                  openApplicantModal();
+                                }}
+                              >
+                                <td className="px-4 py-2">
+                                  <div className="flex items-center gap-3">
+                                    {application.user?.id && (
+                                      <UserPfp
+                                        user_id={application.user?.id}
+                                      ></UserPfp>
+                                    )}
+                                    <div>
+                                      <p className="font-medium text-gray-900">
+                                        {getFullName(application.user)}{" "}
+                                        <span className="opacity-70">
+                                          —{" "}
+                                          {to_university_name(
+                                            application.user?.university
+                                          )}{" "}
+                                          •{" "}
+                                          {to_level_name(
+                                            application.user?.year_level
+                                          )}
+                                        </span>
+                                      </p>
+                                      <p className="text-sm text-gray-500">
+                                        <Badge strength="medium">
+                                          {application.job?.title}
+                                        </Badge>
+                                      </p>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="px-6 text-center">
+                                  <div className="flex flex-row items-center justify-end space-x-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        set_application(application);
+                                        openReviewModal();
+                                      }}
+                                    >
+                                      Notes
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        set_application(application);
+                                        window
+                                          ?.open(
+                                            application.user?.calendar_link ??
+                                              "",
+                                            "_blank"
+                                          )
+                                          ?.focus();
+                                      }}
+                                    >
+                                      Schedule
+                                    </Button>
+                                    <GroupableRadioDropdown
+                                      name="status"
+                                      className="w-36"
+                                      disabled={
+                                        to_app_status_name(
+                                          application.status
+                                        ) === "Withdrawn"
+                                      }
+                                      options={app_statuses}
+                                      defaultValue={application.status}
+                                      onChange={async (status) => {
+                                        if (!application?.id) {
+                                          console.error(
+                                            "Not an application you can edit."
+                                          );
+                                          return;
+                                        }
+
+                                        const {
+                                          // @ts-ignore
+                                          application: updated_app,
+                                          success,
+                                        } = await review_app(application.id, {
+                                          status,
+                                        });
+                                      }}
+                                    ></GroupableRadioDropdown>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-
-                {/* Table Content */}
-                <div className="flex-1 overflow-auto">
-                  <table className="relative w-full">
-                    <tbody className="absolute w-[100%]">
-                      {employer_applications
-                        .toSorted(
-                          (a, b) =>
-                            new Date(b.applied_at ?? "").getTime() -
-                            new Date(a.applied_at ?? "").getTime()
-                        )
-                        .map((application, index) => (
-                          <tr
-                            key={application.id}
-                            className={`w-full flex flex-row items-center justify-between border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors`}
-                            onClick={() => {
-                              set_application(application);
-                              openApplicantModal();
-                            }}
-                          >
-                            <td className="px-4 py-2">
-                              <div className="flex items-center gap-3">
-                                {application.user?.id && (
-                                  <UserPfp
-                                    user_id={application.user?.id}
-                                  ></UserPfp>
-                                )}
-                                <div>
-                                  <p className="font-medium text-gray-900">
-                                    {getFullName(application.user)}{" "}
-                                    <span className="opacity-70">
-                                      —{" "}
-                                      {to_university_name(
-                                        application.user?.university
-                                      )}{" "}
-                                      •{" "}
-                                      {to_level_name(
-                                        application.user?.year_level
-                                      )}
-                                    </span>
-                                  </p>
-                                  <p className="text-sm text-gray-500">
-                                    <Badge strength="medium">
-                                      {application.job?.title}
-                                    </Badge>
-                                  </p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 text-center">
-                              <div className="flex flex-row items-center justify-end space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    set_application(application);
-                                    openReviewModal();
-                                  }}
-                                >
-                                  Notes
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    set_application(application);
-                                    window
-                                      ?.open(
-                                        application.user?.calendar_link ?? "",
-                                        "_blank"
-                                      )
-                                      ?.focus();
-                                  }}
-                                >
-                                  Schedule
-                                </Button>
-                                <GroupableRadioDropdown
-                                  name="status"
-                                  className="w-36"
-                                  disabled={
-                                    to_app_status_name(application.status) ===
-                                    "Withdrawn"
-                                  }
-                                  options={app_statuses}
-                                  defaultValue={application.status}
-                                  onChange={async (status) => {
-                                    if (!application?.id) {
-                                      console.error(
-                                        "Not an application you can edit."
-                                      );
-                                      return;
-                                    }
-
-                                    const {
-                                      // @ts-ignore
-                                      application: updated_app,
-                                      success,
-                                    } = await review_app(application.id, {
-                                      status,
-                                    });
-                                  }}
-                                ></GroupableRadioDropdown>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                </>
+              )}
             </div>
           </div>
 

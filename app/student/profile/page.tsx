@@ -25,7 +25,12 @@ import { UserService } from "@/lib/api/services";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
-import { useFile } from "@/hooks/use-file";
+import {
+  FileUploadInput,
+  IFileUploadRef,
+  useFile,
+  useFileUpload,
+} from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
 import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -64,7 +69,6 @@ export default function ProfilePage() {
   const profile = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState<boolean>(false);
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
@@ -85,51 +89,14 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated(), router]);
 
-  // File input refs
-  const profilePictureInputRef = useRef<HTMLInputElement>(null);
-
-  const handlePreviewResume = async () => {
-    await syncResumeURL();
-    openResumeModal();
-  };
-
-  const handleProfilePictureUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a JPEG, PNG, or WebP image");
-      return;
-    }
-
-    if (file.size > (1024 * 1024) / 4) {
-      alert("Image size must be less than 0.25MB");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const form = FileUploadFormBuilder.new("pfp");
-      form.file(file);
-      // @ts-ignore
-      const result = await UserService.updateMyPfp(form.build());
-      if (!result.success) {
-        alert("Could not upload profile picture.");
-        return;
-      }
-      alert("Profile picture uploaded successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to upload profile picture");
-    } finally {
-      setUploading(false);
-      if (profilePictureInputRef.current) {
-        profilePictureInputRef.current.value = "";
-      }
-    }
-  };
+  const {
+    fileInputRef: pfpFileInputRef,
+    upload: pfpUpload,
+    isUploading: pfpIsUploading,
+  } = useFileUpload({
+    uploader: UserService.updateMyPfp,
+    filename: "pfp",
+  });
 
   if (!isAuthenticated() || profile.isPending)
     return <Loader>Loading profile...</Loader>;
@@ -156,17 +123,16 @@ export default function ProfilePage() {
                 variant="outline"
                 size="icon"
                 className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
-                onClick={() => profilePictureInputRef.current?.click()}
-                disabled={uploading}
+                onClick={() => pfpFileInputRef.current?.open()}
+                disabled={pfpIsUploading}
               >
                 <Camera className="h-3 w-3" />
               </Button>
-              <input
-                type="file"
-                ref={profilePictureInputRef}
-                onChange={handleProfilePictureUpload}
-                accept="image/*"
-                style={{ display: "none" }}
+              <FileUploadInput
+                ref={pfpFileInputRef}
+                allowedTypes={["image/jpeg", "image/png", "image/webp"]}
+                maxSize={1}
+                onSelect={pfpUpload}
               />
             </div>
 
@@ -226,12 +192,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
-            {!isEditing && (
-              <ProfileDetails
-                profile={profile.data}
-                openResumeModal={handlePreviewResume}
-              />
-            )}
+            {!isEditing && <ProfileDetails profile={profile.data} />}
             {isEditing && (
               <ProfileEditForm data={profile.data}>
                 <ProfileEditor
@@ -240,6 +201,12 @@ export default function ProfilePage() {
                 />
               </ProfileEditForm>
             )}
+            <ResumeBox
+              profile={profile.data}
+              openResumeModal={openResumeModal}
+            />
+            <br />
+            <br />
           </div>
         </div>
 
@@ -272,13 +239,7 @@ export default function ProfilePage() {
   );
 }
 
-const ProfileDetails = ({
-  profile,
-  openResumeModal,
-}: {
-  profile: PublicUser;
-  openResumeModal: () => void;
-}) => {
+const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
   const { isMobile } = useAppContext();
   const {
     to_college_name,
@@ -351,7 +312,6 @@ const ProfileDetails = ({
             link={profile.calendar_link}
           />
         </div>
-        <ResumeBox profile={profile} openResumeModal={openResumeModal} />
       </Card>
       <br />
     </>
@@ -659,87 +619,50 @@ const ResumeBox = ({
   profile: PublicUser;
   openResumeModal: () => void;
 }) => {
-  const [uploading, setUploading] = useState(false);
-  const resumeInputRef = useRef<HTMLInputElement>(null);
-
   // File upload handlers
-  const handleResumeUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ["application/pdf"];
-    if (!allowedTypes.includes(file.type)) {
-      alert("Please upload a PDF document");
-      return;
-    }
-
-    if (file.size > 3 * 1024 * 1024) {
-      alert("File size must be less than 3MB");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      const form = FileUploadFormBuilder.new("resume");
-      form.file(file);
-      // @ts-ignore
-      const result = await UserService.updateMyResume(form.build());
-      alert("Resume uploaded successfully!");
-    } catch (error: any) {
-      alert(error.message || "Failed to upload resume");
-    } finally {
-      setUploading(false);
-      if (resumeInputRef.current) {
-        resumeInputRef.current.value = "";
-      }
-    }
-  };
+  const {
+    fileInputRef: resumeFileInputRef,
+    upload: resumeUpload,
+    isUploading: resumeIsUploading,
+  } = useFileUpload({
+    uploader: UserService.updateMyResume,
+    filename: "resume",
+  });
 
   return (
-    <div className="mt-5">
-      {profile.resume ? (
-        <div className="w-full flex justify-start gap-2">
-          <Button variant="outline" scheme="primary" onClick={openResumeModal}>
-            View Resume
-          </Button>
-          <Button
-            variant="outline"
-            scheme="primary"
-            onClick={() => resumeInputRef.current?.click()}
-            disabled={uploading}
-          >
-            Upload Resume
-          </Button>
-        </div>
-      ) : (
+    <>
+      {profile.resume && (
         <Card>
-          <div className="flex flex-col items-center justify-center">
-            <p className="text-sm text-muted-foreground mb-2">
-              {uploading ? "Uploading..." : "No resume uploaded"}
-            </p>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <BoolBadge
+              state={!!profile.resume}
+              onValue="Resume Uploaded"
+              offValue="No Resume"
+            />
             <Button
-              onClick={() => resumeInputRef.current?.click()}
-              disabled={uploading}
+              onClick={() => resumeFileInputRef.current?.open()}
+              disabled={resumeIsUploading}
             >
               <Upload className="h-4 w-4" />
-              {uploading ? "Uploading..." : "Upload"}
+              {resumeIsUploading
+                ? "Uploading..."
+                : !!profile.resume
+                ? "Upload New"
+                : "Upload"}
             </Button>
             <p className="text-xs text-muted-foreground mt-2">
               PDF up to 2.5MB
             </p>
           </div>
+          <FileUploadInput
+            ref={resumeFileInputRef}
+            maxSize={2.5}
+            allowedTypes={["application/pdf"]}
+            onSelect={resumeUpload}
+          />
         </Card>
       )}
-      <input
-        type="file"
-        ref={resumeInputRef}
-        onChange={handleResumeUpload}
-        accept=".pdf"
-        style={{ display: "none" }}
-      />
-    </div>
+    </>
   );
 };
 

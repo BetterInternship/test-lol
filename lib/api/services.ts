@@ -162,7 +162,7 @@ export const UserService = {
     );
   },
 
-  async updateMyPfp(file: Blob | null) {
+  async updateMyPfp(file: FormData) {
     return APIClient.put<ResourceHashResponse>(
       APIRoute("users").r("me", "pic").build(),
       file,
@@ -176,7 +176,7 @@ export const UserService = {
     );
   },
 
-  async updateMyResume(file: Blob | null) {
+  async updateMyResume(file: FormData) {
     return APIClient.put<Response>(
       APIRoute("users").r("me", "resume").build(),
       file,
