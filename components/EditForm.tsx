@@ -4,12 +4,14 @@ import {
   IFormErrors,
   useFormErrors,
 } from "@/lib/form-data";
-import { createContext, JSX, useContext, useRef } from "react";
+import { createContext, useContext, useRef } from "react";
 import { Input } from "./ui/input";
 import { GroupableRadioDropdown } from "./ui/dropdown";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface EditFormContext<T extends IFormData> {
   formData: T;
@@ -217,7 +219,7 @@ export const FormCheckbox = ({
         name={label ?? ""}
         checked={checked}
         className={cn(
-          "flex flex-row items-center justify-center border rounded-[0.2em] w-5 h-5",
+          "flex flex-row items-center justify-center border rounded-[0.2em] w-4 h-4",
           checked
             ? "border-primary border-opacity-85 bg-blue-200"
             : "border-gray-300 bg-gray-50"
@@ -226,6 +228,45 @@ export const FormCheckbox = ({
       >
         {checked && <Check className="text-primary opacity-75" />}
       </Checkbox>
+    </div>
+  );
+};
+
+/**
+ * Datepicker.
+ *
+ * @component
+ */
+interface FormDatePickerProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  date: number;
+  setter?: (value: any) => void;
+  className?: string;
+}
+
+export const FormDatePicker = ({
+  label,
+  date,
+  setter,
+  className,
+  ...props
+}: FormDatePickerProps) => {
+  return (
+    <div>
+      {label && (
+        <label className="text-xs text-gray-400 italic mb-1 block">
+          {label}
+        </label>
+      )}
+      <div className="relative flex items-center space-x-2">
+        <DatePicker
+          id=""
+          selected={date ? new Date(date) : new Date()}
+          className="w-full flex h-8 px-[0.75em] py-[0.33em] rounded-[0.33em] border border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto bg-background"
+          onChange={(date) => setter && setter(date?.getTime())}
+        ></DatePicker>
+      </div>
     </div>
   );
 };
