@@ -53,8 +53,8 @@ export function ApplicationsTable({
 
       {/* Table Content */}
       <div className="flex-1 overflow-auto">
-        <table className="relative w-full">
-          <tbody className="absolute w-[100%]">
+        <table className="w-full">
+          <tbody>
             {sortedApplications.map((application) => (
               <tr
                 key={application.id}
