@@ -1,4 +1,3 @@
-// components/TanstackProvider.tsx
 "use client";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,14 +13,12 @@ const queryClient = new QueryClient({
     queries: {
       gcTime: 24 * 60 * 60 * 1000,
       staleTime: 24 * 60 * 60 * 1000,
-      // refetchOnMount: false,
-      refetchOnWindowFocus: false,
     },
   },
 });
 
 const asyncStoragePersister = createAsyncStoragePersister({
-  storage: AsyncStorage,
+  storage: typeof window === "undefined" ? undefined : AsyncStorage,
 });
 
 persistQueryClient({

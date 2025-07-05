@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "stage": "npm run build && git push origin develop",
+    "publish": "npm run build && git push origin develop",
     "start": "next start",
     "lint": "next lint"
   },
