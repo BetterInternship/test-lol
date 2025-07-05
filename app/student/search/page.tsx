@@ -125,13 +125,7 @@ export default function SearchPage() {
   // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;
   const [jobs_page, setJobsPage] = useState(1);
-  const {
-    getJobsPage,
-    jobs: filteredJobs,
-    loading: jobs_loading,
-    error: jobs_error,
-    refetch,
-  } = useJobs({
+  const jobs = useJobs({
     search: searchTerm.trim() || undefined,
     category: job_categories.filter((c) => c.id === filters.category)[0]?.name,
     mode: job_modes.filter((j) => j.id.toString() === filters.location)[0]
@@ -140,7 +134,7 @@ export default function SearchPage() {
   });
 
   // Get paginated jobs directly from getJobsPage
-  const jobs = getJobsPage({ page: jobs_page, limit: jobs_page_size });
+  const jobsPage = jobs.getJobsPage({ page: jobs_page, limit: jobs_page_size });
   const savedJobs = useSavedJobs();
   const applications = useApplications();
 
@@ -165,15 +159,15 @@ export default function SearchPage() {
   useEffect(() => {
     const jobId = searchParams.get("jobId");
 
-    if (jobId && jobs.length > 0) {
-      const targetJob = jobs.find((job) => job.id === jobId);
+    if (jobId && jobsPage.length > 0) {
+      const targetJob = jobsPage.find((job) => job.id === jobId);
       if (targetJob && targetJob.id !== selectedJob?.id) {
         setSelectedJob(targetJob);
       }
-    } else if (jobs.length > 0 && !selectedJob?.id) {
-      setSelectedJob(jobs[0]);
+    } else if (jobsPage.length > 0 && !selectedJob?.id) {
+      setSelectedJob(jobsPage[0]);
     }
-  }, [jobs.length, searchParams]);
+  }, [jobsPage.length, searchParams]);
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
@@ -271,12 +265,13 @@ export default function SearchPage() {
     if (is_mobile) openJobModal();
   };
 
-  if (jobs_error) {
+  if (jobs.error) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load jobs: {jobs_error}</p>
-          <Button onClick={refetch}>Try Again</Button>
+          <p className="text-red-600 mb-4">
+            Failed to load jobs: {jobs.error.message}
+          </p>
         </div>
       </div>
     );
@@ -286,7 +281,7 @@ export default function SearchPage() {
     <>
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
-        {jobs_loading ? (
+        {jobs.isPending ? (
           <div className="w-full flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -319,9 +314,9 @@ export default function SearchPage() {
 
             {/* Scrollable Job Cards Area */}
             <div className="flex-1 overflow-y-auto p-6 pt-4">
-              {jobs.length ? (
+              {jobsPage.length ? (
                 <div className="space-y-4">
-                  {jobs.map((job) => (
+                  {jobsPage.map((job) => (
                     <MobileJobCard
                       key={job.id}
                       job={job}
@@ -338,7 +333,7 @@ export default function SearchPage() {
               {/* Mobile Paginator */}
               <div className="mt-6">
                 <Paginator
-                  totalItems={filteredJobs.length}
+                  totalItems={jobs.filteredJobs.length}
                   itemsPerPage={jobs_page_size}
                   onPageChange={(page) => setJobsPage(page)}
                 />
@@ -372,9 +367,9 @@ export default function SearchPage() {
                 </div>
               </div>
 
-              {jobs.length ? (
+              {jobsPage.length ? (
                 <div className="space-y-3">
-                  {jobs.map((job) => (
+                  {jobsPage.map((job) => (
                     <JobCard
                       key={job.id}
                       job={job}
@@ -391,7 +386,7 @@ export default function SearchPage() {
 
               {/* Desktop Paginator */}
               <Paginator
-                totalItems={filteredJobs.length}
+                totalItems={jobs.filteredJobs.length}
                 itemsPerPage={jobs_page_size}
                 onPageChange={(page) => setJobsPage(page)}
               />

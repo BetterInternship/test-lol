@@ -3,10 +3,8 @@ import {
   JobService,
   UserService,
   ApplicationService,
-  handleApiError,
 } from "@/lib/api/services";
 import { Job } from "@/lib/db/db.types";
-import { create_cached_fetcher } from "./use-fetch";
 import { useRefs } from "@/lib/db/use-refs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -21,47 +19,20 @@ export function useJobs(
     industry?: string;
   } = {}
 ) {
-  const [allJobs, setAllJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isPending, data, error } = useQuery({
+    queryKey: ["jobs"],
+    queryFn: () =>
+      JobService.getAllJobs({
+        last_update: new Date(0).getTime(),
+      }),
+    staleTime: 60 * 60 * 1000,
+  });
   const { get_job_category_by_name } = useRefs();
-
-  // ! make sure last update depends on last update sent by server (should be a cookie instead, dont let client handle it on its own)
-  const fetcher = async () => {
-    const response = await JobService.get_jobs({
-      last_update: new Date(0).getTime(),
-    });
-    if (!response.success) setError(response.message ?? "");
-    return response.jobs;
-  };
-  const { do_fetch: fetch_all_active_jobs } = create_cached_fetcher<Job[]>(
-    "active-jobs",
-    fetcher
-  );
-
-  // Load all jobs initially
-  const fetchAllActiveJobs = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const jobs = await fetch_all_active_jobs();
-      if (jobs) setAllJobs(jobs);
-      else setError("Could not load jobs.");
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAllActiveJobs();
-  }, [fetchAllActiveJobs]);
 
   // Client-side filtering logic
   const filteredJobs = useMemo(() => {
-    if (!allJobs.length) return [];
+    const allJobs = data?.jobs ?? [];
+    if (!allJobs?.length) return [];
 
     return allJobs.filter((job) => {
       // Search filter
@@ -148,7 +119,7 @@ export function useJobs(
 
       return true;
     });
-  }, [allJobs, params]);
+  }, [data, params]);
 
   const getJobsPage = useCallback(
     ({ page = 1, limit = 10 }) => {
@@ -160,12 +131,11 @@ export function useJobs(
   );
 
   return {
-    getJobsPage,
-    jobs: filteredJobs, // Return filtered jobs
-    allJobs, // Also expose unfiltered jobs for total count
-    loading,
+    isPending,
+    jobs: data?.jobs,
     error,
-    refetch: fetchAllActiveJobs,
+    filteredJobs,
+    getJobsPage,
   };
 }
 
@@ -272,7 +242,7 @@ export function useApplications() {
   const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   useEffect(() => {
     setAppliedJobs(
-      data?.applications.map((application) => ({
+      data?.applications?.map((application) => ({
         id: application.job_id ?? "",
       })) ?? []
     );
