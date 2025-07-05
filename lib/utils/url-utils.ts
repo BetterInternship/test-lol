@@ -23,6 +23,7 @@ export const toURL = (url?: string | null): URL | null =>
 export const isValidRequiredURL = (url: string): boolean => {
   const urlObj = toURL(url);
   if (!urlObj) return false;
+  if (!urlObj.hostname || urlObj.hostname.indexOf(".") < 0) return false;
   return urlObj.protocol === "http:" || urlObj.protocol === "https:";
 };
 

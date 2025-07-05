@@ -241,7 +241,7 @@ interface FormDatePickerProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   date: number;
-  setter?: (value: any) => void;
+  setter?: (value?: number) => void;
   className?: string;
 }
 

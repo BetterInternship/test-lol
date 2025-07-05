@@ -1,19 +1,11 @@
 "use client";
 
-import {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import { useRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "../authctx";
-import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { useRouter } from "next/navigation";
-import { cn, isValidEmail, isValidPHNumber } from "@/lib/utils";
 import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
-import { Employer, MoA } from "@/lib/db/db.types";
+import { Employer } from "@/lib/db/db.types";
 import {
   createEditForm,
   FormCheckbox,
@@ -23,41 +15,47 @@ import {
 } from "@/components/EditForm";
 import { Card } from "@/components/ui/our-card";
 import { ErrorLabel } from "@/components/ui/labels";
-import { useAppContext } from "@/lib/ctx-app";
 import { StoryBook } from "@/components/ui/storybook";
 import { Button } from "@/components/ui/button";
+import { isValidEmail, isValidPHNumber } from "@/lib/utils";
+import { MultipartFormBuilder } from "@/lib/multipart-form";
 
 const [EmployerRegisterForm, useEmployerRegisterForm] =
   createEditForm<Employer>();
 
 export default function RegisterPage() {
   const { register } = useAuthContext();
-  const router = useRouter();
-  const profileRegisterRef = useRef<{ register: () => Promise<void> }>(null);
 
   return (
     <div className="flex-1 flex justify-center px-6 py-12 pt-12">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-10">
-          <h2 className="text-5xl font-heading font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
             Employer Registration
           </h2>
         </div>
 
         <EmployerRegisterForm data={{}}>
-          <EmployerEditor registerProfile={register} ref={profileRegisterRef} />
+          <EmployerEditor registerProfile={register} />
         </EmployerRegisterForm>
+      </div>
+      <div className="fixed bottom-0 bg-white h-10 w-full flex flex-row justify-center">
+        <div className="opacity-80 text-sm">
+          Need help? Contact us at{" "}
+          <a href="mailto:hello@betterinternship.com">
+            hello@betterinternship.com
+          </a>
+        </div>
       </div>
     </div>
   );
 }
 
-const EmployerEditor = forwardRef<
-  { register: () => Promise<void> },
-  {
-    registerProfile: (newProfile: Partial<Employer>) => void;
-  }
->(({ registerProfile }, ref) => {
+const EmployerEditor = ({
+  registerProfile,
+}: {
+  registerProfile: (newProfile: Partial<Employer>) => Promise<any>;
+}) => {
   const {
     formData,
     formErrors,
@@ -68,33 +66,58 @@ const EmployerEditor = forwardRef<
     cleanFormData,
   } = useEmployerRegisterForm();
   interface AdditionalFields {
+    contact_name: string;
     has_moa_with_dlsu: boolean;
     moa_start_date: number;
     moa_expires_at: number;
     terms_accepted: boolean;
   }
-  const { industries, universities } = useRefs();
+  const router = useRouter();
+  const { industries, universities, get_university_by_name } = useRefs();
+  const [isRegistering, setIsRegistering] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields
   );
 
-  // Provide an external link to save profile
-  useImperativeHandle(ref, () => ({
-    register: async () => {
-      const newProfile = {
-        ...cleanFormData(),
-        website: toURL(formData.website)?.toString(),
-        accepts_non_university: formData.accepts_non_university ?? true, // default to true
-        accepted_universities: `[${universities
-          .map((u) => `"${u.id}"`)
-          .join(",")}]`,
-        ...additionalFields,
-      };
-      // @ts-ignore
-      await registerProfile(newProfile);
+  const register = async () => {
+    const multipartForm = MultipartFormBuilder.new();
+    const newProfile = {
+      ...cleanFormData(),
+      website: toURL(formData.website)?.toString(),
+      accepts_non_university: formData.accepts_non_university ?? true, // default to true
+      accepted_universities: `[${universities
+        .map((u) => `"${u.id}"`)
+        .join(",")}]`,
+      contact_name: additionalFields.contact_name,
+      ...(additionalFields.has_moa_with_dlsu
+        ? {
+            moa: JSON.stringify([
+              {
+                // ! change when unis update
+                university_id: get_university_by_name("DLSU - Manila")?.id,
+                start_date: additionalFields.moa_start_date,
+                expires_at: additionalFields.moa_expires_at,
+              },
+            ]),
+          }
+        : {}),
+    };
+    console.log(newProfile);
+    multipartForm.from(newProfile);
+    setIsRegistering(true);
+    // @ts-ignore
+    const result = await registerProfile(multipartForm.build());
+    // @ts-ignore
+    if (!result?.success) {
+      alert("Ensure all fields are complete.");
+      setIsRegistering(false);
       return;
-    },
-  }));
+    }
+
+    alert("Email has been sent with password!");
+    router.push("/login");
+    setIsRegistering(false);
+  };
 
   // Update dropdown options
   useEffect(() => {
@@ -106,7 +129,7 @@ const EmployerEditor = forwardRef<
   useEffect(() => {
     addValidator(
       "name",
-      (name: string) => name.length < 3 && `Company Name is not valid.`
+      (name: string) => name && name.length < 3 && `Company Name is not valid.`
     );
     addValidator(
       "industry",
@@ -115,15 +138,26 @@ const EmployerEditor = forwardRef<
     addValidator(
       "description",
       (description: string) =>
-        description.length < 10 && `Description is too short.`
+        description && description.length < 10 && `Description is too short.`
     );
     addValidator(
       "legal_entity_name",
-      (name: string) => name.length < 3 && `Legal Entity Name is not valid.`
+      (name: string) =>
+        name && name.length < 3 && `Legal Entity Name is not valid.`
     );
     addValidator(
       "website",
-      (link: string) => !isValidRequiredURL(link) && "Invalid website link."
+      (link: string) =>
+        link && !isValidRequiredURL(link) && "Invalid website link."
+    );
+    addValidator(
+      "phone_number",
+      (number: string) =>
+        number && !isValidPHNumber(number) && "Invalid PH number."
+    );
+    addValidator(
+      "email",
+      (email: string) => email && !isValidEmail(email) && "Invalid email."
     );
   }, []);
 
@@ -135,35 +169,40 @@ const EmployerEditor = forwardRef<
             General Information
             <div className="text-lg opacity-50 font-normal">Step 1 of 3</div>
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.name} />
-            <ErrorLabel value={formErrors.legal_entity_name} />
-          </div>
           <div className="mb-4 flex flex-col space-y-3">
-            <FormInput
-              label="Doing Business As"
-              value={formData.name ?? ""}
-              setter={fieldSetter("name")}
-              maxLength={100}
-            />
-            <FormInput
-              label="Legal Entity Name"
-              value={formData.legal_entity_name ?? ""}
-              setter={fieldSetter("legal_entity_name")}
-              maxLength={100}
-            />
+            <div>
+              <ErrorLabel value={formErrors.name} />
+              <FormInput
+                label="Doing Business As"
+                value={formData.name ?? ""}
+                setter={fieldSetter("name")}
+                maxLength={100}
+              />
+            </div>
+            <div>
+              <ErrorLabel value={formErrors.legal_entity_name} />
+              <FormInput
+                label="Legal Entity Name"
+                value={formData.legal_entity_name ?? ""}
+                setter={fieldSetter("legal_entity_name")}
+                maxLength={100}
+              />
+            </div>
             <FormInput
               label="General Office Location"
               value={formData.location ?? ""}
               setter={fieldSetter("location")}
               maxLength={100}
             />
-            <FormInput
-              label="Website"
-              value={formData.website ?? ""}
-              setter={fieldSetter("website")}
-              maxLength={100}
-            />
+            <div>
+              <ErrorLabel value={formErrors.website} />
+              <FormInput
+                label="Website"
+                value={formData.website ?? ""}
+                setter={fieldSetter("website")}
+                maxLength={100}
+              />
+            </div>
             <FormDropdown
               label="Industry"
               options={industries}
@@ -190,21 +229,34 @@ const EmployerEditor = forwardRef<
             Contact Person Information
             <div className="text-lg opacity-50 font-normal">Step 2 of 3</div>
           </div>
-          <div className="flex flex-col space-y-1 mb-2">
-            <ErrorLabel value={formErrors.phone_number} />
-            <ErrorLabel value={formErrors.email} />
-          </div>
           <div className="mb-4 flex flex-col space-y-3">
             <FormInput
-              label="Phone Number"
-              value={formData.phone_number ?? ""}
-              setter={fieldSetter("phone_number")}
+              label="Contact Name"
+              value={additionalFields.contact_name ?? ""}
+              maxLength={40}
+              setter={(value) =>
+                setAdditionalFields({
+                  ...additionalFields,
+                  contact_name: value,
+                })
+              }
             />
-            <FormInput
-              label="Email"
-              value={formData.email ?? ""}
-              setter={fieldSetter("email")}
-            />
+            <div>
+              <ErrorLabel value={formErrors.phone_number} />
+              <FormInput
+                label="Contact Phone Number"
+                value={formData.phone_number ?? ""}
+                setter={fieldSetter("phone_number")}
+              />
+            </div>
+            <div>
+              <ErrorLabel value={formErrors.email} />
+              <FormInput
+                label="Contact Email"
+                value={formData.email ?? ""}
+                setter={fieldSetter("email")}
+              />
+            </div>
           </div>
           <Card className="border-warning p-4">
             <p className="font-normal opacity-80 text-sm italic text-warning">
@@ -258,7 +310,7 @@ const EmployerEditor = forwardRef<
                     setter={(date) =>
                       setAdditionalFields({
                         ...additionalFields,
-                        moa_start_date: date,
+                        moa_start_date: date ?? 0,
                       })
                     }
                   />
@@ -268,7 +320,7 @@ const EmployerEditor = forwardRef<
                     setter={(date) =>
                       setAdditionalFields({
                         ...additionalFields,
-                        moa_expires_at: date,
+                        moa_expires_at: date ?? 0,
                       })
                     }
                   />
@@ -314,8 +366,12 @@ const EmployerEditor = forwardRef<
                 </label>
               </div>
             </Card>
-            <Button className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
-              Register
+            <Button
+              onClick={register}
+              disabled={!additionalFields.terms_accepted || isRegistering}
+              className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+            >
+              {isRegistering ? "Registering..." : "Register"}
             </Button>
           </div>
         </Card>
@@ -324,4 +380,4 @@ const EmployerEditor = forwardRef<
       <br />
     </>
   );
-});
+};
