@@ -1,64 +1,100 @@
 import { useState, useEffect } from "react";
 import { Employer, PrivateUser } from "@/lib/db/db.types";
 import { handleApiError } from "./services";
-import { employer_auth_service } from "./hire.api";
+import { EmployerAuthService } from "./hire.api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /**
  * Retrieves aggregate employer information.
  * @returns
  */
 export function useEmployers() {
+  const queryClient = useQueryClient();
+  const { isPending, error } = useQuery({
+    queryKey: ["god-employers"],
+    queryFn: async () => {
+      const { success, employers } =
+        await EmployerAuthService.getAllEmployers();
+      if (!success) return {};
+      await Promise.all(
+        employers.map((employer) =>
+          queryClient.setQueryData(["god-employers", employer.id], employer)
+        )
+      );
+      updateEmployers();
+      return {};
+    },
+  });
   const [employers, setEmployers] = useState<Employer[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isPending: isVerifying, mutate: verify } = useMutation({
+    mutationFn: EmployerAuthService.verifyEmployer,
+    onMutate: async (employerId) =>
+      (await queryClient.getQueryData([
+        "god-employers",
+        employerId,
+      ])) as Employer,
+    onSettled: async (response, error, variables, oldEmployer) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["god-employers", response?.employer.id],
+      });
+      const result = await queryClient.setQueryData(
+        ["god-employers", response?.employer.id],
+        {
+          ...oldEmployer,
+          ...response?.employer,
+        }
+      );
+      updateEmployers();
+      return result;
+    },
+  });
+  const { isPending: isUnverifying, mutate: unverify } = useMutation({
+    mutationFn: EmployerAuthService.unverifyEmployer,
+    onMutate: async (employerId) =>
+      (await queryClient.getQueryData([
+        "god-employers",
+        employerId,
+      ])) as Employer,
+    onSettled: async (response, error, variables, oldEmployer) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["god-employers", response?.employer.id],
+      });
+      const result = await queryClient.setQueryData(
+        ["god-employers", response?.employer.id],
+        {
+          ...oldEmployer,
+          ...response?.employer,
+        }
+      );
+      updateEmployers();
+      return result;
+    },
+  });
 
-  const fetchEmployers = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await employer_auth_service.get_all_employers();
-      if (response.success)
-        // @ts-ignore
-        setEmployers(response.employers ?? []);
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verify = async (employer_id: string, new_status: boolean) => {
-    setLoading(true);
-
-    const old_employer = employers.filter((e) => e.id === employer_id)[0];
-    const response = new_status
-      ? await employer_auth_service.verify_employer(employer_id)
-      : await employer_auth_service.unverify_employer(employer_id);
-
-    // Error
-    if (!response.success) {
-      setError(response.message ?? "");
-      return;
-    }
-
-    // Update cache
-    setEmployers([
-      ...employers.filter((e) => e.id !== employer_id),
-      { ...old_employer, is_verified: new_status },
-    ]);
-
-    setLoading(false);
+  const updateEmployers = () => {
+    setTimeout(() =>
+      setEmployers(
+        queryClient
+          .getQueriesData({
+            queryKey: ["god-employers"],
+          })
+          .map((e) => e[1] as Employer)
+          .filter((e) => e?.id)
+      )
+    );
   };
 
   useEffect(() => {
-    fetchEmployers();
+    updateEmployers();
   }, []);
 
   return {
-    employers,
+    isPending,
+    isVerifying,
+    isUnverifying,
+    data: employers,
     verify,
-    loading,
+    unverify,
     error,
   };
 }
@@ -76,7 +112,7 @@ export function useUsers() {
     try {
       setLoading(true);
       setError(null);
-      const response = await employer_auth_service.get_all_users();
+      const response = await EmployerAuthService.getAllUsers();
       if (response.success)
         // @ts-ignore
         set_users(response.users ?? []);
