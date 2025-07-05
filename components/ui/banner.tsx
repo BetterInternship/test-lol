@@ -16,7 +16,7 @@ export const Banner: React.FC<BannerProps> = ({ children, className = "" }) => {
 };
 
 //unverified banner for Employers
-export const showUnverifiedBanner = () => {
+export const ShowUnverifiedBanner = () => {
   return (
     <Banner className="mb-4">
       <div className="flex items-center">

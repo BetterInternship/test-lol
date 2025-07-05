@@ -23,7 +23,7 @@ import { useAuthContext } from "../authctx";
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import ContentLayout from "@/components/features/hire/content-layout";
-import { showUnverifiedBanner } from "@/components/ui/banner";
+import { ShowUnverifiedBanner } from "@/components/ui/banner";
 
 export default function MyListings() {
   const { redirect_if_not_logged_in } = useAuthContext();
@@ -86,7 +86,9 @@ export default function MyListings() {
         <div className="flex-1 flex flex-col">
           {/* Unverified Banner */}
           {!profileLoading && !profile?.is_verified && (
-            <div className="p-6 pb-0">{showUnverifiedBanner()}</div>
+            <div className="p-6 pb-0">
+              <ShowUnverifiedBanner />
+            </div>
           )}
           {/* Content Area */}
           <div className="flex-1 p-6 flex gap-6 overflow-hidden">

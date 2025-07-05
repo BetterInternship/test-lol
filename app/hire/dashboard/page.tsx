@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { useProfile } from "@/hooks/use-employer-api";
-import { showUnverifiedBanner } from "@/components/ui/banner";
+import { ShowUnverifiedBanner } from "@/components/ui/banner";
 
 export default function Dashboard() {
   const {
@@ -93,7 +93,7 @@ export default function Dashboard() {
             {/* Enhanced Dashboard */}
             <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
               {!profileLoading && !profile?.is_verified ? (
-                showUnverifiedBanner()
+                <ShowUnverifiedBanner />
               ) : (
                 <>
                   {/* Enhanced Table */}
