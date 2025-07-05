@@ -20,9 +20,9 @@ import { JobHead } from "@/components/shared/jobs";
 import { UserApplication } from "@/lib/db/db.types";
 
 export default function ApplicationsPage() {
-  const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
+  const { redirectIfNotLoggedIn } = useAuthContext();
   const applications = useApplications();
-  redirect_if_not_logged_in();
+  redirectIfNotLoggedIn();
 
   return (
     <div className="container max-w-5xl p-10 pt-16 mx-auto">
