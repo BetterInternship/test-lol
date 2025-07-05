@@ -30,8 +30,8 @@ export const showUnverifiedBanner = () => {
         <span className="font-medium">Account not verified</span>
       </div>
       <p className="mt-1 text-sm">
-        You can add Listings, Create your Company Profile while we finish
-        verifying your account!
+        You can add listings while we verify your account. Your listings won't
+        be visible publicly until verification is complete.
       </p>
     </Banner>
   );
