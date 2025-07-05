@@ -5,20 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart } from "lucide-react";
 import { useSavedJobs } from "@/lib/api/student.api";
-import { useAuthContext } from "../../../lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/our-card";
 import { JobHead } from "@/components/shared/jobs";
 import { Job } from "@/lib/db/db.types";
 
 export default function SavedJobsPage() {
-  const {
-    isAuthenticated: is_authenticated,
-    redirectIfNotLoggedIn: redirect_if_not_logged_in,
-  } = useAuthContext();
+  const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
   const savedJobs = useSavedJobs();
 
-  redirect_if_not_logged_in();
+  redirectIfNotLoggedIn();
 
   return (
     <div className="container max-w-5xl p-10 pt-16 mx-auto">
@@ -38,7 +35,7 @@ export default function SavedJobsPage() {
       <hr />
       <br />
 
-      {savedJobs.isPending || !is_authenticated() ? (
+      {savedJobs.isPending || !isAuthenticated() ? (
         <Loader>Loading saved jobs...</Loader>
       ) : savedJobs.error ? (
         <Card className="max-w-md m-auto">
