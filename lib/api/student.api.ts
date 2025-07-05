@@ -5,11 +5,9 @@ import {
   ApplicationService,
   handleApiError,
 } from "@/lib/api/services";
-import { Job, PublicUser, UserApplication } from "@/lib/db/db.types";
-import { useAuthContext } from "@/lib/ctx-auth";
-import { useCache } from "../../hooks/use-cache";
-import { create_cached_fetcher, FetchResponse } from "./use-fetch";
-import { useRefs } from "../db/use-refs";
+import { Job } from "@/lib/db/db.types";
+import { create_cached_fetcher } from "./use-fetch";
+import { useRefs } from "@/lib/db/use-refs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Jobs Hook with Client-Side Filtering
@@ -203,9 +201,8 @@ export function useProfile() {
     mutateAsync: update,
   } = useMutation({
     mutationFn: UserService.updateMyProfile,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
-    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] }),
   });
 
   return {
@@ -219,159 +216,34 @@ export function useProfile() {
 }
 
 /**
- * Makes life easier
- *
- * @hook
- * @internal
- */
-const listFromDBInternalHook = <
-  ID extends number | string,
-  T extends { id?: ID }
->({
-  name,
-  fetches,
-}: {
-  name: string;
-  fetches: {
-    get_data: () => Promise<{ data?: T[] } & FetchResponse>;
-    add_data?: (
-      id: ID,
-      new_data: Partial<T>
-    ) => Promise<{ data?: T } & FetchResponse>;
-    set_data?: (
-      id: ID,
-      new_data: Partial<T>
-    ) => Promise<{ data?: T } & FetchResponse>;
-  };
-}) => {
-  const { get_cache, set_cache } = useCache<T[]>(`__${name}__cache`);
-  const [data, setData] = useState<T[]>([]);
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-
-  /**
-   * Adds an item to the list.
-   */
-  const add_data = useCallback(async (id: ID, new_data: Partial<T>) => {
-    if (!fetches.add_data) return;
-
-    try {
-      setUpdating(true);
-      const response = await fetches.add_data(id, new_data);
-      const added_data = response.data as T;
-
-      // We added an item
-      if (added_data) {
-        console.log("[DBLISTHOOK] Toggling on; table " + name);
-        if (!get_cache()) set_cache([]);
-        const new_data = [...(get_cache() as T[]), { ...added_data }] as T[];
-        set_cache(new_data);
-        setData(new_data);
-
-        // We unadded an item, for toggle routes
-      } else if (response.success) {
-        console.log("[DBLISTHOOK] Toggling off; table " + name);
-        const new_data = (get_cache() as T[]).filter(
-          (old_data) => old_data.id !== id
-        );
-        set_cache(new_data);
-        setData(new_data);
-      }
-      return response;
-    } catch (error) {
-      handleApiError(error);
-      throw error;
-    } finally {
-      setUpdating(false);
-    }
-  }, []);
-
-  /**
-   * Syncs up list with the db.
-   */
-  const get_data = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      // Check cache first
-      const cache_data = get_cache() as T[];
-      if (cache_data) {
-        setData(cache_data);
-        return;
-      }
-
-      // Otherwise, pull from server
-      const response = await fetches.get_data();
-      const gotten_data = (response.data as T[]) ?? [];
-
-      if (response.success) {
-        setData(gotten_data);
-        set_cache(gotten_data);
-      }
-    } catch (err) {
-      setError(handleApiError(err));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    get_data();
-  }, [get_data]);
-
-  return {
-    data,
-    error,
-    loading,
-    updating,
-    add: add_data,
-    refetch: get_data,
-  };
-};
-
-/**
  * Saved jobs hook
  *
  * @hook
  */
 export const useSavedJobs = () => {
-  // Mapping of fetch outputs
-  const get_data = async () =>
-    await JobService.get_saved_jobs().then((r) => ({ ...r, data: r.jobs }));
-  const add_data = async (id: string) =>
-    await UserService.saveJob(id).then((r) => ({ ...r, data: r.job }));
-
-  // Makes our lives easier
-  const {
-    data: saved_jobs,
-    error,
-    loading,
-    add: save_job,
-    updating: saving,
-    refetch,
-  } = listFromDBInternalHook<string, Job>({
-    name: "saved_jobs",
-    fetches: {
-      get_data,
-      add_data,
-    },
+  const queryClient = useQueryClient();
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-saved-jobs"],
+    queryFn: JobService.getSavedJobs,
+  });
+  const { isPending: isToggling, mutate: toggle } = useMutation({
+    mutationFn: UserService.saveJob,
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] }),
   });
 
   // Other utils
-  const is_saved = (job_id: string): boolean => {
-    return saved_jobs.some((saved_job) => saved_job.id === job_id);
+  const isJobSaved = (jobId: string): boolean => {
+    return data?.jobs?.some((savedJob) => savedJob.id === jobId) ?? false;
   };
 
   return {
-    save_job: (job_id: string) => save_job(job_id, {}),
-    saved_jobs,
-    loading,
-    saving,
+    data: data?.jobs,
     error,
-    is_saved: is_saved,
-    refetch: refetch,
+    toggle,
+    isPending,
+    isToggling,
+    isJobSaved,
   };
 };
 
@@ -392,9 +264,8 @@ export function useApplications() {
     mutateAsync: create,
   } = useMutation({
     mutationFn: ApplicationService.createApplication,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-applications"] });
-    },
+    onSettled: () =>
+      queryClient.invalidateQueries({ queryKey: ["my-applications"] }),
   });
 
   // Save appliedJobs independently

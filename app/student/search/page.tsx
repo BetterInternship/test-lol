@@ -141,8 +141,7 @@ export default function SearchPage() {
 
   // Get paginated jobs directly from getJobsPage
   const jobs = getJobsPage({ page: jobs_page, limit: jobs_page_size });
-
-  const { is_saved, saving, save_job } = useSavedJobs();
+  const savedJobs = useSavedJobs();
   const applications = useApplications();
 
   // Initialize search term from URL
@@ -181,12 +180,7 @@ export default function SearchPage() {
       window.location.href = "/login";
       return;
     }
-
-    try {
-      await save_job(job.id ?? "");
-    } catch (error) {
-      console.error("Failed to save job:", error);
-    }
+    await savedJobs.toggle(job.id ?? "");
   };
 
   const handleApply = () => {
@@ -431,13 +425,17 @@ export default function SearchPage() {
                       variant="outline"
                       onClick={() => handleSave(selectedJob)}
                       scheme={
-                        is_saved(selectedJob.id) ? "destructive" : "default"
+                        savedJobs.isJobSaved(selectedJob.id)
+                          ? "destructive"
+                          : "default"
                       }
                     >
-                      {is_saved(selectedJob.id ?? "") && <Heart />}
-                      {is_saved(selectedJob.id ?? "")
-                        ? "Saved"
-                        : saving
+                      {savedJobs.isJobSaved(selectedJob.id ?? "") && <Heart />}
+                      {savedJobs.isJobSaved(selectedJob.id ?? "")
+                        ? savedJobs.isToggling
+                          ? "Unsaving..."
+                          : "Saved"
+                        : savedJobs.isToggling
                         ? "Saving..."
                         : "Save"}
                     </Button>,
@@ -554,14 +552,18 @@ export default function SearchPage() {
                 variant="outline"
                 onClick={() => selectedJob && handleSave(selectedJob)}
                 scheme={
-                  is_saved(selectedJob?.id ?? "") ? "destructive" : "default"
+                  savedJobs.isJobSaved(selectedJob?.id ?? "")
+                    ? "destructive"
+                    : "default"
                 }
                 className="h-14 w-14"
               >
                 <Heart
                   className={cn(
                     "w-6 h-6",
-                    is_saved(selectedJob?.id ?? "") ? "fill-current" : ""
+                    savedJobs.isJobSaved(selectedJob?.id ?? "")
+                      ? "fill-current"
+                      : ""
                   )}
                 />
               </Button>

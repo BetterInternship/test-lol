@@ -67,7 +67,7 @@ export default function JobPage() {
   } = useModal("incomplete-profile-modal");
   const profile = useProfile();
   const { universities } = useRefs();
-  const { is_saved, saving, save_job } = useSavedJobs();
+  const savedJobs = useSavedJobs();
   const applications = useApplications();
 
   const handleSave = async (job: Job) => {
@@ -75,12 +75,7 @@ export default function JobPage() {
       window.location.href = "/login";
       return;
     }
-
-    try {
-      await save_job(job.id ?? "");
-    } catch (error) {
-      console.error("Failed to save job:", error);
-    }
+    await savedJobs.toggle(job.id ?? "");
   };
 
   const handleApply = () => {
@@ -172,7 +167,7 @@ export default function JobPage() {
                         variant="outline"
                         onClick={() => handleSave(job.data!)}
                         scheme={
-                          is_saved(job.data.id ?? "")
+                          savedJobs.isJobSaved(job.data.id ?? "")
                             ? "destructive"
                             : "default"
                         }
@@ -180,12 +175,16 @@ export default function JobPage() {
                         <Heart
                           className={cn(
                             "w-4 h-4",
-                            is_saved(job.data.id ?? "") ? "fill-current" : ""
+                            savedJobs.isJobSaved(job.data.id ?? "")
+                              ? "fill-current"
+                              : ""
                           )}
                         />
-                        {is_saved(job.data.id ?? "")
-                          ? "Saved"
-                          : saving
+                        {savedJobs.isJobSaved(job.data.id ?? "")
+                          ? savedJobs.isToggling
+                            ? "Unsaving..."
+                            : "Saved"
+                          : savedJobs.isToggling
                           ? "Saving..."
                           : "Save"}
                       </Button>

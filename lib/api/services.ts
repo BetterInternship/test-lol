@@ -218,7 +218,7 @@ export const JobService = {
     return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
   },
 
-  async get_saved_jobs() {
+  async getSavedJobs() {
     return APIClient.get<SavedJobsResponse>(
       APIRoute("jobs").r("saved").build()
     );
