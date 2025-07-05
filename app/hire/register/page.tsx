@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -17,6 +16,7 @@ import { MultipartFormBuilder } from "@/lib/multipart-form";
 import { EditableDatePicker } from "@/components/ui/editable";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function RegisterPage() {
   const { register } = useAuthContext();
@@ -49,7 +49,7 @@ export default function RegisterPage() {
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPhone = (phone: string) =>
     /^09\d{9}$/.test(phone.replace(/\D/g, ""));
-  const isValidUrl = (url: string) => {
+  const isValidURL = (url: string) => {
     if (!url.trim()) return true; // Optional field
     try {
       new URL(url);
@@ -88,7 +88,7 @@ export default function RegisterPage() {
       errors.push("Valid email address");
     }
     if (!form_data.contact_position?.trim()) errors.push("Contact position");
-    if (!form_data.website?.trim() || !isValidUrl(form_data.website.trim())) {
+    if (!form_data.website?.trim() || !isValidURL(form_data.website.trim())) {
       errors.push("Valid website URL");
     }
     if (!acceptTerms) errors.push("Accept terms and conditions");
@@ -114,7 +114,7 @@ export default function RegisterPage() {
         !form_data.contact_email?.trim() ||
         !isValidEmail(form_data.contact_email),
       contact_position: !form_data.contact_position?.trim(),
-      website: form_data.website?.trim() && !isValidUrl(form_data.website),
+      website: form_data.website?.trim() && !isValidURL(form_data.website),
     };
   };
 
@@ -352,9 +352,9 @@ export default function RegisterPage() {
 
             <div className="w-max-prose text-sm text-gray-700 border border-gray-200 p-4 rounded-sm">
               <span className="text-yellow-400">*</span>
-              An admin account will be created for the person as soon as
-              registration is finished. Their email will be sent a password
-              after completing this form.{" "}
+              Your account will be created using the email address you provide
+              below. We will send the login details to the email address you
+              provided.{" "}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

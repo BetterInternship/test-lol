@@ -16,8 +16,8 @@ export const isValidUUID = (uuid: string) => {
 
 export const getURL = () => {
   let url =
-    process?.env?.NEXT_PUBLIC_SITE_URL ?? // Production Url
-    process?.env?.NEXT_PUBLIC_PREVIEW_URL ?? // Development Url
+    process?.env?.NEXT_PUBLIC_SITE_URL ?? // Production URL
+    process?.env?.NEXT_PUBLIC_PREVIEW_URL ?? // Development URL
     process?.env?.NEXT_PUBLIC_VERCEL_BRANCH_URL ?? //Branch URL
     process?.env?.NEXT_PUBLIC_VERCEL_URL ?? // Generated URL
     "http://localhost:3080/"; // Local Development URL

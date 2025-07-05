@@ -5,7 +5,7 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
-  const path = request.nextUrl.pathname;
+  const path = request.nextURL.pathname;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,17 +17,17 @@ export async function updateSession(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value),
+            request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, options)
           );
         },
       },
-    },
+    }
   );
 
   const {
@@ -35,19 +35,19 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   if (!user && path.startsWith("/dashboard/overview")) {
-    const url = request.nextUrl.clone();
+    const url = request.nextURL.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
   if (user && path === "/") {
-    const url = request.nextUrl.clone();
+    const url = request.nextURL.clone();
     url.pathname = "/dashboard/overview";
     return NextResponse.redirect(url);
   }
 
   if (user && path === "/dashboard") {
-    const url = request.nextUrl.clone();
+    const url = request.nextURL.clone();
     url.pathname = "/dashboard/overview";
     return NextResponse.redirect(url);
   }

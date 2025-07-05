@@ -1,5 +1,5 @@
 import { useFile } from "@/hooks/use-file";
-import { EmployerService, UserService } from "@/lib/api/api";
+import { EmployerService, UserService } from "@/lib/api/services";
 import { useCallback, useEffect } from "react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Loader } from "../ui/loader";
@@ -24,7 +24,7 @@ const Pfp = ({
   const { url, sync, loading } = useFile({
     route: `/${source}/` + id + "/pic",
     fetcher: pfp_fetcher,
-    defaultUrl: "/images/default-pfp.jpg",
+    defaultURL: "/images/default-pfp.jpg",
   });
 
   useEffect(() => {

@@ -24,13 +24,13 @@ interface IUseFile {
 export const useFile = ({
   route,
   fetcher,
-  defaultUrl = "",
+  defaultURL = "",
 }: {
   route: string;
   fetcher: () => Promise<any>;
-  defaultUrl?: string;
+  defaultURL?: string;
 }): IUseFile => {
-  const [url, setUrl] = useState(defaultUrl);
+  const [url, setURL] = useState(defaultURL);
   const [loading, setLoading] = useState(true);
 
   /**
@@ -56,7 +56,7 @@ export const useFile = ({
     }
 
     // Update url
-    setUrl(`${process.env.NEXT_PUBLIC_API_URL}${route}?hash=${hash}`);
+    setURL(`${process.env.NEXT_PUBLIC_API_URL}${route}?hash=${hash}`);
     setLoading(false);
   }, [route]);
 

@@ -4,7 +4,7 @@ import {
   handleApiError,
   ApplicationService,
   EmployerService,
-} from "@/lib/api/api";
+} from "@/lib/api/services";
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

@@ -3,7 +3,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { employer_auth_service } from "@/lib/api/employer.api";
+import { EmployerAuthService } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";
@@ -75,7 +75,7 @@ export const AuthContextProvider = ({
 
   const refresh_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
-      const response = await employer_auth_service.loggedin();
+      const response = await EmployerAuthService.loggedin();
 
       if (!response.success) {
         set_is_loading(false);
@@ -93,7 +93,7 @@ export const AuthContextProvider = ({
     };
 
   const register = async (employer: Partial<Employer>) => {
-    const response = await employer_auth_service.register(employer);
+    const response = await EmployerAuthService.register(employer);
     if (!response.success) {
       return null;
     }
@@ -102,7 +102,7 @@ export const AuthContextProvider = ({
   };
 
   const login = async (email: string, password: string) => {
-    const response = await employer_auth_service.login(email, password);
+    const response = await EmployerAuthService.login(email, password);
     if (!response.success) return null;
 
     setUser(response.user as PublicEmployerUser);
@@ -115,7 +115,7 @@ export const AuthContextProvider = ({
   };
 
   const login_as = async (employer_id: string) => {
-    const response = await employer_auth_service.login_as_employer(employer_id);
+    const response = await EmployerAuthService.loginAsEmployer(employer_id);
     if (!response.success) {
       alert("Error logging in by proxy.");
       return null;
@@ -128,12 +128,12 @@ export const AuthContextProvider = ({
   };
 
   const email_status = async (email: string) => {
-    const response = await employer_auth_service.email_status(email);
+    const response = await EmployerAuthService.email_status(email);
     return response;
   };
 
   const logout = async () => {
-    employer_auth_service.logout();
+    EmployerAuthService.logout();
     router.push("/login");
     setUser(null);
     setGod(false);

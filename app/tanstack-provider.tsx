@@ -1,18 +1,46 @@
-// components/TanstackProvider.tsx
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { QueryClient } from "@tanstack/react-query";
+import {
+  persistQueryClient,
+  PersistQueryClientProvider,
+} from "@tanstack/react-query-persist-client";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 24 * 60 * 60 * 1000,
+      staleTime: 24 * 60 * 60 * 1000,
+    },
+  },
+});
+
+const asyncStoragePersister = createAsyncStoragePersister({
+  storage: typeof window === "undefined" ? undefined : AsyncStorage,
+});
+
+persistQueryClient({
+  queryClient,
+  persister: asyncStoragePersister,
+  maxAge: 24 * 60 * 60 * 1000,
+});
 
 export default function TanstackProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Create client only once per component lifecycle
-  const [queryClient] = useState(() => new QueryClient());
-
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: asyncStoragePersister,
+        maxAge: 24 * 60 * 60 * 1000,
+      }}
+    >
+      {children}
+    </PersistQueryClientProvider>
   );
 }
