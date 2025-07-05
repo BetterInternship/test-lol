@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Employer, PrivateUser } from "@/lib/db/db.types";
-import { handleApiError } from "./api";
-import { employer_auth_service } from "./employer.api";
+import { handleApiError } from "./services";
+import { employer_auth_service } from "./hire.api";
 
 /**
  * Retrieves aggregate employer information.

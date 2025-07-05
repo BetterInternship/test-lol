@@ -126,7 +126,7 @@ export const AuthService = {
   },
 };
 interface UserResponse extends FetchResponse {
-  user: Partial<PublicUser>;
+  user: PublicUser;
 }
 
 interface SaveJobResponse extends FetchResponse {
@@ -214,7 +214,7 @@ export const JobService = {
     return APIClient.get<JobsResponse>(APIRoute("jobs").p(params).build());
   },
 
-  async get_job_by_id(job_id: string) {
+  async getJobById(job_id: string) {
     return APIClient.get<JobResponse>(APIRoute("jobs").r(job_id).build());
   },
 
@@ -271,7 +271,7 @@ interface CreateApplicationResponse extends FetchResponse {
 }
 
 export const ApplicationService = {
-  async get_applications(
+  async getApplications(
     params: {
       page?: number;
       limit?: number;
@@ -283,7 +283,7 @@ export const ApplicationService = {
     );
   },
 
-  async create_application(data: { job_id: string; cover_letter?: string }) {
+  async createApplication(data: { job_id: string; cover_letter?: string }) {
     return APIClient.post<CreateApplicationResponse>(
       APIRoute("applications").r("create").build(),
       data

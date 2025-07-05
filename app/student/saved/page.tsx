@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MapPin, Building } from "lucide-react";
-import { useSavedJobs } from "@/lib/api/use-api";
+import { useSavedJobs } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/our-card";

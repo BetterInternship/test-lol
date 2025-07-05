@@ -12,7 +12,7 @@ import { GroupableRadioDropdown } from "@/components/ui/dropdown";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { useModal } from "@/hooks/use-modal";
 import { useFile } from "@/hooks/use-file";
-import { UserService } from "@/lib/api/api";
+import { UserService } from "@/lib/api/services";
 import { UserPfp } from "@/components/shared/pfp";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
@@ -76,7 +76,7 @@ export default function Dashboard() {
     [selected_application]
   );
 
-  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: get_user_resume_url,
     route: selected_resume,
   });
@@ -237,7 +237,7 @@ export default function Dashboard() {
               }}
               open_resume={async () => {
                 closeApplicantModal();
-                await syncResumeUrl();
+                await syncResumeURL();
                 openResumeModal();
               }}
               job={selected_application?.job}
@@ -260,7 +260,7 @@ export default function Dashboard() {
                 <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
                   {getFullName(selected_application?.user)} - Resume
                 </h1>
-                <PDFPreview url={resumeUrl} />
+                <PDFPreview url={resumeURL} />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-96 px-8">

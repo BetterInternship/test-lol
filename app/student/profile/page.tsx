@@ -14,14 +14,14 @@ import {
   Camera,
   MessageCircleQuestion,
 } from "lucide-react";
-import { useProfile } from "@/lib/api/use-api";
+import { useProfile } from "@/lib/api/student.api";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
-import { UserService } from "@/lib/api/api";
+import { UserService } from "@/lib/api/services";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
@@ -61,11 +61,11 @@ const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
   const { isAuthenticated } = useAuthContext();
-  const { profile, loading, error, updateProfile } = useProfile();
+  const profile = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<boolean>(false);
-  const { url: resumeUrl, sync: syncResumeUrl } = useFile({
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
@@ -89,7 +89,7 @@ export default function ProfilePage() {
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
 
   const handlePreviewResume = async () => {
-    await syncResumeUrl();
+    await syncResumeURL();
     openResumeModal();
   };
 
@@ -131,13 +131,14 @@ export default function ProfilePage() {
     }
   };
 
-  if (!isAuthenticated() || loading) return <Loader>Loading profile...</Loader>;
+  if (!isAuthenticated() || profile.isPending)
+    return <Loader>Loading profile...</Loader>;
 
-  if (error) {
+  if (profile.error) {
     return (
       <Card className="flex flex-col items-center justify-center max-w-md m-auto">
         <p className="text-red-600 mb-4 text-base sm:text-lg">
-          Failed to load profile: {error}
+          Failed to load profile: {profile.error.message}
         </p>
         <Button onClick={() => window.location.reload()}>Try Again</Button>
       </Card>
@@ -145,7 +146,7 @@ export default function ProfilePage() {
   }
 
   return (
-    profile && (
+    profile.data && (
       <>
         <div className="min-h-screen bg-transparent p-6 py-12 w-full">
           <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
@@ -171,12 +172,12 @@ export default function ProfilePage() {
 
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
-                {getFullName(profile)}
+                {getFullName(profile.data)}
               </h1>
               <p className="text-muted-foreground text-sm mt-2">
                 <div>
                   <BoolBadge
-                    state={profile.taking_for_credit}
+                    state={profile.data.taking_for_credit}
                     onValue="Taking for credit"
                     offValue="Not taking for credit"
                   />
@@ -227,14 +228,14 @@ export default function ProfilePage() {
           <div className="w-full max-w-[600px] m-auto space-y-2 mt-8">
             {!isEditing && (
               <ProfileDetails
-                profile={profile}
+                profile={profile.data}
                 openResumeModal={handlePreviewResume}
               />
             )}
             {isEditing && (
-              <ProfileEditForm data={profile}>
+              <ProfileEditForm data={profile.data}>
                 <ProfileEditor
-                  updateProfile={updateProfile}
+                  updateProfile={profile.update}
                   ref={profileEditorRef}
                 />
               </ProfileEditForm>
@@ -242,27 +243,27 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {resumeUrl.length > 0 && (
+        {resumeURL.length > 0 && (
           <ResumeModal>
             <div className="space-y-4">
               <h1 className="text-2xl font-bold px-6 pt-2">Resume Preview</h1>
-              <PDFPreview url={resumeUrl} />
+              <PDFPreview url={resumeURL} />
             </div>
           </ResumeModal>
         )}
 
         <EmployerModal>
           <ApplicantModalContent
-            applicant={profile}
+            applicant={profile.data}
             pfp_fetcher={() => UserService.getUserPfpURL("me")}
             pfp_route="/users/me/pic"
             open_resume={async () => {
               closeEmployerModal();
-              await syncResumeUrl();
+              await syncResumeURL();
               openResumeModal();
             }}
             open_calendar={async () => {
-              openURL(profile?.calendar_link);
+              openURL(profile.data?.calendar_link);
             }}
           />
         </EmployerModal>
@@ -360,9 +361,7 @@ const ProfileDetails = ({
 const ProfileEditor = forwardRef<
   { save: () => Promise<void> },
   {
-    updateProfile: (
-      updatedProfile: Partial<PublicUser>
-    ) => Promise<Partial<PublicUser>>;
+    updateProfile: (updatedProfile: Partial<PublicUser>) => void;
   }
 >(({ updateProfile }, ref) => {
   const {
@@ -390,21 +389,15 @@ const ProfileEditor = forwardRef<
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
-      try {
-        const updatedProfile = {
-          ...cleanFormData(),
-          portfolio_link: toURL(formData.portfolio_link)?.toString(),
-          github_link: toURL(formData.github_link)?.toString(),
-          linkedin_link: toURL(formData.linkedin_link)?.toString(),
-          calendar_link: toURL(formData.calendar_link)?.toString(),
-        };
-        await updateProfile(updatedProfile);
-        return;
-      } catch (error) {
-        console.error("Failed to update profile:", error);
-        alert("Failed to update profile. Please try again.");
-        return;
-      }
+      const updatedProfile = {
+        ...cleanFormData(),
+        portfolio_link: toURL(formData.portfolio_link)?.toString(),
+        github_link: toURL(formData.github_link)?.toString(),
+        linkedin_link: toURL(formData.linkedin_link)?.toString(),
+        calendar_link: toURL(formData.calendar_link)?.toString(),
+      };
+      await updateProfile(updatedProfile);
+      return;
     },
   }));
 

@@ -4,12 +4,13 @@ import {
   UserService,
   ApplicationService,
   handleApiError,
-} from "@/lib/api/api";
+} from "@/lib/api/services";
 import { Job, PublicUser, UserApplication } from "@/lib/db/db.types";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useCache } from "../../hooks/use-cache";
 import { create_cached_fetcher, FetchResponse } from "./use-fetch";
 import { useRefs } from "../db/use-refs";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Jobs Hook with Client-Side Filtering
 export function useJobs(
@@ -170,93 +171,50 @@ export function useJobs(
   };
 }
 
-// Single Job Hook
-export function useJob(job_id: string | null) {
-  const [job, setJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+/**
+ * Requests information about a single job.
+ *
+ * @hook
+ * @param jobId
+ */
+export function useJob(jobId: string) {
+  const { isPending, data, error } = useQuery({
+    queryKey: ["jobs", jobId],
+    queryFn: async () => await JobService.getJobById(jobId),
+  });
 
-  const fetchJob = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // @ts-ignore
-      const { job, error } = await JobService.get_job_by_id(job_id ?? "");
-      if (error) {
-        setError(error);
-        setLoading(false);
-        return;
-      }
-
-      setJob(job);
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, [job_id]);
-
-  useEffect(() => {
-    if (!job_id) {
-      setLoading(false);
-      return;
-    }
-    fetchJob();
-  }, [job_id]);
-
-  return { job, loading, error, refetch: fetchJob };
+  return { isPending, data: data?.job ?? null, error };
 }
 
-// User Profile Hook
+/**
+ * Requests profile information and allows profile updates.
+ *
+ * @hook
+ */
 export function useProfile() {
-  const { isAuthenticated: is_authenticated } = useAuthContext();
-  const [profile, setProfile] = useState<PublicUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchProfile = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const { user } = await UserService.getMyProfile();
-      if (user) setProfile(user as PublicUser);
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (is_authenticated()) {
-      fetchProfile();
-    } else {
-      setLoading(false);
-    }
-  }, [fetchProfile]);
-
-  const updateProfile = async (data: Partial<PublicUser>) => {
-    try {
-      setError(null);
-      const { user } = await UserService.updateMyProfile(data);
-      if (user) setProfile(user as PublicUser);
-      return user;
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-      throw err;
-    }
-  };
+  const queryClient = useQueryClient();
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-profile"],
+    queryFn: UserService.getMyProfile,
+  });
+  const {
+    isPending: isUpdating,
+    error: updateError,
+    mutateAsync: update,
+  } = useMutation({
+    mutationFn: UserService.updateMyProfile,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+    },
+  });
 
   return {
-    profile,
-    loading,
+    data: data?.user ?? null,
     error,
-    updateProfile,
-    refetch: fetchProfile,
+    update,
+    updateError,
+    isPending,
+    isUpdating,
   };
 }
 
@@ -417,84 +375,56 @@ export const useSavedJobs = () => {
   };
 };
 
-// Saved Jobs Hook
+/**
+ * Hooks for saved jobs.
+ *
+ * @hook
+ */
 export function useApplications() {
-  const { get_cache, set_cache } =
-    useCache<UserApplication[]>("_applications_list");
-  const [applications, setApplications] = useState<UserApplication[]>([]);
-  const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-applications"],
+    queryFn: () => ApplicationService.getApplications(),
+  });
+  const {
+    isPending: isCreating,
+    error: createError,
+    mutateAsync: create,
+  } = useMutation({
+    mutationFn: ApplicationService.createApplication,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-applications"] });
+    },
+  });
 
+  // Save appliedJobs independently
+  const [appliedJobs, setAppliedJobs] = useState<Partial<Job>[]>([]);
   useEffect(() => {
     setAppliedJobs(
-      applications.map((application) => ({ id: application.job_id ?? "" }))
+      data?.applications.map((application) => ({
+        id: application.job_id ?? "",
+      })) ?? []
     );
-  }, [applications]);
+  }, [data]);
 
-  const fetch_applications = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Otherwise, pull from server
-      const response = await ApplicationService.get_applications();
-      if (response.success) {
-        setApplications(response.applications);
-        set_cache(applications);
-      }
-    } catch (err) {
-      const errorMessage = handleApiError(err);
-      setError(errorMessage);
-    }
-  }, []);
-
-  const apply = async (job_id: string, cover_letter: string) => {
-    try {
-      const response = await ApplicationService.create_application({
-        job_id,
-        cover_letter,
-      });
-
-      if (response.application) {
-        if (!get_cache()) set_cache([]);
-        const new_applications = [
-          ...(get_cache() ?? []),
-          { ...response.application },
-        ] as UserApplication[];
-        set_cache(new_applications);
-        setApplications(new_applications);
-      }
-
-      return response;
-    } catch (error) {
-      handleApiError(error);
-      throw error;
-    }
+  // Checks if user has applied to job
+  const hasAppliedToJob = (jobId: string): boolean => {
+    return (
+      data?.applications.some((application) => application.id === jobId) ??
+      false
+    );
   };
-
-  const is_applied = (job_id: string): boolean => {
-    return applications.some((application) => application.id === job_id);
-  };
-
-  useEffect(() => {
-    fetch_applications().then(() => setLoading(false));
-  }, [fetch_applications]);
 
   return {
-    apply,
-    applications,
-    loading,
-    applying,
+    isPending,
+    isCreating,
+    data: data?.applications ?? [],
+    create,
     error,
-    is_applied,
+    createError,
+    hasAppliedToJob,
     appliedJobs,
     appliedJob: (job_id: string) =>
       appliedJobs.map((aj) => aj.id).includes(job_id),
-    refetch: () => {
-      setLoading(true);
-      fetch_applications().then(() => setLoading(false));
-    },
   };
 }

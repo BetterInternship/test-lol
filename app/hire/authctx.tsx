@@ -3,7 +3,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { Employer, PublicEmployerUser } from "@/lib/db/db.types";
 import { useRouter } from "next/navigation";
-import { employer_auth_service } from "@/lib/api/employer.api";
+import { employer_auth_service } from "@/lib/api/hire.api";
 import { getFullName } from "@/lib/utils/user-utils";
 import { FetchResponse } from "@/lib/api/use-fetch";
 import { useQueryClient } from "@tanstack/react-query";

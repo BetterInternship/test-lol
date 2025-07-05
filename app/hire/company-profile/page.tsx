@@ -29,7 +29,7 @@ import {
 } from "@/components/EditForm";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { FileUploadFormBuilder } from "@/lib/multipart-form";
-import { EmployerService } from "@/lib/api/api";
+import { EmployerService } from "@/lib/api/services";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
