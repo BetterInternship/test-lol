@@ -353,8 +353,8 @@ export default function RegisterPage() {
             <div className="w-max-prose text-sm text-gray-700 border border-gray-200 p-4 rounded-sm">
               <span className="text-yellow-400">*</span>
               Your account will be created using the email address you provide
-              below. We will provide the Login details to the same email created
-              with the account.{" "}
+              below. We will send the login details to the email address you
+              provided.{" "}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -63,7 +63,7 @@ export const isValidOptionalLinkedinURL = isValidOptionalSiteURL([
   "www.linkedin.com",
 ]);
 export const isValidOptionalCalendarURL = isValidOptionalSiteURL([
-  "calendar.app.google/",
+  "calendar.app.google",
   "calendar.google.com/calendar/u/0/appointments",
 ]);
 
