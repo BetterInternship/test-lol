@@ -56,7 +56,7 @@ import { openURL } from "@/lib/utils/url-utils";
 export default function SearchPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated: is_authenticated } = useAuthContext();
+  const { isAuthenticated } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const textarea_ref = useRef<HTMLTextAreaElement>(null);
@@ -170,7 +170,7 @@ export default function SearchPage() {
   }, [jobsPage.length, searchParams]);
 
   const handleSave = async (job: Job) => {
-    if (!is_authenticated()) {
+    if (!isAuthenticated()) {
       window.location.href = "/login";
       return;
     }
@@ -180,7 +180,7 @@ export default function SearchPage() {
   const handleApply = () => {
     console.log("handleApply called");
 
-    if (!is_authenticated()) {
+    if (!isAuthenticated()) {
       console.log("Not authenticated, redirecting to login");
       window.location.href = "/login";
       return;

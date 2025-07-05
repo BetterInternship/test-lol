@@ -12,6 +12,7 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { getFullName } from "@/lib/utils/user-utils";
+import { useProfile } from "@/lib/api/student.api";
 
 /**
  * The header present on every page
@@ -52,7 +53,8 @@ export const Header = () => {
  * @component
  */
 export const ProfileButton = () => {
-  const { user, isAuthenticated: is_authenticated, logout } = useAuthContext();
+  const profile = useProfile();
+  const { isAuthenticated, logout } = useAuthContext();
   const router = useRouter();
 
   const handle_logout = () => {
@@ -61,7 +63,7 @@ export const ProfileButton = () => {
     });
   };
 
-  return is_authenticated() ? (
+  return isAuthenticated() ? (
     <div className="relative ">
       <GroupableNavDropdown
         display={
@@ -69,13 +71,13 @@ export const ProfileButton = () => {
             <div className="overflow-hidden rounded-full flex flex-row items-center justify-center">
               <MyUserPfp size="7" />
             </div>
-            {getFullName(user)}
+            {getFullName(profile.data)}
           </>
         }
         content={
           <div className="px-4 py-3 border-b border-gray-200">
             <p className="text-xs text-gray-500 text-ellipsis overflow-hidden">
-              {user?.email}
+              {profile.data?.email}
             </p>
           </div>
         }

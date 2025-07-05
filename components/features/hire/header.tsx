@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { useAuthContext } from "../../../app/hire/authctx";
+import { useAuthContext } from "@/app/hire/authctx";
 import { useRouter } from "next/navigation";
 import { LogOut, Building, UserPlus } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
