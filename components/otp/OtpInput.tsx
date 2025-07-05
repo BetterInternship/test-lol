@@ -8,6 +8,11 @@ import {
 } from "@/components/ui/input-otp";
 import { useOtp } from "@/hooks/otp/otp-input";
 
+<<<<<<< Updated upstream
+=======
+const OTP_LENGTH = 6;
+
+>>>>>>> Stashed changes
 interface OtpComponentProps {
   email: string;
   onVerifySuccess: () => void;
@@ -41,7 +46,11 @@ export const OtpComponent = ({
 
   // Auto-submit when complete
   useEffect(() => {
+<<<<<<< Updated upstream
     if (otp.otp.length === 6 && !otp.loading && !otp.error) {
+=======
+    if (otp.isComplete() && !otp.loading && !otp.error) {
+>>>>>>> Stashed changes
       otp.handleVerify(email, otp.otp);
     }
   }, [otp.otp, otp.loading, otp.error, email]);
@@ -89,13 +98,21 @@ export const OtpComponent = ({
         {/* OTP Input */}
         <div className="flex justify-center mb-8">
           <InputOTP
+<<<<<<< Updated upstream
             maxLength={6}
+=======
+            maxLength={OTP_LENGTH}
+>>>>>>> Stashed changes
             value={otp.otp}
             onChange={otp.setOtp}
             disabled={otp.loading}
           >
             <InputOTPGroup className="gap-3">
+<<<<<<< Updated upstream
               {Array.from({ length: 6 }, (_, index) => (
+=======
+              {Array.from({ length: OTP_LENGTH }, (_, index) => (
+>>>>>>> Stashed changes
                 <InputOTPSlot key={index} index={index} />
               ))}
             </InputOTPGroup>
