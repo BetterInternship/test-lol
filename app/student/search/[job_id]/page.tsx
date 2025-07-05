@@ -18,9 +18,9 @@ import {
   useProfile,
   useApplications,
   useJob,
-} from "@/lib/api/use-api";
+} from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { Job } from "@/lib/db/db.types";
+import { Job, PublicUser } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ export default function JobPage() {
   const router = useRouter();
   const params = useParams();
   const { job_id } = params;
-  const { job, loading, error, refetch } = useJob(job_id as string);
+  const job = useJob(job_id as string);
   const { isAuthenticated: is_authenticated } = useAuthContext();
   const {
     open: open_application_modal,
@@ -65,22 +65,17 @@ export default function JobPage() {
     close: close_incomplete_profile_modal,
     Modal: IncompleteProfileModal,
   } = useModal("incomplete-profile-modal");
-  const { profile } = useProfile();
+  const profile = useProfile();
   const { universities } = useRefs();
-  const { is_saved, saving, save_job } = useSavedJobs();
-  const { appliedJob, apply } = useApplications();
+  const savedJobs = useSavedJobs();
+  const applications = useApplications();
 
   const handleSave = async (job: Job) => {
     if (!is_authenticated()) {
       window.location.href = "/login";
       return;
     }
-
-    try {
-      await save_job(job.id ?? "");
-    } catch (error) {
-      console.error("Failed to save job:", error);
-    }
+    await savedJobs.toggle(job.id ?? "");
   };
 
   const handleApply = () => {
@@ -90,14 +85,14 @@ export default function JobPage() {
     }
 
     // Check if already applied
-    const applicationStatus = appliedJob(job?.id ?? "");
+    const applicationStatus = applications.appliedJob(job.data?.id ?? "");
     if (applicationStatus) {
       alert("You have already applied to this job!");
       return;
     }
 
     // Check if profile is complete
-    if (!isCompleteProfile(profile)) {
+    if (!isCompleteProfile(profile.data)) {
       // open_incomplete_profile_modal();
       alert("Your profile is not complete!");
       router.push("/profile");
@@ -105,7 +100,7 @@ export default function JobPage() {
     }
 
     // Check if job requirements are met
-    if (!profileQualifiesFor(profile, job)) {
+    if (!profileQualifiesFor(profile.data, job.data)) {
       // open_application_modal();
       alert("This job has additional requirements you have not filled out.");
       router.push("/profile");
@@ -117,10 +112,13 @@ export default function JobPage() {
   };
 
   const handleDirectApplication = async () => {
-    if (!job) return;
+    if (!job.data) return;
 
     try {
-      const { success } = await apply(job.id ?? "", "");
+      const { success } = await applications.create({
+        job_id: job.data.id ?? "",
+        cover_letter: "",
+      });
       if (success) open_success_modal();
       else alert("Could not apply to job.");
     } catch (error) {
@@ -130,12 +128,13 @@ export default function JobPage() {
     }
   };
 
-  if (error) {
+  if (job.error) {
     return (
       <div className="h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load job: {error}</p>
-          <Button onClick={refetch}>Try Again</Button>
+          <p className="text-red-600 mb-4">
+            Failed to load job: {job.error.message}
+          </p>
         </div>
       </div>
     );
@@ -145,7 +144,7 @@ export default function JobPage() {
     <>
       {/* Desktop and Mobile Layout */}
       <div className="flex-1 flex overflow-hidden max-h-full">
-        {loading ? (
+        {job.isPending ? (
           <Loader>Loading job details...</Loader>
         ) : (
           <div className="w-full flex flex-col h-full bg-gray-50">
@@ -162,41 +161,52 @@ export default function JobPage() {
                     Back
                   </Button>
 
-                  {job && (
+                  {job.data && (
                     <div className="flex items-center gap-3">
                       <Button
                         variant="outline"
-                        onClick={() => handleSave(job)}
+                        onClick={() => handleSave(job.data!)}
                         scheme={
-                          is_saved(job.id ?? "") ? "destructive" : "default"
+                          savedJobs.isJobSaved(job.data.id ?? "")
+                            ? "destructive"
+                            : "default"
                         }
                       >
                         <Heart
                           className={cn(
                             "w-4 h-4",
-                            is_saved(job.id ?? "") ? "fill-current" : ""
+                            savedJobs.isJobSaved(job.data.id ?? "")
+                              ? "fill-current"
+                              : ""
                           )}
                         />
-                        {is_saved(job.id ?? "")
-                          ? "Saved"
-                          : saving
+                        {savedJobs.isJobSaved(job.data.id ?? "")
+                          ? savedJobs.isToggling
+                            ? "Unsaving..."
+                            : "Saved"
+                          : savedJobs.isToggling
                           ? "Saving..."
                           : "Save"}
                       </Button>
 
                       <Button
-                        disabled={appliedJob(job.id ?? "")}
+                        disabled={applications.appliedJob(job.data.id ?? "")}
                         scheme={
-                          appliedJob(job.id ?? "") ? "supportive" : "primary"
+                          applications.appliedJob(job.data.id ?? "")
+                            ? "supportive"
+                            : "primary"
                         }
                         onClick={() =>
-                          !appliedJob(job.id ?? "") && handleApply()
+                          !applications.appliedJob(job.data?.id ?? "") &&
+                          handleApply()
                         }
                       >
-                        {appliedJob(job.id ?? "") && (
+                        {applications.appliedJob(job.data.id ?? "") && (
                           <CheckCircle className="w-4 h-4" />
                         )}
-                        {appliedJob(job.id ?? "") ? "Applied" : "Apply Now"}
+                        {applications.appliedJob(job.data.id ?? "")
+                          ? "Applied"
+                          : "Apply Now"}
                       </Button>
                     </div>
                   )}
@@ -204,7 +214,7 @@ export default function JobPage() {
               </div>
             </div>
 
-            {job?.id && (
+            {job.data?.id && (
               <div className="flex-1 overflow-y-auto">
                 <div className="max-w-4xl mx-auto px-6 py-8">
                   {/* Job Header Card */}
@@ -212,14 +222,14 @@ export default function JobPage() {
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex-1 max-w-full">
                         <JobHead
-                          title={job.title}
-                          employer={job.employer?.name}
+                          title={job.data.title}
+                          employer={job.data.employer?.name}
                           size="3"
                         />
                         <p className="text-gray-500 text-sm">
                           Listed on{" "}
-                          {job.created_at
-                            ? new Date(job.created_at).toLocaleDateString(
+                          {job.data.created_at
+                            ? new Date(job.data.created_at).toLocaleDateString(
                                 "en-US",
                                 {
                                   year: "numeric",
@@ -234,15 +244,15 @@ export default function JobPage() {
                     {/* Job Details Grid */}
                     <div className="flex flex-wrap gap-2">
                       <EmployerMOA
-                        employer_id={job.employer?.id}
+                        employer_id={job.data.employer?.id}
                         university_id={universities[0]?.id}
                       />
-                      <JobType type={job.type} />
+                      <JobType type={job.data.type} />
                       <JobSalary
-                        salary={job.salary}
-                        salary_freq={job.salary_freq}
+                        salary={job.data.salary}
+                        salary_freq={job.data.salary_freq}
                       />
-                      <JobMode mode={job.mode} />
+                      <JobMode mode={job.data.mode} />
                     </div>
                     <br />
                     <hr />
@@ -253,7 +263,7 @@ export default function JobPage() {
                     <div className="prose max-w-none text-gray-700 leading-relaxed">
                       <div className="whitespace-pre-wrap text-base leading-7">
                         <ReactMarkdown>
-                          {job.description || "No description provided."}
+                          {job.data.description || "No description provided."}
                         </ReactMarkdown>
                       </div>
                     </div>
@@ -264,11 +274,11 @@ export default function JobPage() {
                       Requirements
                     </h2>
 
-                    <JobApplicationRequirements job={job} />
+                    <JobApplicationRequirements job={job.data} />
 
                     <div className="prose max-w-none text-gray-700 leading-relaxed">
                       <div className="whitespace-pre-wrap text-base leading-7">
-                        {job.requirements}
+                        {job.data.requirements}
                       </div>
                     </div>
                   </div>
@@ -285,7 +295,7 @@ export default function JobPage() {
       {/* Application Modal - Only for Missing Job Requirements */}
       <ApplicationModal>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Apply to {job?.title}</h2>
+          <h2 className="text-xl font-bold">Apply to {job.data?.title}</h2>
         </div>
 
         {/* Missing Job Requirements Warning */}
@@ -300,11 +310,11 @@ export default function JobPage() {
                 This job requires additional profile information:
               </p>
               <ul className="text-sm text-orange-700 list-disc list-inside mb-4">
-                {Object.keys(getMissingProfileFields(profile).labels).map(
-                  (field, index) => (
-                    <li key={index}>{field}</li>
-                  )
-                )}
+                {Object.keys(
+                  getMissingProfileFields(profile.data as PublicUser).labels
+                ).map((field, index) => (
+                  <li key={index}>{field}</li>
+                ))}
               </ul>
             </div>
           </div>
@@ -376,7 +386,7 @@ export default function JobPage() {
             >
               Your application for{" "}
               <span className="font-semibold max-w-prose text-gray-800">
-                {job?.title}
+                {job.data?.title}
               </span>{" "}
               has been successfully submitted.
             </motion.p>
@@ -406,7 +416,9 @@ export default function JobPage() {
       <IncompleteProfileModal>
         <div className="p-6">
           {(() => {
-            const { missing, labels } = getMissingProfileFields(profile);
+            const { missing, labels } = getMissingProfileFields(
+              profile.data as PublicUser
+            );
             const missingCount = missing.length;
 
             return (

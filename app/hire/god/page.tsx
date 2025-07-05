@@ -3,7 +3,7 @@
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { Button } from "@/components/ui/button";
 import { TabGroup, Tab } from "@/components/ui/tabs";
-import { useEmployers, useUsers } from "@/lib/api/use-god-api";
+import { useEmployers, useUsers } from "@/lib/api/god.api";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useAuthContext } from "../authctx";
@@ -16,7 +16,7 @@ import { useRefs } from "@/lib/db/use-refs";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
-  const { employers, loading, verify } = useEmployers();
+  const employers = useEmployers();
   const { users } = useUsers();
   const [search_name, set_search_name] = useState<string | null>();
   const [selected, set_selected] = useState("");
@@ -25,14 +25,9 @@ export default function GodLandingPage() {
   const applications = useMemo(() => {
     const apps: EmployerApplication[] = [];
     // @ts-ignore
-    employers.forEach((e) => e?.applications?.map((a) => apps.push(a)));
+    employers.data.forEach((e) => e?.applications?.map((a) => apps.push(a)));
     return apps;
-  }, [employers]);
-
-  // Redirect if no employers found (not god)
-  useEffect(() => {
-    if (!employers.length && !loading) router.push("/dashboard");
-  }, [employers, loading]);
+  }, [employers.data]);
 
   /**
    * Handle auth by proxy
@@ -51,12 +46,12 @@ export default function GodLandingPage() {
           <div className="absolute w-full px-4 py-4 border-b">
             <Autocomplete
               setter={set_search_name}
-              options={employers.map((e) => e.name ?? "")}
+              options={employers.data.map((e) => e.name ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
           </div>
           <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
-            {employers
+            {employers.data
               .filter((e) =>
                 e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
               )
@@ -78,13 +73,13 @@ export default function GodLandingPage() {
                     variant="outline"
                     scheme="destructive"
                     size="xs"
-                    disabled={loading && e.id === selected}
+                    disabled={employers.isUnverifying && e.id === selected}
                     onClick={() => {
                       set_selected(e.id ?? "");
-                      verify(e.id ?? "", false);
+                      employers.unverify(e.id ?? "");
                     }}
                   >
-                    {loading && e.id === selected
+                    {employers.isUnverifying && e.id === selected
                       ? "Unverifying..."
                       : "Unverify"}
                   </Button>
@@ -112,12 +107,12 @@ export default function GodLandingPage() {
           <div className="absolute w-full px-4 py-4 border-b">
             <Autocomplete
               setter={set_search_name}
-              options={employers.map((e) => e.name ?? "")}
+              options={employers.data.map((e) => e.name ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
           </div>
           <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
-            {employers
+            {employers.data
               .filter((e) =>
                 e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
               )
@@ -139,13 +134,15 @@ export default function GodLandingPage() {
                     variant="outline"
                     size="xs"
                     scheme="supportive"
-                    disabled={loading && e.id === selected}
+                    disabled={employers.isVerifying && e.id === selected}
                     onClick={() => {
                       set_selected(e.id ?? "");
-                      verify(e.id ?? "", true);
+                      employers.verify(e.id ?? "");
                     }}
                   >
-                    {loading && e.id === selected ? "Verifying..." : "Verify"}
+                    {employers.isVerifying && e.id === selected
+                      ? "Verifying..."
+                      : "Verify"}
                   </Button>
                   <div className="text-gray-700 w-full">{e.name}</div>
                   <Badge

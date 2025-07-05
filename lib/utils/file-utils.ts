@@ -28,7 +28,7 @@ export function resizeImage<T extends keyof ImageOutputMap = "file">(
   quality: number,
   format: "JPEG" | "PNG" | "WEBP" = "JPEG",
   size: ImageSize = { width: 2000, height: 2000 },
-  output: T = "file" as T,
+  output: T = "file" as T
 ): Promise<ImageOutputMap[T]> {
   return new Promise((resolve, reject) => {
     Resizer.imageFileResizer(
@@ -51,7 +51,7 @@ export function resizeImage<T extends keyof ImageOutputMap = "file">(
           resolve(uri as ImageOutputMap[T]);
         }
       },
-      output,
+      output
     );
   });
 }
@@ -60,7 +60,7 @@ export function formatBytes(
   opts: {
     decimals?: number;
     sizeType?: "accurate" | "normal";
-  } = {},
+  } = {}
 ) {
   const { decimals = 0, sizeType = "normal" } = opts;
 
@@ -69,28 +69,26 @@ export function formatBytes(
   if (bytes === 0) return "0 Byte";
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   return `${(bytes / Math.pow(1024, i)).toFixed(decimals)} ${
-    sizeType === "accurate"
-      ? (accurateSizes[i] ?? "Bytest")
-      : (sizes[i] ?? "Bytes")
+    sizeType === "accurate" ? accurateSizes[i] ?? "Bytest" : sizes[i] ?? "Bytes"
   }`;
 }
 
 export function getImageDimensions(
-  file: File,
+  file: File
 ): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
+    const objectURL = URL.createObjectURL(file);
     img.onload = () => {
       const dimensions = { width: img.naturalWidth, height: img.naturalHeight };
-      URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(objectURL);
       resolve(dimensions);
     };
     img.onerror = (error) => {
-      URL.revokeObjectURL(objectUrl);
+      URL.revokeObjectURL(objectURL);
       reject(error);
     };
-    img.src = objectUrl;
+    img.src = objectURL;
   });
 }
 

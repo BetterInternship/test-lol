@@ -1,7 +1,7 @@
 "use client";
 
 import { PublicUser } from "@/lib/db/db.types";
-import { AuthService } from "@/lib/api/api";
+import { AuthService } from "@/lib/api/services";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";

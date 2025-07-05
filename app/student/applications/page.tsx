@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 // Hooks (preserving existing implementations)
-import { useApplications } from "@/lib/api/use-api";
+import { useApplications } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
@@ -21,7 +21,7 @@ import { UserApplication } from "@/lib/db/db.types";
 
 export default function ApplicationsPage() {
   const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
-  const { applications, loading, error, refetch } = useApplications();
+  const applications = useApplications();
   redirect_if_not_logged_in();
 
   return (
@@ -39,8 +39,8 @@ export default function ApplicationsPage() {
               Track your internship applications and their status
             </p>
             <Badge>
-              {applications.length}{" "}
-              {applications.length === 1 ? "application" : "applications"}
+              {applications.data.length}{" "}
+              {applications.data.length === 1 ? "application" : "applications"}
             </Badge>
           </div>
         </div>
@@ -48,21 +48,18 @@ export default function ApplicationsPage() {
       <hr />
       <br />
 
-      {loading ? (
+      {applications.isPending ? (
         <Loader>Loading your applications...</Loader>
-      ) : error ? (
+      ) : applications.error ? (
         <div className="text-center py-16 animate-fade-in">
           <Card className="max-w-md m-auto">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               Failed to load applications
             </h3>
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button onClick={refetch} className="bg-red-600 hover:bg-red-700">
-              Try Again
-            </Button>
+            <p className="text-red-600 mb-4">{applications.error.message}</p>
           </Card>
         </div>
-      ) : applications.length === 0 ? (
+      ) : applications.data.length === 0 ? (
         <div className="text-center py-16 animate-fade-in">
           <Card className="max-w-md m-auto">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -81,7 +78,7 @@ export default function ApplicationsPage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {applications.map((application) => (
+          {applications?.data.map((application) => (
             <ApplicationCard application={application} />
           ))}
         </div>
