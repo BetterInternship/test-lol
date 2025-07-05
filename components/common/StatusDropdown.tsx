@@ -24,6 +24,7 @@ export function StatusDropdown({
 }: StatusDropdownProps) {
   return (
     <GroupableRadioDropdown
+      key={value} // Force re-render when value changes
       name="status"
       className="w-36"
       disabled={disabled}

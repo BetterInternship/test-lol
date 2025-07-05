@@ -29,6 +29,7 @@ function DashboardContent() {
     
     // Actions
     updateNotes,
+    updateStatus,
     syncResumeURL,
     
     // Event handlers
@@ -66,6 +67,9 @@ function DashboardContent() {
   ) => {
     if (reviewOptions.notes) {
       updateNotes(id, reviewOptions.notes);
+    }
+    if (reviewOptions.status !== undefined) {
+      updateStatus(id, reviewOptions.status);
     }
   };
 
