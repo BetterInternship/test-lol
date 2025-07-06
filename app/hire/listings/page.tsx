@@ -31,9 +31,9 @@ import {
 } from "@/components/EditForm";
 
 export default function MyListings() {
-  const { redirect_if_not_logged_in } = useAuthContext();
-  const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
+  // Get data from employer API hooks
   const { profile, loading: profileLoading } = useProfile();
+
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
@@ -617,4 +617,4 @@ const CreateModalForm = ({
       </div>
     </>
   );
-};
+}

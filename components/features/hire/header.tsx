@@ -12,7 +12,6 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
 import { getFullName } from "@/lib/utils/user-utils";
-import { MobilePlaceholder } from "@/app/hire/mobile-placeholder";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 
@@ -23,25 +22,18 @@ import { useProfile } from "@/hooks/use-employer-api";
  */
 export const Header = () => {
   const { god } = useAuthContext();
-  const { isMobile: is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
 
   return (
-    <div
-      className={cn(
-        "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-        is_mobile ? "px-6 py-4" : "py-4 px-8"
-      )}
-    >
+    <div className="relative flex py-3 px-6 justify-between items-center bg-white backdrop-blur-md border-b border-gray-100 z-[100]">
       <HeaderTitle />
       {god && (
-        <div className="w-full px-4 flex flex-row justify-end">
-          <Link
-            className="p-2 px-4 border border-gray-300 rounded-sm text-red-500 hover:text-white hover:bg-red-500 hover:border-opacity-0"
-            href={"/god"}
-          >
-            GOD DASHBOARD
+        <div className="w-full px-4 flex flex-row justify-end z-[100]">
+          <Link href={"/god"}>
+            <Button scheme="destructive" className="hover:bg-destructive/85">
+              GOD
+            </Button>
           </Link>
         </div>
       )}
@@ -63,7 +55,6 @@ export const ProfileButton = () => {
   const router = useRouter();
   const { profile } = useProfile();
   const { user, is_authenticated, logout } = useAuthContext();
-  const { isMobile } = useAppContext();
 
   const handle_logout = () => {
     logout().then(() => {
@@ -77,10 +68,8 @@ export const ProfileButton = () => {
     return name.length > 32 ? name.slice(0, 32) + "..." : name;
   }, [profile]);
 
-  if (isMobile) return <MobilePlaceholder />;
-
   return is_authenticated() ? (
-    <div className="relative">
+    <div className="relative z-[100]">
       <GroupableNavDropdown
         display={
           <>

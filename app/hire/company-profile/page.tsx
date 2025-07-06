@@ -87,7 +87,6 @@ export default function CompanyProfile() {
     };
     img.src = URL.createObjectURL(file);
   };
-
   return (
     profile && (
       <ContentLayout>

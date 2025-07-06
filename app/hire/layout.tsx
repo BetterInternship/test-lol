@@ -10,6 +10,7 @@ import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
+import Head from "next/head";
 
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
@@ -54,15 +55,22 @@ const HTMLContent = ({
           <TooltipProvider>
             <Sonner />
             <PostHogProvider>
-              <html lang="en" className="overflow-hidden">
-                <body>
-                  <div className="h-screen bg-gray-50 flex flex-col">
-                    <Header />
-                    <div className="flex-grow overflow-auto flex">
-                      {children}
-                    </div>
-                    <Footer />
+              <html
+                lang="en"
+                className="min-w-fit w-full h-[100vh] overflow-hidden"
+              >
+                <Head>
+                  <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1.0"
+                  />
+                </Head>
+                <body className="flex flex-col space-y-0 h-full">
+                  <Header />
+                  <div className="w-full flex-1 overflow-auto max-h-full">
+                    {children}
                   </div>
+                  <Footer />
                 </body>
               </html>
             </PostHogProvider>
