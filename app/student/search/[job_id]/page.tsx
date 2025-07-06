@@ -49,7 +49,7 @@ export default function JobPage() {
   const params = useParams();
   const { job_id } = params;
   const job = useJob(job_id as string);
-  const { isAuthenticated: is_authenticated } = useAuthContext();
+  const { isAuthenticated } = useAuthContext();
   const {
     open: open_application_modal,
     close: close_application_modal,
@@ -71,7 +71,7 @@ export default function JobPage() {
   const applications = useApplications();
 
   const handleSave = async (job: Job) => {
-    if (!is_authenticated()) {
+    if (!isAuthenticated()) {
       window.location.href = "/login";
       return;
     }
@@ -79,7 +79,7 @@ export default function JobPage() {
   };
 
   const handleApply = () => {
-    if (!is_authenticated()) {
+    if (!isAuthenticated()) {
       window.location.href = "/login";
       return;
     }

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
-import { useAuthContext } from "../../../app/hire/authctx";
+import React, { useMemo } from "react";
+import { useAuthContext } from "@/app/hire/authctx";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Building } from "lucide-react";
+import { LogOut, Building, UserPlus } from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -105,6 +105,10 @@ export const ProfileButton = () => {
           <Building className="w-4 h-4 inline-block m-1 mr-2" />
           Company Profile
         </DropdownOption>
+        <DropdownOption href="/company-users">
+          <UserPlus className="w-4 h-4 inline-block m-1 mr-2" />
+          Manage Accounts
+        </DropdownOption>
         <DropdownOption href="/login" on_click={handle_logout}>
           <LogOut className="text-red-500 w-4 h-4 inline-block m-1 mr-2" />
           <span className="text-red-500">Sign Out</span>
@@ -119,7 +123,7 @@ export const ProfileButton = () => {
       className="h-10 border-gray-300 hover:bg-gray-50 "
       onClick={() => router.push("/login")}
     >
-      Sign in
+      Employer Sign in
     </Button>
   );
 };

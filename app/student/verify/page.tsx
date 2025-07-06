@@ -2,21 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthContext } from "../../../lib/ctx-auth";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 export default function VerifyPage() {
   const [verified, setVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {
-    verify,
-    refreshAuthentication: refresh_authentication,
-    redirectIfLoggedIn: redirect_if_logged_in,
-  } = useAuthContext();
+  const { verify, refreshAuthentication, redirectIfLoggedIn } =
+    useAuthContext();
 
   // Redirect if logged in
-  redirect_if_logged_in();
+  redirectIfLoggedIn();
 
   // Redirect to home page when verified
   useEffect(() => {
@@ -36,7 +33,7 @@ export default function VerifyPage() {
         .then((r) => {
           if (r && r.success) {
             setVerified(true);
-            refresh_authentication();
+            refreshAuthentication();
             setTimeout(() => router.push("/"), 2000);
           }
         })

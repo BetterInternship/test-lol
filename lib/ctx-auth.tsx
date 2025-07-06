@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
 
 interface IAuthContext {
-  user: (Partial<PublicUser> & FetchResponse) | null;
   register: (
     user: Partial<PublicUser>
   ) => Promise<(Partial<PublicUser> & FetchResponse) | null>;
@@ -56,21 +55,6 @@ export const AuthContextProvider = ({
     const isAuthed = sessionStorage.getItem("is_authenticated");
     return isAuthed ? JSON.parse(isAuthed) : false;
   });
-  const [user, setUser] = useState<Partial<PublicUser> | null>(() => {
-    if (typeof window === "undefined") return null;
-    const user = sessionStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
-  });
-
-  // Whenever user is updated, cache in localStorage
-  useEffect(() => {
-    if (user) sessionStorage.setItem("user", JSON.stringify(user));
-    else sessionStorage.removeItem("user");
-
-    if (isAuthenticated)
-      sessionStorage.setItem("is_authenticated", JSON.stringify(true));
-    else sessionStorage.removeItem("is_authenticated");
-  }, [user, isAuthenticated]);
 
   const refreshAuthentication = async () => {
     const response = await AuthService.isLoggedIn();
@@ -80,7 +64,6 @@ export const AuthContextProvider = ({
       return null;
     }
 
-    setUser(response.user as PublicUser);
     setIsAuthenticated(true);
     setIsLoading(false);
     return response.user;
@@ -99,8 +82,6 @@ export const AuthContextProvider = ({
   const verify = async (userId: string, key: string) => {
     const response = await AuthService.verify(userId, key);
     if (!response.success) return null;
-
-    setUser(response.user as PublicUser);
     setIsAuthenticated(true);
     return response;
   };
@@ -118,8 +99,6 @@ export const AuthContextProvider = ({
   const verifyOtp = async (email: string, otp: string) => {
     const response = await AuthService.verifyOtp(email, otp);
     if (!response.success) return null;
-
-    setUser(response.user as PublicUser);
     setIsAuthenticated(true);
     return response;
   };
@@ -131,7 +110,6 @@ export const AuthContextProvider = ({
 
   const logout = async () => {
     AuthService.logout();
-    setUser(null);
     setIsAuthenticated(false);
   };
 
@@ -148,7 +126,6 @@ export const AuthContextProvider = ({
   return (
     <AuthContext.Provider
       value={{
-        user,
         // @ts-ignore
         register,
         // @ts-ignore
