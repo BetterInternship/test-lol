@@ -12,7 +12,6 @@ import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import Link from "next/link";
 import { getFullName } from "@/lib/utils/user-utils";
-import { MobilePlaceholder } from "@/app/hire/mobile-placeholder";
 import { MyEmployerPfp } from "@/components/shared/pfp";
 import { useProfile } from "@/hooks/use-employer-api";
 
@@ -76,8 +75,6 @@ export const ProfileButton = () => {
     const name = profile?.name ?? "";
     return name.length > 32 ? name.slice(0, 32) + "..." : name;
   }, [profile]);
-
-  if (isMobile) return <MobilePlaceholder />;
 
   return is_authenticated() ? (
     <div className="relative">

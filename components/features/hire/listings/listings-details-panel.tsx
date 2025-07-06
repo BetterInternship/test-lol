@@ -27,7 +27,7 @@ export function ListingsDetailsPanel({
 }: ListingsDetailsPanelProps) {
   if (!selectedJob?.id) {
     return (
-      <div className="h-full m-auto">
+      <div className="h-full m-auto max-w-[1024px] mx-auto">
         <div className="flex flex-col items-center pt-[25vh] h-screen">
           <div className="opacity-35 mb-10">
             <div className="flex flex-row justify-center w-full mb-4">
@@ -102,14 +102,16 @@ export function ListingsDetailsPanel({
   };
 
   return (
-    <EditableJobDetails
-      is_editing={isEditing}
-      set_is_editing={() => {}} // This will be handled by the parent component
-      job={selectedJob}
-      saving={saving}
-      // @ts-ignore
-      update_job={updateJob}
-      actions={getActionButtons()}
-    />
+    <div className="max-w-[1024px] mx-auto">
+      <EditableJobDetails
+        is_editing={isEditing}
+        set_is_editing={() => {}} // This will be handled by the parent component
+        job={selectedJob}
+        saving={saving}
+        // @ts-ignore
+        update_job={updateJob}
+        actions={getActionButtons()}
+      />
+    </div>
   );
 }

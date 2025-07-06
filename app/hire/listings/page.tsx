@@ -58,7 +58,7 @@ export default function MyListings() {
     <ContentLayout>
       <>
         {/* Main Content */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col max-w-[1024px]">
           {/* Unverified Banner */}
           {!profileLoading && !profile?.is_verified && (
             <div className="p-6 pb-0">

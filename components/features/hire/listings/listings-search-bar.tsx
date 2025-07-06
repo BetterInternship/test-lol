@@ -17,7 +17,7 @@ export function ListingsSearchBar({
 }: ListingsSearchBarProps) {
   return (
     <div
-      className="flex items-center gap-3 pl-1 pr-4 mb-4 flex-shrink-0"
+      className="flex items-center gap-3 pl-1 pr-4 mb-4 flex-shrink-0 max-w-[1024px] mx-auto"
       data-tour="job-filters"
     >
       <div className="relative flex-1">
