@@ -73,6 +73,10 @@ export const AuthContextProvider = ({
     else sessionStorage.removeItem("isAuthenticated");
   }, [user, is_authenticated]);
 
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+  }, []);
+
   const refresh_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
       const response = await EmployerAuthService.loggedin();
