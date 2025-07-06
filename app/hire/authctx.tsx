@@ -75,6 +75,7 @@ export const AuthContextProvider = ({
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
+    queryClient.invalidateQueries({ queryKey: ["god-employers"] });
   }, [is_authenticated]);
 
   const refresh_authentication =
