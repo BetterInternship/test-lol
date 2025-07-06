@@ -1,17 +1,10 @@
 // Reusable status dropdown component - can be used anywhere
-// Wraps the existing GroupableRadioDropdown with a cleaner interface
+// Includes app statuses from useRefs hook, no need to pass options
 import { GroupableRadioDropdown } from "@/components/ui/dropdown";
-
-interface StatusOption {
-  id: number;
-  name: string;
-  value: number;
-  label: string;
-}
+import { useRefs } from "@/lib/db/use-refs";
 
 interface StatusDropdownProps {
   value: number;
-  options: StatusOption[];
   disabled?: boolean;
   onChange: (value: number) => void;
   className?: string;
@@ -19,18 +12,19 @@ interface StatusDropdownProps {
 
 export function StatusDropdown({
   value,
-  options,
   disabled = false,
   onChange,
   className = "w-36", // Default width if not specified
 }: StatusDropdownProps) {
+  const { app_statuses } = useRefs();
+
   return (
     <GroupableRadioDropdown
       key={value} // Force re-render when value changes
       name="status"
       className={className}
       disabled={disabled}
-      options={options}
+      options={app_statuses}
       defaultValue={value}
       onChange={onChange}
     />

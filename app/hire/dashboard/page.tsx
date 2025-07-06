@@ -47,19 +47,6 @@ function DashboardContent() {
     openResumeModal,
   } = useDashboard();
 
-  // Wrapper functions to handle null returns from useRefs
-  const safeToUniversityName = (university?: any): string => {
-    return to_university_name(university) || '';
-  };
-  
-  const safeToLevelName = (level?: any): string => {
-    return to_level_name(level) || '';
-  };
-  
-  const safeToAppStatusName = (status?: any): string => {
-    return to_app_status_name(status) || '';
-  };
-
   // Wrapper for review function to match expected signature
   const reviewApp = (
     id: string,
@@ -94,14 +81,10 @@ function DashboardContent() {
           ) : (
             <ApplicationsTable
               applications={applications}
-              appStatuses={app_statuses}
               onApplicationClick={handleApplicationClick}
               onNotesClick={handleNotesClick}
               onScheduleClick={handleScheduleClick}
               onStatusChange={handleStatusChange}
-              toUniversityName={safeToUniversityName}
-              toLevelName={safeToLevelName}
-              toAppStatusName={safeToAppStatusName}
             />
           )}
         </div>

@@ -5,26 +5,18 @@ import { ApplicationRow } from "./ApplicationRow";
 
 interface ApplicationsTableProps {
   applications: EmployerApplication[];
-  appStatuses: any[];
   onApplicationClick: (application: EmployerApplication) => void;
   onNotesClick: (application: EmployerApplication) => void;
   onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
-  toUniversityName: (university?: any) => string;
-  toLevelName: (level?: any) => string;
-  toAppStatusName: (status?: any) => string;
 }
 
 export function ApplicationsTable({
   applications,
-  appStatuses,
   onApplicationClick,
   onNotesClick,
   onScheduleClick,
   onStatusChange,
-  toUniversityName,
-  toLevelName,
-  toAppStatusName,
 }: ApplicationsTableProps) {
   const sortedApplications = applications.toSorted(
     (a, b) =>
@@ -53,14 +45,10 @@ export function ApplicationsTable({
               <ApplicationRow
                 key={application.id}
                 application={application}
-                statusOptions={appStatuses}
                 onView={() => onApplicationClick(application)}
                 onNotes={() => onNotesClick(application)}
                 onSchedule={() => onScheduleClick(application)}
                 onStatusChange={(status) => onStatusChange(application, status)}
-                toUniversityName={toUniversityName}
-                toLevelName={toLevelName}
-                toAppStatusName={toAppStatusName}
               />
             ))}
           </tbody>

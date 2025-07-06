@@ -3,6 +3,8 @@
 import ContentLayout from "@/components/features/hire/content-layout";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { useListingsBusinessLogic } from "@/hooks/hire/listings/use-listings-business-logic";
+import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
+import { Job } from "@/lib/db/db.types";
 import { ListingsSearchBar } from "@/components/features/hire/listings/listings-search-bar";
 import { ListingsJobPanel } from "@/components/features/hire/listings/listings-job-panel";
 import { ListingsDetailsPanel } from "@/components/features/hire/listings/listings-details-panel";
@@ -10,10 +12,13 @@ import { ListingsCreateJobModal } from "@/components/features/hire/listings/list
 import { ListingsDeleteModal } from "@/components/features/hire/listings/listings-delete-modal";
 
 export default function MyListings() {
+  // Get data from employer API hooks
+  const { profile, loading: profileLoading } = useProfile();
+  const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
+
+  // Get business logic from listings hook
   const {
-    // Data
-    profile,
-    profileLoading,
+    // Local state
     selectedJob,
     searchTerm,
     saving,
@@ -22,10 +27,7 @@ export default function MyListings() {
     jobsPageSize,
     filteredJobs,
     
-    // Actions
-    create_job,
-    update_job,
-    delete_job,
+    // Business logic actions
     setSearchTerm,
     handleKeyPress,
     handleJobSelect,
@@ -35,6 +37,7 @@ export default function MyListings() {
     handleShare,
     clearSelectedJob,
     handlePageChange,
+    getJobLink,
     
     // Modals
     openCreateModal,
@@ -43,7 +46,13 @@ export default function MyListings() {
     openDeleteModal,
     closeDeleteModal,
     DeleteModal,
-  } = useListingsBusinessLogic();
+  } = useListingsBusinessLogic(ownedJobs);
+
+  // Wrapper function to adapt the API signature
+  const handleUpdateJob = async (job: Partial<Job>) => {
+    if (!job.id) throw new Error("Job ID is required for update");
+    return await update_job(job.id, job);
+  };
 
   return (
     <ContentLayout>
@@ -76,7 +85,7 @@ export default function MyListings() {
                 jobsPageSize={jobsPageSize}
                 onJobSelect={handleJobSelect}
                 onPageChange={handlePageChange}
-                updateJob={update_job}
+                updateJob={handleUpdateJob}
               />
             </div>
 
@@ -90,7 +99,7 @@ export default function MyListings() {
               onCancel={handleCancel}
               onShare={handleShare}
               onDelete={openDeleteModal}
-              updateJob={update_job}
+              updateJob={handleUpdateJob}
             />
           </div>
         </div>

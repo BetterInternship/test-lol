@@ -8,32 +8,26 @@ import { getFullName } from "@/lib/utils/user-utils";
 import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
 import { useAppContext } from "@/lib/ctx-app";
+import { useRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
-  statusOptions: any[];
   onView: () => void;
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
-  toUniversityName: (university?: any) => string;
-  toLevelName: (level?: any) => string;
-  toAppStatusName: (status?: any) => string;
 }
 
 export function ApplicationRow({
   application,
-  statusOptions,
   onView,
   onNotes,
   onSchedule,
   onStatusChange,
-  toUniversityName,
-  toLevelName,
-  toAppStatusName,
 }: ApplicationRowProps) {
   const { isMobile } = useAppContext();
+  const { to_university_name, to_level_name, to_app_status_name } = useRefs();
 
   return (
     <tr
@@ -56,8 +50,8 @@ export function ApplicationRow({
             <p className="font-medium text-gray-900">
               {getFullName(application.user)}{" "}
               <span className="opacity-70">
-                — {toUniversityName(application.user?.university)} •{" "}
-                {toLevelName(application.user?.year_level)}
+                — {to_university_name(application.user?.university) || ''} •{" "}
+                {to_level_name(application.user?.year_level) || ''}
               </span>
             </p>
             <p className="text-sm text-gray-500">
@@ -101,8 +95,7 @@ export function ApplicationRow({
           <div className={isMobile ? "w-full" : ""}>
             <StatusDropdown
               value={application.status ?? 0}
-              options={statusOptions}
-              disabled={toAppStatusName(application.status) === "Withdrawn"}
+              disabled={to_app_status_name(application.status) === "Withdrawn"}
               onChange={onStatusChange}
               className={isMobile ? "w-full" : "w-36"}
             />

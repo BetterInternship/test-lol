@@ -1,13 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { useModal } from "@/hooks/use-modal";
 import { useAuthContext } from "@/app/hire/authctx";
 import { Job } from "@/lib/db/db.types";
 
-export function useListingsBusinessLogic() {
+export function useListingsBusinessLogic(ownedJobs: Job[] = []) {
   const { redirect_if_not_logged_in } = useAuthContext();
-  const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
-  const { profile, loading: profileLoading } = useProfile();
   
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,17 +90,8 @@ export function useListingsBusinessLogic() {
     setJobsPage(page);
   };
 
-  // Wrapper functions to adapt the API signatures
-  const handleUpdateJob = async (job: Partial<Job>) => {
-    if (!job.id) throw new Error("Job ID is required for update");
-    return await update_job(job.id, job);
-  };
-
   return {
-    // Data
-    ownedJobs,
-    profile,
-    profileLoading,
+    // Local state
     selectedJob,
     searchTerm,
     saving,
@@ -112,10 +100,7 @@ export function useListingsBusinessLogic() {
     jobsPageSize,
     filteredJobs,
     
-    // Actions
-    create_job,
-    update_job: handleUpdateJob,
-    delete_job,
+    // Business logic actions
     setSearchTerm,
     setSaving,
     setIsEditing,
