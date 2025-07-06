@@ -54,6 +54,7 @@ import {
   isValidOptionalUserName,
   isValidRequiredUserName,
 } from "@/lib/utils/name-utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -74,6 +75,7 @@ export default function ProfilePage() {
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
   const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
+  const queryClient = useQueryClient();
 
   redirectIfNotLoggedIn();
 
@@ -119,7 +121,10 @@ export default function ProfilePage() {
                 ref={pfpFileInputRef}
                 allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                 maxSize={1}
-                onSelect={pfpUpload}
+                onSelect={(file) => (
+                  pfpUpload(file),
+                  queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+                )}
               />
             </div>
 
@@ -607,6 +612,7 @@ const ResumeBox = ({
   openResumeModal: () => void;
 }) => {
   // File upload handlers
+  const queryClient = useQueryClient();
   const {
     fileInputRef: resumeFileInputRef,
     upload: resumeUpload,
@@ -641,7 +647,10 @@ const ResumeBox = ({
         ref={resumeFileInputRef}
         maxSize={2.5}
         allowedTypes={["application/pdf"]}
-        onSelect={resumeUpload}
+        onSelect={(file) => (
+          resumeUpload(file),
+          queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+        )}
       />
     </Card>
   );
