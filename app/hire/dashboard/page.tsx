@@ -11,7 +11,7 @@ import { DashboardModals } from "@/components/features/hire/dashboard/DashboardM
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 
 function DashboardContent() {
-  const { redirect_if_not_logged_in } = useAuthContext();
+  const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
   const {
     // Data
     applications,

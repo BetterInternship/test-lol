@@ -33,7 +33,8 @@ import {
 export default function MyListings() {
   // Get data from employer API hooks
   const { profile, loading: profileLoading } = useProfile();
-
+  const { ownedJobs, create_job, delete_job } = useOwnedJobs();
+  const { redirectIfNotLoggedIn } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, set_saving] = useState(false);
@@ -51,7 +52,7 @@ export default function MyListings() {
     Modal: DeleteModal,
   } = useModal("delete-modal");
 
-  redirect_if_not_logged_in();
+  redirectIfNotLoggedIn();
 
   const getJobLink = (job: Job) => {
     return `${process.env.NEXT_PUBLIC_CLIENT_URL}/search/${job.id}`;
@@ -130,7 +131,6 @@ export default function MyListings() {
                   <EmployerJobCard
                     key={job.id}
                     job={job}
-                    disabled={is_editing}
                     // @ts-ignore
                     update_job={update_job}
                     on_click={() => setSelectedJob(job)}
@@ -617,4 +617,4 @@ const CreateModalForm = ({
       </div>
     </>
   );
-}
+};

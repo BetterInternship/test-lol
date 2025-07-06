@@ -29,7 +29,7 @@ interface IAuthContext {
   logout: () => Promise<void>;
   is_authenticated: () => boolean;
   refresh_authentication: () => void;
-  redirect_if_not_logged_in: () => void;
+  redirectIfNotLoggedIn: () => void;
   redirectIfLoggedIn: () => void;
 }
 
@@ -174,7 +174,7 @@ export const AuthContextProvider = ({
         logout,
         refresh_authentication,
         is_authenticated: () => is_authenticated,
-        redirect_if_not_logged_in,
+        redirectIfNotLoggedIn: redirect_if_not_logged_in,
         redirectIfLoggedIn: redirect_if_logged_in,
       }}
     >

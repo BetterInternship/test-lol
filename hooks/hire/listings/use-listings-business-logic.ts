@@ -4,14 +4,14 @@ import { useAuthContext } from "@/app/hire/authctx";
 import { Job } from "@/lib/db/db.types";
 
 export function useListingsBusinessLogic(ownedJobs: Job[] = []) {
-  const { redirect_if_not_logged_in } = useAuthContext();
-  
+  const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
+
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [jobsPage, setJobsPage] = useState(1);
-  
+
   const jobsPageSize = 10;
 
   const {
@@ -19,7 +19,7 @@ export function useListingsBusinessLogic(ownedJobs: Job[] = []) {
     close: closeCreateModal,
     Modal: CreateModal,
   } = useModal("create-modal");
-  
+
   const {
     open: openDeleteModal,
     close: closeDeleteModal,
@@ -99,7 +99,7 @@ export function useListingsBusinessLogic(ownedJobs: Job[] = []) {
     jobsPage,
     jobsPageSize,
     filteredJobs,
-    
+
     // Business logic actions
     setSearchTerm,
     setSaving,
@@ -114,7 +114,7 @@ export function useListingsBusinessLogic(ownedJobs: Job[] = []) {
     clearSelectedJob,
     handlePageChange,
     getJobLink,
-    
+
     // Modals
     openCreateModal,
     closeCreateModal,

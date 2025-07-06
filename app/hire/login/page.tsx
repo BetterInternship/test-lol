@@ -12,7 +12,7 @@ export default function LoginPage() {
     email_status,
     login,
     redirectIfLoggedIn: redirect_if_logged_in,
-    redirect_if_not_logged_in,
+    redirectIfNotLoggedIn: redirect_if_not_logged_in,
   } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
