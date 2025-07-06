@@ -624,35 +624,33 @@ const ResumeBox = ({
   });
 
   return (
-    <>
-      <Card>
-        <div className="flex flex-col items-center justify-center space-y-2">
-          <BoolBadge
-            state={!!profile.resume}
-            onValue="Resume Uploaded"
-            offValue="No Resume"
-          />
-          <Button
-            onClick={() => resumeFileInputRef.current?.open()}
-            disabled={resumeIsUploading}
-          >
-            <Upload className="h-4 w-4" />
-            {resumeIsUploading
-              ? "Uploading..."
-              : !!profile.resume
-              ? "Upload New"
-              : "Upload"}
-          </Button>
-          <p className="text-xs text-muted-foreground mt-2">PDF up to 2.5MB</p>
-        </div>
-        <FileUploadInput
-          ref={resumeFileInputRef}
-          maxSize={2.5}
-          allowedTypes={["application/pdf"]}
-          onSelect={resumeUpload}
+    <Card>
+      <div className="flex flex-col items-center justify-center space-y-2">
+        <BoolBadge
+          state={!!profile.resume}
+          onValue="Resume Uploaded"
+          offValue="No Resume"
         />
-      </Card>
-    </>
+        <Button
+          onClick={() => resumeFileInputRef.current?.open()}
+          disabled={resumeIsUploading}
+        >
+          <Upload className="h-4 w-4" />
+          {resumeIsUploading
+            ? "Uploading..."
+            : !!profile.resume
+            ? "Upload New"
+            : "Upload"}
+        </Button>
+        <p className="text-xs text-muted-foreground mt-2">PDF up to 2.5MB</p>
+      </div>
+      <FileUploadInput
+        ref={resumeFileInputRef}
+        maxSize={2.5}
+        allowedTypes={["application/pdf"]}
+        onSelect={resumeUpload}
+      />
+    </Card>
   );
 };
 
