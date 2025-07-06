@@ -75,7 +75,7 @@ export const AuthContextProvider = ({
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey: ["my-employer-profile"] });
-  }, []);
+  }, [is_authenticated]);
 
   const refresh_authentication =
     async (): Promise<Partial<PublicEmployerUser> | null> => {
