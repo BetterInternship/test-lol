@@ -59,8 +59,8 @@ const HTMLContent = ({
                 <Head>
                   <meta name="viewport" content="width=1024, initial-scale=1, maximum-scale=1, user-scalable=no"/>
                 </Head>
-                <body>
-                  <div className="h-screen bg-gray-50 flex flex-col">
+                <body className="w-[1024px] overflow-x-auto">
+                  <div className="h-screen bg-gray-50 overflow-x-auto flex flex-col">
                     <Header />
                     <div className="flex-grow overflow-auto flex">
                       {children}
