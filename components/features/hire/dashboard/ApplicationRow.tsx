@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/utils/user-utils";
 import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
+import { useAppContext } from "@/lib/ctx-app";
+import { cn } from "@/lib/utils";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -31,12 +33,21 @@ export function ApplicationRow({
   toLevelName,
   toAppStatusName,
 }: ApplicationRowProps) {
+  const { isMobile } = useAppContext();
+
   return (
     <tr
-      className="w-full flex flex-row items-center justify-between border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors"
+      className={cn(
+        "w-full border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors",
+        isMobile 
+          ? "flex flex-col space-y-3 p-4" 
+          : "flex flex-row items-center justify-between"
+      )}
       onClick={onView}
     >
-      <td className="px-4 py-2">
+      <td className={cn(
+        isMobile ? "w-full" : "px-4 py-2"
+      )}>
         <div className="flex items-center gap-3">
           {application.user?.id && (
             <UserPfp user_id={application.user.id} />
@@ -55,8 +66,16 @@ export function ApplicationRow({
           </div>
         </div>
       </td>
-      <td className="px-6 text-center">
-        <div className="flex flex-row items-center justify-end space-x-2">
+      <td className={cn(
+        "text-center",
+        isMobile ? "w-full px-0" : "px-6"
+      )}>
+        <div className={cn(
+          "flex items-center space-x-2",
+          isMobile 
+            ? "flex-col space-y-2 space-x-0" 
+            : "flex-row justify-end"
+        )}>
           <Button
             variant="outline"
             size="sm"
@@ -64,6 +83,7 @@ export function ApplicationRow({
               e.stopPropagation();
               onNotes();
             }}
+            className={isMobile ? "w-full" : ""}
           >
             Notes
           </Button>
@@ -74,15 +94,19 @@ export function ApplicationRow({
               e.stopPropagation();
               onSchedule();
             }}
+            className={isMobile ? "w-full" : ""}
           >
             Schedule
           </Button>
-          <StatusDropdown
-            value={application.status ?? 0}
-            options={statusOptions}
-            disabled={toAppStatusName(application.status) === "Withdrawn"}
-            onChange={onStatusChange}
-          />
+          <div className={isMobile ? "w-full" : ""}>
+            <StatusDropdown
+              value={application.status ?? 0}
+              options={statusOptions}
+              disabled={toAppStatusName(application.status) === "Withdrawn"}
+              onChange={onStatusChange}
+              className={isMobile ? "w-full" : "w-36"}
+            />
+          </div>
         </div>
       </td>
     </tr>

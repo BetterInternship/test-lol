@@ -14,6 +14,7 @@ interface StatusDropdownProps {
   options: StatusOption[];
   disabled?: boolean;
   onChange: (value: number) => void;
+  className?: string;
 }
 
 export function StatusDropdown({
@@ -21,12 +22,13 @@ export function StatusDropdown({
   options,
   disabled = false,
   onChange,
+  className = "w-36", // Default width if not specified
 }: StatusDropdownProps) {
   return (
     <GroupableRadioDropdown
       key={value} // Force re-render when value changes
       name="status"
-      className="w-36"
+      className={className}
       disabled={disabled}
       options={options}
       defaultValue={value}
