@@ -1,6 +1,6 @@
 import ScrollingTestimonials from "@/components/animata/container/scrolling-testimonials";
 
-export default function Page() {
+export default function MobileJobScroller() {
   return (
     <div className="p-6 flex justify-center overflow-hidden">
       <div className="max-w-4xl w-full overflow-hidden">

@@ -15,22 +15,15 @@ import {
   MessageCircleQuestion,
 } from "lucide-react";
 import { useProfile } from "@/lib/api/student.api";
-import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
-import { FileUploadFormBuilder } from "@/lib/multipart-form";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { Button } from "@/components/ui/button";
-import {
-  FileUploadInput,
-  IFileUploadRef,
-  useFile,
-  useFileUpload,
-} from "@/hooks/use-file";
+import { FileUploadInput, useFile, useFileUpload } from "@/hooks/use-file";
 import { Card } from "@/components/ui/our-card";
 import { getFullName } from "@/lib/utils/user-utils";
 import { PDFPreview } from "@/components/shared/pdf-preview";
@@ -61,11 +54,12 @@ import {
   isValidOptionalUserName,
   isValidRequiredUserName,
 } from "@/lib/utils/name-utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
-  const { isAuthenticated } = useAuthContext();
+  const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -81,13 +75,9 @@ export default function ProfilePage() {
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
   const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push("/login");
-    }
-  }, [isAuthenticated(), router]);
+  redirectIfNotLoggedIn();
 
   const {
     fileInputRef: pfpFileInputRef,
@@ -98,8 +88,7 @@ export default function ProfilePage() {
     filename: "pfp",
   });
 
-  if (!isAuthenticated() || profile.isPending)
-    return <Loader>Loading profile...</Loader>;
+  if (profile.isPending) return <Loader>Loading profile...</Loader>;
 
   if (profile.error) {
     return (
@@ -132,7 +121,10 @@ export default function ProfilePage() {
                 ref={pfpFileInputRef}
                 allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                 maxSize={1}
-                onSelect={pfpUpload}
+                onSelect={(file) => (
+                  pfpUpload(file),
+                  queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+                )}
               />
             </div>
 
@@ -620,6 +612,7 @@ const ResumeBox = ({
   openResumeModal: () => void;
 }) => {
   // File upload handlers
+  const queryClient = useQueryClient();
   const {
     fileInputRef: resumeFileInputRef,
     upload: resumeUpload,
@@ -630,39 +623,36 @@ const ResumeBox = ({
   });
 
   return (
-    <>
-      {profile.resume && (
-        <Card>
-          <div className="flex flex-col items-center justify-center space-y-2">
-            <BoolBadge
-              state={!!profile.resume}
-              onValue="Resume Uploaded"
-              offValue="No Resume"
-            />
-            <Button
-              onClick={() => resumeFileInputRef.current?.open()}
-              disabled={resumeIsUploading}
-            >
-              <Upload className="h-4 w-4" />
-              {resumeIsUploading
-                ? "Uploading..."
-                : !!profile.resume
-                ? "Upload New"
-                : "Upload"}
-            </Button>
-            <p className="text-xs text-muted-foreground mt-2">
-              PDF up to 2.5MB
-            </p>
-          </div>
-          <FileUploadInput
-            ref={resumeFileInputRef}
-            maxSize={2.5}
-            allowedTypes={["application/pdf"]}
-            onSelect={resumeUpload}
-          />
-        </Card>
-      )}
-    </>
+    <Card>
+      <div className="flex flex-col items-center justify-center space-y-2">
+        <BoolBadge
+          state={!!profile.resume}
+          onValue="Resume Uploaded"
+          offValue="No Resume"
+        />
+        <Button
+          onClick={() => resumeFileInputRef.current?.open()}
+          disabled={resumeIsUploading}
+        >
+          <Upload className="h-4 w-4" />
+          {resumeIsUploading
+            ? "Uploading..."
+            : !!profile.resume
+            ? "Upload New"
+            : "Upload"}
+        </Button>
+        <p className="text-xs text-muted-foreground mt-2">PDF up to 2.5MB</p>
+      </div>
+      <FileUploadInput
+        ref={resumeFileInputRef}
+        maxSize={2.5}
+        allowedTypes={["application/pdf"]}
+        onSelect={(file) => (
+          resumeUpload(file),
+          queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+        )}
+      />
+    </Card>
   );
 };
 

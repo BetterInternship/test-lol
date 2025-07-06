@@ -87,104 +87,103 @@ export default function CompanyProfile() {
     };
     img.src = URL.createObjectURL(file);
   };
-
-  return !profile ? (
-    <></>
-  ) : (
-    <ContentLayout>
-      <div className="h-fit bg-background p-6 py-12 w-full">
-        <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
-          <div className="relative flex-shrink-0">
-            <MyEmployerPfp size="36" />
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
-              onClick={() => profilePictureInputRef.current?.click()}
-              disabled={uploading}
-            >
-              <Camera className="h-3 w-3" />
-            </Button>
-            <input
-              type="file"
-              ref={profilePictureInputRef}
-              onChange={handleProfilePictureUpload}
-              accept="image/*"
-              style={{ display: "none" }}
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
-              {profile.name}
-            </h1>
-            <h1 className="text-sm font-normal mb-2 line-clamp-1 text-gray-400">
-              Legal Name: [{profile.legal_entity_name}]
-            </h1>
-            <p className="text-muted-foreground text-sm mt-2">
-              <div className="flex flex-row gap-1">
-                <BoolBadge
-                  state={check(
-                    profile?.id ?? "",
-                    get_university_by_name("DLSU - Manila")?.id ?? ""
+  return (
+    profile && (
+      <ContentLayout>
+        <div className="h-fit min-h-screen bg-background p-6 py-12 w-full">
+          <div className="flex items-start gap-8 flex-1 w-full max-w-[600px] m-auto">
+            <div className="relative flex-shrink-0">
+              <MyEmployerPfp size="36" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute bottom-[0.5em] right-[0.5em] h-6 w-6 sm:h-7 sm:w-7 rounded-full"
+                onClick={() => profilePictureInputRef.current?.click()}
+                disabled={uploading}
+              >
+                <Camera className="h-3 w-3" />
+              </Button>
+              <input
+                type="file"
+                ref={profilePictureInputRef}
+                onChange={handleProfilePictureUpload}
+                accept="image/*"
+                style={{ display: "none" }}
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-bold font-heading mb-1 line-clamp-1">
+                {profile.name}
+              </h1>
+              <h1 className="text-sm font-normal mb-2 line-clamp-1 text-gray-400">
+                Legal Name: [{profile.legal_entity_name}]
+              </h1>
+              <div className="text-muted-foreground text-sm mt-2">
+                <div className="flex flex-row gap-1">
+                  <BoolBadge
+                    state={check(
+                      profile?.id ?? "",
+                      get_university_by_name("DLSU - Manila")?.id ?? ""
+                    )}
+                    onValue="Active DLSU MOA"
+                    offValue="No DLSU MOA"
+                  />
+                  <BoolBadge
+                    state={profile.is_verified}
+                    onValue="Verified"
+                    offValue="Not Verified"
+                  />
+                  {to_industry_name(profile.industry, null) && (
+                    <Badge>{to_industry_name(profile.industry)}</Badge>
                   )}
-                  onValue="Active DLSU MOA"
-                  offValue="No DLSU MOA"
-                />
-                <BoolBadge
-                  state={profile.is_verified}
-                  onValue="Verified"
-                  offValue="Not Verified"
-                />
-                {to_industry_name(profile.industry, null) && (
-                  <Badge>{to_industry_name(profile.industry)}</Badge>
+                </div>
+              </div>
+              <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-4">
+                {isEditing ? (
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                      disabled={saving}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        setSaving(true);
+                        await profileEditorRef.current?.save();
+                        setSaving(false);
+                        setIsEditing(false);
+                      }}
+                      disabled={saving}
+                    >
+                      {saving ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button onClick={() => setIsEditing(true)}>
+                    <Edit2 className="h-4 w-4" />
+                    Edit
+                  </Button>
                 )}
               </div>
-            </p>
-            <div className="flex w-full flex-row flex-wrap gap-2 flex-shrink-0 mt-4">
-              {isEditing ? (
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={async () => {
-                      setSaving(true);
-                      await profileEditorRef.current?.save();
-                      setSaving(false);
-                      setIsEditing(false);
-                    }}
-                    disabled={saving}
-                  >
-                    {saving ? "Saving..." : "Save"}
-                  </Button>
-                </div>
-              ) : (
-                <Button onClick={() => setIsEditing(true)}>
-                  <Edit2 className="h-4 w-4" />
-                  Edit
-                </Button>
-              )}
             </div>
           </div>
-        </div>
 
-        <div className="w-full max-w-[600px] m-auto space-y-2 mt-8 ">
-          {!isEditing && <ProfileDetails profile={profile} />}
-          {isEditing && (
-            <ProfileEditForm data={profile}>
-              <ProfileEditor
-                updateProfile={updateProfile}
-                ref={profileEditorRef}
-              />
-            </ProfileEditForm>
-          )}
+          <div className="w-full max-w-[600px] m-auto space-y-2 mt-8 ">
+            {!isEditing && <ProfileDetails profile={profile} />}
+            {isEditing && (
+              <ProfileEditForm data={profile}>
+                <ProfileEditor
+                  updateProfile={updateProfile}
+                  ref={profileEditorRef}
+                />
+              </ProfileEditForm>
+            )}
+          </div>
         </div>
-      </div>
-    </ContentLayout>
+      </ContentLayout>
+    )
   );
 }
 

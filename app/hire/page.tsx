@@ -1,19 +1,27 @@
 "use client";
 
-import { useAuthContext } from "./authctx";
+import HeroSection from "@/components/features/hire/landing/HeroSection";
+import JobScroller from "@/components/features/student/landing/job-scroller";
+import MobileJobScroller from "@/components/features/student/landing/mobile-job-scroller";
+import { useAppContext } from "@/lib/ctx-app";
 
 export default function HomePage() {
-  const { redirect_if_not_logged_in, redirect_if_logged_in } = useAuthContext();
-
-  redirect_if_not_logged_in();
-  redirect_if_logged_in();
-
-  // Show a loading state while redirecting
   return (
-    <div className="w-full h-full bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-        <p className="text-gray-600">Redirecting...</p>
+    <div className="flex flex-col  w-full overflow-hidden">
+      <div className="flex-1 flex flex-col">
+        <HeroSection />
+        <div className="w-full bg-gray-50 py-3 flex-shrink-0">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex items-center justify-center gap-8">
+              <h2 className="text-base font-medium text-gray-600 tracking-wide whitespace-nowrap">
+                Featured companies:
+              </h2>
+              <div className="flex justify-center">
+                <JobScroller />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
