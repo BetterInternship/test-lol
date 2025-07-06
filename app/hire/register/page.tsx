@@ -39,7 +39,7 @@ export default function RegisterPage() {
           <EmployerEditor registerProfile={register} />
         </EmployerRegisterForm>
       </div>
-      <div className="fixed bottom-0 bg-white h-10 w-full flex flex-row justify-center">
+      <div className="fixed bottom-0 bg-gray-50 z-[100] h-10 w-full flex flex-row justify-center">
         <div className="opacity-80 text-sm">
           Need help? Contact us at{" "}
           <a href="mailto:hello@betterinternship.com">
@@ -95,8 +95,8 @@ const EmployerEditor = ({
               {
                 // ! change when unis update
                 university_id: get_university_by_name("DLSU - Manila")?.id,
-                start_date: additionalFields.moa_start_date,
-                expires_at: additionalFields.moa_expires_at,
+                start_date: additionalFields.moa_start_date ?? 0,
+                expires_at: additionalFields.moa_expires_at ?? 0,
               },
             ]),
           }

@@ -56,21 +56,16 @@ export const StoryBook = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       <div className="flex justify-end space-x-2 mt-4">
-        <Button
-          size="xs"
-          variant="outline"
-          onClick={() => paginate(-1)}
-          disabled={currentStep === 0}
-        >
-          Prev
-        </Button>
-        <Button
-          size="xs"
-          onClick={() => paginate(1)}
-          disabled={currentStep === Children.toArray(children).length - 1}
-        >
-          Next
-        </Button>
+        {currentStep !== 0 && (
+          <Button size="xs" variant="outline" onClick={() => paginate(-1)}>
+            Prev
+          </Button>
+        )}
+        {currentStep !== Children.toArray(children).length - 1 && (
+          <Button size="xs" onClick={() => paginate(1)}>
+            Next
+          </Button>
+        )}
       </div>
     </div>
   );

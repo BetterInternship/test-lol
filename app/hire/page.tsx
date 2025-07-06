@@ -6,14 +6,10 @@ import MobileJobScroller from "@/components/features/student/landing/mobile-job-
 import { useAppContext } from "@/lib/ctx-app";
 
 export default function HomePage() {
-  const { isMobile } = useAppContext();
-
   return (
     <div className="flex flex-col  w-full overflow-hidden">
       <div className="flex-1 flex flex-col">
         <HeroSection />
-        
-        {/* Featured Companies Section */}
         <div className="w-full bg-gray-50 py-3 flex-shrink-0">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex items-center justify-center gap-8">

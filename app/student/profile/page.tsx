@@ -15,7 +15,6 @@ import {
   MessageCircleQuestion,
 } from "lucide-react";
 import { useProfile } from "@/lib/api/student.api";
-import { useRouter } from "next/navigation";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
 import { useRefs } from "@/lib/db/use-refs";
@@ -55,11 +54,12 @@ import {
   isValidOptionalUserName,
   isValidRequiredUserName,
 } from "@/lib/utils/name-utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
 export default function ProfilePage() {
-  const { isAuthenticated } = useAuthContext();
+  const { redirectIfNotLoggedIn } = useAuthContext();
   const profile = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -75,13 +75,9 @@ export default function ProfilePage() {
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
   const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
-  const router = useRouter();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push("/login");
-    }
-  }, [isAuthenticated(), router]);
+  redirectIfNotLoggedIn();
 
   const {
     fileInputRef: pfpFileInputRef,
@@ -92,8 +88,7 @@ export default function ProfilePage() {
     filename: "pfp",
   });
 
-  if (!isAuthenticated() || profile.isPending)
-    return <Loader>Loading profile...</Loader>;
+  if (profile.isPending) return <Loader>Loading profile...</Loader>;
 
   if (profile.error) {
     return (
@@ -126,7 +121,10 @@ export default function ProfilePage() {
                 ref={pfpFileInputRef}
                 allowedTypes={["image/jpeg", "image/png", "image/webp"]}
                 maxSize={1}
-                onSelect={pfpUpload}
+                onSelect={(file) => (
+                  pfpUpload(file),
+                  queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+                )}
               />
             </div>
 
@@ -614,6 +612,7 @@ const ResumeBox = ({
   openResumeModal: () => void;
 }) => {
   // File upload handlers
+  const queryClient = useQueryClient();
   const {
     fileInputRef: resumeFileInputRef,
     upload: resumeUpload,
@@ -648,7 +647,10 @@ const ResumeBox = ({
         ref={resumeFileInputRef}
         maxSize={2.5}
         allowedTypes={["application/pdf"]}
-        onSelect={resumeUpload}
+        onSelect={(file) => (
+          resumeUpload(file),
+          queryClient.invalidateQueries({ queryKey: ["my-profile"] })
+        )}
       />
     </Card>
   );

@@ -1,13 +1,14 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuthContext } from "@/app/hire/authctx";
 
 export default function HeroSection() {
   const router = useRouter();
+  const { redirectIfLoggedIn } = useAuthContext();
 
-  const handleRequestAccess = () => {
-    router.push("/login");
-  };
+  redirectIfLoggedIn();
+  const handleRequestAccess = () => router.push("/register");
   return (
     <div className="flex flex-col items-center justify-center w-full h-full px-8 pt-8 text-center">
       <div className="max-w-4xl mx-auto space-y-4">

@@ -8,7 +8,12 @@ import { ArrowLeft } from "lucide-react";
 import { useAuthContext } from "../authctx";
 
 export default function LoginPage() {
-  const { email_status, login, redirect_if_logged_in, redirect_if_not_logged_in } = useAuthContext();
+  const {
+    email_status,
+    login,
+    redirectIfLoggedIn: redirect_if_logged_in,
+    redirect_if_not_logged_in,
+  } = useAuthContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [new_account, set_new_account] = useState(false);
