@@ -9,22 +9,21 @@ export default function HomePage() {
   const { isMobile } = useAppContext();
 
   return (
-    <div className="flex flex-col min-h-full w-full">
-      <div className="p-6">
-      <HeroSection />
-      </div>
-
-      
-      {/* Featured Companies Section */}
-      <div className="w-full bg-gray-50 py-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center">
-            <h2 className="text-lg font-semibold text-gray-700 tracking-wide">
-              Featured Companies
-            </h2>
-          </div>
-          <div className="flex justify-center">
-            <JobScroller />
+    <div className="flex flex-col  w-full overflow-hidden">
+      <div className="flex-1 flex flex-col">
+        <HeroSection />
+        
+        {/* Featured Companies Section */}
+        <div className="w-full bg-gray-50 py-3 flex-shrink-0">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex items-center justify-center gap-8">
+              <h2 className="text-base font-medium text-gray-600 tracking-wide whitespace-nowrap">
+                Featured companies:
+              </h2>
+              <div className="flex justify-center">
+                <JobScroller />
+              </div>
+            </div>
           </div>
         </div>
       </div>
