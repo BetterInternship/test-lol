@@ -409,7 +409,7 @@
 /* Enhanced component specific styles */
 div[data-radix-select-viewport=""],
 .mdxeditor-select-content,
-.mdxeditor-popup-container {
+.mdxeditor-popup-container>* {
   z-index: 50 !important;
 }
 
