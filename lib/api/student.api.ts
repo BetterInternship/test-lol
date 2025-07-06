@@ -164,6 +164,7 @@ export function useProfile() {
   const { isPending, data, error } = useQuery({
     queryKey: ["my-profile"],
     queryFn: UserService.getMyProfile,
+    staleTime: 5 * 1000,
   });
   const {
     isPending: isUpdating,
