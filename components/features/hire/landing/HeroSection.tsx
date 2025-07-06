@@ -13,7 +13,7 @@ export default function HeroSection() {
       <div className="max-w-4xl mx-auto space-y-4">
         {/* Main Heading */}
         <h1 className="text-7xl font-bold text-black tracking-tighter mb-10">
-          Need Interns? Done.
+          Need Interns? <span className="text-primary">Done.</span>
         </h1>
 
         {/* Description */}
