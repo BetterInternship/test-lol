@@ -30,7 +30,7 @@ interface IAuthContext {
   is_authenticated: () => boolean;
   refresh_authentication: () => void;
   redirect_if_not_logged_in: () => void;
-  redirect_if_logged_in: () => void;
+  redirectIfLoggedIn: () => void;
 }
 
 const AuthContext = createContext<IAuthContext>({} as IAuthContext);
@@ -174,7 +174,7 @@ export const AuthContextProvider = ({
         refresh_authentication,
         is_authenticated: () => is_authenticated,
         redirect_if_not_logged_in,
-        redirect_if_logged_in,
+        redirectIfLoggedIn: redirect_if_logged_in,
       }}
     >
       {children}
