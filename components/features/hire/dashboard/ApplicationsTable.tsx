@@ -31,7 +31,8 @@ export function ApplicationsTable({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="text-sm text-gray-500">
-              Showing {applications.length} of {applications.length} applications
+              Showing {applications.length} of {applications.length}{" "}
+              applications
             </div>
           </div>
         </div>
@@ -40,7 +41,7 @@ export function ApplicationsTable({
       {/* Table Content */}
       <div className="flex-1 overflow-auto">
         <table className="relative w-full">
-          <tbody className="absolute w-[100%]">
+          <tbody className="w-full">
             {sortedApplications.map((application) => (
               <ApplicationRow
                 key={application.id}

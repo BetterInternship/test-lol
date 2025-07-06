@@ -39,15 +39,6 @@ export function ListingsJobPanel({
           />
         ))}
       </div>
-      
-      {/* Paginator - following student portal pattern */}
-      <div className="mt-4 flex-shrink-0">
-        <Paginator
-          totalItems={jobs.length}
-          itemsPerPage={jobsPageSize}
-          onPageChange={onPageChange}
-        />
-      </div>
     </div>
   );
 }

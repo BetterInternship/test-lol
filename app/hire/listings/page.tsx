@@ -26,7 +26,7 @@ export default function MyListings() {
     jobsPage,
     jobsPageSize,
     filteredJobs,
-    
+
     // Business logic actions
     setSearchTerm,
     handleKeyPress,
@@ -38,7 +38,7 @@ export default function MyListings() {
     clearSelectedJob,
     handlePageChange,
     getJobLink,
-    
+
     // Modals
     openCreateModal,
     closeCreateModal,
@@ -56,74 +56,66 @@ export default function MyListings() {
 
   return (
     <ContentLayout>
-      <>
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col max-w-[1024px]">
-          {/* Unverified Banner */}
-          {!profileLoading && !profile?.is_verified && (
-            <div className="p-6 pb-0">
-              <ShowUnverifiedBanner />
-            </div>
-          )}
-          
-          {/* Content Area */}
-          <div className="flex-1 p-6 flex gap-6 overflow-hidden">
-            {/* Left Panel - Job List */}
-            <div className="w-96 flex flex-col h-full">
-              <ListingsSearchBar
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                onKeyPress={handleKeyPress}
-                onCreateJob={openCreateModal}
-              />
-              
-              <ListingsJobPanel
-                jobs={filteredJobs}
-                selectedJobId={selectedJob?.id}
-                isEditing={isEditing}
-                jobsPage={jobsPage}
-                jobsPageSize={jobsPageSize}
-                onJobSelect={handleJobSelect}
-                onPageChange={handlePageChange}
-                updateJob={handleUpdateJob}
-              />
-            </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col w-full max-h-full">
+        {/* Unverified Banner */}
+        {!profileLoading && !profile?.is_verified && (
+          <div className="p-6 pb-0">
+            <ShowUnverifiedBanner />
+          </div>
+        )}
 
-            {/* Right Panel - Job Details */}
-            <ListingsDetailsPanel
-              selectedJob={selectedJob}
+        {/* Content Area */}
+        <div className="flex-1 p-6 flex gap-6 overflow-hidden">
+          <div className="w-96 flex flex-col h-full">
+            <ListingsSearchBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onKeyPress={handleKeyPress}
+              onCreateJob={openCreateModal}
+            />
+            <ListingsJobPanel
+              jobs={filteredJobs}
+              selectedJobId={selectedJob?.id}
               isEditing={isEditing}
-              saving={saving}
-              onEdit={handleEditStart}
-              onSave={handleSave}
-              onCancel={handleCancel}
-              onShare={handleShare}
-              onDelete={openDeleteModal}
+              jobsPage={jobsPage}
+              jobsPageSize={jobsPageSize}
+              onJobSelect={handleJobSelect}
+              onPageChange={handlePageChange}
               updateJob={handleUpdateJob}
             />
           </div>
+          <ListingsDetailsPanel
+            selectedJob={selectedJob}
+            isEditing={isEditing}
+            saving={saving}
+            onEdit={handleEditStart}
+            onSave={handleSave}
+            onCancel={handleCancel}
+            onShare={handleShare}
+            onDelete={openDeleteModal}
+            updateJob={handleUpdateJob}
+          />
         </div>
+      </div>
 
-        {/* Create Job Modal */}
-        <CreateModal>
-          <ListingsCreateJobModal
-            createJob={create_job}
-            close={closeCreateModal}
-          />
-        </CreateModal>
+      {/* Create Job Modal */}
+      <CreateModal>
+        <ListingsCreateJobModal
+          createJob={create_job}
+          close={closeCreateModal}
+        />
+      </CreateModal>
 
-        {/* Delete Job Modal */}
-        <DeleteModal>
-          <ListingsDeleteModal
-            job={selectedJob}
-            deleteJob={delete_job}
-            clearJob={clearSelectedJob}
-            close={closeDeleteModal}
-          />
-        </DeleteModal>
-      </>
+      {/* Delete Job Modal */}
+      <DeleteModal>
+        <ListingsDeleteModal
+          job={selectedJob}
+          deleteJob={delete_job}
+          clearJob={clearSelectedJob}
+          close={closeDeleteModal}
+        />
+      </DeleteModal>
     </ContentLayout>
   );
 }
-
-

@@ -20,24 +20,18 @@ function DashboardContent() {
     profileLoading,
     selectedApplication,
     resumeURL,
-    
-    // Reference data
-    app_statuses,
-    to_level_name,
-    to_university_name,
-    to_app_status_name,
-    
+
     // Actions
     updateNotes,
     updateStatus,
     syncResumeURL,
-    
+
     // Event handlers
     handleApplicationClick,
     handleNotesClick,
     handleScheduleClick,
     handleStatusChange,
-    
+
     // Modals
     ApplicantModal,
     ResumeModal,
@@ -74,7 +68,7 @@ function DashboardContent() {
 
   return (
     <ContentLayout>
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full">
         <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
           {!profileLoading && !profile?.is_verified ? (
             <ShowUnverifiedBanner />

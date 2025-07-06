@@ -55,18 +55,22 @@ const HTMLContent = ({
           <TooltipProvider>
             <Sonner />
             <PostHogProvider>
-              <html lang="en" className="overflow-hidden">
+              <html
+                lang="en"
+                className="min-w-fit w-full h-[100vh] overflow-hidden"
+              >
                 <Head>
-                  <meta name="viewport" content="width=1024, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+                  <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1.0"
+                  />
                 </Head>
-                <body className="w-[1024px] overflow-x-auto">
-                  <div className="h-screen bg-gray-50 overflow-x-auto flex flex-col">
-                    <Header />
-                    <div className="flex-grow overflow-auto flex">
-                      {children}
-                    </div>
-                    <Footer />
+                <body className="flex flex-col space-y-0 h-full">
+                  <Header />
+                  <div className="w-full flex-1 overflow-auto max-h-full">
+                    {children}
                   </div>
+                  <Footer />
                 </body>
               </html>
             </PostHogProvider>

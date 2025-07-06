@@ -15,17 +15,10 @@ import { EmployerApplication } from "@/lib/db/db.types";
 
 export function useDashboard() {
   // Focused hooks for specific concerns
-  const { applications, loading, profile, profileLoading } = useApplicationsData();
+  const { applications, loading, profile, profileLoading } =
+    useApplicationsData();
   const { updateStatus, updateNotes } = useApplicationActions();
   const { selectedApplication, setSelectedApplication } = useDashboardContext();
-  
-  // Reference data
-  const {
-    app_statuses,
-    to_level_name,
-    to_university_name,
-    to_app_status_name,
-  } = useRefs();
 
   // Modal system (keeping existing for now)
   const {
@@ -33,19 +26,27 @@ export function useDashboard() {
     close: closeApplicantModal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-  
-  const { open: openResumeModal, Modal: ResumeModal } = useModal("resume-modal");
-  const { open: openReviewModal, close: closeReviewModal, Modal: ReviewModal } = useModal("review-modal");
+
+  const { open: openResumeModal, Modal: ResumeModal } =
+    useModal("resume-modal");
+  const {
+    open: openReviewModal,
+    close: closeReviewModal,
+    Modal: ReviewModal,
+  } = useModal("review-modal");
 
   // File handling for resumes
   const getUserResumeUrl = useCallback(
-    async () => UserService.getUserResumeURL(selectedApplication?.user?.id ?? ""),
+    async () =>
+      UserService.getUserResumeURL(selectedApplication?.user?.id ?? ""),
     [selectedApplication]
   );
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: getUserResumeUrl,
-    route: selectedApplication ? `/users/${selectedApplication.user_id}/resume` : "",
+    route: selectedApplication
+      ? `/users/${selectedApplication.user_id}/resume`
+      : "",
   });
 
   // Event handlers
@@ -64,7 +65,10 @@ export function useDashboard() {
     window?.open(application.user?.calendar_link ?? "", "_blank")?.focus();
   };
 
-  const handleStatusChange = async (application: EmployerApplication, status: number) => {
+  const handleStatusChange = async (
+    application: EmployerApplication,
+    status: number
+  ) => {
     if (!application?.id) {
       console.error("Not an application you can edit.");
       return;
@@ -80,24 +84,18 @@ export function useDashboard() {
     profileLoading,
     selectedApplication,
     resumeURL,
-    
-    // Reference data
-    app_statuses,
-    to_level_name,
-    to_university_name,
-    to_app_status_name,
-    
+
     // Actions
     updateStatus,
     updateNotes,
     syncResumeURL,
-    
+
     // Event handlers
     handleApplicationClick,
     handleNotesClick,
     handleScheduleClick,
     handleStatusChange,
-    
+
     // Modals
     ApplicantModal,
     ResumeModal,
