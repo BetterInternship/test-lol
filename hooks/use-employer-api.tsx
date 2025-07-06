@@ -13,7 +13,6 @@ export function useProfile() {
   const queryClient = useQueryClient();
   const { isPending, data, error } = useQuery({
     queryKey: ["my-employer-profile"],
-    staleTime: 1 * 1000,
     queryFn: () => EmployerService.getMyProfile(),
   });
 

@@ -5,6 +5,7 @@ import { AuthService } from "@/lib/api/services";
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FetchResponse } from "@/lib/api/use-fetch";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface IAuthContext {
   register: (
@@ -49,6 +50,7 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
     if (typeof window === "undefined") return false;
@@ -72,6 +74,11 @@ export const AuthContextProvider = ({
   useEffect(() => {
     refreshAuthentication();
   }, []);
+
+  // Whenever auth occurs, invalidate profile
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+  }, [isAuthenticated]);
 
   const register = async (user: Partial<PublicUser>) => {
     const response = await AuthService.register(user);
