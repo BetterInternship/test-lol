@@ -414,6 +414,7 @@ const CreateModalForm = ({
                 <FormInput
                   label="Location"
                   value={formData.location ?? ""}
+                  maxLength={100}
                   setter={fieldSetter("location")}
                   required={false}
                 />
