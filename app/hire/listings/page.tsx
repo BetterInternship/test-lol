@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { Search, FileText, Plus } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { useOwnedJobs, useProfile } from "@/hooks/use-employer-api";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useModal } from "@/hooks/use-modal";
 import { Paginator } from "@/components/ui/paginator";
 import { EmployerJobDetails, EmployerJobCard } from "@/components/shared/jobs";
@@ -33,7 +32,7 @@ import {
 export default function MyListings() {
   // Get data from employer API hooks
   const { profile, loading: profileLoading } = useProfile();
-  const { ownedJobs, create_job, delete_job } = useOwnedJobs();
+  const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
   const { redirectIfNotLoggedIn } = useAuthContext();
   const [selectedJob, setSelectedJob] = useState<Job>({} as Job);
   const [searchTerm, setSearchTerm] = useState("");
