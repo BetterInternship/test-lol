@@ -95,8 +95,8 @@ const EmployerEditor = ({
               {
                 // ! change when unis update
                 university_id: get_university_by_name("DLSU - Manila")?.id,
-                start_date: additionalFields.moa_start_date,
-                expires_at: additionalFields.moa_expires_at,
+                start_date: additionalFields.moa_start_date ?? 0,
+                expires_at: additionalFields.moa_expires_at ?? 0,
               },
             ]),
           }
