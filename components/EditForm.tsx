@@ -156,6 +156,7 @@ interface FormDropdownProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   options: { id: number | string; name: string }[];
   label?: string;
+  value?: string | number;
   required?: boolean;
   setter?: (value: any) => void;
   className?: string;
@@ -259,11 +260,11 @@ export const FormDatePicker = ({
           {label}
         </label>
       )}
-      <div className="relative flex items-center space-x-2">
+      <div className="relative flex items-center z-[100]">
         <DatePicker
           id=""
           selected={date ? new Date(date) : new Date()}
-          className="w-full flex h-8 px-[0.75em] py-[0.33em] rounded-[0.33em] border border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto bg-background"
+          className="relative w-full flex h-8 rounded-[0.33em] border border-gray-200 focus:border-primary focus:border-opacity-50 hover:cursor-cell text-sm"
           onChange={(date) => setter && setter(date?.getTime())}
         ></DatePicker>
       </div>
