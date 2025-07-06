@@ -2,12 +2,10 @@
 
 import HeroSection from "@/components/features/hire/landing/HeroSection";
 import JobScroller from "@/components/features/student/landing/job-scroller";
-import MobileJobScroller from "@/components/features/student/landing/mobile-job-scroller";
-import { useAppContext } from "@/lib/ctx-app";
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col  w-full overflow-hidden">
+    <div className="flex flex-col w-full overflow-hidden">
       <div className="flex-1 flex flex-col">
         <HeroSection />
         <div className="w-full bg-gray-50 py-3 flex-shrink-0">

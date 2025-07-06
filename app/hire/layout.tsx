@@ -66,11 +66,13 @@ const HTMLContent = ({
                   />
                 </Head>
                 <body className="h-full">
-                  <Header />
-                  <div className="w-full flex-1 overflow-auto max-h-full">
-                    {children}
+                  <div className="flex flex-col h-full">
+                    <Header />
+                    <div className="flex w-full flex-1 max-h-full pb-20">
+                      {children}
+                    </div>
+                    <Footer />
                   </div>
-                  <Footer />
                 </body>
               </html>
             </PostHogProvider>
