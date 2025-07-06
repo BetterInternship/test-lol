@@ -12,7 +12,6 @@ import { useRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
 import { useModal } from "@/hooks/use-modal";
-import { Paginator } from "@/components/ui/paginator";
 import { EmployerJobDetails, EmployerJobCard } from "@/components/shared/jobs";
 import {
   DropdownGroup,
@@ -136,14 +135,6 @@ export default function MyListings() {
                     selected={job.id === selectedJob.id}
                   ></EmployerJobCard>
                 ))}
-              </div>
-              {/* Paginator - following student portal pattern */}
-              <div className="mt-4 flex-shrink-0">
-                <Paginator
-                  totalItems={filteredJobs.length}
-                  itemsPerPage={jobs_page_size}
-                  onPageChange={(page) => setJobsPage(page)}
-                />
               </div>
             </div>
 

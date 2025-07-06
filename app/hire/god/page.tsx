@@ -40,7 +40,7 @@ export default function GodLandingPage() {
   };
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div className="w-full h-[90vh] overflow-hidden">
       <TabGroup>
         <Tab name="verified employers">
           <div className="absolute w-full px-4 py-4 border-b">
