@@ -1,18 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
-
-// Placeholder component for EditableJobDetails
-const EditableJobDetails = ({ is_editing, job, saving, update_job, actions }: any) => {
-  return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{job?.title || 'Job Details'}</h2>
-      <p className="mb-4">{job?.description || 'No description available'}</p>
-      <div className="flex gap-2">
-        {actions}
-      </div>
-    </div>
-  );
-};
+import { EmployerJobDetails } from "@/components/shared/jobs";
 
 interface ListingsDetailsPanelProps {
   selectedJob: Job | null;
@@ -23,7 +11,7 @@ interface ListingsDetailsPanelProps {
   onCancel: () => void;
   onShare: () => void;
   onDelete: () => void;
-  updateJob: (job: Partial<Job>) => Promise<any>;
+  updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
 }
 
 export function ListingsDetailsPanel({
@@ -115,7 +103,7 @@ export function ListingsDetailsPanel({
 
   return (
     <div className="max-w-[1024px] mx-auto">
-      <EditableJobDetails
+      <EmployerJobDetails
         is_editing={isEditing}
         set_is_editing={() => {}} // This will be handled by the parent component
         job={selectedJob}

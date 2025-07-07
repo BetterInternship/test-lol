@@ -110,7 +110,11 @@ export function ListingsCreateJobModal({
               onChange={(e) => set_field("title", e.target.value)}
               className="text-lg font-medium h-12"
               placeholder="Enter job title here..."
+              maxLength={30}
             />
+            <p className="text-xs text-gray-500 text-right mt-1">
+              {(form_data.title || "").length}/30 characters
+            </p>
           </div>
         </div>
       </div>
