@@ -27,7 +27,7 @@ export default function RegisterPage() {
   const { register } = useAuthContext();
 
   return (
-    <div className="flex-1 flex justify-center px-6 py-12 pt-12">
+    <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-10">
           <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
