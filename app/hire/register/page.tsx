@@ -265,6 +265,9 @@ const EmployerEditor = ({
               people plan to manage this employer account.
             </p>
           </Card>
+          <div className="mt-3 text-xs text-gray-500 italic">
+            Note: You can update all company information later in the Edit Company Profile page.
+          </div>
         </Card>
         <Card>
           <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
@@ -366,6 +369,7 @@ const EmployerEditor = ({
                 </label>
               </div>
             </Card>
+
             <Button
               onClick={register}
               disabled={!additionalFields.terms_accepted || isRegistering}
