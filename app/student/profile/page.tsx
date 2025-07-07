@@ -379,16 +379,38 @@ const ProfileEditor = forwardRef<
         )
       )
     );
-    setCollegeOptions(
-      colleges.filter((c) =>
-        get_colleges_by_university(formData.university ?? "").includes(c.id)
-      )
+
+    // Check if Senior High School is selected
+    const selectedLevel = levels.find(level => level.id === formData.year_level);
+    const isSeniorHighSchool = selectedLevel?.name && (
+      selectedLevel.name.toLowerCase().includes("senior high") ||
+      selectedLevel.name.toLowerCase().includes("grade 11") ||
+      selectedLevel.name.toLowerCase().includes("grade 12") ||
+      selectedLevel.name.toLowerCase().includes("shs")
     );
-    setDepartmentOptions(
-      departments.filter((d) =>
-        get_departments_by_college(formData.college ?? "").includes(d.id)
-      )
-    );
+
+    if (isSeniorHighSchool) {
+      // For Senior High School, set to "Not Specified" college
+      const notSpecifiedCollege = colleges.find(c => 
+        c.name.toLowerCase().includes("not specified") || 
+        c.name.toLowerCase() === "n/a" ||
+        c.name.toLowerCase() === "none"
+      );
+      setCollegeOptions(notSpecifiedCollege ? [notSpecifiedCollege] : []);
+      setDepartmentOptions([]);
+    } else {
+      setCollegeOptions(
+        colleges.filter((c) =>
+          get_colleges_by_university(formData.university ?? "").includes(c.id)
+        )
+      );
+      setDepartmentOptions(
+        departments.filter((d) =>
+          get_departments_by_college(formData.college ?? "").includes(d.id)
+        )
+      );
+    }
+
     setDegreeOptions(
       degrees
         .filter((d) =>
@@ -400,6 +422,40 @@ const ProfileEditor = forwardRef<
     const debouncedValidation = setTimeout(() => validateFormData(), 500);
     return () => clearTimeout(debouncedValidation);
   }, [formData]);
+
+  // Handle Senior High School selection - auto-set college and department
+  useEffect(() => {
+    if (formData.year_level !== undefined) {
+      const selectedLevel = levels.find(level => level.id === formData.year_level);
+      const isSeniorHighSchool = selectedLevel?.name && (
+        selectedLevel.name.toLowerCase().includes("senior high") ||
+        selectedLevel.name.toLowerCase().includes("grade 11") ||
+        selectedLevel.name.toLowerCase().includes("grade 12") ||
+        selectedLevel.name.toLowerCase().includes("shs")
+      );
+      
+      if (isSeniorHighSchool) {
+        // Auto-set to "Not Specified" for Senior High School students
+        const notSpecifiedCollege = colleges.find(c => 
+          c.name.toLowerCase().includes("not specified") || 
+          c.name.toLowerCase() === "n/a" ||
+          c.name.toLowerCase() === "none"
+        );
+        const notSpecifiedDepartment = departments.find(d => 
+          d.name.toLowerCase().includes("not specified") || 
+          d.name.toLowerCase() === "n/a" ||
+          d.name.toLowerCase() === "none"
+        );
+        
+        if (notSpecifiedCollege && formData.college !== notSpecifiedCollege.id) {
+          setField("college", notSpecifiedCollege.id);
+        }
+        if (notSpecifiedDepartment && formData.department !== notSpecifiedDepartment.id) {
+          setField("department", notSpecifiedDepartment.id);
+        }
+      }
+    }
+  }, [formData.year_level, levels, colleges, departments, formData.college, formData.department, setField]);
 
   // Data validators
   useEffect(() => {
@@ -513,18 +569,61 @@ const ProfileEditor = forwardRef<
             options={universityOptions}
             setter={fieldSetter("university")}
           />
-          <FormDropdown
-            label={"College"}
-            value={formData.college ?? ""}
-            options={collegeOptions}
-            setter={fieldSetter("college")}
-          />
-          <FormDropdown
-            label={"Department"}
-            value={formData.department ?? ""}
-            options={departmentOptions}
-            setter={fieldSetter("department")}
-          />
+          {(() => {
+            const selectedLevel = levels.find(level => level.id === formData.year_level);
+            const isSeniorHighSchool = selectedLevel?.name && (
+              selectedLevel.name.toLowerCase().includes("senior high") ||
+              selectedLevel.name.toLowerCase().includes("grade 11") ||
+              selectedLevel.name.toLowerCase().includes("grade 12") ||
+              selectedLevel.name.toLowerCase().includes("shs")
+            );
+            
+            if (isSeniorHighSchool) {
+              return (
+                <>
+                  <div>
+                    <label className="text-xs text-gray-400 italic mb-1 block">
+                      College <span className="text-red-500">*</span>
+                    </label>
+                    <div className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm bg-gray-100 text-gray-500">
+                      Not Specified
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      College selection is not required for Senior High School students
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 italic mb-1 block">
+                      Department <span className="text-red-500">*</span>
+                    </label>
+                    <div className="w-full border border-gray-200 rounded-[0.25em] p-3 px-5 text-sm bg-gray-100 text-gray-500">
+                      Not Specified
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Department selection is not required for Senior High School students
+                    </p>
+                  </div>
+                </>
+              );
+            }
+            
+            return (
+              <>
+                <FormDropdown
+                  label={"College"}
+                  value={formData.college ?? ""}
+                  options={collegeOptions}
+                  setter={fieldSetter("college")}
+                />
+                <FormDropdown
+                  label={"Department"}
+                  value={formData.department ?? ""}
+                  options={departmentOptions}
+                  setter={fieldSetter("department")}
+                />
+              </>
+            );
+          })()}
           <FormDropdown
             label={"Degree"}
             value={formData.degree ?? ""}

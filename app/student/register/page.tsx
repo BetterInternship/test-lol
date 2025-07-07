@@ -157,6 +157,28 @@ export default function RegisterPage() {
     }
   }, [form_data.university, form_data.college, colleges, get_colleges_by_university, set_field]);
 
+  // Handle Senior High School year level selection
+  useEffect(() => {
+    if (form_data.year_level !== undefined) {
+      const selectedLevel = levels.find(level => level.id === form_data.year_level);
+      const isSeniorHighSchool = selectedLevel?.name && (
+        selectedLevel.name.toLowerCase().includes("senior high")
+      );
+      
+      if (isSeniorHighSchool) {
+        // Set college to "Not Specified" for Senior High School students
+        const notSpecifiedCollege = colleges.find(c => 
+          c.name.toLowerCase().includes("Not specified") || 
+          c.name.toLowerCase() === "n/a" ||
+          c.name.toLowerCase() === "none"
+        );
+        if (notSpecifiedCollege) {
+          set_field("college", notSpecifiedCollege.id);
+        }
+      }
+    }
+  }, [form_data.year_level, levels, colleges, set_field]);
+
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get("email");
@@ -190,7 +212,21 @@ export default function RegisterPage() {
     if (!form_data.year_level && form_data.year_level !== 0)
       missingFields.push("Year Level");
     if (!form_data.university?.trim()) missingFields.push("University");
-    if (!form_data.college?.trim()) missingFields.push("College");
+    
+    // Check if Senior High School is selected
+    const selectedLevel = levels.find(level => level.id === form_data.year_level);
+    const isSeniorHighSchool = selectedLevel?.name && (
+      selectedLevel.name.toLowerCase().includes("senior high") ||
+      selectedLevel.name.toLowerCase().includes("grade 11") ||
+      selectedLevel.name.toLowerCase().includes("grade 12") ||
+      selectedLevel.name.toLowerCase().includes("shs")
+    );
+    
+    // Only require college if not Senior High School
+    if (!isSeniorHighSchool && !form_data.college?.trim()) {
+      missingFields.push("College");
+    }
+    
     if (takingForCredit && !form_data.linkage_officer?.trim())
       missingFields.push("Linkage Officer");
 
@@ -400,15 +436,40 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     College <span className="text-red-500">*</span>
                   </label>
-                  <GroupableRadioDropdown
-                    name="college"
-                    options={colleges.filter((c) =>
-                      get_colleges_by_university(
-                        form_data.university ?? ""
-                      ).includes(c.id)
-                    )}
-                    onChange={(value) => set_field("college", value)}
-                  ></GroupableRadioDropdown>
+                  {(() => {
+                    const selectedLevel = levels.find(level => level.id === form_data.year_level);
+                    const isSeniorHighSchool = selectedLevel?.name && (
+                      selectedLevel.name.toLowerCase().includes("senior high") ||
+                      selectedLevel.name.toLowerCase().includes("grade 11") ||
+                      selectedLevel.name.toLowerCase().includes("grade 12") ||
+                      selectedLevel.name.toLowerCase().includes("shs")
+                    );
+                    
+                    if (isSeniorHighSchool) {
+                      return (
+                        <div className="relative">
+                          <div className="w-full h-11 sm:h-12 px-3 sm:px-4 bg-gray-100 border border-gray-300 rounded-lg flex items-center text-gray-500">
+                            Not Specified
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            College selection is not required for Senior High School students
+                          </p>
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <GroupableRadioDropdown
+                        name="college"
+                        options={colleges.filter((c) =>
+                          get_colleges_by_university(
+                            form_data.university ?? ""
+                          ).includes(c.id)
+                        )}
+                        onChange={(value) => set_field("college", value)}
+                      />
+                    );
+                  })()}
                 </div>
               )}
 
