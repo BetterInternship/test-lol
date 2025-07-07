@@ -112,6 +112,43 @@ const EmployerEditor = ({
       return;
     }
 
+    // Validate required fields before submitting
+    const missingFields = [];
+    
+    if (!formData.name || formData.name.trim().length < 3) {
+      missingFields.push("Company Name (Doing Business As)");
+    }
+    if (!formData.legal_entity_name || formData.legal_entity_name.trim().length < 3) {
+      missingFields.push("Legal Entity Name");
+    }
+    if (!formData.website || !isValidRequiredURL(formData.website)) {
+      missingFields.push("Valid Website URL");
+    }
+    if (!formData.industry) {
+      missingFields.push("Industry");
+    }
+    if (!formData.description || formData.description.trim().length < 10) {
+      missingFields.push("Company Description (minimum 10 characters)");
+    }
+    if (!additionalFields.contact_name || additionalFields.contact_name.trim().length === 0) {
+      missingFields.push("Contact Name");
+    }
+    if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
+      missingFields.push("Valid Philippine Phone Number");
+    }
+    if (!formData.email || !isValidEmail(formData.email)) {
+      missingFields.push("Valid Contact Email");
+    }
+    if (!additionalFields.terms_accepted) {
+      missingFields.push("Terms & Conditions and Privacy Policy acceptance");
+    }
+
+    if (missingFields.length > 0) {
+      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join('\n• ')}`;
+      alert(errorMessage);
+      return;
+    }
+
     const multipartForm = MultipartFormBuilder.new();
     const newProfile = {
       ...cleanFormData(),
@@ -141,7 +178,8 @@ const EmployerEditor = ({
     const result = await registerProfile(multipartForm.build());
     // @ts-ignore
     if (!result?.success) {
-      alert("Ensure all fields are complete.");
+      const errorMsg = result?.error || result?.message || "Registration failed. Please check your information and try again.";
+      alert(`Registration Error: ${errorMsg}`);
       setIsRegistering(false);
       return;
     }
