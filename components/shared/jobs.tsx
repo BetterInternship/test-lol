@@ -397,6 +397,7 @@ export const EmployerJobDetails = ({
             is_editing={is_editing}
             value={formData.title ?? "Not specified"}
             setter={fieldSetter("title")}
+            maxLength={30}
           >
             <JobTitleLabel />
           </EditableInput>
@@ -421,6 +422,7 @@ export const EmployerJobDetails = ({
               is_editing={is_editing}
               value={formData.location ?? "Not specified"}
               setter={fieldSetter("location")}
+              maxLength={20}
             >
               <Property />
             </EditableInput>
