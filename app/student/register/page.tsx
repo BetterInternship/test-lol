@@ -144,6 +144,19 @@ export default function RegisterPage() {
       set_field("taking_for_credit", false);
   }, [form_data.taking_for_credit, set_field]);
 
+  // Clear college selection when university changes
+  useEffect(() => {
+    if (form_data.university && form_data.college) {
+      const availableColleges = colleges.filter((c) =>
+        get_colleges_by_university(form_data.university ?? "").includes(c.id)
+      );
+      const isCollegeValid = availableColleges.some(c => c.id === form_data.college);
+      if (!isCollegeValid) {
+        set_field("college", "");
+      }
+    }
+  }, [form_data.university, form_data.college, colleges, get_colleges_by_university, set_field]);
+
   // Pre-fill email if coming from login redirect
   useEffect(() => {
     const emailParam = searchParams.get("email");
@@ -382,20 +395,22 @@ export default function RegisterPage() {
               </div>
 
               {/* College */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  College <span className="text-red-500">*</span>
-                </label>
-                <GroupableRadioDropdown
-                  name="college"
-                  options={colleges.filter((c) =>
-                    get_colleges_by_university(
-                      form_data.university ?? ""
-                    ).includes(c.id)
-                  )}
-                  onChange={(value) => set_field("college", value)}
-                ></GroupableRadioDropdown>
-              </div>
+              {form_data.university && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    College <span className="text-red-500">*</span>
+                  </label>
+                  <GroupableRadioDropdown
+                    name="college"
+                    options={colleges.filter((c) =>
+                      get_colleges_by_university(
+                        form_data.university ?? ""
+                      ).includes(c.id)
+                    )}
+                    onChange={(value) => set_field("college", value)}
+                  ></GroupableRadioDropdown>
+                </div>
+              )}
 
               {/* School Year */}
               <div>
