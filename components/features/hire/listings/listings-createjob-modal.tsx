@@ -33,6 +33,51 @@ const CreateModalForm = ({
   const { job_types, job_modes, job_pay_freq, job_allowances } = useRefs();
 
   const handleSaveEdit = async () => {
+    // Validate required fields
+    const missingFields = [];
+    
+    if (!formData.title || formData.title.trim().length === 0) {
+      missingFields.push("Job Title");
+    }
+    
+    if (!formData.type && formData.type !== 0) {
+      missingFields.push("Work Load");
+    }
+    
+    if (!formData.mode && formData.mode !== 0) {
+      missingFields.push("Work Mode");
+    }
+    
+    if (!formData.allowance && formData.allowance !== 0) {
+      missingFields.push("Compensation");
+    }
+    
+    // If custom salary is selected (allowance === 0), validate salary fields
+    if (formData.allowance === 0) {
+      if (!formData.salary || formData.salary <= 0) {
+        missingFields.push("Salary Amount (must be greater than 0)");
+      }
+      if (!formData.salary_freq && formData.salary_freq !== 0) {
+        missingFields.push("Pay Frequency");
+      }
+    }
+    
+    // Check for start/end dates if not year round
+    if (!formData.is_year_round) {
+      if (!formData.start_date) {
+        missingFields.push("Start Date");
+      }
+      if (!formData.end_date) {
+        missingFields.push("End Date");
+      }
+    }
+
+    if (missingFields.length > 0) {
+      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join('\n• ')}`;
+      alert(errorMessage);
+      return;
+    }
+
     const job: Partial<Job> = {
       id: formData.id,
       title: formData.title,
@@ -58,15 +103,16 @@ const CreateModalForm = ({
     try {
       const response = await create_job(job);
       if (!response?.success) {
-        alert("Could not create job");
+        const errorMsg = response?.error || response?.message || "Could not create job. Please check your information and try again.";
+        alert(`Job Creation Error: ${errorMsg}`);
         set_creating(false);
         return;
       }
       set_creating(false);
       close(); // Ensure modal closes after successful creation
-    } catch (error) {
+    } catch (error: any) {
       set_creating(false);
-      alert("Error creating job");
+      alert(`Error creating job: ${error.message || "Please try again."}`);
     }
   };
 
@@ -127,12 +173,12 @@ const CreateModalForm = ({
                 <FormInput
                   label="Location"
                   value={formData.location ?? ""}
-                  maxLength={20}
+                  maxLength={100}
                   setter={fieldSetter("location")}
                   required={false}
                 />
                 <p className="text-xs text-gray-500 text-right">
-                  {(formData.location || "").length}/20 characters
+                  {(formData.location || "").length}/100 characters
                 </p>
               </div>
 
@@ -172,9 +218,17 @@ const CreateModalForm = ({
                       </Label>
                       <Input
                         value={formData.salary ?? ""}
-                        onChange={(e) => setField("salary", e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          // Only allow numbers
+                          if (value === "" || /^\d+$/.test(value)) {
+                            setField("salary", value === "" ? undefined : parseInt(value));
+                          }
+                        }}
                         placeholder="Enter salary amount"
                         className="text-sm"
+                        type="number"
+                        min="1"
                       />
                     </div>
 

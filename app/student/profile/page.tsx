@@ -164,9 +164,14 @@ export default function ProfilePage() {
                     <Button
                       onClick={async () => {
                         setSaving(true);
-                        await profileEditorRef.current?.save();
-                        setSaving(false);
-                        setIsEditing(false);
+                        try {
+                          await profileEditorRef.current?.save();
+                          setIsEditing(false);
+                        } catch (error: any) {
+                          alert(error.message || "Failed to save profile. Please check for validation errors.");
+                        } finally {
+                          setSaving(false);
+                        }
                       }}
                       disabled={saving}
                     >
@@ -341,6 +346,12 @@ const ProfileEditor = forwardRef<
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
+      // Validate form before saving
+      const isValid = validateFormData();
+      if (!isValid) {
+        throw new Error("Please fix the errors before saving.");
+      }
+
       const updatedProfile = {
         ...cleanFormData(),
         portfolio_link: toURL(formData.portfolio_link)?.toString(),
