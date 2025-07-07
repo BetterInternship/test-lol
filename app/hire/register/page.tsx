@@ -91,14 +91,24 @@ const EmployerEditor = ({
         setMoaValidationError("Both MOA start and end dates are required.");
         return false;
       }
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
       
-      if (startDate === endDate) {
-        setMoaValidationError("MOA start and end dates cannot be the same.");
+      // Ensure we have valid dates
+      if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+        setMoaValidationError("Please select valid dates for both start and end dates.");
         return false;
       }
       
-      if (endDate < startDate) {
-        setMoaValidationError("MOA end date cannot be earlier than the start date.");
+      // Check if dates are the same (same day)
+      if (startDateObj.toDateString() === endDateObj.toDateString()) {
+        setMoaValidationError("MOA start and end dates cannot be the same day. Please select different dates.");
+        return false;
+      }
+      
+      // Check if end date is before start date
+      if (endDateObj <= startDateObj) {
+        setMoaValidationError("MOA end date must be after the start date. Please select a later end date.");
         return false;
       }
     }
@@ -458,6 +468,9 @@ const EmployerEditor = ({
                     {moaValidationError && (
                       <ErrorLabel value={moaValidationError} />
                     )}
+                    <div className="text-xs text-gray-600 mb-2">
+                      Please select different start and end dates. The end date must be after the start date.
+                    </div>
                     <div className="flex flex-row space-x-2">
                       <FormDatePicker
                         label={"MOA Start Date"}
@@ -531,7 +544,11 @@ const EmployerEditor = ({
               </Button>
               <Button
                 onClick={register}
-                disabled={!additionalFields.terms_accepted || isRegistering}
+                disabled={
+                  !additionalFields.terms_accepted || 
+                  isRegistering || 
+                  (additionalFields.has_moa_with_dlsu && moaValidationError !== "")
+                }
                 className="px-8 bg-black hover:bg-gray-800 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isRegistering ? "Registering..." : "Register"}
