@@ -1,6 +1,18 @@
-import { EditableJobDetails } from "@/components/shared/jobs";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
+
+// Placeholder component for EditableJobDetails
+const EditableJobDetails = ({ is_editing, job, saving, update_job, actions }: any) => {
+  return (
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">{job?.title || 'Job Details'}</h2>
+      <p className="mb-4">{job?.description || 'No description available'}</p>
+      <div className="flex gap-2">
+        {actions}
+      </div>
+    </div>
+  );
+};
 
 interface ListingsDetailsPanelProps {
   selectedJob: Job | null;
