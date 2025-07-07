@@ -65,10 +65,10 @@ const HTMLContent = ({
                     content="width=device-width, initial-scale=1.0"
                   />
                 </Head>
-                <body className="h-full">
+                <body className="h-full overflow-hidden">
                   <div className="flex flex-col h-full">
                     <Header />
-                    <div className="flex w-full flex-1 max-h-full pb-20">
+                    <div className="flex w-full flex-1 overflow-hidden">
                       {children}
                     </div>
                     <Footer />

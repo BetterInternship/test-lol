@@ -1,6 +1,6 @@
-import { EditableJobDetails } from "@/components/shared/jobs";
 import { Button } from "@/components/ui/button";
 import { Job } from "@/lib/db/db.types";
+import { EmployerJobDetails } from "@/components/shared/jobs";
 
 interface ListingsDetailsPanelProps {
   selectedJob: Job | null;
@@ -11,7 +11,7 @@ interface ListingsDetailsPanelProps {
   onCancel: () => void;
   onShare: () => void;
   onDelete: () => void;
-  updateJob: (job: Partial<Job>) => Promise<any>;
+  updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
 }
 
 export function ListingsDetailsPanel({
@@ -103,7 +103,7 @@ export function ListingsDetailsPanel({
 
   return (
     <div className="max-w-[1024px] mx-auto">
-      <EditableJobDetails
+      <EmployerJobDetails
         is_editing={isEditing}
         set_is_editing={() => {}} // This will be handled by the parent component
         job={selectedJob}

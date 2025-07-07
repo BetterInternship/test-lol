@@ -254,22 +254,21 @@ export default function JobPage() {
                       />
                       <JobMode mode={job.data.mode} />
                     </div>
-                    <br />
-                    <hr />
-                    <br />
+                    
+                    <div className="border-t border-gray-200 my-8"></div>
+                    
                     <h2 className="text-2xl text-gray-700 mb-6 flex items-center gap-3">
                       Description
                     </h2>
                     <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <div className="whitespace-pre-wrap text-base leading-7">
+                      <div className="text-base leading-7">
                         <ReactMarkdown>
                           {job.data.description || "No description provided."}
                         </ReactMarkdown>
                       </div>
                     </div>
-                    <br />
-                    <hr />
-                    <br />
+                    
+                    <div className="border-t border-gray-200 my-8"></div>
                     <h2 className="text-2xl text-gray-700 mb-6 flex items-center gap-3">
                       Requirements
                     </h2>
@@ -277,7 +276,7 @@ export default function JobPage() {
                     <JobApplicationRequirements job={job.data} />
 
                     <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <div className="whitespace-pre-wrap text-base leading-7">
+                      <div className="text-base leading-7">
                         {job.data.requirements}
                       </div>
                     </div>

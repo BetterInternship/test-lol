@@ -1,5 +1,4 @@
 import { EmployerJobCard } from "@/components/shared/jobs";
-import { Paginator } from "@/components/ui/paginator";
 import { Job } from "@/lib/db/db.types";
 
 interface ListingsJobPanelProps {
@@ -10,17 +9,13 @@ interface ListingsJobPanelProps {
   jobsPageSize: number;
   onJobSelect: (job: Job) => void;
   onPageChange: (page: number) => void;
-  updateJob: (job: Partial<Job>) => Promise<any>;
+  updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
 }
 
 export function ListingsJobPanel({
   jobs,
   selectedJobId,
-  isEditing,
-  jobsPage,
-  jobsPageSize,
   onJobSelect,
-  onPageChange,
   updateJob,
 }: ListingsJobPanelProps) {
   return (
@@ -31,7 +26,6 @@ export function ListingsJobPanel({
           <EmployerJobCard
             key={job.id}
             job={job}
-            disabled={isEditing}
             // @ts-ignore
             update_job={updateJob}
             on_click={() => onJobSelect(job)}
