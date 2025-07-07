@@ -141,7 +141,11 @@ export function ListingsCreateJobModal({
                   onChange={(e) => set_field("location", e.target.value)}
                   placeholder="Enter location"
                   className="text-sm"
+                  maxLength={20}
                 />
+                <p className="text-xs text-gray-500 text-right">
+                  {(form_data.location || "").length}/20 characters
+                </p>
               </div>
 
               <DropdownGroup>
