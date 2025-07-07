@@ -19,7 +19,7 @@ import { Employer } from "@/lib/db/db.types";
 import { cn, isValidEmail, isValidPHNumber, isValidUUID } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { Divider } from "@/components/ui/divider";
-import { isValidOptionalURL, openURL, toURL } from "@/lib/utils/url-utils";
+import { isValidOptionalURL, isValidCompanyWebsite, openURL, toURL } from "@/lib/utils/url-utils";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import {
   createEditForm,
@@ -316,7 +316,8 @@ const ProfileEditor = forwardRef<
     );
     addValidator(
       "website",
-      (link: string) => !isValidOptionalURL(link) && "Invalid website link."
+      (link: string) => 
+        link && !isValidCompanyWebsite(link) && "Please enter a valid company website URL (e.g., https://example.com)"
     );
   }, []);
 
@@ -393,7 +394,11 @@ const ProfileEditor = forwardRef<
             label="Website"
             value={formData.website ?? ""}
             setter={fieldSetter("website")}
+            placeholder="https://yourcompany.com"
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Enter your company's official website URL
+          </p>
         </div>
         <div className="text-xl tracking-tight font-medium text-gray-700 mt-8">
           Miscellaneous
