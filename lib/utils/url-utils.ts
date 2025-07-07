@@ -43,30 +43,31 @@ export const isValidOptionalURL = (url: string): boolean => {
 };
 
 /**
- * A utility function we use to create link checkers.
+ * A utility function to create regex-based link checkers.
  *
- * @param hostnames
+ * @param regex
  * @returns
  */
-const isValidOptionalSiteURL = (hostnames: string[]) => (url: string) => {
+const isValidOptionalSiteURL = (regex: RegExp) => (url: string) => {
+  if (!url || url.trim() === "") return true;
   if (!isValidOptionalURL(url)) return false;
   const urlObj = toURL(url);
-  return url.trim() === "" || hostnames.includes(urlObj?.hostname ?? "");
+  if (!urlObj) return false;
+  return regex.test(urlObj.href);
 };
 
-// Valid OPTIONAL site URL checkers.
-export const isValidOptionalGitHubURL = isValidOptionalSiteURL([
-  "github.com",
-  "www.github.com",
-]);
-export const isValidOptionalLinkedinURL = isValidOptionalSiteURL([
-  "linkedin.com",
-  "www.linkedin.com",
-]);
-export const isValidOptionalCalendarURL = isValidOptionalSiteURL([
-  "calendar.app.google",
-  "calendar.google.com/calendar/u/0/appointments",
-]);
+// Valid OPTIONAL site URL checkers with regex patterns.
+export const isValidOptionalGitHubURL = isValidOptionalSiteURL(
+  /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9]([a-zA-Z0-9\-_]*[a-zA-Z0-9])?$/
+);
+
+export const isValidOptionalLinkedinURL = isValidOptionalSiteURL(
+  /^https?:\/\/(www\.)?linkedin\.com\/in\/[a-zA-Z0-9\-_]+\/?$/
+);
+
+export const isValidOptionalCalendarURL = isValidOptionalSiteURL(
+  /^https?:\/\/(calendar\.google\.com\/calendar\/u\/\d+\/appointments(\/schedules)?\/[a-zA-Z0-9\-_=]+|calendar\.app\.google\/[a-zA-Z0-9]+)\/?$/
+);
 
 /**
  * Opens a URL in a new tab.
