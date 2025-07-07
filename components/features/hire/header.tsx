@@ -112,7 +112,7 @@ export const ProfileButton = () => {
       className="h-10 border-gray-300 hover:bg-gray-50 "
       onClick={() => router.push("/login")}
     >
-      Employer Sign in
+      Already have an account? Sign in.
     </Button>
   );
 };
