@@ -16,9 +16,8 @@ import {
   FormInput,
   FormDropdown,
   FormCheckbox,
+  FormDatePicker,
 } from "@/components/EditForm";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
 interface CreateJobModalFormProps {
   createJob: (job: Partial<Job>) => Promise<any>;
@@ -211,40 +210,16 @@ const CreateModalForm = ({
                   </div>
                   {!formData.is_year_round && (
                     <div className="flex flex-row gap-4">
-                      <div className="flex-1">
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">
-                          Start Date
-                        </label>
-                        <DatePicker
-                          id="start-date"
-                          selected={
-                            formData.start_date
-                              ? new Date(formData.start_date)
-                              : new Date()
-                          }
-                          className="input-box text-sm"
-                          onChange={(date: any) =>
-                            setField("start_date", date?.getTime())
-                          }
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">
-                          End Date
-                        </label>
-                        <DatePicker
-                          id="end-date"
-                          selected={
-                            formData.end_date
-                              ? new Date(formData.end_date)
-                              : new Date()
-                          }
-                          className="input-box text-sm"
-                          onChange={(date: any) =>
-                            setField("end_date", date?.getTime())
-                          }
-                        />
-                      </div>
+                      <FormDatePicker
+                        label="Start Date"
+                        date={formData.start_date ?? 0}
+                        setter={(date) => setField("start_date", date)}
+                      />
+                      <FormDatePicker
+                        label="End Date"
+                        date={formData.end_date ?? 0}
+                        setter={(date) => setField("end_date", date)}
+                      />
                     </div>
                   )}
                 </div>
