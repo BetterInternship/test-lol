@@ -185,25 +185,44 @@ export default function GodLandingPage() {
                   new Date(b.created_at ?? "").getTime() -
                   new Date(a.created_at ?? "").getTime()
               )
-              .map((u) => (
-                <div
-                  key={u.id}
-                  className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
-                >
-                  <div className="text-gray-700 w-full">
-                    {getFullName(u)} <Badge strength="medium">{u.email}</Badge>
-                  </div>
-                  <BoolBadge
-                    state={u.is_verified}
-                    onValue="verified"
-                    offValue="not verified"
-                  />
+              .map((u) => {
+                const userApplications = applications.filter(
+                  (a) => a.user_id === u.id
+                );
+                return (
+                  <div
+                    key={u.id}
+                    className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
+                  >
+                    <div className="text-gray-700 w-full">
+                      {getFullName(u)}{" "}
+                      <Badge strength="medium">{u.email}</Badge>
+                    </div>
+                    <BoolBadge
+                      state={u.is_verified}
+                      onValue="verified"
+                      offValue="not verified"
+                    />
 
-                  <Badge strength="medium">
-                    {formatDate(u.created_at ?? "")}
-                  </Badge>
-                </div>
-              ))}
+                    <Badge
+                      // @ts-ignore
+                      type={
+                        !userApplications.length ? "destructive" : "default"
+                      }
+                    >
+                      {
+                        // @ts-ignore
+                        userApplications.length ?? 0
+                      }{" "}
+                      applications
+                    </Badge>
+
+                    <Badge strength="medium">
+                      {formatDate(u.created_at ?? "")}
+                    </Badge>
+                  </div>
+                );
+              })}
           </div>
         </Tab>
 
