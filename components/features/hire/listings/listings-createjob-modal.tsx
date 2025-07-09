@@ -127,13 +127,10 @@ const CreateModalForm = ({
                 <FormInput
                   label="Location"
                   value={formData.location ?? ""}
-                  maxLength={20}
+                  maxLength={100}
                   setter={fieldSetter("location")}
                   required={false}
                 />
-                <p className="text-xs text-gray-500 text-right">
-                  {(formData.location || "").length}/20 characters
-                </p>
               </div>
 
               <DropdownGroup>
