@@ -85,19 +85,21 @@ const EmployerEditor = ({
     if (additionalFields.has_moa_with_dlsu) {
       const startDate = additionalFields.moa_start_date;
       const endDate = additionalFields.moa_expires_at;
-      
+
       if (!startDate || !endDate) {
         setMoaValidationError("Both MOA start and end dates are required.");
         return false;
       }
-      
+
       if (startDate === endDate) {
         setMoaValidationError("MOA start and end dates cannot be the same.");
         return false;
       }
-      
+
       if (endDate < startDate) {
-        setMoaValidationError("MOA end date cannot be earlier than the start date.");
+        setMoaValidationError(
+          "MOA end date cannot be earlier than the start date."
+        );
         return false;
       }
     }
@@ -114,11 +116,14 @@ const EmployerEditor = ({
 
     // Validate required fields before submitting
     const missingFields = [];
-    
+
     if (!formData.name || formData.name.trim().length < 3) {
       missingFields.push("Company Name (Doing Business As)");
     }
-    if (!formData.legal_entity_name || formData.legal_entity_name.trim().length < 3) {
+    if (
+      !formData.legal_entity_name ||
+      formData.legal_entity_name.trim().length < 3
+    ) {
       missingFields.push("Legal Entity Name");
     }
     if (!formData.website || !isValidRequiredURL(formData.website)) {
@@ -130,7 +135,10 @@ const EmployerEditor = ({
     if (!formData.description || formData.description.trim().length < 10) {
       missingFields.push("Company Description (minimum 10 characters)");
     }
-    if (!additionalFields.contact_name || additionalFields.contact_name.trim().length === 0) {
+    if (
+      !additionalFields.contact_name ||
+      additionalFields.contact_name.trim().length === 0
+    ) {
       missingFields.push("Contact Name");
     }
     if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
@@ -144,7 +152,9 @@ const EmployerEditor = ({
     }
 
     if (missingFields.length > 0) {
-      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join('\n• ')}`;
+      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join(
+        "\n• "
+      )}`;
       alert(errorMessage);
       return;
     }
@@ -178,7 +188,10 @@ const EmployerEditor = ({
     const result = await registerProfile(multipartForm.build());
     // @ts-ignore
     if (!result?.success) {
-      const errorMsg = result?.error || result?.message || "Registration failed. Please check your information and try again.";
+      const errorMsg =
+        result?.error ||
+        result?.message ||
+        "Registration failed. Please check your information and try again.";
       alert(`Registration Error: ${errorMsg}`);
       setIsRegistering(false);
       return;
@@ -198,7 +211,11 @@ const EmployerEditor = ({
   // Validate MOA dates when they change
   useEffect(() => {
     validateMoaDates();
-  }, [additionalFields.has_moa_with_dlsu, additionalFields.moa_start_date, additionalFields.moa_expires_at]);
+  }, [
+    additionalFields.has_moa_with_dlsu,
+    additionalFields.moa_start_date,
+    additionalFields.moa_expires_at,
+  ]);
 
   // Data validators
   useEffect(() => {
@@ -341,7 +358,8 @@ const EmployerEditor = ({
             </p>
           </Card>
           <div className="mt-3 text-xs text-gray-500 italic">
-            Note: You can update all company information later in the Edit Company Profile page.
+            Note: You can update all company information later in the Edit
+            Company Profile page.
           </div>
         </Card>
         <Card>
