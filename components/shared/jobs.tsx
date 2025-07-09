@@ -413,7 +413,7 @@ export const EmployerJobDetails = ({
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Location */}
-          <div className="flex flex-col items-start gap-3 max-w-prose">
+          <div className="flex flex-col items-start gap-3 w-20">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               Location:
@@ -424,7 +424,7 @@ export const EmployerJobDetails = ({
               setter={fieldSetter("location")}
               maxLength={20}
             >
-              <Property />
+              <Property className="max-w-[200%] line-clamp-2 text-ellipsis " />
             </EditableInput>
           </div>
 

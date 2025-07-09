@@ -39,7 +39,7 @@ import {
 } from "@/lib/utils/url-utils";
 import { Loader } from "@/components/ui/loader";
 import { BoolBadge } from "@/components/ui/badge";
-import { cn, isValidPHNumber } from "@/lib/utils";
+import { cn, isValidPHNumber, toSafeString } from "@/lib/utils";
 import { MyUserPfp } from "@/components/shared/pfp";
 import { useAppContext } from "@/lib/ctx-app";
 import {
@@ -263,7 +263,9 @@ const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
         >
           <LabeledProperty
             label="Full Name"
-            value={`${profile.first_name} ${profile.middle_name} ${profile.last_name}`}
+            value={`${toSafeString(profile.first_name)} ${toSafeString(
+              profile.middle_name
+            )} ${toSafeString(profile.last_name)}`}
           />
 
           <LabeledProperty label="Phone Number" value={profile.phone_number} />

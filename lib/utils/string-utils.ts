@@ -8,6 +8,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const toSafeString = (s?: string | null, def: string = "") => {
+  if (typeof s === "string" && s.trim().length > 0) return s;
+  return def;
+};
+
 export const isValidUUID = (uuid: string) => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     uuid
