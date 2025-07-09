@@ -52,10 +52,7 @@ export function DashboardModals({
           open_calendar={async () => {
             closeApplicantModal();
             window
-              ?.open(
-                selectedApplication?.user?.calendar_link ?? "",
-                "_blank"
-              )
+              ?.open(selectedApplication?.user?.calendar_link ?? "", "_blank")
               ?.focus();
           }}
           open_resume={async () => {
@@ -71,7 +68,11 @@ export function DashboardModals({
         {selectedApplication && (
           <ReviewModalContent
             application={selectedApplication}
-            reviewApp={reviewApp}
+            reviewApp={async (id, reviewOptions) => {
+              await reviewApp(id, reviewOptions);
+              // ! lol remove this later on
+              selectedApplication.notes = reviewOptions.notes;
+            }}
             onClose={closeReviewModal}
           />
         )}

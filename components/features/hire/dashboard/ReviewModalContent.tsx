@@ -7,6 +7,7 @@ import { EmployerApplication } from "@/lib/db/db.types";
 import { Button } from "@/components/ui/button";
 import { getFullName } from "@/lib/utils/user-utils";
 import { MDXEditor } from "@/components/MDXEditor";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ReviewModalContentProps {
   application: EmployerApplication;
@@ -29,16 +30,17 @@ export function ReviewModalContent({
     if (!application.id) return;
     setSaving(true);
     await reviewApp(application.id, {
-      review,
-      notes: application.notes ?? "",
+      // review,
+      notes: review,
       status: application.status,
     });
+    location.reload();
     setSaving(false);
     onClose();
   };
 
   useEffect(() => {
-    setReview(application.review ?? "");
+    setReview(application.notes ?? "");
   }, [application]);
 
   return (
