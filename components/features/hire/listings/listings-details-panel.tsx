@@ -12,6 +12,7 @@ interface ListingsDetailsPanelProps {
   onShare: () => void;
   onDelete: () => void;
   updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
+  setIsEditing: (isEditing: boolean) => void;
 }
 
 export function ListingsDetailsPanel({
@@ -24,6 +25,7 @@ export function ListingsDetailsPanel({
   onShare,
   onDelete,
   updateJob,
+  setIsEditing,
 }: ListingsDetailsPanelProps) {
   if (!selectedJob?.id) {
     return (
@@ -36,9 +38,7 @@ export function ListingsDetailsPanel({
               </h1>
             </div>
             <div className="flex flex-row justify-center w-full">
-              <p className="block text-2xl">
-                Better Internships Start Here
-              </p>
+              <p className="block text-2xl">Better Internships Start Here</p>
             </div>
           </div>
           <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
@@ -49,68 +49,64 @@ export function ListingsDetailsPanel({
     );
   }
 
-  const getActionButtons = () => {
-    if (isEditing) {
-      return [
-        <Button
-          key="save"
-          variant="default"
-          disabled={saving}
-          onClick={onSave}
-        >
-          {saving ? "Saving..." : "Save"}
-        </Button>,
-        <Button
-          key="cancel"
-          variant="outline"
-          scheme="destructive"
-          disabled={saving}
-          onClick={onCancel}
-        >
-          Cancel
-        </Button>,
-      ];
-    }
-
-    return [
-      <Button
-        key="edit"
-        variant="outline"
-        disabled={saving}
-        onClick={onEdit}
-      >
-        Edit
-      </Button>,
-      <Button
-        key="share"
-        variant="outline"
-        disabled={saving}
-        onClick={onShare}
-      >
-        Share
-      </Button>,
-      <Button
-        key="delete"
-        variant="outline"
-        disabled={saving}
-        className="text-red-500 border border-red-300 hover:bg-red-50 hover:text-red-500"
-        onClick={onDelete}
-      >
-        Delete
-      </Button>,
-    ];
-  };
-
   return (
     <div className="max-w-[1024px] mx-auto">
       <EmployerJobDetails
         is_editing={isEditing}
-        set_is_editing={() => {}} // This will be handled by the parent component
+        set_is_editing={setIsEditing} // This will be handled by the parent component
         job={selectedJob}
         saving={saving}
         // @ts-ignore
         update_job={updateJob}
-        actions={getActionButtons()}
+        actions={
+          isEditing
+            ? [
+                <Button
+                  key="save"
+                  variant="default"
+                  disabled={saving}
+                  onClick={onSave}
+                >
+                  {saving ? "Saving..." : "Save"}
+                </Button>,
+                <Button
+                  key="cancel"
+                  variant="outline"
+                  scheme="destructive"
+                  disabled={saving}
+                  onClick={onCancel}
+                >
+                  Cancel
+                </Button>,
+              ]
+            : [
+                <Button
+                  key="edit"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={onEdit}
+                >
+                  Edit
+                </Button>,
+                <Button
+                  key="share"
+                  variant="outline"
+                  disabled={saving}
+                  onClick={onShare}
+                >
+                  Share
+                </Button>,
+                <Button
+                  key="delete"
+                  variant="outline"
+                  disabled={saving}
+                  className="text-red-500 border border-red-300 hover:bg-red-50 hover:text-red-500"
+                  onClick={onDelete}
+                >
+                  Delete
+                </Button>,
+              ]
+        }
       />
     </div>
   );

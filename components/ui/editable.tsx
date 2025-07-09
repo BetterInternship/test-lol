@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-07-09 13:17:58
+ * @ Modified time: 2025-07-09 18:33:19
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -47,10 +47,9 @@ export const EditableInput = ({
       placeholder={placeholder}
       maxLength={maxLength}
       className={cn(
-        "border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto",
+        " border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto",
         className
       )}
-      style={{ position: "relative", zIndex: 10 }}
     />
   ) : (
     Children.map(children, (child) => {

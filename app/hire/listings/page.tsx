@@ -41,6 +41,7 @@ export default function MyListings() {
     openDeleteModal,
     closeDeleteModal,
     DeleteModal,
+    setIsEditing,
   } = useListingsBusinessLogic(ownedJobs);
 
   return (
@@ -76,6 +77,7 @@ export default function MyListings() {
                 onJobSelect={handleJobSelect}
                 onPageChange={handlePageChange}
                 updateJob={update_job}
+                set_is_editing={setIsEditing}
               />
             </div>
 
@@ -91,6 +93,7 @@ export default function MyListings() {
                 onShare={handleShare}
                 onDelete={openDeleteModal}
                 updateJob={update_job}
+                setIsEditing={setIsEditing}
               />
             </div>
           </div>

@@ -241,6 +241,7 @@ export const EmployerJobCard = ({
   selected,
   on_click,
   update_job,
+  set_is_editing,
 }: {
   job: Job;
   selected?: boolean;
@@ -249,6 +250,7 @@ export const EmployerJobCard = ({
     job_id: string,
     job: Partial<Job>
   ) => Promise<{ success: boolean }>;
+  set_is_editing: (is_editing: boolean) => void;
 }) => {
   return (
     <Card
@@ -383,6 +385,7 @@ export const EmployerJobDetails = ({
       update_job(edited_job.id ?? "", edited_job).then(
         // @ts-ignore
         ({ job: updated_job }) => {
+          console.log("bruh");
           if (updated_job) set_is_editing(false);
         }
       );
@@ -397,7 +400,7 @@ export const EmployerJobDetails = ({
             is_editing={is_editing}
             value={formData.title ?? "Not specified"}
             setter={fieldSetter("title")}
-            maxLength={30}
+            maxLength={100}
           >
             <JobTitleLabel />
           </EditableInput>
@@ -413,7 +416,7 @@ export const EmployerJobDetails = ({
         <h3 className="text-lg font-semibold mb-4">Job Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Location */}
-          <div className="flex flex-col items-start gap-3 w-20">
+          <div className="flex flex-col items-start gap-3">
             <label className="flex items-center text-sm font-semibold text-gray-700">
               <MapPin className="h-5 w-5 text-gray-400 mt-0.5 mr-2" />
               Location:
@@ -422,9 +425,9 @@ export const EmployerJobDetails = ({
               is_editing={is_editing}
               value={formData.location ?? "Not specified"}
               setter={fieldSetter("location")}
-              maxLength={20}
+              maxLength={100}
             >
-              <Property className="max-w-[200%] line-clamp-2 text-ellipsis " />
+              <Property className="line-clamp-2 text-ellipsis" />
             </EditableInput>
           </div>
 

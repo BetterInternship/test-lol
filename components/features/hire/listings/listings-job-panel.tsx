@@ -7,6 +7,7 @@ interface ListingsJobPanelProps {
   isEditing: boolean;
   jobsPage: number;
   jobsPageSize: number;
+  set_is_editing: (is_editing: boolean) => void;
   onJobSelect: (job: Job) => void;
   onPageChange: (page: number) => void;
   updateJob: (jobId: string, job: Partial<Job>) => Promise<any>;
@@ -17,6 +18,7 @@ export function ListingsJobPanel({
   selectedJobId,
   onJobSelect,
   updateJob,
+  set_is_editing,
 }: ListingsJobPanelProps) {
   return (
     <div className="w-96 flex flex-col h-full max-w-[1024px] mx-auto">
@@ -30,6 +32,7 @@ export function ListingsJobPanel({
             update_job={updateJob}
             on_click={() => onJobSelect(job)}
             selected={job.id === selectedJobId}
+            set_is_editing={set_is_editing}
           />
         ))}
       </div>
