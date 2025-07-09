@@ -352,9 +352,9 @@ const EmployerEditor = ({
           </div>
           <Card className="border-warning p-4">
             <p className="font-normal opacity-80 text-sm italic text-warning">
-              This person will be emailed the login details to this account upon
-              registration. Other accounts can be added later on if multiple
-              people plan to manage this employer account.
+              Login details will be sent to the contact's email address upon
+              registration. Additional users can be added later if multiple
+              people plan to be manage this employer account.
             </p>
           </Card>
           <div className="mt-3 text-xs text-gray-500 italic">
