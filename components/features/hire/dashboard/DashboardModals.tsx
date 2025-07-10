@@ -111,7 +111,7 @@ export function DashboardModals({
       </ResumeModal>
 
       <ChatModal>
-        <div className="relative p-6 py-20 h-full w-full">
+        <div className="relative p-6 pt-6 pb-20 h-full w-full">
           <div className="flex flex-col h-[100%] w-full gap-6">
             <div className="text-4xl font-bold tracking-tight">
               {getFullName(selectedApplication?.user)}

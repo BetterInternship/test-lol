@@ -17,7 +17,7 @@ export const useSideModal = (name: string) => {
         isOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex z-[100] backdrop-blur-sm">
             <div className="absolute right-0 w-1/3 h-full bg-white">
-              <div className="absolute top-0 w-full left-0 p-4 h-full">
+              <div className="relative w-full p-4">
                 <Button
                   variant="ghost"
                   size="sm"
