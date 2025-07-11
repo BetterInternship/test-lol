@@ -26,7 +26,7 @@ const navItems: NavItem[] = [
     label: "My Listings",
   },
   {
-    href: "#",
+    href: "/forms-management",
     icon: <FileUser className="h-5 w-5" />,
     label: "Forms Automation",
   },
@@ -43,7 +43,7 @@ function SideNav({ items }: { items: NavItem[] }) {
             variant="ghost"
             scheme="default"
             onClick={() =>
-              label === "Forms Automation" && alert("Coming Soon!")
+              false && label === "Forms Automation" && alert("Coming Soon!")
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
