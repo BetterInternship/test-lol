@@ -249,6 +249,18 @@ export const JobService = {
   },
 };
 
+interface ConversationsResponse extends FetchResponse {
+  conversations?: [];
+}
+
+export const ConversationService = {
+  async getMyConversations() {
+    return APIClient.get<ConversationsResponse>(
+      APIRoute("conversations").r("me").build()
+    );
+  },
+};
+
 // Application Services
 interface UserApplicationsResponse extends FetchResponse {
   applications: UserApplication[];

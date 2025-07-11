@@ -3,6 +3,7 @@ import {
   JobService,
   UserService,
   ApplicationService,
+  ConversationService,
 } from "@/lib/api/services";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
@@ -184,6 +185,25 @@ export function useProfile() {
     isUpdating,
   };
 }
+
+/**
+ * Conversations hook
+ *
+ * @hook
+ */
+export const useConversations = () => {
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-conversations"],
+    queryFn: ConversationService.getMyConversations,
+    staleTime: 2 * 1000,
+  });
+
+  return {
+    data: data?.conversations,
+    error,
+    isPending,
+  };
+};
 
 /**
  * Saved jobs hook

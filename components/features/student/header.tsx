@@ -3,7 +3,15 @@
 import React from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRouter } from "next/navigation";
-import { User, Settings, BookA, Heart, LogOut, HelpCircle } from "lucide-react";
+import {
+  User,
+  Settings,
+  BookA,
+  Heart,
+  LogOut,
+  HelpCircle,
+  MessageCircleMore,
+} from "lucide-react";
 import { useAppContext } from "@/lib/ctx-app";
 import { DropdownOption, GroupableNavDropdown } from "@/components/ui/dropdown";
 import { cn } from "@/lib/utils";
@@ -94,6 +102,10 @@ export const ProfileButton = () => {
         <DropdownOption href="/saved">
           <Heart className="w-4 h-4 inline-block m-1 mr-2" />
           Saved Jobs
+        </DropdownOption>
+        <DropdownOption href="/conversations">
+          <MessageCircleMore className="w-4 h-4 inline-block m-1 mr-2" />
+          Conversations
         </DropdownOption>
         <DropdownOption href="/help">
           <HelpCircle className="w-4 h-4 inline-block m-1 mr-2" />
