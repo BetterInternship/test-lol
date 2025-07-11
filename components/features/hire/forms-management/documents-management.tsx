@@ -228,7 +228,7 @@ const DocumentsManagement = () => {
         Internship Forms Automation
       </h1>
 
-      <div className="relative flex flex-row justify-center w-full py-8">
+{/*       <div className="relative flex flex-row justify-center w-full py-8">
         <Image
           className="invisible relative"
           src={hire_coming_soon}
@@ -246,7 +246,7 @@ const DocumentsManagement = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Hidden for now, remove hidden class to show trust mode table */}
       {/* <ModeToggle
         isTrustMode={isTrustMode}
@@ -254,7 +254,7 @@ const DocumentsManagement = () => {
         className="hidden"
       /> */}
 
-      {/* {isTrustMode ? (
+      {isTrustMode ? (
         <TrustModeTable
           students={mockStudents}
           internshipData={internshipData}
@@ -372,7 +372,7 @@ const DocumentsManagement = () => {
             </AccordionItem>
           ))}
         </Accordion>
-      )} */}
+      )}
     </div>
   );
 };
