@@ -12,6 +12,7 @@ import { PDFPreview } from "@/components/shared/pdf-preview";
 import { ReviewModalContent } from "./ReviewModalContent";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { useConversations } from "@/hooks/use-employer-api";
 
 interface DashboardModalsProps {
   selectedApplication: EmployerApplication | null;
@@ -46,6 +47,33 @@ export function DashboardModals({
   openResumeModal,
 }: DashboardModalsProps) {
   const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const conversations = useConversations();
+
+  // Handle message
+  const handleMessage = async (userId: string, message: string) => {
+    setSending(true);
+    let conversation = conversations.getFromUser(userId);
+
+    // Create convo if it doesn't exist first
+    if (!conversation) {
+      const response = await conversations.createConversation(userId);
+
+      if (!response?.success) {
+        alert("Could not initiate conversation with user.");
+        setSending(false);
+        return;
+      }
+
+      // Update the conversation
+      conversation = response.conversation;
+    }
+
+    if (!conversation) return;
+    const response = await conversations.sendMessage(conversation?.id, message);
+    setSending(false);
+  };
+
   return (
     <>
       <ApplicantModal>
@@ -123,8 +151,15 @@ export function DashboardModals({
               onChange={(e) => setMessage(e.target.value)}
               maxLength={1000}
             />
-            <Button size="md">
-              Send Message
+            <Button
+              size="md"
+              disabled={sending}
+              onClick={() =>
+                selectedApplication?.user_id &&
+                handleMessage(selectedApplication?.user_id, message)
+              }
+            >
+              {sending ? "Sending..." : "Send Message"}
               <SendHorizonal className="w-5 h-5" />
             </Button>
           </div>

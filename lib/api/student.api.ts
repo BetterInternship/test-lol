@@ -3,7 +3,7 @@ import {
   JobService,
   UserService,
   ApplicationService,
-  ConversationService,
+  UserConversationService,
 } from "@/lib/api/services";
 import { Job } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
@@ -194,7 +194,7 @@ export function useProfile() {
 export const useConversations = () => {
   const { isPending, data, error } = useQuery({
     queryKey: ["my-conversations"],
-    queryFn: ConversationService.getMyConversations,
+    queryFn: UserConversationService.getMyConversations,
     staleTime: 2 * 1000,
   });
 

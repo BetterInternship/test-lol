@@ -4,10 +4,11 @@ import {
   handleApiError,
   ApplicationService,
   EmployerService,
+  EmployerConversationService,
 } from "@/lib/api/services";
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useProfile() {
   const queryClient = useQueryClient();
@@ -26,8 +27,51 @@ export function useProfile() {
   return {
     loading: isPending,
     error: error,
-    profile: data?.employer,
+    data: data?.employer,
     updateProfile,
+  };
+}
+
+export function useConversations() {
+  const queryClient = useQueryClient();
+  const { isPending, data, error } = useQuery({
+    queryKey: ["my-employer-conversations"],
+    queryFn: EmployerConversationService.getMyConversations,
+  });
+
+  const { isPending: isCreating, mutateAsync: create } = useMutation({
+    mutationFn: EmployerConversationService.createConversation,
+    onSettled: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["my-employer-conversations"],
+      }),
+  });
+
+  const sendMessage = async (conversationId: string, message: string) => {
+    await EmployerConversationService.sendToUser(conversationId, message);
+  };
+
+  const isNew = (userId: string) => {
+    return !data?.conversations?.filter(
+      (conversation) => conversation.user_id === userId
+    ).length;
+  };
+
+  const getFromUser = (userId: string) => {
+    return data?.conversations?.find(
+      (conversation) => conversation.user_id === userId
+    );
+  };
+
+  return {
+    loading: isPending,
+    error: error,
+    data: data?.conversations,
+    createConversation: create,
+    isCreating,
+    sendMessage,
+    isNew,
+    getFromUser,
   };
 }
 

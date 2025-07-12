@@ -1,91 +1,23 @@
 "use client";
-
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useConversations } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/our-card";
 import { Conversation } from "../../../lib/db/db.types";
 import { EmployerPfp } from "@/components/shared/pfp";
-import { Divider } from "@/components/ui/divider";
-import { ArrowRight, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
+import { useState } from "react";
+import { useConversation } from "@/hooks/use-conversation";
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
+  const [conversationId, setConversationId] = useState("");
+  const conversations = useConversations();
+  const conversation = useConversation(conversationId);
   const { isMobile } = useAppContext();
-  // const conversations = useConversations();
-  const conversations: {
-    data: Conversation[];
-  } = {
-    data: [
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-      // {
-      //   id: "1",
-      //   user_id: "lol",
-      //   employer_id: "3d8d8a5f-9cd5-4606-bc0e-27aee989e986",
-      //   employer: {
-      //     name: "ABowei Corp.",
-      //   },
-      //   created_at: "",
-      // },
-    ],
-  };
+
+  console.log("conversation messages: ", conversation.messages);
 
   redirectIfNotLoggedIn();
 
@@ -97,12 +29,20 @@ export default function ConversationsPage() {
           <div className="absolute w-[25%] border-r border-r-gray-300 h-full max-h-full overflow-y-auto">
             <div className="flex flex-col gap-0">
               {conversations.data?.map((conversation) => (
-                <ConversationCard conversation={conversation} />
+                <ConversationCard
+                  conversation={conversation}
+                  setConversationId={setConversationId}
+                />
               ))}
             </div>
           </div>
           {/* Conversation Pane */}
-          <div></div>
+          <div>
+            {conversation.messages.map((message) => {
+              console.log(message);
+              return <></>;
+            })}
+          </div>
         </div>
       ) : (
         <div className="relative w-full flex items-center animate-fade-in h-full">
@@ -144,11 +84,16 @@ export default function ConversationsPage() {
 
 export const ConversationCard = ({
   conversation,
+  setConversationId,
 }: {
   conversation: Conversation;
+  setConversationId: (id: string) => void;
 }) => {
   return (
-    <Card className="rounded-none border-l-0 border-r-0 border-b-0 last:border-b py-2 px-8 hover:bg-gray-100 hover:cursor-pointer">
+    <Card
+      className="rounded-none border-l-0 border-r-0 border-b-0 last:border-b py-2 px-8 hover:bg-gray-100 hover:cursor-pointer"
+      onMouseDown={() => setConversationId(conversation.id)}
+    >
       <div className="flex flex-row justify-between items-center">
         <div className="flex flex-row items-center gap-4">
           <EmployerPfp employer_id={conversation.employer_id} />

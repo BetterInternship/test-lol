@@ -34,7 +34,7 @@ import { EmployerService } from "@/lib/api/services";
 const [ProfileEditForm, useProfileEditForm] = createEditForm<Employer>();
 
 export default function CompanyProfile() {
-  const { loading, error, profile, updateProfile } = useProfile();
+  const { loading, error, data: profile, updateProfile } = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
