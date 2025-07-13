@@ -39,8 +39,8 @@ export const TabGroup = ({ children }: TabGroupProps) => {
 
   // Create the selection
   return (
-    <div className="relative w-full h-full flex flex-col">
-      <div className="relative flex flex-row items-start bg-white p-4 px-2 w-full h-fit pb-0">
+    <>
+      <div className="sticky top-0 flex flex-row items-start bg-white w-full h-fit pb-0 z-50 border-b-2 border-b-gray-900">
         {Children.map(children, (child) => {
           if (React.isValidElement(child)) {
             const name = child.props?.name ?? "No name";
@@ -65,6 +65,6 @@ export const TabGroup = ({ children }: TabGroupProps) => {
           })[0]
         }
       </div>
-    </div>
+    </>
   );
 };
