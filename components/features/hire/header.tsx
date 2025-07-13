@@ -53,7 +53,7 @@ export const Header = () => {
  */
 export const ProfileButton = () => {
   const router = useRouter();
-  const { profile } = useProfile();
+  const { data: profile } = useProfile();
   const { user, is_authenticated, logout } = useAuthContext();
 
   const handle_logout = () => {

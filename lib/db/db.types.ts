@@ -17,6 +17,12 @@ export type Moa = Tables<"moa">;
 export type PrivateUser = Tables<"users">;
 export type PublicUser = Omit<Tables<"users">, "verification_hash">;
 export type Employer = Partial<Tables<"employers">>;
+export interface Conversation extends Tables<"conversations"> {
+  employers?: Partial<Employer>;
+  employer?: Partial<Employer>;
+  users?: Partial<PublicUser>;
+  user?: Partial<PublicUser>;
+}
 export type PrivateEmployerUser = Tables<"employer_users">;
 export type PublicEmployerUser = Omit<
   Tables<"employer_users">,

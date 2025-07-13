@@ -80,6 +80,7 @@ export const AuthContextProvider = ({
     queryClient.invalidateQueries({ queryKey: ["my-profile"] });
     queryClient.invalidateQueries({ queryKey: ["my-applications"] });
     queryClient.invalidateQueries({ queryKey: ["my-saved-jobs"] });
+    queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
   }, [isAuthenticated]);
 
   const register = async (user: Partial<PublicUser>) => {

@@ -7,7 +7,6 @@ import { useCallback } from "react";
 import { useApplicationsData } from "./use-applications-data";
 import { useApplicationActions } from "./use-application-actions";
 import { useDashboardContext } from "@/lib/context/hire/dashboard/DashboardContext";
-import { useRefs } from "@/lib/db/use-refs";
 import { useFile } from "@/hooks/use-file";
 import { useModal } from "@/hooks/use-modal";
 import { UserService } from "@/lib/api/services";

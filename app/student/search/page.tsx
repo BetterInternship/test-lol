@@ -447,12 +447,12 @@ export default function SearchPage() {
                       </div>
                       <br />
                       <div className="flex flex-row justify-center w-full">
-                        <p className="block text-2xl">
+                        <p className="block text-2xl tracking-tight">
                           Better Internships Start Here
                         </p>
                       </div>
                     </div>
-                    <div className="w-prose text-center border border-blue-500 border-opacity-50 text-blue-500 shadow-sm rounded-md p-4 bg-white">
+                    <div className="w-prose text-center border border-primary border-opacity-50 text-primary shadow-sm rounded-[0.33em] opacity-85 p-4 bg-white">
                       Click on a job listing to view more details!
                     </div>
                   </div>

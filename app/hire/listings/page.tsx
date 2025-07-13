@@ -14,7 +14,7 @@ import {
 
 export default function MyListings() {
   // Get data from employer API hooks
-  const { profile, loading: profileLoading } = useProfile();
+  const { data: profile, loading: profileLoading } = useProfile();
   const { ownedJobs, create_job, update_job, delete_job } = useOwnedJobs();
 
   // Business logic hook

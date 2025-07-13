@@ -9,6 +9,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import { ApplicationsTable } from "@/components/features/hire/dashboard/ApplicationsTable";
 import { DashboardModals } from "@/components/features/hire/dashboard/DashboardModals";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
+import { useSideModal } from "@/hooks/use-side-modal";
 
 function DashboardContent() {
   const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
@@ -40,6 +41,12 @@ function DashboardContent() {
     closeReviewModal,
     openResumeModal,
   } = useDashboard();
+
+  const {
+    open: openChatModal,
+    close: closeChatModal,
+    SideModal: ChatSideModal,
+  } = useSideModal("chat-modal");
 
   // Wrapper for review function to match expected signature
   const reviewApp = (
@@ -88,8 +95,10 @@ function DashboardContent() {
         selectedApplication={selectedApplication}
         resumeURL={resumeURL}
         ApplicantModal={ApplicantModal}
+        openChatModal={openChatModal}
         ResumeModal={ResumeModal}
         ReviewModal={ReviewModal}
+        ChatModal={ChatSideModal}
         closeApplicantModal={closeApplicantModal}
         reviewApp={reviewApp}
         closeReviewModal={closeReviewModal}

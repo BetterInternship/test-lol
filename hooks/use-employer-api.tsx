@@ -4,10 +4,11 @@ import {
   handleApiError,
   ApplicationService,
   EmployerService,
+  EmployerConversationService,
 } from "@/lib/api/services";
 import { Employer, EmployerApplication, Job } from "@/lib/db/db.types";
 import { useCache } from "./use-cache";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useProfile() {
   const queryClient = useQueryClient();
@@ -26,7 +27,7 @@ export function useProfile() {
   return {
     loading: isPending,
     error: error,
-    profile: data?.employer,
+    data: data?.employer,
     updateProfile,
   };
 }
