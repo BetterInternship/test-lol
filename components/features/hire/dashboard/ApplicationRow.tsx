@@ -15,6 +15,8 @@ interface ApplicationRowProps {
   onNotes: () => void;
   onSchedule: () => void;
   onStatusChange: (status: number) => void;
+  openChatModal: () => void;
+  updateConversationId: (conversationId: string) => void;
 }
 
 export function ApplicationRow({
@@ -23,6 +25,8 @@ export function ApplicationRow({
   onNotes,
   onSchedule,
   onStatusChange,
+  openChatModal,
+  updateConversationId,
 }: ApplicationRowProps) {
   const { to_university_name, to_level_name, to_app_status_name } = useRefs();
 
@@ -52,6 +56,17 @@ export function ApplicationRow({
       </td>
       <td className="text-center px-6">
         <div className="flex items-center space-x-2 flex-row justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              openChatModal();
+              updateConversationId(application.user_id ?? "");
+            }}
+          >
+            Message
+          </Button>
           <Button
             variant="outline"
             size="sm"

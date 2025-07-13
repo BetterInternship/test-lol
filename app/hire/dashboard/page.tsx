@@ -10,6 +10,8 @@ import { ApplicationsTable } from "@/components/features/hire/dashboard/Applicat
 import { DashboardModals } from "@/components/features/hire/dashboard/DashboardModals";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { useSideModal } from "@/hooks/use-side-modal";
+import { useState } from "react";
+import { useConversations } from "@/hooks/use-conversation";
 
 function DashboardContent() {
   const { redirectIfNotLoggedIn } = useAuthContext();
@@ -41,6 +43,13 @@ function DashboardContent() {
     closeReviewModal,
     openResumeModal,
   } = useDashboard();
+
+  const [conversationId, setConversationId] = useState("");
+  const conversations = useConversations("employer");
+  const updateConversationId = (userId: string) => {
+    let userConversation = conversations.data.find((c) => c.user_id === userId);
+    setConversationId(userConversation?.id);
+  };
 
   const {
     open: openChatModal,
@@ -83,6 +92,8 @@ function DashboardContent() {
           ) : (
             <ApplicationsTable
               applications={applications}
+              openChatModal={openChatModal}
+              updateConversationId={updateConversationId}
               onApplicationClick={handleApplicationClick}
               onNotesClick={handleNotesClick}
               onScheduleClick={handleScheduleClick}
@@ -96,7 +107,6 @@ function DashboardContent() {
         selectedApplication={selectedApplication}
         resumeURL={resumeURL}
         ApplicantModal={ApplicantModal}
-        openChatModal={openChatModal}
         ResumeModal={ResumeModal}
         ReviewModal={ReviewModal}
         ChatModal={ChatSideModal}
@@ -105,6 +115,9 @@ function DashboardContent() {
         closeReviewModal={closeReviewModal}
         syncResumeURL={syncResumeURL}
         openResumeModal={openResumeModal}
+        conversationId={conversationId}
+        setConversationId={setConversationId}
+        conversations={conversations}
       />
     </ContentLayout>
   );
