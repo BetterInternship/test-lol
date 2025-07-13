@@ -12,7 +12,7 @@ import { ShowUnverifiedBanner } from "@/components/ui/banner";
 import { useSideModal } from "@/hooks/use-side-modal";
 
 function DashboardContent() {
-  const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
+  const { redirectIfNotLoggedIn } = useAuthContext();
   const {
     // Data
     applications,
@@ -61,15 +61,16 @@ function DashboardContent() {
     }
   };
 
-  redirect_if_not_logged_in();
+  redirectIfNotLoggedIn();
 
   if (loading) {
     return (
-      <ContentLayout>
-        <div className="w-full h-[100%] flex flex-col items-center justify-center">
-          <div className="w-max-prose text-center h-8">Loading...</div>
+      <div className="w-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
-      </ContentLayout>
+      </div>
     );
   }
 

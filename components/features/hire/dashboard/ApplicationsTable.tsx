@@ -2,6 +2,9 @@
 
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
+import { Card } from "@/components/ui/our-card";
+import { Tab, TabGroup } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 interface ApplicationsTableProps {
   applications: EmployerApplication[];
@@ -25,36 +28,93 @@ export function ApplicationsTable({
   );
 
   return (
-    <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
-      {/* Table Header */}
-      <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-gray-500">
-              Showing {applications.length} of {applications.length}{" "}
-              applications
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Table Content */}
-      <div className="flex-1 overflow-auto">
-        <table className="relative w-full">
-          <tbody className="w-full">
-            {sortedApplications.map((application) => (
-              <ApplicationRow
-                key={application.id}
-                application={application}
-                onView={() => onApplicationClick(application)}
-                onNotes={() => onNotesClick(application)}
-                onSchedule={() => onScheduleClick(application)}
-                onStatusChange={(status) => onStatusChange(application, status)}
-              />
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <Card className="overflow-auto h-full max-h-full border-none p-0">
+      <TabGroup>
+        <Tab name="Pending Applications">
+          <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
+            <tbody className="w-full h-full max-h-full ">
+              {sortedApplications.some(
+                (application) => application.status === 0
+              ) ? (
+                sortedApplications
+                  .filter((application) => application.status === 0)
+                  .map((application) => (
+                    <ApplicationRow
+                      key={application.id}
+                      application={application}
+                      onView={() => onApplicationClick(application)}
+                      onNotes={() => onNotesClick(application)}
+                      onSchedule={() => onScheduleClick(application)}
+                      onStatusChange={(status) =>
+                        onStatusChange(application, status)
+                      }
+                    />
+                  ))
+              ) : (
+                <div className="p-2">
+                  <Badge>No applications under this category.</Badge>
+                </div>
+              )}
+            </tbody>
+          </table>
+        </Tab>
+        <Tab name="Interviewing Applications">
+          <table className="relative table-auto border-separate border-spacing-0 w-full max-h-full">
+            <tbody className="w-full h-full max-h-full">
+              {sortedApplications.some(
+                (application) => application.status === 1
+              ) ? (
+                sortedApplications
+                  .filter((application) => application.status === 1)
+                  .map((application) => (
+                    <ApplicationRow
+                      key={application.id}
+                      application={application}
+                      onView={() => onApplicationClick(application)}
+                      onNotes={() => onNotesClick(application)}
+                      onSchedule={() => onScheduleClick(application)}
+                      onStatusChange={(status) =>
+                        onStatusChange(application, status)
+                      }
+                    />
+                  ))
+              ) : (
+                <div className="p-2">
+                  <Badge>No applications under this category.</Badge>
+                </div>
+              )}
+            </tbody>
+          </table>
+        </Tab>
+        <Tab name="Decided Applications">
+          <table className="relative table-auto border-separate border-spacing-0 w-full max-h-full">
+            <tbody className="w-full h-full max-h-full">
+              {sortedApplications.some(
+                (application) => application.status! > 1
+              ) ? (
+                sortedApplications
+                  .filter((application) => application.status! > 1)
+                  .map((application) => (
+                    <ApplicationRow
+                      key={application.id}
+                      application={application}
+                      onView={() => onApplicationClick(application)}
+                      onNotes={() => onNotesClick(application)}
+                      onSchedule={() => onScheduleClick(application)}
+                      onStatusChange={(status) =>
+                        onStatusChange(application, status)
+                      }
+                    />
+                  ))
+              ) : (
+                <div className="p-2">
+                  <Badge>No applications under this category.</Badge>
+                </div>
+              )}
+            </tbody>
+          </table>
+        </Tab>
+      </TabGroup>
+    </Card>
   );
 }

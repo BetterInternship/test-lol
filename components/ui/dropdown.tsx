@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-07 04:39:32
+ * @ Modified time: 2025-07-13 19:13:50
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -16,12 +16,11 @@ import React, {
   useCallback,
   Children,
 } from "react";
-import { ChevronDown, Search } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useMobile } from "@/hooks/use-mobile";
 import { useDetectClickOutside } from "react-detect-click-outside";
 
 /**
