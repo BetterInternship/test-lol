@@ -14,6 +14,9 @@ export const usePocketbase = (type: "user" | "employer") => {
   const [user, setUser] = useState<AuthRecord>(null);
 
   const auth = async () => {
+    // Already authed
+    if (pb.authStore.record) return;
+
     // Request token
     const route =
       type === "employer"
@@ -23,7 +26,6 @@ export const usePocketbase = (type: "user" | "employer") => {
       token: string;
       user: AuthRecord;
     }>(route);
-    console.log(route);
     pb.authStore.save(token, user);
 
     // Save state
