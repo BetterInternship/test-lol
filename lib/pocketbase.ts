@@ -15,7 +15,10 @@ export const usePocketbase = (type: "user" | "employer") => {
 
   const auth = async () => {
     // Already authed
-    if (pb.authStore.record) return;
+    if (pb.authStore.record) {
+      setUser(pb.authStore.record);
+      return;
+    }
 
     // Request token
     const route =
