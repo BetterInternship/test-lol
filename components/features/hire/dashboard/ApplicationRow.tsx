@@ -28,7 +28,7 @@ export function ApplicationRow({
 
   return (
     <tr
-      className="w-full border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between"
+      className="w-full hover:bg-primary/25 even:bg-gray-100 hover:cursor-pointer transition-colors flex flex-row items-center justify-between"
       onClick={onView}
     >
       <td className="w-full px-4 p-1">
@@ -43,7 +43,9 @@ export function ApplicationRow({
               </span>
             </p>
             <p className="text-sm text-gray-500">
-              <Badge strength="medium">{application.job?.title}</Badge>
+              <Badge strength="medium" className="bg-white">
+                {application.job?.title}
+              </Badge>
             </p>
           </div>
         </div>

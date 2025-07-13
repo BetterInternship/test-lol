@@ -2,6 +2,7 @@
 
 import { EmployerApplication } from "@/lib/db/db.types";
 import { ApplicationRow } from "./ApplicationRow";
+import { Card } from "@/components/ui/our-card";
 
 interface ApplicationsTableProps {
   applications: EmployerApplication[];
@@ -25,23 +26,18 @@ export function ApplicationsTable({
   );
 
   return (
-    <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
-      {/* Table Header */}
-      <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-sm text-gray-500">
-              Showing {applications.length} of {applications.length}{" "}
-              applications
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <Card className="max-h-full p-0 overflow-hidden">
       {/* Table Content */}
-      <div className="flex-1 overflow-auto">
-        <table className="relative w-full">
-          <tbody className="w-full">
+      <div className="flex-1 overflow-auto max-h-full">
+        <table className="relative table-auto border-collapse w-full max-h-full">
+          <thead>
+            <tr>
+              <th className="sticky text-left top-0 px-4 py-2 bg-gray-900 text-white z-50">
+                Pending Applications
+              </th>
+            </tr>
+          </thead>
+          <tbody className="w-full max-h-full">
             {sortedApplications.map((application) => (
               <ApplicationRow
                 key={application.id}
@@ -55,6 +51,6 @@ export function ApplicationsTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }
