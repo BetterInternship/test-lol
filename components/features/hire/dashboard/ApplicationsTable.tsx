@@ -12,6 +12,8 @@ interface ApplicationsTableProps {
   onNotesClick: (application: EmployerApplication) => void;
   onScheduleClick: (application: EmployerApplication) => void;
   onStatusChange: (application: EmployerApplication, status: number) => void;
+  openChatModal: () => void;
+  updateConversationId: (coversationId: string) => void;
 }
 
 export function ApplicationsTable({
@@ -20,6 +22,8 @@ export function ApplicationsTable({
   onNotesClick,
   onScheduleClick,
   onStatusChange,
+  openChatModal,
+  updateConversationId,
 }: ApplicationsTableProps) {
   const sortedApplications = applications.toSorted(
     (a, b) =>
@@ -48,6 +52,8 @@ export function ApplicationsTable({
                       onStatusChange={(status) =>
                         onStatusChange(application, status)
                       }
+                      openChatModal={openChatModal}
+                      updateConversationId={updateConversationId}
                     />
                   ))
               ) : (
@@ -73,6 +79,8 @@ export function ApplicationsTable({
                       onView={() => onApplicationClick(application)}
                       onNotes={() => onNotesClick(application)}
                       onSchedule={() => onScheduleClick(application)}
+                      openChatModal={openChatModal}
+                      updateConversationId={updateConversationId}
                       onStatusChange={(status) =>
                         onStatusChange(application, status)
                       }
@@ -101,6 +109,8 @@ export function ApplicationsTable({
                       onView={() => onApplicationClick(application)}
                       onNotes={() => onNotesClick(application)}
                       onSchedule={() => onScheduleClick(application)}
+                      openChatModal={openChatModal}
+                      updateConversationId={updateConversationId}
                       onStatusChange={(status) =>
                         onStatusChange(application, status)
                       }

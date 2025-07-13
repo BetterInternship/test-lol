@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-07-10 16:11:41
+ * @ Modified time: 2025-07-13 20:09:04
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -31,7 +31,6 @@ export const ApplicantModalContent = ({
   clickable = true,
   open_resume,
   open_calendar,
-  open_chat,
   is_employer = false,
   job = {} as Partial<Job>,
 }: {
@@ -39,7 +38,6 @@ export const ApplicantModalContent = ({
   clickable?: boolean;
   pfp_fetcher: () => Promise<{ hash?: string }>;
   pfp_route: string;
-  open_chat?: () => void;
   open_resume: () => void;
   open_calendar: () => void;
   is_employer?: boolean;
@@ -133,16 +131,6 @@ export const ApplicantModalContent = ({
             >
               <Calendar className="h-4 w-4 mr-2" />
               {applicant?.calendar_link ? "Schedule" : "No Calendar"}
-            </Button>
-            <Button
-              variant="outline"
-              className="h-10 sm:h-11"
-              size="md"
-              disabled={!open_chat}
-              onClick={open_chat ? open_chat : () => null}
-            >
-              <SendHorizonal className="h-4 w-4 mr-2" />
-              Chat
             </Button>
           </div>
         </div>

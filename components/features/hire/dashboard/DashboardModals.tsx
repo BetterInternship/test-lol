@@ -23,7 +23,6 @@ interface DashboardModalsProps {
   ChatModal: React.ComponentType<{ children: React.ReactNode }>;
   ResumeModal: React.ComponentType<{ children: React.ReactNode }>;
   ReviewModal: React.ComponentType<{ children: React.ReactNode }>;
-  openChatModal: () => void;
   closeApplicantModal: () => void;
   reviewApp: (
     id: string,
@@ -32,6 +31,9 @@ interface DashboardModalsProps {
   closeReviewModal: () => void;
   syncResumeURL: () => Promise<void>;
   openResumeModal: () => void;
+  conversationId: string;
+  setConversationId: (conversationId: string) => void;
+  conversations: any;
 }
 
 export function DashboardModals({
@@ -41,24 +43,26 @@ export function DashboardModals({
   ResumeModal,
   ReviewModal,
   ChatModal,
-  openChatModal,
   closeApplicantModal,
   reviewApp,
   closeReviewModal,
   syncResumeURL,
   openResumeModal,
+  conversationId,
+  setConversationId,
+  conversations,
 }: DashboardModalsProps) {
   const profile = useProfile();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
-  const [conversationId, setConversationId] = useState("");
-  const conversations = useConversations("employer");
   const conversation = useConversation("employer", conversationId);
 
   // Handle message
   const handleMessage = async (userId: string, message: string) => {
     setSending(true);
-    let userConversation = conversations.data.find((c) => c.user_id === userId);
+    let userConversation = conversations.data.find(
+      (c: { user_id: string }) => c.user_id === userId
+    );
 
     // Create convo if it doesn't exist first
     if (!userConversation) {
@@ -86,11 +90,6 @@ export function DashboardModals({
     setSending(false);
   };
 
-  const updateConversationId = (userId: string) => {
-    let userConversation = conversations.data.find((c) => c.user_id === userId);
-    setConversationId(userConversation?.id);
-  };
-
   return (
     <>
       <ApplicantModal>
@@ -102,11 +101,6 @@ export function DashboardModals({
           }
           pfp_route={`/users/${selectedApplication?.user_id}/pic`}
           applicant={selectedApplication?.user}
-          open_chat={() => (
-            openChatModal(),
-            updateConversationId(selectedApplication?.user_id ?? ""),
-            closeApplicantModal()
-          )}
           open_calendar={async () => {
             closeApplicantModal();
             window
