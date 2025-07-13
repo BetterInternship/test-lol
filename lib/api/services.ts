@@ -258,25 +258,14 @@ interface ConversationsResponse extends FetchResponse {
   conversations?: Conversation[];
 }
 
-export const UserConversationService = {
-  async getMyConversations() {
-    return APIClient.get<ConversationsResponse>(
-      APIRoute("conversations").r("me").build()
-    );
-  },
-};
-
 export const EmployerConversationService = {
   async sendToUser(conversationId: string, message: string) {
-    return APIClient.post(APIRoute("conversations").r("send-to-user").build(), {
-      conversation_id: conversationId,
-      message,
-    });
-  },
-
-  async getMyConversations() {
-    return APIClient.get<ConversationsResponse>(
-      APIRoute("conversations").r("hire").build()
+    return APIClient.post<any>(
+      APIRoute("conversations").r("send-to-user").build(),
+      {
+        conversation_id: conversationId,
+        message,
+      }
     );
   },
 
@@ -284,6 +273,18 @@ export const EmployerConversationService = {
     return APIClient.post<ConversationResponse>(
       APIRoute("conversations").r("create").build(),
       { user_id: userId }
+    );
+  },
+};
+
+export const UserConversationService = {
+  async sendToEmployer(conversationId: string, message: string) {
+    return APIClient.post<any>(
+      APIRoute("conversations").r("send-to-employer").build(),
+      {
+        conversation_id: conversationId,
+        message,
+      }
     );
   },
 };

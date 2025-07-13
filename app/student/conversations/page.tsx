@@ -1,32 +1,53 @@
 "use client";
-import { useConversations } from "@/lib/api/student.api";
+import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/our-card";
 import { Conversation } from "../../../lib/db/db.types";
 import { EmployerPfp } from "@/components/shared/pfp";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
 import { useState } from "react";
-import { useConversation } from "@/hooks/use-conversation";
+import { Textarea } from "@/components/ui/textarea";
+import { Message } from "@/components/ui/messages";
+import { Button } from "@/components/ui/button";
+import { UserConversationService } from "@/lib/api/services";
+import { useProfile } from "@/lib/api/student.api";
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
+  const profile = useProfile();
   const [conversationId, setConversationId] = useState("");
-  const conversations = useConversations();
-  const conversation = useConversation(conversationId);
+  const conversations = useConversations("user");
+  const conversation = useConversation("user", conversationId);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
   const { isMobile } = useAppContext();
 
-  console.log("conversation messages: ", conversation.messages);
-
   redirectIfNotLoggedIn();
+
+  const handleMessage = async (employerId: string, message: string) => {
+    setSending(true);
+    const employerConversation = conversations.data.find(
+      (c) => c.employer_id === employerId
+    );
+
+    // Create convo if it doesn't exist first
+    if (!employerConversation) return;
+    const response = await UserConversationService.sendToEmployer(
+      employerConversation?.id,
+      message
+    );
+    setMessage("");
+    setSending(false);
+  };
 
   return (
     <div className="w-full h-full flex flex-row">
       {conversations.data?.length ? (
-        <div className="relative w-full animate-fade-in h-full">
+        <div className="w-full flex flex-row animate-fade-in h-full ">
           {/* Side Panel */}
-          <div className="absolute w-[25%] border-r border-r-gray-300 h-full max-h-full overflow-y-auto">
+          <div className="min-w-[25%] border-r border-r-gray-300 h-full max-h-full overflow-y-auto">
             <div className="flex flex-col gap-0">
               {conversations.data?.map((conversation) => (
                 <ConversationCard
@@ -37,11 +58,43 @@ export default function ConversationsPage() {
             </div>
           </div>
           {/* Conversation Pane */}
-          <div>
-            {conversation.messages.map((message) => {
-              console.log(message);
-              return <></>;
-            })}
+          <div className="flex flex-col justify-end flex-1 max-w-[75%]">
+            <div className="flex flex-col gap-1 p-2">
+              {conversation.messages.map((message) => {
+                return (
+                  <Message
+                    message={message.message}
+                    self={message.sender_id === profile.data?.id}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex flex-col p-2 gap-3">
+              <Textarea
+                placeholder="Send a message here..."
+                className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleMessage(conversation.employerId, message);
+                  }
+                }}
+                maxLength={1000}
+              />
+              <Button
+                size="md"
+                disabled={sending || !message.trim()}
+                onClick={() =>
+                  conversation.employerId &&
+                  handleMessage(conversation.employerId, message)
+                }
+              >
+                {sending ? "Sending..." : "Send Message"}
+                <SendHorizonal className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
       ) : (

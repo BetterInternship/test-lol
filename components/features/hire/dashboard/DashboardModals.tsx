@@ -6,13 +6,15 @@ import { FileText, SendHorizonal } from "lucide-react";
 import { useState } from "react";
 import { EmployerApplication } from "@/lib/db/db.types";
 import { getFullName } from "@/lib/utils/user-utils";
-import { UserService } from "@/lib/api/services";
+import { EmployerConversationService, UserService } from "@/lib/api/services";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { PDFPreview } from "@/components/shared/pdf-preview";
 import { ReviewModalContent } from "./ReviewModalContent";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useConversations } from "@/hooks/use-employer-api";
+import { useConversation, useConversations } from "@/hooks/use-conversation";
+import { Message } from "@/components/ui/messages";
+import { useProfile } from "@/hooks/use-employer-api";
 
 interface DashboardModalsProps {
   selectedApplication: EmployerApplication | null;
@@ -46,18 +48,23 @@ export function DashboardModals({
   syncResumeURL,
   openResumeModal,
 }: DashboardModalsProps) {
+  const profile = useProfile();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
-  const conversations = useConversations();
+  const [conversationId, setConversationId] = useState("");
+  const conversations = useConversations("employer");
+  const conversation = useConversation("employer", conversationId);
 
   // Handle message
   const handleMessage = async (userId: string, message: string) => {
     setSending(true);
-    let conversation = conversations.getFromUser(userId);
+    let userConversation = conversations.data.find((c) => c.user_id === userId);
 
     // Create convo if it doesn't exist first
-    if (!conversation) {
-      const response = await conversations.createConversation(userId);
+    if (!userConversation) {
+      const response = await EmployerConversationService.createConversation(
+        userId
+      );
 
       if (!response?.success) {
         alert("Could not initiate conversation with user.");
@@ -66,12 +73,22 @@ export function DashboardModals({
       }
 
       // Update the conversation
-      conversation = response.conversation;
+      setConversationId(response.conversation?.id ?? "");
+      userConversation = response.conversation;
     }
 
-    if (!conversation) return;
-    const response = await conversations.sendMessage(conversation?.id, message);
+    if (!userConversation) return;
+    const response = await EmployerConversationService.sendToUser(
+      userConversation?.id,
+      message
+    );
+    setMessage("");
     setSending(false);
+  };
+
+  const updateConversationId = (userId: string) => {
+    let userConversation = conversations.data.find((c) => c.user_id === userId);
+    setConversationId(userConversation?.id);
   };
 
   return (
@@ -83,9 +100,13 @@ export function DashboardModals({
           pfp_fetcher={async () =>
             UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
           }
-          pfp_route={`/users/${selectedApplication?.user?.id}/pic`}
+          pfp_route={`/users/${selectedApplication?.user_id}/pic`}
           applicant={selectedApplication?.user}
-          open_chat={() => (openChatModal(), closeApplicantModal())}
+          open_chat={() => (
+            openChatModal(),
+            updateConversationId(selectedApplication?.user_id ?? ""),
+            closeApplicantModal()
+          )}
           open_calendar={async () => {
             closeApplicantModal();
             window
@@ -144,16 +165,34 @@ export function DashboardModals({
             <div className="text-4xl font-bold tracking-tight">
               {getFullName(selectedApplication?.user)}
             </div>
-            <div className="flex-1 border border-gray-300 rounded-[0.33em] h-full"></div>
+            <div className="flex flex-col justify-end flex-1 border border-gray-300 rounded-[0.33em] h-full gap-1 p-2">
+              {conversation.messages?.map((message) => {
+                return (
+                  <Message
+                    message={message.message}
+                    self={message.sender_id === profile.data?.id}
+                  />
+                );
+              })}
+            </div>
             <Textarea
               placeholder="Send a message here..."
               className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleMessage(selectedApplication?.user_id ?? "", message);
+                }
+              }}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
+              value={message}
               maxLength={1000}
             />
             <Button
               size="md"
-              disabled={sending}
+              disabled={sending || !message.trim()}
               onClick={() =>
                 selectedApplication?.user_id &&
                 handleMessage(selectedApplication?.user_id, message)

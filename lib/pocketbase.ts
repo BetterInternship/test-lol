@@ -1,22 +1,41 @@
 // firebaseClient.ts
+import { useEffect, useState } from "react";
 import { APIClient, APIRoute } from "./api/api-client";
 import PocketBase, { AuthRecord } from "pocketbase";
 
-export const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
+const pb = new PocketBase(process.env.NEXT_PUBLIC_CHAT_URL as string);
 
 /**
- * Custom login using our own federated tokens.
+ * Make the API easier to deal with.
  *
  * @returns
  */
-export const authPocketbase = async () => {
-  // No need to redo auth if valid
-  if (pb.authStore.isValid) return;
+export const usePocketbase = (type: "user" | "employer") => {
+  const [user, setUser] = useState<AuthRecord>(null);
 
-  // Request token
-  const { token, user } = await APIClient.post<{
-    token: string;
-    user: AuthRecord;
-  }>(APIRoute("conversations").r("auth").build());
-  pb.authStore.save(token, user);
+  const auth = async () => {
+    // Request token
+    const route =
+      type === "employer"
+        ? APIRoute("conversations").r("auth/hire").build()
+        : APIRoute("conversations").r("auth").build();
+    const { token, user } = await APIClient.post<{
+      token: string;
+      user: AuthRecord;
+    }>(route);
+    console.log(route);
+    pb.authStore.save(token, user);
+
+    // Save state
+    setUser(user);
+  };
+
+  useEffect(() => {
+    auth();
+  }, []);
+
+  return {
+    pb,
+    user,
+  };
 };
