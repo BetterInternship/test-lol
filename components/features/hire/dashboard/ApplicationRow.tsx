@@ -17,6 +17,7 @@ interface ApplicationRowProps {
   onStatusChange: (status: number) => void;
   openChatModal: () => void;
   updateConversationId: (conversationId: string) => void;
+  setSelectedApplication: (application: EmployerApplication) => void;
 }
 
 export function ApplicationRow({
@@ -27,6 +28,7 @@ export function ApplicationRow({
   onStatusChange,
   openChatModal,
   updateConversationId,
+  setSelectedApplication,
 }: ApplicationRowProps) {
   const { to_university_name, to_level_name, to_app_status_name } = useRefs();
 
@@ -62,6 +64,7 @@ export function ApplicationRow({
             onClick={(e) => {
               e.stopPropagation();
               openChatModal();
+              setSelectedApplication(application);
               updateConversationId(application.user_id ?? "");
             }}
           >

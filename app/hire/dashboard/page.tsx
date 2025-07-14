@@ -22,6 +22,7 @@ function DashboardContent() {
     loading,
     profileLoading,
     selectedApplication,
+    setSelectedApplication,
     resumeURL,
 
     // Actions
@@ -98,6 +99,7 @@ function DashboardContent() {
               onNotesClick={handleNotesClick}
               onScheduleClick={handleScheduleClick}
               onStatusChange={handleStatusChange}
+              setSelectedApplication={setSelectedApplication}
             />
           )}
         </div>

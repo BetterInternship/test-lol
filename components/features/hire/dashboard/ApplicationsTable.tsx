@@ -14,6 +14,7 @@ interface ApplicationsTableProps {
   onStatusChange: (application: EmployerApplication, status: number) => void;
   openChatModal: () => void;
   updateConversationId: (coversationId: string) => void;
+  setSelectedApplication: (application: EmployerApplication) => void;
 }
 
 export function ApplicationsTable({
@@ -24,6 +25,7 @@ export function ApplicationsTable({
   onStatusChange,
   openChatModal,
   updateConversationId,
+  setSelectedApplication,
 }: ApplicationsTableProps) {
   const sortedApplications = applications.toSorted(
     (a, b) =>
@@ -53,6 +55,7 @@ export function ApplicationsTable({
                         onStatusChange(application, status)
                       }
                       openChatModal={openChatModal}
+                      setSelectedApplication={setSelectedApplication}
                       updateConversationId={updateConversationId}
                     />
                   ))
@@ -81,6 +84,7 @@ export function ApplicationsTable({
                       onSchedule={() => onScheduleClick(application)}
                       openChatModal={openChatModal}
                       updateConversationId={updateConversationId}
+                      setSelectedApplication={setSelectedApplication}
                       onStatusChange={(status) =>
                         onStatusChange(application, status)
                       }
@@ -110,6 +114,7 @@ export function ApplicationsTable({
                       onNotes={() => onNotesClick(application)}
                       onSchedule={() => onScheduleClick(application)}
                       openChatModal={openChatModal}
+                      setSelectedApplication={setSelectedApplication}
                       updateConversationId={updateConversationId}
                       onStatusChange={(status) =>
                         onStatusChange(application, status)

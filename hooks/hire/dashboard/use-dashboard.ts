@@ -102,5 +102,6 @@ export function useDashboard() {
     closeApplicantModal,
     closeReviewModal,
     openResumeModal,
+    setSelectedApplication,
   };
 }
