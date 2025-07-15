@@ -8,6 +8,8 @@ import CardSwap, {
 } from "@/components/landingStudent/sections/2ndSection/CardSwap/CardSwap";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle } from "lucide-react";
 
 function useResponsiveCardSwap() {
   const [cardProps, setCardProps] = useState({
@@ -85,38 +87,26 @@ export function SoftwareSection() {
                 easing="elastic"
               >
                 <Card className="bg-gradient-to-br from-slate-800 to-slate-900 border-white-700/50 p-8 hover:cursor-pointer">
-                  <Link href="/search">
+                  <Link href="/search/4952d62a-2d2c-456c-8fab-38e75ece9019">
                     <div className="text-white h-full flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <span className="bg-slate-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          New
-                        </span>
-                        <span className="text-sm text-slate-300">
-                          Just posted
+                        <span className="flex flex-row items-center gap-2 bg-slate-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Software Engineer Intern
+                        Associate Full Stack Engineer
                       </h4>
-                      <p className="text-slate-200 mb-4 text-lg">
-                        TechCorp Philippines
-                      </p>
+                      <p className="text-slate-200 mb-4 text-lg">ManuLife</p>
                       <div className="space-y-3 mb-6 flex-1">
-                        <div className="flex items-center text-slate-300">
-                          <span className="mr-3">💰</span>
-                          <span>₱25,000/month</span>
-                        </div>
-                        <div className="flex items-center text-slate-300">
-                          <span className="mr-3">📍</span>
-                          <span>Makati, Metro Manila</span>
-                        </div>
-                        <div className="flex items-center text-slate-300">
+                        <div className="flex items-center text-zinc-300">
                           <span className="mr-3">⏰</span>
-                          <span>3-6 months</span>
+                          <span>Full-Time Workload</span>
                         </div>
-                        <div className="flex items-center text-slate-300">
-                          <span className="mr-3">🎓</span>
-                          <span>Computer Science</span>
+                        <div className="flex items-center text-zinc-300">
+                          <span className="mr-3">📍</span>
+                          <span>Hybrid Work Setup</span>
                         </div>
                       </div>
                       <div className="mt-auto">
@@ -129,38 +119,34 @@ export function SoftwareSection() {
                 </Card>
 
                 <Card className="bg-gradient-to-br from-zinc-800 to-zinc-900 border-white-700/50 p-8 hover:cursor-pointer">
-                  <Link href="/search">
+                  <Link href="/search/b14487ea-8444-49b1-adfa-25c0a361befa">
                     <div className="text-white h-full flex flex-col">
                       <div className="flex items-center justify-between mb-6">
                         <span className="bg-zinc-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Hot
-                        </span>
-                        <span className="text-sm text-zinc-300">
-                          2 days ago
+                          <span className="flex flex-row items-center gap-2 bg-zinc-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            <CheckCircle className="w-4 h-4" />
+                            DLSU MOA
+                          </span>
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Marketing Intern
+                        Marketing Assistant
                       </h4>
                       <p className="text-zinc-200 mb-4 text-lg">
-                        Global Marketing Inc.
+                        Sun Life Philippines
                       </p>
                       <div className="space-y-3 mb-6 flex-1">
-                        <div className="flex items-center text-zinc-300">
+                        <div className="flex items-center text-neutral-300">
                           <span className="mr-3">💰</span>
-                          <span>₱20,000/month</span>
-                        </div>
-                        <div className="flex items-center text-zinc-300">
-                          <span className="mr-3">📍</span>
-                          <span>BGC, Taguig</span>
+                          <span>₱10,000/month</span>
                         </div>
                         <div className="flex items-center text-zinc-300">
                           <span className="mr-3">⏰</span>
-                          <span>4-6 months</span>
+                          <span>Full-Time Workload</span>
                         </div>
                         <div className="flex items-center text-zinc-300">
-                          <span className="mr-3">🎓</span>
-                          <span>Marketing/Business</span>
+                          <span className="mr-3">📍</span>
+                          <span>Hybrid Work Setup (BGC)</span>
                         </div>
                       </div>
                       <div className="mt-auto">
@@ -173,38 +159,30 @@ export function SoftwareSection() {
                 </Card>
 
                 <Card className="bg-gradient-to-br from-neutral-800 to-neutral-900 border-neutral-700/50 p-8 hover:cursor-pointer">
-                  <Link href="/search">
+                  <Link href="/search/770562a8-3a38-4bcb-a72f-bf5ae703833c">
                     <div className="text-white h-full flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <span className="bg-neutral-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Featured
-                        </span>
-                        <span className="text-sm text-neutral-300">
-                          5 days ago
+                        <span className="flex flex-row items-center gap-2 bg-neutral-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Data Science Intern
+                        Software Developer Intern
                       </h4>
-                      <p className="text-neutral-200 mb-4 text-lg">
-                        Analytics Solutions Co.
-                      </p>
+                      <p className="text-neutral-200 mb-4 text-lg">Oracle</p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-neutral-300">
                           <span className="mr-3">💰</span>
-                          <span>₱30,000/month</span>
+                          <span>₱14,000/month</span>
                         </div>
-                        <div className="flex items-center text-neutral-300">
-                          <span className="mr-3">📍</span>
-                          <span>Quezon City</span>
-                        </div>
-                        <div className="flex items-center text-neutral-300">
+                        <div className="flex items-center text-zinc-300">
                           <span className="mr-3">⏰</span>
-                          <span>6 months</span>
+                          <span>Full-Time Workload</span>
                         </div>
-                        <div className="flex items-center text-neutral-300">
-                          <span className="mr-3">🎓</span>
-                          <span>Data Science/Stats</span>
+                        <div className="flex items-center text-zinc-300">
+                          <span className="mr-3">📍</span>
+                          <span>Face to Face Setup</span>
                         </div>
                       </div>
                       <div className="mt-auto">
@@ -217,38 +195,32 @@ export function SoftwareSection() {
                 </Card>
 
                 <Card className="bg-gradient-to-br from-stone-800 to-stone-900 border-stone-700/50 p-8 hover:cursor-pointer">
-                  <Link href="/search">
+                  <Link href="/search/770562a8-3a38-4bcb-a72f-bf5ae703833c">
                     <div className="text-white h-full flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <span className="bg-stone-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Urgent
-                        </span>
-                        <span className="text-sm text-stone-300">
-                          1 week ago
+                        <span className="flex flex-row items-center gap-2 bg-stone-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        UX Design Intern
+                        Internship - Marketing
                       </h4>
                       <p className="text-stone-200 mb-4 text-lg">
-                        Creative Design Studio
+                        Alaska Milk Corporation
                       </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-stone-300">
                           <span className="mr-3">💰</span>
-                          <span>₱22,000/month</span>
+                          <span>₱720/day</span>
                         </div>
-                        <div className="flex items-center text-stone-300">
-                          <span className="mr-3">📍</span>
-                          <span>Pasig City</span>
-                        </div>
-                        <div className="flex items-center text-stone-300">
+                        <div className="flex items-center text-zinc-300">
                           <span className="mr-3">⏰</span>
-                          <span>3-4 months</span>
+                          <span>Hybrid Work Setup</span>
                         </div>
-                        <div className="flex items-center text-stone-300">
-                          <span className="mr-3">🎓</span>
-                          <span>Design/Arts</span>
+                        <div className="flex items-center text-zinc-300">
+                          <span className="mr-3">📍</span>
+                          <span>Full-Time Workload</span>
                         </div>
                       </div>
                       <div className="mt-auto">
@@ -261,38 +233,30 @@ export function SoftwareSection() {
                 </Card>
 
                 <Card className="bg-gradient-to-br from-gray-900 to-black border-gray-800/50 p-8 hover:cursor-pointer">
-                  <Link href="/search">
+                  <Link href="/search/7828346a-b1c5-4f03-8e15-459d31fb4d9f">
                     <div className="text-white h-full flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <span className="bg-gray-700 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Premium
-                        </span>
-                        <span className="text-sm text-gray-300">
-                          3 days ago
+                        <span className="flex flex-row items-center gap-2 bg-gray-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Finance Intern
+                        Marketing Internship
                       </h4>
-                      <p className="text-gray-200 mb-4 text-lg">
-                        Investment Bank Corp
-                      </p>
+                      <p className="text-gray-200 mb-4 text-lg">Jollibee</p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-gray-300">
                           <span className="mr-3">💰</span>
-                          <span>₱35,000/month</span>
+                          <span>₱2,600/week</span>
                         </div>
                         <div className="flex items-center text-gray-300">
                           <span className="mr-3">📍</span>
-                          <span>Makati CBD</span>
+                          <span>Hybrid Setup</span>
                         </div>
                         <div className="flex items-center text-gray-300">
                           <span className="mr-3">⏰</span>
-                          <span>6-12 months</span>
-                        </div>
-                        <div className="flex items-center text-gray-300">
-                          <span className="mr-3">🎓</span>
-                          <span>Finance/Economics</span>
+                          <span>Full-Time Workload</span>
                         </div>
                       </div>
                       <div className="mt-auto">
@@ -305,38 +269,96 @@ export function SoftwareSection() {
                 </Card>
 
                 <Card className="bg-gradient-to-br from-slate-900 to-black border-slate-800/50 p-8 hover:cursor-pointer">
-                  <Link href="/search">
+                  <Link href="/search/56ca46aa-0b6f-485b-ac0e-92fcac316d54">
                     <div className="text-white h-full flex flex-col">
                       <div className="flex items-center justify-between mb-6">
-                        <span className="bg-slate-700 text-white px-3 py-1 rounded-full text-sm font-medium">
-                          Remote
-                        </span>
-                        <span className="text-sm text-slate-300">
-                          4 days ago
+                        <span className="flex flex-row items-center gap-2 bg-slate-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Content Writer Intern
+                        HR Intern
                       </h4>
                       <p className="text-slate-200 mb-4 text-lg">
-                        Digital Media Agency
+                        Asian Institute of Management
                       </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-slate-300">
-                          <span className="mr-3">💰</span>
-                          <span>₱18,000/month</span>
-                        </div>
-                        <div className="flex items-center text-slate-300">
                           <span className="mr-3">📍</span>
-                          <span>Remote/Hybrid</span>
+                          <span>Face to Face Setup (Makati)</span>
                         </div>
                         <div className="flex items-center text-slate-300">
                           <span className="mr-3">⏰</span>
-                          <span>3-6 months</span>
+                          <span>Full-Time Workload</span>
+                        </div>
+                      </div>
+                      <div className="mt-auto">
+                        <Button className="w-full bg-white text-slate-800 hover:bg-slate-100 font-semibold py-3">
+                          Apply Now
+                        </Button>
+                      </div>
+                    </div>
+                  </Link>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-slate-900 to-black border-slate-800/50 p-8 hover:cursor-pointer">
+                  <Link href="/search/1223f377-22cc-43e8-b132-a635d879a374">
+                    <div className="text-white h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-6">
+                        <span className="flex flex-row items-center gap-2 bg-slate-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
+                        </span>
+                      </div>
+                      <h4 className="text-2xl font-bold mb-3 text-white">
+                        Software Engineer Intern
+                      </h4>
+                      <p className="text-slate-200 mb-4 text-lg">Giftaway</p>
+                      <div className="space-y-3 mb-6 flex-1">
+                        <div className="flex items-center text-gray-300">
+                          <span className="mr-3">💰</span>
+                          <span>₱400/day</span>
                         </div>
                         <div className="flex items-center text-slate-300">
-                          <span className="mr-3">🎓</span>
-                          <span>English/Journalism</span>
+                          <span className="mr-3">📍</span>
+                          <span>Hybrid Work Setup</span>
+                        </div>
+                        <div className="flex items-center text-slate-300">
+                          <span className="mr-3">⏰</span>
+                          <span>Full-Time Workload</span>
+                        </div>
+                      </div>
+                      <div className="mt-auto">
+                        <Button className="w-full bg-white text-slate-800 hover:bg-slate-100 font-semibold py-3">
+                          Apply Now
+                        </Button>
+                      </div>
+                    </div>
+                  </Link>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-slate-900 to-black border-slate-800/50 p-8 hover:cursor-pointer">
+                  <Link href="/search/c18ace50-030e-42e5-902f-e351e214b61b">
+                    <div className="text-white h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-6">
+                        <span className="flex flex-row items-center gap-2 bg-slate-700 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          DLSU MOA
+                        </span>
+                      </div>
+                      <h4 className="text-2xl font-bold mb-3 text-white">
+                        Sales interns
+                      </h4>
+                      <p className="text-slate-200 mb-4 text-lg">Megaworld</p>
+                      <div className="space-y-3 mb-6 flex-1">
+                        <div className="flex items-center text-gray-300">
+                          <span className="mr-3">💰</span>
+                          <span>₱100/day</span>
+                        </div>
+                        <div className="flex items-center text-slate-300">
+                          <span className="mr-3">📍</span>
+                          <span>Face to Face Setup</span>
                         </div>
                       </div>
                       <div className="mt-auto">
