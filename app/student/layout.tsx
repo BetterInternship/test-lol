@@ -8,6 +8,7 @@ import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
+import AllowLanding from "./allowLanding";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
@@ -43,24 +44,26 @@ export const RootLayout = ({
  *
  * @component
  */
+
 const HTMLContent = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+
   return (
     <TanstackProvider>
       <AppContextProvider>
         <AuthContextProvider>
           <html lang="en">
             <body>
+              <AllowLanding>
               <div className="h-screen bg-gray-50 flex flex-col">
-                <Header />
                 <div className="flex-grow overflow-auto flex flex-col">
                   {children}
                 </div>
-                <Footer />
               </div>
+              </AllowLanding>
             </body>
           </html>
         </AuthContextProvider>
