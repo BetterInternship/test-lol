@@ -6,8 +6,9 @@ export function Feature() {
       <div className="flex flex-col lg:flex-row lg:items-center gap-20">
         <div className="flex gap-4 pl-0 lg:pl-20 flex-col flex-1">
           <div className="flex gap-2 mx-8 flex-col z-30">
-            <h2 className="text-7xl tracking-tighter lg:max-w-xl font-regular text-left text-gray-900 dark:text-white">
-              Apply fast, Get Hired faster.
+            <h2 className="text-5xl sm:text-8xl tracking-tighter text-opacity-90 lg:max-w-2xl font-regular text-left text-gray-900 dark:text-white">
+              Apply fast, <br />
+              Get hired faster.
             </h2>
             <p className="text-lg max-w-xl lg:max-w-sm leading-relaxed tracking-tight text-muted-foreground text-left dark:text-gray-400">
               Instantly apply to jobs with a single click—no forms, no hassle.
@@ -23,4 +24,3 @@ export function Feature() {
     </div>
   );
 }
-

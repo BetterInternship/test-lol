@@ -43,7 +43,7 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="text-6xl sm:text-8xl font-bold text-white text-opacity-90 leading-tight mb-6 ml-5 sm:ml-0"
+            className="text-5xl sm:text-8xl font-bold text-white text-opacity-90 tracking-tighter mb-6 ml-5 sm:ml-0"
           >
             No Waiting. <br />
             Interview in <br />

@@ -34,7 +34,7 @@ function LogoCarouselBasic() {
       <Card className="bg-black text-white dark:bg-black dark:text-white">
         <CardContent className="pt-6 p-0 bg-white">
           <div className="text-center space-y-4">
-            <h2 className="text-[3.5rem] font-bold tracking-tight leading-none text-gray-800 text-opacity-[0.33] pb-6 pt-40">
+            <h2 className="sm:text-[3.5rem] text-[2.5rem] font-bold tracking-tight leading-none text-gray-800 text-opacity-[0.33] pb-6 pt-40">
               The best are already here.
             </h2>
           </div>

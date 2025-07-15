@@ -65,7 +65,7 @@ export function SoftwareSection() {
 
   return (
     <section className="bg-black">
-      <div className="max-w-7xl text-white sm:px-6 lg:px-8">
+      <div className="max-w-7xl text-white sm:px-6 lg:px-8 mt-[-5em] sm:mt-0">
         {/* Main Layout with Header Left and Cards Center-Right */}
         <motion.div
           {...motionVariants.fadeInUp}
