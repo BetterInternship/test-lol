@@ -9,6 +9,7 @@ import {
   Feature
 } from "@/components/landingStudent/sections"
 import { Navigation } from "@/components/landingStudent/navigation"
+import { Footer } from "@/components/shared/footer"
 
 export default function HomePage() {
   return (
@@ -30,6 +31,9 @@ export default function HomePage() {
       {/* Companies showcase */}
       <LogoCarouselBasic />
      
+     <div className="dark">
+        <Footer />
+     </div>
       
     </div>
   )

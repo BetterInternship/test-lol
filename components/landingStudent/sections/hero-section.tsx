@@ -6,11 +6,11 @@ import { useState, useEffect } from "react"
 
 export function HeroSection() {
   const videos = [
-    "/celebrate_hero.mp4",
-    "/code_ex.mp4", 
-    "/happy_students.mp4",
-    "/wave_student.mp4",
-    "/wee_closeup.mp4"
+    "/landingPage/celebrate_hero.mp4",
+    "/landingPage/code_ex.mp4", 
+    "/landingPage/happy_students.mp4",
+    "/landingPage/wave_student.mp4",
+    "/landingPage/wee_closeup.mp4"
   ]
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   useEffect(() => {

@@ -9,7 +9,7 @@ export function CustomersSection() {
   const [sectionRef, isVisible] = useInView(0.3)
 
   return (
-    <section ref={sectionRef} className="py-20 bg-black border-t border-gray-800 text-white dark:bg-black dark:text-white">
+    <section ref={sectionRef} className="py-20 bg-black border-t border-gray-900 text-white dark:bg-black dark:text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Direct employer connections */}
@@ -29,14 +29,14 @@ export function CustomersSection() {
             {...motionVariants.fadeInRight}
             transition={{ ...motionVariants.fadeInRight.transition, delay: 0.2 }}
           >
-            <div className="bg-gray-900 dark:bg-gray-900 rounded-2xl p-8 h-64 flex items-center justify-center">
+            <div className="bg-white rounded-2xl p-8 h-64 flex items-center justify-center">
               <div className="text-center">
                 <div className="w-24 h-16 bg-blue-600 rounded-lg mx-auto mb-4 flex items-center justify-center">
                   <div className="w-16 h-10 bg-white dark:bg-white rounded flex items-center justify-center">
                     <div className="text-black font-bold text-xs">CHAT</div>
                   </div>
                 </div>
-                <div className="text-white dark:text-white font-medium">Direct Messaging</div>
+                <div className="text-black font-medium">Direct Messaging</div>
               </div>
             </div>
           </motion.div>
@@ -45,7 +45,7 @@ export function CustomersSection() {
         {/* Multi-industry reach */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
           <div className={animations.fadeInLeft(isVisible, 400)}>
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl p-8 h-64 flex items-center justify-center border">
+            <div className="bg-gray-100 rounded-2xl p-8 h-64 flex items-center justify-center border">
               <div className="grid grid-cols-3 gap-4">
                 <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold">💻</div>
                 <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center text-white font-bold">🏥</div>

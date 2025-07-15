@@ -19,9 +19,9 @@ export const Footer = ({ content }: { content?: string }) => {
   }
 
   return (
-    <div className="bg-transparent px-6 py-4 opacity-70">
+    <div className="bg-transparent dark:bg-black px-6 py-4 opacity-70 dark:opacity-100 dark:border-t dark:border-gray-900">
       <div className="text-center">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500 dark:text-white">
           {content ?? (
             <>
               © 2025 BetterInternship. All rights reserved.{" "}
