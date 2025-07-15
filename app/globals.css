@@ -539,6 +539,12 @@ button[role="checkbox"]:checked {
   }
 }
 
+@keyframes sidebounce {
+  0%, 100% { transform: translateX(0);       }
+  50%      { transform: translateX(-25%);    }  /* move left */
+  75%      { transform: translateX(25%);     }  /* move right */
+}
+
 /* Mobile-specific utilities */
 @layer utilities {
   .pb-safe {
