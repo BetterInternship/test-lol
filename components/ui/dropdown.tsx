@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-14 23:30:09
- * @ Modified time: 2025-07-03 03:42:03
+ * @ Modified time: 2025-07-13 19:13:50
  * @ Description:
  *
  * Stateful dropdown group component.
@@ -16,12 +16,11 @@ import React, {
   useCallback,
   Children,
 } from "react";
-import { ChevronDown, Search } from "lucide-react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAppContext } from "@/lib/ctx-app";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useMobile } from "@/hooks/use-mobile";
 import { useDetectClickOutside } from "react-detect-click-outside";
 
 /**
@@ -256,7 +255,7 @@ export const GroupableRadioDropdown = <ID extends number | string>({
         >
           <div
             className={cn(
-              "max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+              "relative z-[100] max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
               isMobile ? "max-h-60" : "max-h-52" // Slightly taller on mobile for better UX
             )}
           >
@@ -413,12 +412,12 @@ export const GroupableNavDropdown = ({
   );
 
   return (
-    <div className={cn("relative", className)} ref={dropdownRef}>
+    <div className={cn("relative z-[100]", className)} ref={dropdownRef}>
       <Button
         ref={buttonRef}
         type="button"
         variant="ghost"
-        className="flex items-center gap-2 h-12 px-3"
+        className="relative flex items-center gap-2 h-12 px-3 z-[1000]"
         onClick={handleButtonClick}
         onTouchEnd={(e) => e.stopPropagation()}
       >
@@ -436,7 +435,7 @@ export const GroupableNavDropdown = ({
       {is_open && (
         <div
           className={cn(
-            "absolute right-0 mt-2 bg-white border border-gray-200 rounded-[0.33em] shadow-lg z-50",
+            "absolute right-0 mt-2 bg-white border border-gray-200 rounded-[0.33em] shadow-lg z-[1000]",
             is_mobile ? "w-56" : "w-48", // Slightly wider on mobile for better touch targets
             className
           )}
@@ -446,7 +445,7 @@ export const GroupableNavDropdown = ({
         >
           <div
             className={cn(
-              "py-1 max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+              "relative py-1 z-[1000] max-h-64 overflow-y-auto overscroll-contain scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
               is_mobile ? "max-h-80" : "max-h-64"
             )}
             style={{

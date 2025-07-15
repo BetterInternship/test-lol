@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-19 04:14:35
- * @ Modified time: 2025-07-04 15:59:08
+ * @ Modified time: 2025-07-13 20:09:04
  * @ Description:
  *
  * What employers see when clicking on an applicant to view.
@@ -10,18 +10,18 @@
 
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
-import { useFile } from "@/hooks/use-file";
 import { Button } from "../ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import {
   Award,
   Calendar,
   ExternalLink,
   FileText,
   GraduationCap,
+  SendHorizonal,
+  Text,
 } from "lucide-react";
 import { getFullName } from "@/lib/utils/user-utils";
 import { MyUserPfp, UserPfp } from "./pfp";

@@ -30,10 +30,9 @@ export const ShowUnverifiedBanner = () => {
         <span className="font-medium">Account not verified</span>
       </div>
       <p className="mt-1 text-sm px-3">
-        You can add listings while we are working to verify your account. Your
-        listings won't be visible publicly until verification is complete.
+        You can add listings now — they’ll go live once we finish verifying your account (usually within 24 hours). We personally check every new account to keep things safe and smooth. 
         <br />
-        If you have any questions, email us at hello@betterinternship.com.
+        Questions? Email us at hello@betterinternship.com.
       </p>
     </Banner>
   );

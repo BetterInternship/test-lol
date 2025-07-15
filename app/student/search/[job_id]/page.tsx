@@ -39,6 +39,7 @@ import {
   JobHead,
   JobApplicationRequirements,
 } from "@/components/shared/jobs";
+import { Card } from "@/components/ui/our-card";
 
 /**
  * The individual job page.
@@ -135,6 +136,32 @@ export default function JobPage() {
           <p className="text-red-600 mb-4">
             Failed to load job: {job.error.message}
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!job.data && !job.isPending) {
+    return (
+      <div className="h-screen bg-white flex justify-center py-6">
+        <div className="flex flex-col justify-start items-start gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 px-3 py-2 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back
+          </Button>
+          <Card>
+            <div className="text-left max-w-prose">
+              <p className="font-bold mb-1">Job does not exist.</p>
+              <p className="text-gray-700 text-xs">
+                If you are coming from a valid link, it is possible that the job
+                was deleted by the employer.
+              </p>
+            </div>
+          </Card>
         </div>
       </div>
     );
@@ -254,22 +281,21 @@ export default function JobPage() {
                       />
                       <JobMode mode={job.data.mode} />
                     </div>
-                    <br />
-                    <hr />
-                    <br />
+
+                    <div className="border-t border-gray-200 my-8"></div>
+
                     <h2 className="text-2xl text-gray-700 mb-6 flex items-center gap-3">
                       Description
                     </h2>
                     <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <div className="whitespace-pre-wrap text-base leading-7">
+                      <div className="text-base leading-7">
                         <ReactMarkdown>
                           {job.data.description || "No description provided."}
                         </ReactMarkdown>
                       </div>
                     </div>
-                    <br />
-                    <hr />
-                    <br />
+
+                    <div className="border-t border-gray-200 my-8"></div>
                     <h2 className="text-2xl text-gray-700 mb-6 flex items-center gap-3">
                       Requirements
                     </h2>
@@ -277,7 +303,7 @@ export default function JobPage() {
                     <JobApplicationRequirements job={job.data} />
 
                     <div className="prose max-w-none text-gray-700 leading-relaxed">
-                      <div className="whitespace-pre-wrap text-base leading-7">
+                      <div className="text-base leading-7">
                         {job.data.requirements}
                       </div>
                     </div>

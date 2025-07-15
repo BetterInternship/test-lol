@@ -40,17 +40,17 @@ export default function GodLandingPage() {
   };
 
   return (
-    <div className="w-full h-full overflow-hidden">
+    <div className="w-full h-[90vh] overflow-hidden">
       <TabGroup>
         <Tab name="verified employers">
-          <div className="absolute w-full px-4 py-4 border-b">
+          <div className="absolute w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={employers.data.map((e) => e.name ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
           </div>
-          <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
+          <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {employers.data
               .filter((e) =>
                 e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
@@ -104,14 +104,14 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="unverified employers">
-          <div className="absolute w-full px-4 py-4 border-b">
+          <div className="absolute w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={employers.data.map((e) => e.name ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
           </div>
-          <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
+          <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {employers.data
               .filter((e) =>
                 e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
@@ -166,14 +166,14 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="students">
-          <div className="absolute w-full px-4 py-4 border-b">
+          <div className="absolute w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={users.map((u) => getFullName(u) ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
           </div>
-          <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
+          <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {users
               .filter((u) =>
                 `${getFullName(u)} ${u.email}`
@@ -227,7 +227,7 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="applications">
-          <div className="absolute w-full px-4 py-4 border-b">
+          <div className="absolute w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={applications.map(
@@ -239,7 +239,7 @@ export default function GodLandingPage() {
               placeholder="Search name..."
             ></Autocomplete>
           </div>
-          <div className="absolute top-18 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
+          <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {applications
               .filter((a) =>
                 `${a.job?.employers?.name} ${getFullName(a.users)} ${

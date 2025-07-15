@@ -1,359 +1,298 @@
+// Main dashboard page - uses clean architecture with focused hooks and context
+// Wraps everything in DashboardProvider for shared state management
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { FileText, User, BarChart3, Building2 } from "lucide-react";
-import {
-  useEmployerApplications,
-  useOwnedJobs,
-} from "@/hooks/use-employer-api";
-import { EmployerApplication } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
-import { GroupableRadioDropdown } from "@/components/ui/dropdown";
-import { ApplicantModalContent } from "@/components/shared/applicant-modal";
-import { useModal } from "@/hooks/use-modal";
-import { useFile } from "@/hooks/use-file";
-import { UserService } from "@/lib/api/services";
-import { UserPfp } from "@/components/shared/pfp";
-import { MDXEditor } from "@/components/MDXEditor";
 import { useAuthContext } from "../authctx";
 import ContentLayout from "@/components/features/hire/content-layout";
-import { getFullName } from "@/lib/utils/user-utils";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { PDFPreview } from "@/components/shared/pdf-preview";
-import { useProfile } from "@/hooks/use-employer-api";
+import { ApplicationsTable } from "@/components/features/hire/dashboard/ApplicationsTable";
 import { ShowUnverifiedBanner } from "@/components/ui/banner";
+import { useSideModal } from "@/hooks/use-side-modal";
+import { useCallback, useRef, useState } from "react";
+import { useConversation, useConversations } from "@/hooks/use-conversation";
+import { useEmployerApplications, useProfile } from "@/hooks/use-employer-api";
+import { Button } from "@/components/ui/button";
+import { EmployerApplication } from "@/lib/db/db.types";
+import { FileText, SendHorizonal } from "lucide-react";
+import { EmployerConversationService, UserService } from "@/lib/api/services";
+import { useModal } from "@/hooks/use-modal";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { ReviewModalContent } from "@/components/features/hire/dashboard/ReviewModalContent";
+import { PDFPreview } from "@/components/shared/pdf-preview";
+import { getFullName } from "@/lib/utils/user-utils";
+import { Textarea } from "@/components/ui/textarea";
+import { Message } from "@/components/ui/messages";
+import { useFile } from "@/hooks/use-file";
 
-export default function Dashboard() {
-  const {
-    employer_applications,
-    review: review_app,
-    loading,
-  } = useEmployerApplications();
-  const { redirect_if_not_logged_in } = useAuthContext();
-  const { ownedJobs } = useOwnedJobs();
-  const {
-    app_statuses,
-    get_college,
-    get_app_status_by_name,
-    to_level_name,
-    to_university_name,
-    to_app_status_name,
-  } = useRefs();
-  const [selected_application, set_selected_application] =
+function DashboardContent() {
+  const { redirectIfNotLoggedIn } = useAuthContext();
+  const profile = useProfile();
+  const applications = useEmployerApplications();
+  const [selectedApplication, setSelectedApplication] =
     useState<EmployerApplication | null>(null);
+  const [conversationId, setConversationId] = useState("");
+  const conversations = useConversations("employer");
+  const updateConversationId = (userId: string) => {
+    let userConversation = conversations.data.find((c) => c.user_id === userId);
+    setConversationId(userConversation?.id);
+  };
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const [sending, setSending] = useState(false);
+  const conversation = useConversation("employer", conversationId);
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
+    fetcher: useCallback(
+      async () =>
+        await UserService.getUserResumeURL(selectedApplication?.user_id ?? ""),
+      [selectedApplication]
+    ),
+    route: selectedApplication
+      ? `/users/${selectedApplication.user_id}/resume`
+      : "",
+  });
+
+  // Handle message
+  const handleMessage = async (userId: string, message: string) => {
+    setSending(true);
+    let userConversation = conversations.data.find(
+      (c: { user_id: string }) => c.user_id === userId
+    );
+
+    // Create convo if it doesn't exist first
+    if (!userConversation) {
+      const response = await EmployerConversationService.createConversation(
+        userId
+      );
+
+      if (!response?.success) {
+        alert("Could not initiate conversation with user.");
+        setSending(false);
+        return;
+      }
+
+      // Update the conversation
+      setConversationId(response.conversation?.id ?? "");
+      userConversation = response.conversation;
+    }
+
+    if (!userConversation) return;
+    const response = await EmployerConversationService.sendToUser(
+      userConversation?.id,
+      message
+    );
+    setSending(false);
+  };
+
+  const {
+    open: openChatModal,
+    close: closeChatModal,
+    SideModal: ChatModal,
+  } = useSideModal("chat-modal");
+
   const {
     open: openApplicantModal,
     close: closeApplicantModal,
     Modal: ApplicantModal,
   } = useModal("applicant-modal");
-  const { open: openResumeModal, Modal: ResumeModal } =
-    useModal("resume-modal");
+
   const {
     open: openReviewModal,
     close: closeReviewModal,
     Modal: ReviewModal,
   } = useModal("review-modal");
-  const { profile, loading: profileLoading } = useProfile();
 
-  redirect_if_not_logged_in();
+  const {
+    open: openResumeModal,
+    close: closeResumeModal,
+    Modal: ResumeModal,
+  } = useModal("resume-modal");
 
-  // Sorting and filtering states
-  const [selected_resume, set_selected_resume] = useState("");
+  // Wrapper for review function to match expected signature
+  const reviewApp = (
+    id: string,
+    reviewOptions: { review?: string; notes?: string; status?: number }
+  ) => {
+    if (reviewOptions.notes)
+      applications.review(id, { review: reviewOptions.notes });
 
-  // Syncs everything
-  const set_application = (application: EmployerApplication) => {
-    set_selected_application(application);
-    set_selected_resume("/users/" + application?.user_id + "/resume");
+    if (reviewOptions.status !== undefined)
+      applications.review(id, { status: reviewOptions.status });
   };
 
-  useEffect(() => {
-    const id = selected_application?.id;
-    if (!id) return;
-    set_application(employer_applications.filter((a) => a.id === id)[0]);
-  }, [employer_applications]);
+  redirectIfNotLoggedIn();
 
-  const get_user_resume_url = useCallback(
-    async () =>
-      UserService.getUserResumeURL(selected_application?.user?.id ?? ""),
-    [selected_application]
-  );
+  const handleApplicationClick = (application: EmployerApplication) => {
+    openApplicantModal();
+    setSelectedApplication(application);
+  };
 
-  const { url: resumeURL, sync: syncResumeURL } = useFile({
-    fetcher: get_user_resume_url,
-    route: selected_resume,
-  });
+  const handleNotesClick = (application: EmployerApplication) => {
+    openReviewModal();
+    setSelectedApplication(application);
+  };
+
+  const handleScheduleClick = (application: EmployerApplication) => {
+    setSelectedApplication(application);
+    window?.open(application.user?.calendar_link ?? "", "_blank");
+  };
+
+  const handleStatusChange = (
+    application: EmployerApplication,
+    status: number
+  ) => {
+    applications.review(application.id ?? "", { status });
+  };
+
+  if (applications.loading) {
+    return (
+      <div className="w-full flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <ContentLayout>
-      {!loading ? (
-        <>
-          {/* Main Content */}
-          <div className="flex-1 flex flex-col">
-            {/* Enhanced Dashboard */}
-            <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
-              {!profileLoading && !profile?.is_verified ? (
-                <ShowUnverifiedBanner />
-              ) : (
-                <>
-                  {/* Enhanced Table */}
-                  <div className="bg-white rounded-sm shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-1">
-                    {/* Table Header with Filters */}
-                    <div className="bg-gray-50 px-6 py-4 border-b border-gray-100">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm text-gray-500">
-                            Showing {employer_applications.length} of{" "}
-                            {employer_applications.length} applications
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+      <div className="flex-1 flex flex-col w-full">
+        <div className="p-6 flex flex-col h-0 flex-1 space-y-6">
+          {!profile.loading && !profile.data?.is_verified ? (
+            <ShowUnverifiedBanner />
+          ) : (
+            <ApplicationsTable
+              applications={applications.employer_applications}
+              openChatModal={openChatModal}
+              updateConversationId={updateConversationId}
+              onApplicationClick={handleApplicationClick}
+              onNotesClick={handleNotesClick}
+              onScheduleClick={handleScheduleClick}
+              onStatusChange={handleStatusChange}
+              setSelectedApplication={setSelectedApplication}
+            />
+          )}
+        </div>
+      </div>
 
-                    {/* Table Content */}
-                    <div className="flex-1 overflow-auto">
-                      <table className="relative w-full">
-                        <tbody className="absolute w-[100%]">
-                          {employer_applications
-                            .toSorted(
-                              (a, b) =>
-                                new Date(b.applied_at ?? "").getTime() -
-                                new Date(a.applied_at ?? "").getTime()
-                            )
-                            .map((application, index) => (
-                              <tr
-                                key={application.id}
-                                className={`w-full flex flex-row items-center justify-between border-b border-gray-50 hover:bg-gray-100 hover:cursor-pointer transition-colors`}
-                                onClick={() => {
-                                  set_application(application);
-                                  openApplicantModal();
-                                }}
-                              >
-                                <td className="px-4 py-2">
-                                  <div className="flex items-center gap-3">
-                                    {application.user?.id && (
-                                      <UserPfp
-                                        user_id={application.user?.id}
-                                      ></UserPfp>
-                                    )}
-                                    <div>
-                                      <p className="font-medium text-gray-900">
-                                        {getFullName(application.user)}{" "}
-                                        <span className="opacity-70">
-                                          —{" "}
-                                          {to_university_name(
-                                            application.user?.university
-                                          )}{" "}
-                                          •{" "}
-                                          {to_level_name(
-                                            application.user?.year_level
-                                          )}
-                                        </span>
-                                      </p>
-                                      <p className="text-sm text-gray-500">
-                                        <Badge strength="medium">
-                                          {application.job?.title}
-                                        </Badge>
-                                      </p>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 text-center">
-                                  <div className="flex flex-row items-center justify-end space-x-2">
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        set_application(application);
-                                        openReviewModal();
-                                      }}
-                                    >
-                                      Notes
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        set_application(application);
-                                        window
-                                          ?.open(
-                                            application.user?.calendar_link ??
-                                              "",
-                                            "_blank"
-                                          )
-                                          ?.focus();
-                                      }}
-                                    >
-                                      Schedule
-                                    </Button>
-                                    <GroupableRadioDropdown
-                                      name="status"
-                                      className="w-36"
-                                      disabled={
-                                        to_app_status_name(
-                                          application.status
-                                        ) === "Withdrawn"
-                                      }
-                                      options={app_statuses}
-                                      defaultValue={application.status}
-                                      onChange={async (status) => {
-                                        if (!application?.id) {
-                                          console.error(
-                                            "Not an application you can edit."
-                                          );
-                                          return;
-                                        }
+      <ApplicantModal>
+        <ApplicantModalContent
+          is_employer={true}
+          clickable={true}
+          pfp_fetcher={async () =>
+            UserService.getUserPfpURL(selectedApplication?.user?.id ?? "")
+          }
+          pfp_route={`/users/${selectedApplication?.user_id}/pic`}
+          applicant={selectedApplication?.user}
+          open_calendar={async () => {
+            closeApplicantModal();
+            window
+              ?.open(selectedApplication?.user?.calendar_link ?? "", "_blank")
+              ?.focus();
+          }}
+          open_resume={async () => {
+            closeApplicantModal();
+            await syncResumeURL();
+            openResumeModal();
+          }}
+          job={selectedApplication?.job}
+        />
+      </ApplicantModal>
 
-                                        const {
-                                          // @ts-ignore
-                                          application: updated_app,
-                                          success,
-                                        } = await review_app(application.id, {
-                                          status,
-                                        });
-                                      }}
-                                    ></GroupableRadioDropdown>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </>
-              )}
+      <ReviewModal>
+        {selectedApplication && (
+          <ReviewModalContent
+            application={selectedApplication}
+            reviewApp={async (id, reviewOptions) => {
+              await reviewApp(id, reviewOptions);
+              // ! lol remove this later on
+              selectedApplication.notes = reviewOptions.notes;
+            }}
+            onClose={closeReviewModal}
+          />
+        )}
+      </ReviewModal>
+
+      <ResumeModal>
+        {selectedApplication?.user?.resume ? (
+          <div className="h-full flex flex-col">
+            <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
+              {getFullName(selectedApplication?.user)} - Resume
+            </h1>
+            <PDFPreview url={resumeURL} />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-96 px-8">
+            <div className="text-center">
+              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                No Resume Available
+              </h1>
+              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                This applicant has not uploaded a resume yet.
+              </div>
             </div>
           </div>
+        )}
+      </ResumeModal>
 
-          <ApplicantModal>
-            <ApplicantModalContent
-              is_employer={true}
-              clickable={true}
-              pfp_fetcher={async () =>
-                UserService.getUserPfpURL(selected_application?.user?.id ?? "")
-              }
-              pfp_route={`/users/${selected_application?.user?.id}/pic`}
-              applicant={selected_application?.user}
-              open_calendar={async () => {
-                closeApplicantModal();
-                window
-                  ?.open(
-                    selected_application?.user?.calendar_link ?? "",
-                    "_blank"
-                  )
-                  ?.focus();
+      <ChatModal>
+        <div className="relative p-6 pt-6 pb-20 h-full w-full">
+          <div className="flex flex-col h-[100%] w-full gap-6">
+            <div className="text-4xl font-bold tracking-tight">
+              {getFullName(selectedApplication?.user)}
+            </div>
+            <div className="flex flex-col justify-end flex-1 border border-gray-300 rounded-[0.33em] h-full gap-1 p-2">
+              {conversation.messages?.map((message) => {
+                return (
+                  <Message
+                    message={message.message}
+                    self={message.sender_id === profile.data?.id}
+                  />
+                );
+              })}
+            </div>
+            <Textarea
+              ref={messageInputRef}
+              placeholder="Send a message here..."
+              className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  if (!selectedApplication?.user_id) return;
+                  if (messageInputRef.current?.value) {
+                    handleMessage(
+                      selectedApplication.user_id,
+                      messageInputRef.current.value
+                    );
+                    messageInputRef.current.value = "";
+                  }
+                }
               }}
-              open_resume={async () => {
-                closeApplicantModal();
-                await syncResumeURL();
-                openResumeModal();
-              }}
-              job={selected_application?.job}
+              maxLength={1000}
             />
-          </ApplicantModal>
-
-          <ReviewModal>
-            {selected_application && (
-              <ReviewModalContent
-                application={selected_application}
-                review_app={review_app}
-                close={closeReviewModal}
-              />
-            )}
-          </ReviewModal>
-
-          <ResumeModal>
-            {selected_application?.user?.resume ? (
-              <div className="h-full flex flex-col">
-                <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
-                  {getFullName(selected_application?.user)} - Resume
-                </h1>
-                <PDFPreview url={resumeURL} />
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-96 px-8">
-                <div className="text-center">
-                  <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
-                    No Resume Available
-                  </h1>
-                  <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
-                    This applicant has not uploaded a resume yet.
-                  </div>
-                </div>
-              </div>
-            )}
-          </ResumeModal>
-        </>
-      ) : (
-        <div className="w-full h-[100%] flex flex-col items-center justify-center">
-          <div className="w-max-prose text-center h-8">Loading...</div>
+            <Button
+              size="md"
+              disabled={sending}
+              onClick={() => {
+                if (!selectedApplication?.user_id) return;
+                if (messageInputRef.current?.value) {
+                  handleMessage(
+                    selectedApplication?.user_id,
+                    messageInputRef.current?.value
+                  );
+                  messageInputRef.current.value = "";
+                }
+              }}
+            >
+              {sending ? "Sending..." : "Send Message"}
+              <SendHorizonal className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
-      )}
+      </ChatModal>
     </ContentLayout>
   );
 }
 
-const ReviewModalContent = ({
-  application,
-  review_app,
-  close,
-}: {
-  application: EmployerApplication;
-  review_app: (
-    id: string,
-    review_options: { review?: string; notes?: string; status?: number }
-  ) => void;
-  close: () => void;
-}) => {
-  const [review, set_review] = useState("");
-  const [saving, set_saving] = useState(false);
-  const handle_save = async () => {
-    if (!application.id) return;
-    set_saving(true);
-    await review_app(application.id, {
-      review,
-      notes: application.notes ?? "",
-      status: application.status,
-    });
-    set_saving(false);
-    close();
-  };
-
-  useEffect(() => {
-    set_review(application.review ?? "");
-  }, [application]);
-
-  return (
-    <>
-      <div className="flex flex-col items-center justify-center">
-        <h1 className="font-bold font-heading text-4xl px-8 pb-4">
-          {getFullName(application.user)} - Private Notes
-        </h1>
-      </div>
-      <div className="flex flex-col items-center justify-center">
-        <MDXEditor
-          className="min-h-[300px] px-8 w-full rounded-lg overflow-y-auto"
-          markdown={application.review ?? ""}
-          onChange={(value) => set_review(value)}
-        />
-      </div>
-      <div className="flex flex-row items-center justify-center w-full px-5 py-3 gap-2">
-        <Button disabled={saving} onClick={handle_save} className="w-1/4">
-          {saving ? "Saving..." : "Save"}
-        </Button>
-        <Button
-          variant="outline"
-          disabled={saving}
-          className=" w-1/4"
-          onClick={close}
-        >
-          Cancel
-        </Button>
-      </div>
-    </>
-  );
-};
+export default function Dashboard() {
+  return <DashboardContent />;
+}

@@ -5,7 +5,7 @@ import DocumentsManagement from "@/components/features/hire/forms-management/doc
 import { useAuthContext } from "../authctx";
 
 const Page = () => {
-  const { redirect_if_not_logged_in } = useAuthContext();
+  const { redirectIfNotLoggedIn: redirect_if_not_logged_in } = useAuthContext();
   redirect_if_not_logged_in();
 
   return (

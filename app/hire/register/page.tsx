@@ -27,7 +27,7 @@ export default function RegisterPage() {
   const { register } = useAuthContext();
 
   return (
-    <div className="flex-1 flex justify-center px-6 py-12 pt-12">
+    <div className="flex-1 flex justify-center px-6 py-12 pt-12 overflow-y-auto">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-10">
           <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
@@ -78,8 +78,87 @@ const EmployerEditor = ({
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields
   );
+  const [moaValidationError, setMoaValidationError] = useState<string>("");
+
+  // Function to validate MOA dates
+  const validateMoaDates = () => {
+    if (additionalFields.has_moa_with_dlsu) {
+      const startDate = additionalFields.moa_start_date;
+      const endDate = additionalFields.moa_expires_at;
+
+      if (!startDate || !endDate) {
+        setMoaValidationError("Both MOA start and end dates are required.");
+        return false;
+      }
+
+      if (startDate === endDate) {
+        setMoaValidationError("MOA start and end dates cannot be the same.");
+        return false;
+      }
+
+      if (endDate < startDate) {
+        setMoaValidationError(
+          "MOA end date cannot be earlier than the start date."
+        );
+        return false;
+      }
+    }
+    setMoaValidationError("");
+    return true;
+  };
 
   const register = async () => {
+    // Validate MOA dates if MOA is enabled
+    if (additionalFields.has_moa_with_dlsu && !validateMoaDates()) {
+      alert(moaValidationError);
+      return;
+    }
+
+    // Validate required fields before submitting
+    const missingFields = [];
+
+    if (!formData.name || formData.name.trim().length < 3) {
+      missingFields.push("Company Name (Doing Business As)");
+    }
+    if (
+      !formData.legal_entity_name ||
+      formData.legal_entity_name.trim().length < 3
+    ) {
+      missingFields.push("Legal Entity Name");
+    }
+    if (!formData.website || !isValidRequiredURL(formData.website)) {
+      missingFields.push("Valid Website URL");
+    }
+    if (!formData.industry) {
+      missingFields.push("Industry");
+    }
+    if (!formData.description || formData.description.trim().length < 10) {
+      missingFields.push("Company Description (minimum 10 characters)");
+    }
+    if (
+      !additionalFields.contact_name ||
+      additionalFields.contact_name.trim().length === 0
+    ) {
+      missingFields.push("Contact Name");
+    }
+    if (!formData.phone_number || !isValidPHNumber(formData.phone_number)) {
+      missingFields.push("Valid Philippine Phone Number");
+    }
+    if (!formData.email || !isValidEmail(formData.email)) {
+      missingFields.push("Valid Contact Email");
+    }
+    if (!additionalFields.terms_accepted) {
+      missingFields.push("Terms & Conditions and Privacy Policy acceptance");
+    }
+
+    if (missingFields.length > 0) {
+      const errorMessage = `Please complete the following required fields:\n\n• ${missingFields.join(
+        "\n• "
+      )}`;
+      alert(errorMessage);
+      return;
+    }
+
     const multipartForm = MultipartFormBuilder.new();
     const newProfile = {
       ...cleanFormData(),
@@ -109,7 +188,11 @@ const EmployerEditor = ({
     const result = await registerProfile(multipartForm.build());
     // @ts-ignore
     if (!result?.success) {
-      alert("Ensure all fields are complete.");
+      const errorMsg =
+        result?.error ||
+        result?.message ||
+        "Registration failed. Please check your information and try again.";
+      alert(`Registration Error: ${errorMsg}`);
       setIsRegistering(false);
       return;
     }
@@ -124,6 +207,15 @@ const EmployerEditor = ({
     const debouncedValidation = setTimeout(() => validateFormData(), 500);
     return () => clearTimeout(debouncedValidation);
   }, [formData]);
+
+  // Validate MOA dates when they change
+  useEffect(() => {
+    validateMoaDates();
+  }, [
+    additionalFields.has_moa_with_dlsu,
+    additionalFields.moa_start_date,
+    additionalFields.moa_expires_at,
+  ]);
 
   // Data validators
   useEffect(() => {
@@ -260,11 +352,15 @@ const EmployerEditor = ({
           </div>
           <Card className="border-warning p-4">
             <p className="font-normal opacity-80 text-sm italic text-warning">
-              This person will be emailed the login details to this account upon
-              registration. Other accounts can be added later on if multiple
-              people plan to manage this employer account.
+              Login details will be sent to the contact's email address upon
+              registration. Additional users can be added later if multiple
+              people plan to be manage this employer account.
             </p>
           </Card>
+          <div className="mt-3 text-xs text-gray-500 italic">
+            Note: You can update all company information later in the Edit
+            Company Profile page.
+          </div>
         </Card>
         <Card>
           <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
@@ -303,27 +399,32 @@ const EmployerEditor = ({
                 </div>
               </div>
               {additionalFields.has_moa_with_dlsu && (
-                <div className="flex flex-row space-x-2 mt-4">
-                  <FormDatePicker
-                    label={"MOA Start Date"}
-                    date={additionalFields.moa_start_date}
-                    setter={(date) =>
-                      setAdditionalFields({
-                        ...additionalFields,
-                        moa_start_date: date ?? 0,
-                      })
-                    }
-                  />
-                  <FormDatePicker
-                    label={"MOA Expiry Date"}
-                    date={additionalFields.moa_expires_at}
-                    setter={(date) =>
-                      setAdditionalFields({
-                        ...additionalFields,
-                        moa_expires_at: date ?? 0,
-                      })
-                    }
-                  />
+                <div className="mt-4">
+                  {moaValidationError && (
+                    <ErrorLabel value={moaValidationError} />
+                  )}
+                  <div className="flex flex-row space-x-2">
+                    <FormDatePicker
+                      label={"MOA Start Date"}
+                      date={additionalFields.moa_start_date}
+                      setter={(date) =>
+                        setAdditionalFields({
+                          ...additionalFields,
+                          moa_start_date: date ?? 0,
+                        })
+                      }
+                    />
+                    <FormDatePicker
+                      label={"MOA Expiry Date"}
+                      date={additionalFields.moa_expires_at}
+                      setter={(date) =>
+                        setAdditionalFields({
+                          ...additionalFields,
+                          moa_expires_at: date ?? 0,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
               )}
             </Card>
@@ -366,6 +467,7 @@ const EmployerEditor = ({
                 </label>
               </div>
             </Card>
+
             <Button
               onClick={register}
               disabled={!additionalFields.terms_accepted || isRegistering}

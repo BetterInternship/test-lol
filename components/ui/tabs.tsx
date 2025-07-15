@@ -3,84 +3,68 @@
 import * as React from "react";
 import { Children, useState, useEffect } from "react";
 import { Button } from "./button";
-import { cn } from "@/lib/utils";
 
-export const TabGroup = ({
-  layout = "landscape",
-  children,
-}: {
-  layout?: "landscape" | "portrait";
+/**
+ * Represents a child of the TabGroup component.
+ *
+ * @component
+ */
+interface TabProps {
+  name: string;
   children: React.ReactNode;
-}) => {
+}
+export const Tab = ({ name, children }: TabProps) => {
+  return <>{children}</>;
+};
+
+/**
+ * Acts as a context for tabs.
+ *
+ * @component
+ */
+interface TabGroupProps {
+  children: React.ReactElement<TabProps>[];
+}
+export const TabGroup = ({ children }: TabGroupProps) => {
   const [active_tab, set_active_tab] = useState("");
 
+  // Set the initial active tab to be the first element
   useEffect(() => {
-    const first_child = Children.toArray(children)[0];
+    const first_child = Children.toArray(
+      children
+    )[0] as React.ReactElement<TabProps>;
     if (React.isValidElement(first_child))
-      // @ts-ignore
-      set_active_tab(first_child.props?.name);
+      set_active_tab(first_child.props?.name ?? "");
   }, []);
 
   // Create the selection
   return (
-    <div
-      className={cn(
-        "relative w-full h-full flex",
-        layout === "landscape" ? "flex-col" : "flex-row"
-      )}
-    >
-      <div
-        className={cn(
-          "relative flex items-start bg-white p-4 px-2",
-          layout === "landscape"
-            ? "flex-row w-full h-fit pb-0"
-            : "flex-col w-fit h-full space-y-1"
-        )}
-      >
+    <>
+      <div className="sticky top-0 flex flex-row items-start bg-white w-full h-fit pb-0 z-50 border-b-2 border-b-gray-900">
         {Children.map(children, (child) => {
           if (React.isValidElement(child)) {
-            // @ts-ignore
             const name = child.props?.name ?? "No name";
             return (
               <Button
                 variant="ghost"
                 aria-selected={active_tab === name}
-                className={cn(
-                  "p-6 text-left  text-gray-700 aria-selected:text-white aria-selected:bg-primary",
-                  layout === "landscape"
-                    ? "w-fit rounded-t-sm rounded-b-none"
-                    : "w-full"
-                )}
+                className="px-5 py-4 text-gray-700 aria-selected:text-white aria-selected:bg-gray-900 w-fit rounded-t-[0.33em] rounded-b-none"
                 onClick={() => set_active_tab(name)}
               >
-                <span className="text-lg">{name}</span>
+                <span className="text-xs">{name}</span>
               </Button>
             );
           }
-          return <></>;
         })}
       </div>
-
-      {/* Render just the first active child */}
       <div className="relative w-full h-full">
         {
           Children.toArray(children).filter((child) => {
-            if (React.isValidElement(child))
-              // @ts-ignore
-              return child.props?.name === active_tab;
+            const c = child as React.ReactElement<TabProps>;
+            if (React.isValidElement(c)) return c.props?.name === active_tab;
           })[0]
         }
       </div>
-    </div>
+    </>
   );
-};
-
-export const Tab = ({
-  name,
-  children,
-}: {
-  name: string;
-  children: React.ReactNode;
-}) => {
-  return <>{children}</>;
 };

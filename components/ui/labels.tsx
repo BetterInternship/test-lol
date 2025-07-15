@@ -1,13 +1,14 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 22:06:11
- * @ Modified time: 2025-07-03 06:28:14
+ * @ Modified time: 2025-07-09 13:19:49
  * @ Description:
  *
  * Commonly used label components
  * All of them must have the value prop
  */
 
+import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle, CircleX } from "lucide-react";
 import React from "react";
 
@@ -16,17 +17,20 @@ type OptionalString = string | null | undefined;
 type ValueComponentProps = {
   value?: OptionalString;
   fallback?: OptionalString;
+  className?: OptionalString;
 };
 type ValueLinkComponentProps = {
   name?: OptionalString;
   value?: OptionalString;
   fallback?: OptionalString;
+  className?: OptionalString;
 };
 type LabeledComponentProps = {
   label?: OptionalString;
   name?: OptionalString;
   value?: OptionalString;
   fallback?: OptionalString;
+  className?: OptionalString;
 };
 export type ValueComponent = React.FC<ValueComponentProps>;
 export type LabeledComponent = React.FC<LabeledComponentProps>;
@@ -65,9 +69,15 @@ export const LinkLabel: ValueComponent = ({
 export const Property: ValueComponent = ({
   value,
   fallback,
+  className = "",
 }: ValueComponentProps) => {
   return (
-    <p className="text-gray-700 text-sm overflow-hidden text-ellipsis">
+    <p
+      className={cn(
+        "text-gray-700 text-sm overflow-hidden text-ellipsis",
+        className
+      )}
+    >
       {value?.split("\n")?.map((v) => <div>{v}</div>) || (
         <span className="text-gray-400 italic">
           {fallback ?? DEFAULT_LABEL}

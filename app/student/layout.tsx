@@ -8,10 +8,14 @@ import { Footer } from "@/components/shared/footer";
 import { MoaContextProvider } from "@/lib/db/use-moa";
 import { PostHogProvider } from "../posthog-provider";
 import TanstackProvider from "../tanstack-provider";
+import AllowLanding from "./allowLanding";
 
 export const metadata: Metadata = {
   title: "BetterInternship",
   description: "Better Internships Start Here.",
+  icons: {
+    icon: "/BetterInternshipLogo.ico",
+  },
 };
 
 /**
@@ -40,6 +44,7 @@ export const RootLayout = ({
  *
  * @component
  */
+
 const HTMLContent = ({
   children,
 }: Readonly<{
@@ -50,14 +55,14 @@ const HTMLContent = ({
       <AppContextProvider>
         <AuthContextProvider>
           <html lang="en">
-            <body>
-              <div className="h-screen bg-gray-50 flex flex-col">
-                <Header />
-                <div className="flex-grow overflow-auto flex flex-col">
-                  {children}
+            <body className="overflow-x-hidden m-0 p-0">
+              <AllowLanding>
+                <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                  <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
+                    {children}
+                  </div>
                 </div>
-                <Footer />
-              </div>
+              </AllowLanding>
             </body>
           </html>
         </AuthContextProvider>

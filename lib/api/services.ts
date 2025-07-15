@@ -5,6 +5,7 @@ import {
   SavedJob,
   EmployerApplication,
   Employer,
+  Conversation,
 } from "@/lib/db/db.types";
 import { APIClient, APIRoute } from "./api-client";
 import { FetchResponse } from "@/lib/api/use-fetch";
@@ -246,6 +247,45 @@ export const JobService = {
 
   async delete_job(job_id: string) {
     return APIClient.delete<FetchResponse>(APIRoute("jobs").r(job_id).build());
+  },
+};
+
+interface ConversationResponse extends FetchResponse {
+  conversation?: Conversation;
+}
+
+interface ConversationsResponse extends FetchResponse {
+  conversations?: Conversation[];
+}
+
+export const EmployerConversationService = {
+  async sendToUser(conversationId: string, message: string) {
+    return APIClient.post<any>(
+      APIRoute("conversations").r("send-to-user").build(),
+      {
+        conversation_id: conversationId,
+        message,
+      }
+    );
+  },
+
+  async createConversation(userId: string) {
+    return APIClient.post<ConversationResponse>(
+      APIRoute("conversations").r("create").build(),
+      { user_id: userId }
+    );
+  },
+};
+
+export const UserConversationService = {
+  async sendToEmployer(conversationId: string, message: string) {
+    return APIClient.post<any>(
+      APIRoute("conversations").r("send-to-employer").build(),
+      {
+        conversation_id: conversationId,
+        message,
+      }
+    );
   },
 };
 

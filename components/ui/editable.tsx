@@ -1,7 +1,7 @@
 /**
  * @ Author: BetterInternship
  * @ Create Time: 2025-06-17 21:37:03
- * @ Modified time: 2025-07-03 03:02:03
+ * @ Modified time: 2025-07-09 18:33:19
  * @ Description:
  *
  * Editable utils for forms and stuff
@@ -30,6 +30,7 @@ export const EditableInput = ({
   placeholder,
   maxLength,
   children,
+  className,
 }: {
   is_editing: boolean;
   value: Value;
@@ -37,6 +38,7 @@ export const EditableInput = ({
   placeholder?: string;
   maxLength?: number;
   children?: React.ReactElement<{ value?: Value }>;
+  className?: string;
 }) => {
   return is_editing ? (
     <Input
@@ -44,8 +46,10 @@ export const EditableInput = ({
       onChange={(e) => setter(e.target.value)}
       placeholder={placeholder}
       maxLength={maxLength}
-      className="border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto"
-      style={{ position: "relative", zIndex: 10 }}
+      className={cn(
+        " border-gray-200 ring-0 focus:ring-transparent text-sm relative z-10 pointer-events-auto",
+        className
+      )}
     />
   ) : (
     Children.map(children, (child) => {

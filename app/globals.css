@@ -409,7 +409,7 @@
 /* Enhanced component specific styles */
 div[data-radix-select-viewport=""],
 .mdxeditor-select-content,
-.mdxeditor-popup-container {
+.mdxeditor-popup-container>* {
   z-index: 50 !important;
 }
 
@@ -539,6 +539,12 @@ button[role="checkbox"]:checked {
   }
 }
 
+@keyframes sidebounce {
+  0%, 100% { transform: translateX(0);       }
+  50%      { transform: translateX(-25%);    }  /* move left */
+  75%      { transform: translateX(25%);     }  /* move right */
+}
+
 /* Mobile-specific utilities */
 @layer utilities {
   .pb-safe {
@@ -561,3 +567,5 @@ button[role="checkbox"]:checked {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+
