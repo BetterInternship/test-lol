@@ -28,6 +28,8 @@ export default function ConversationsPage() {
   redirectIfNotLoggedIn();
 
   const handleMessage = async (employerId: string, message: string) => {
+    if (message.trim() === "") return;
+
     setSending(true);
     const employerConversation = conversations.data.find(
       (c) => c.employer_id === employerId
@@ -50,20 +52,24 @@ export default function ConversationsPage() {
           {/* Side Panel */}
           <div className="min-w-[25%] border-r border-r-gray-300 h-full max-h-full overflow-y-auto">
             <div className="flex flex-col gap-0">
-              {conversations.data?.map(
-                (conversation) =>
-                  console.log(conversation.latest_message.message) || (
-                    <ConversationCard
-                      latestYou={
-                        conversation.latest_message.sender_id ===
-                        conversation.user_id
-                      }
-                      latestMessage={conversation.latest_message.message}
-                      conversation={conversation}
-                      setConversationId={setConversationId}
-                    />
-                  )
-              )}
+              {conversations.data
+                ?.toSorted(
+                  (a, b) =>
+                    (b.latest_message?.timestamp ?? 0) -
+                    (a.latest_message?.timestamp ?? 0)
+                )
+                .map((conversation) => (
+                  <ConversationCard
+                    key={conversation.id}
+                    latestYou={
+                      conversation.latest_message.sender_id ===
+                      conversation.user_id
+                    }
+                    latestMessage={conversation.latest_message.message}
+                    conversation={conversation}
+                    setConversationId={setConversationId}
+                  />
+                ))}
             </div>
           </div>
           {/* Conversation Pane */}
