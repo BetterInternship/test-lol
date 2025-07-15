@@ -43,7 +43,7 @@ function SideNav({ items }: { items: NavItem[] }) {
             variant="ghost"
             scheme="default"
             onClick={() =>
-              false && label === "Forms Automation" && alert("Coming Soon!")
+              label === "Forms Automation" && alert("Coming Soon!")
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",

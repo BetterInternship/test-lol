@@ -12,6 +12,9 @@ import TanstackProvider from "../tanstack-provider";
 export const metadata: Metadata = {
   title: "BetterInternship",
   description: "Better Internships Start Here.",
+  icons: {
+    icon: "/BetterInternshipLogo.ico",
+  },
 };
 
 /**

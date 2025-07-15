@@ -15,6 +15,9 @@ import Head from "next/head";
 export const metadata: Metadata = {
   title: "Recruiter Dashboard - BetterInternship",
   description: "Manage applications and candidates",
+  icons: {
+    icon: "/BetterInternshipLogo.ico",
+  },
 };
 
 /**
