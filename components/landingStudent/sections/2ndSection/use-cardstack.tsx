@@ -96,9 +96,11 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Associate Full Stack Engineer
+                        ManuLife
                       </h4>
-                      <p className="text-slate-200 mb-4 text-lg">ManuLife</p>
+                      <p className="text-slate-200 mb-4 text-lg">
+                        Associate Full Stack Engineer
+                      </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-zinc-300">
                           <span className="mr-3">⏰</span>
@@ -130,10 +132,10 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Marketing Assistant
+                        Sun Life Philippines
                       </h4>
                       <p className="text-zinc-200 mb-4 text-lg">
-                        Sun Life Philippines
+                        Marketing Assistant
                       </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-neutral-300">
@@ -168,9 +170,11 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Software Developer Intern
+                        Oracle
                       </h4>
-                      <p className="text-neutral-200 mb-4 text-lg">Oracle</p>
+                      <p className="text-neutral-200 mb-4 text-lg">
+                        Software Developer Intern
+                      </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-neutral-300">
                           <span className="mr-3">💰</span>
@@ -204,10 +208,10 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Internship - Marketing
+                        Alaska Milk Corporation
                       </h4>
                       <p className="text-stone-200 mb-4 text-lg">
-                        Alaska Milk Corporation
+                        Internship - Marketing
                       </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-stone-300">
@@ -242,9 +246,11 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Marketing Internship
+                        Jollibee
                       </h4>
-                      <p className="text-gray-200 mb-4 text-lg">Jollibee</p>
+                      <p className="text-gray-200 mb-4 text-lg">
+                        Marketing Internship
+                      </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-gray-300">
                           <span className="mr-3">💰</span>
@@ -278,11 +284,9 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        HR Intern
-                      </h4>
-                      <p className="text-slate-200 mb-4 text-lg">
                         Asian Institute of Management
-                      </p>
+                      </h4>
+                      <p className="text-slate-200 mb-4 text-lg">HR Intern</p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-slate-300">
                           <span className="mr-3">📍</span>
@@ -312,9 +316,11 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Software Engineer Intern
+                        Giftaway
                       </h4>
-                      <p className="text-slate-200 mb-4 text-lg">Giftaway</p>
+                      <p className="text-slate-200 mb-4 text-lg">
+                        Software Engineer Intern
+                      </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-gray-300">
                           <span className="mr-3">💰</span>
@@ -348,9 +354,11 @@ export function SoftwareSection() {
                         </span>
                       </div>
                       <h4 className="text-2xl font-bold mb-3 text-white">
-                        Sales interns
+                        Megaworld
                       </h4>
-                      <p className="text-slate-200 mb-4 text-lg">Megaworld</p>
+                      <p className="text-slate-200 mb-4 text-lg">
+                        Sales interns
+                      </p>
                       <div className="space-y-3 mb-6 flex-1">
                         <div className="flex items-center text-gray-300">
                           <span className="mr-3">💰</span>
