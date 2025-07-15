@@ -38,7 +38,7 @@ function SideNav({ items }: { items: NavItem[] }) {
   return (
     <nav className="flex flex-col">
       {items.map(({ href, label, icon }) => (
-        <Link key={label} href={href}>
+        <Link key={label} href={label !== "Forms Automation" ? href : "#"}>
           <Button
             variant="ghost"
             scheme="default"
