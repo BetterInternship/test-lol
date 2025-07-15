@@ -2,17 +2,18 @@
 import { useConversation, useConversations } from "@/hooks/use-conversation";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Card } from "@/components/ui/our-card";
-import { Conversation } from "../../../lib/db/db.types";
+import { Conversation, Employer } from "../../../lib/db/db.types";
 import { EmployerPfp } from "@/components/shared/pfp";
 import { ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
 import { UserConversationService } from "@/lib/api/services";
 import { useProfile } from "@/lib/api/student.api";
+import { APIClient, APIRoute } from "@/lib/api/api-client";
 
 export default function ConversationsPage() {
   const { isAuthenticated, redirectIfNotLoggedIn } = useAuthContext();
@@ -49,12 +50,20 @@ export default function ConversationsPage() {
           {/* Side Panel */}
           <div className="min-w-[25%] border-r border-r-gray-300 h-full max-h-full overflow-y-auto">
             <div className="flex flex-col gap-0">
-              {conversations.data?.map((conversation) => (
-                <ConversationCard
-                  conversation={conversation}
-                  setConversationId={setConversationId}
-                />
-              ))}
+              {conversations.data?.map(
+                (conversation) =>
+                  console.log(conversation.latest_message.message) || (
+                    <ConversationCard
+                      latestYou={
+                        conversation.latest_message.sender_id ===
+                        conversation.user_id
+                      }
+                      latestMessage={conversation.latest_message.message}
+                      conversation={conversation}
+                      setConversationId={setConversationId}
+                    />
+                  )
+              )}
             </div>
           </div>
           {/* Conversation Pane */}
@@ -69,32 +78,45 @@ export default function ConversationsPage() {
                 );
               })}
             </div>
-            <div className="flex flex-col p-2 gap-3">
-              <Textarea
-                placeholder="Send a message here..."
-                className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleMessage(conversation.employerId, message);
+            {conversationId ? (
+              <div className="flex flex-col p-2 gap-3">
+                <Textarea
+                  placeholder="Send a message here..."
+                  className="w-full h-20 p-3 border-gray-200 rounded-[0.33em] focus:ring-0 focus:ring-transparent resize-none text-sm overflow-y-auto"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleMessage(conversation.employerId, message);
+                    }
+                  }}
+                  maxLength={1000}
+                />
+                <Button
+                  size="md"
+                  disabled={sending || !message.trim()}
+                  onClick={() =>
+                    conversation.employerId &&
+                    handleMessage(conversation.employerId, message)
                   }
-                }}
-                maxLength={1000}
-              />
-              <Button
-                size="md"
-                disabled={sending || !message.trim()}
-                onClick={() =>
-                  conversation.employerId &&
-                  handleMessage(conversation.employerId, message)
-                }
-              >
-                {sending ? "Sending..." : "Send Message"}
-                <SendHorizonal className="w-5 h-5" />
-              </Button>
-            </div>
+                >
+                  {sending ? "Sending..." : "Send Message"}
+                  <SendHorizonal className="w-5 h-5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="h-[100%] flex flex-col items-center pt-[25%]">
+                <Card className="flex flex-col items-start mx-auto max-w-prose">
+                  <div className="font-bold mb-1">
+                    Welcome to your conversations!
+                  </div>
+                  <div className="text-xs opacity-70">
+                    Click on a conversation to start chatting.
+                  </div>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       ) : (
@@ -137,11 +159,26 @@ export default function ConversationsPage() {
 
 export const ConversationCard = ({
   conversation,
+  latestYou,
+  latestMessage,
   setConversationId,
 }: {
   conversation: Conversation;
+  latestYou: boolean;
+  latestMessage: string;
   setConversationId: (id: string) => void;
 }) => {
+  const [employerName, setEmployerName] = useState("");
+
+  useEffect(() => {
+    // ! refactor lol
+    APIClient.get<any>(
+      APIRoute("employer").r(conversation.employer_id).build()
+    ).then(({ employer }: { employer: Employer }) => {
+      setEmployerName(employer.name ?? "");
+    });
+  }, []);
+
   return (
     <Card
       className="rounded-none border-l-0 border-r-0 border-b-0 last:border-b py-2 px-8 hover:bg-gray-100 hover:cursor-pointer"
@@ -151,8 +188,10 @@ export const ConversationCard = ({
         <div className="flex flex-row items-center gap-4">
           <EmployerPfp employer_id={conversation.employer_id} />
           <div className="flex flex-col">
-            <span className="font-medium">{conversation.employer?.name}</span>
-            <span className="text-xs opacity-60">{"Subtitle here"}</span>
+            <span className="font-medium">{employerName}</span>
+            <span className="text-xs opacity-60 line-clamp-1 max-w-prose text-ellipsis  ">
+              {(latestYou ? "You: " : "") + latestMessage}
+            </span>
           </div>
         </div>
         <ChevronRight className="w-5 h-5 opacity-50" />
