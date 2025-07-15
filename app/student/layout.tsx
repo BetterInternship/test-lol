@@ -50,7 +50,6 @@ const HTMLContent = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
-
   return (
     <TanstackProvider>
       <AppContextProvider>
@@ -58,11 +57,11 @@ const HTMLContent = ({
           <html lang="en">
             <body>
               <AllowLanding>
-              <div className="h-screen bg-gray-50 flex flex-col">
-                <div className="flex-grow overflow-auto flex flex-col">
-                  {children}
+                <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+                  <div className="flex-grow max-h-[100%] overflow-hidden flex flex-col">
+                    {children}
+                  </div>
                 </div>
-              </div>
               </AllowLanding>
             </body>
           </html>

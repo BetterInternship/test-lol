@@ -7,7 +7,7 @@ import { EmployerPfp } from "@/components/shared/pfp";
 import { ChevronRight, SendHorizonal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppContext } from "@/lib/ctx-app";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Message } from "@/components/ui/messages";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export default function ConversationsPage() {
   const conversation = useConversation("user", conversationId);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+  const chatAnchorRef = useRef<HTMLDivElement>(null);
   const { isMobile } = useAppContext();
 
   redirectIfNotLoggedIn();
@@ -43,6 +44,7 @@ export default function ConversationsPage() {
     );
     setMessage("");
     setSending(false);
+    chatAnchorRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -73,8 +75,8 @@ export default function ConversationsPage() {
             </div>
           </div>
           {/* Conversation Pane */}
-          <div className="flex flex-col justify-end flex-1 max-w-[75%]">
-            <div className="flex flex-col gap-1 p-2">
+          <div className="flex flex-col justify-end flex-1 max-w-[75%] max-h-[100%]">
+            <div className="flex flex-col gap-1 p-2 max-h-[100%] overflow-auto">
               {conversation.messages.map((message) => {
                 return (
                   <Message
@@ -83,6 +85,7 @@ export default function ConversationsPage() {
                   />
                 );
               })}
+              <div ref={chatAnchorRef} />
             </div>
             {conversationId ? (
               <div className="flex flex-col p-2 gap-3">
