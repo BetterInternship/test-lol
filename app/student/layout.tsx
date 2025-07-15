@@ -58,7 +58,7 @@ const HTMLContent = ({
             <body>
               <AllowLanding>
                 <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-                  <div className="flex-grow max-h-[100%] overflow-hidden flex flex-col">
+                  <div className="flex-grow max-h-[100%] overflow-auto flex flex-col">
                     {children}
                   </div>
                 </div>
