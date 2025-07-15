@@ -18,7 +18,7 @@ export function HeroSection() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
-    }, 1500);
+    }, 3000);
     return () => clearInterval(interval);
   }, []); // Only run once on mount
   return (

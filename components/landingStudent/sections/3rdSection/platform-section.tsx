@@ -7,7 +7,7 @@ const features = [
     step: "Step 1",
     title: "Find listings for school credit.",
     content:
-      "Hard work’s done — 1,600 companies contacted, their internships and MOA info are yours to freely explore.",
+      "We called 1,600 companies — now their internships and MOA details are yours to explore.",
     image: "/landingPage/2ndSec/popimage3.png",
   },
   {
@@ -32,7 +32,7 @@ export function PlatformSection() {
       <FeatureSteps
         features={features}
         title="The complete internship platform for students."
-        autoPlayInterval={4000}
+        autoPlayInterval={6660}
         imageHeight="h-[500px]"
       />
     </div>
