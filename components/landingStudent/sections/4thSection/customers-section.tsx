@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
 import { useInView } from "@/hooks/landingStudent/use-in-view";
 import { animations, motionVariants } from "@/lib/landingStudentLib/animations";
 

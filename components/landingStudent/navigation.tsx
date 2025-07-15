@@ -13,11 +13,7 @@ export function Navigation() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <Button className="bg-white hover:bg-gray-200 text-gray-800">
-              Start for Free
-            </Button>
-          </div>
+          <div className="flex items-center space-x-4"></div>
         </div>
       </div>
     </nav>
