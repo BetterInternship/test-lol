@@ -141,7 +141,7 @@ export default function JobPage() {
     );
   }
 
-  if (!job.data) {
+  if (!job.data && !job.isPending) {
     return (
       <div className="h-screen bg-white flex justify-center py-6">
         <div className="flex flex-col justify-start items-start gap-4">
