@@ -5,7 +5,7 @@ import { useAppContext } from "@/lib/ctx-app";
 export function Feature() {
   const { isMobile } = useAppContext();
   return (
-    <div className="w-full py-20 border-t border-gray-900 overflow-hidden h-[100vh] bg-black text-white dark:bg-black dark:text-white">
+    <div className="w-full py-20 border-t border-gray-900 overflow-hidden overflow-x-hidden h-[100vh] bg-black text-white dark:bg-black dark:text-white">
       <div className="flex flex-col lg:flex-row lg:items-center gap-20">
         <div className="flex gap-4 pl-0 lg:pl-20 flex-col flex-1">
           <div className="flex gap-2 mx-8 flex-col z-30">
