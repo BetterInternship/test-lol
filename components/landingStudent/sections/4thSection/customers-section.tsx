@@ -10,7 +10,7 @@ export function CustomersSection() {
   return (
     <section
       ref={sectionRef}
-      className="py-20 bg-black border-t border-gray-900 text-white dark:bg-black dark:text-white"
+      className="py-20 bg-black border-t border-gray-900 overflow-hidden text-white dark:bg-black dark:text-white"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Direct employer connections */}
@@ -30,27 +30,33 @@ export function CustomersSection() {
               delay: 0.2,
             }}
           >
-            <div className="bg-white rounded-2xl p-8 h-64 flex items-center justify-center">
-              <div className="text-center text-9xl">💬</div>
+            <div className="hidden lg:flex bg-white rounded-2xl p-8 h-64 items-center justify-center">
+              <div className="text-center text-7xl">💬</div>
             </div>
           </motion.div>
         </div>
 
         {/* Multi-industry reach */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start mb-20">
-          <div className={animations.fadeInLeft(isVisible, 400)}>
-            <div className="bg-white rounded-2xl p-8 h-64 flex items-center justify-center">
-              <div className="text-center text-9xl">⚡</div>
+          <motion.div {...motionVariants.fadeInLeft}>
+              <div className="hidden lg:flex bg-white rounded-2xl p-8 h-64 items-center justify-center">
+              <div className="text-center text-7xl">⚡</div>
             </div>
-          </div>
-          <div className={animations.fadeInRight(isVisible, 600)}>
-            <h3 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
+          </motion.div>
+          <motion.div
+            {...motionVariants.fadeInRight}
+            transition={{
+              ...motionVariants.fadeInRight.transition,
+              delay: 0.2,
+            }}
+          >
+           <h3 className="text-3xl md:text-4xl font-bold text-white dark:text-white mb-4">
               We make applications a breeze
             </h3>
-            <p className="text-gray-300 dark:text-gray-300 max-w-3xl text-lg leading-relaxed mb-6">
+            <p className="text-gray-300 dark:text-gray-300 text-lg">
               One click, not hours. Welcome to the AI era.
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
