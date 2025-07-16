@@ -32,7 +32,7 @@ export function PlatformSection() {
       <FeatureSteps
         features={features}
         title="The complete internship platform for students."
-        autoPlayInterval={6660}
+        autoPlayInterval={10000}
         imageHeight="h-[500px]"
       />
     </div>

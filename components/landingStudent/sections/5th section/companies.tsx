@@ -17,7 +17,7 @@ interface LogoColumnProps {
 }
 
 function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
-  const CYCLE_DURATION = 2000;
+  const CYCLE_DURATION = 5000;
   const columnDelay = columnIndex * 200;
   const adjustedTime = (currentTime + columnDelay) % (CYCLE_DURATION * logos.length);
   const currentIndex = Math.floor(adjustedTime / CYCLE_DURATION);
