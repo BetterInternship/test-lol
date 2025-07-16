@@ -72,7 +72,7 @@ interface LogoCarouselProps {
   logos: Logo[];
 }
 
-export function LogoCarousel({ columns = 5, logos }: LogoCarouselProps) {
+export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
   const [logoColumns, setLogoColumns] = useState<Logo[][]>([]);
   const [time, setTime] = useState(0);
 
