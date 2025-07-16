@@ -243,6 +243,7 @@ export default function SearchPage() {
       })
       .then(() => {
         if (applications.createError) alert(applications.createError.message);
+        else openSuccessModal();
       });
   };
 

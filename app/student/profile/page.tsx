@@ -400,11 +400,6 @@ const ProfileEditor = forwardRef<
         !isValidRequiredUserName(name) && `First name is not valid.`
     );
     addValidator(
-      "middle_name",
-      (name: string) =>
-        !isValidOptionalUserName(name) && `Middle name is not valid.`
-    );
-    addValidator(
       "last_name",
       (name: string) =>
         !isValidRequiredUserName(name) && `Last name is not valid.`
