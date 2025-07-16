@@ -6,6 +6,19 @@ import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
+
+//from stack overflo
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+  return isMobile;
+}
+
 export function HeroSection() {
   const videos = [
     "/landingPage/smile.mov",
@@ -15,24 +28,36 @@ export function HeroSection() {
     "/landingPage/nod.mov",
   ];
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const isMobile = useIsMobile();
+
   useEffect(() => {
+    if (isMobile) return;
     const interval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []); // Only run once on mount
+  }, [isMobile, videos.length]);
+
   return (
     <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
-      {/* Background video switches to next every 3 seconds, no crossfade */}
-      <div className="absolute inset-0 w-full h-full">
-        <video
-          key={currentVideoIndex}
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          src={videos[currentVideoIndex]}
-        />
+      {/* Show image on mobile, video on tablet/desktop */}
+      <div className="absolute inset-0 w-full h-full overflow-y-hidden">
+        {isMobile ? (
+          <img
+            src="/landingPage/mobileBG.jpg" // Use a static image for mobile
+            alt="Landing"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <video
+            key={currentVideoIndex}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            src={videos[currentVideoIndex]}
+          />
+        )}
       </div>
 
       <div className="absolute inset-0 bg-black/60" />
