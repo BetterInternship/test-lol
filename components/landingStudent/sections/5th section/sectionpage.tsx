@@ -39,7 +39,6 @@ function LogoCarouselBasic() {
             </h2>
           </div>
           <LogoCarousel logos={demoLogos} />
-          <div></div>
         </CardContent>
       </Card>
     </div>
