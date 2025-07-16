@@ -427,7 +427,7 @@ export const EmployerJobDetails = ({
               setter={fieldSetter("location")}
               maxLength={100}
             >
-              <Property className="line-clamp-2 text-ellipsis" />
+              <Property className="line-clamp-2 break-words max-w-[100%]" />
             </EditableInput>
           </div>
 
