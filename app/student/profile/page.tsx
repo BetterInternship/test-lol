@@ -157,7 +157,10 @@ export default function ProfilePage() {
                   <div className="flex gap-2 w-full sm:w-auto">
                     <Button
                       variant="outline"
-                      onClick={() => setIsEditing(false)}
+                      onClick={() => {
+                        setIsEditing(false);
+                        setSaveError(null);
+                      }}
                       disabled={saving}
                     >
                       Cancel
@@ -186,7 +189,7 @@ export default function ProfilePage() {
                   </Button>
                 )}
               </div>
-              {saveError && (
+              {isEditing && saveError && (
                 <p className="text-red-600 text-sm mt-4 mb-2 text-left">
                   {saveError}
                 </p>
