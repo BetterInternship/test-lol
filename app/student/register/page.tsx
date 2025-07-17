@@ -118,19 +118,6 @@ export default function RegisterPage() {
         : "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
     }
 
-    // Linkage officer validation (only if taking for credit)
-    if (
-      takingForCredit &&
-      (!form_data.linkage_officer ||
-        !isValidLinkageOfficer(form_data.linkage_officer))
-    ) {
-      errors.linkage_officer = !form_data.linkage_officer?.trim()
-        ? "Linkage officer is required when taking for credit"
-        : form_data.linkage_officer.trim().length > 40
-        ? "Linkage officer name must be 40 characters or less"
-        : "Linkage officer name must contain only letters, spaces, dots, and hyphens";
-    }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -188,8 +175,6 @@ export default function RegisterPage() {
       missingFields.push("Year Level");
     if (!form_data.university?.trim()) missingFields.push("University");
     if (!form_data.college?.trim()) missingFields.push("College");
-    if (takingForCredit && !form_data.linkage_officer?.trim())
-      missingFields.push("Linkage Officer");
 
     // Show specific missing fields error
     if (missingFields.length > 0) {
@@ -457,39 +442,6 @@ export default function RegisterPage() {
                 </label>
               </div>
             </div>
-
-            {/* Linkage Officer - Conditional */}
-            {takingForCredit && (
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Linkage Officer
-                </label>
-                {validationErrors.linkage_officer && (
-                  <div className="flex items-center gap-1 text-red-600 text-xs mb-2">
-                    <AlertCircle className="h-3 w-3" />
-                    <span>{validationErrors.linkage_officer}</span>
-                  </div>
-                )}
-                <Input
-                  type="text"
-                  value={form_data.linkage_officer ?? ""}
-                  onChange={(e) => set_field("linkage_officer", e.target.value)}
-                  placeholder="Enter your linkage officer's name"
-                  maxLength={40}
-                  className={
-                    (form_data.linkage_officer === ""
-                      ? "border-gray-300"
-                      : validFieldClassName) +
-                    " w-full h-11 sm:h-12 px-3 sm:px-4 text-gray-900 border border-opacity-80 placeholder-gray-500 rounded-lg focus:border-gray-900 focus:ring-0"
-                  }
-                  disabled={loading}
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  Please provide the name of your assigned linkage officer from
-                  your college.
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Terms & Conditions Acceptance */}
