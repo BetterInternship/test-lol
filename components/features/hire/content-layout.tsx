@@ -38,12 +38,13 @@ function SideNav({ items }: { items: NavItem[] }) {
   return (
     <nav className="flex flex-col">
       {items.map(({ href, label, icon }) => (
-        <Link key={label} href={label !== "Forms Automation" ? href : "#"}>
+        // <Link key={label} href={label !== "Forms Automation" ? href : "#"}>
+        <Link key={label} href={href}>
           <Button
             variant="ghost"
             scheme="default"
             onClick={() =>
-              label === "Forms Automation" && alert("Coming Soon!")
+              false && label === "Forms Automation" && alert("Coming Soon!")
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",
