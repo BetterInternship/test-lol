@@ -24,10 +24,7 @@ export default function RegisterPage() {
     colleges,
     universities,
     get_colleges_by_university,
-    get_level_by_name,
-    get_college_by_name,
     get_universities_from_domain,
-    get_university_by_name,
   } = useRefs();
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [takingForCredit, setTakingForCredit] = useState(false);
@@ -426,106 +423,6 @@ export default function RegisterPage() {
                 ></GroupableRadioDropdown>
               </div>
             </DropdownGroup>
-
-            {/* Portfolio Link */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Portfolio Link{" "}
-                <span className="text-gray-500 italic">(Optional)</span>
-              </label>
-              <Input
-                type="url"
-                value={form_data.portfolio_link ?? ""}
-                onChange={(e) => set_field("portfolio_link", e.target.value)}
-                placeholder="Enter Portfolio Link"
-                className={
-                  (form_data.portfolio_link === ""
-                    ? "border-gray-300"
-                    : validFieldClassName) +
-                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
-                }
-                disabled={loading}
-              />
-            </div>
-
-            {/* LinkedIn Profile */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                LinkedIn Profile{" "}
-                <span className="text-gray-500 italic">(Optional)</span>
-              </label>
-              <Input
-                type="url"
-                value={form_data.linkedin_link ?? ""}
-                onChange={(e) => set_field("linkedin_link", e.target.value)}
-                placeholder="Enter LinkedIn Profile Link"
-                className={
-                  (form_data.linkedin_link === ""
-                    ? "border-gray-300"
-                    : validFieldClassName) +
-                  " w-full h-11 sm:h-12 px-3 sm:px-4 text-gray-900 input-box hover:cursor-text focus:ring-0"
-                }
-                disabled={loading}
-              />
-            </div>
-
-            {/* Github Link */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Github Link{" "}
-                <span className="text-gray-500 italic">(Optional)</span>
-              </label>
-              <Input
-                type="url"
-                value={form_data.github_link ?? ""}
-                onChange={(e) => set_field("github_link", e.target.value)}
-                placeholder="Enter Github Link"
-                className={
-                  (form_data.github_link === ""
-                    ? "border-gray-300"
-                    : validFieldClassName) +
-                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box hover:cursor-text focus:ring-0"
-                }
-                disabled={loading}
-              />
-            </div>
-
-            {/* Resume Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Resume <span className="text-gray-500 italic">(Optional)</span>
-              </label>
-              <input
-                type="file"
-                ref={resumeInputRef}
-                onChange={(r) =>
-                  setResumeFile((r.target?.files ?? [])[0] ?? null)
-                }
-                accept=".pdf,.doc,.docx"
-                disabled={loading}
-                style={{ display: "none" }}
-              />
-              <div
-                onClick={() => resumeInputRef.current?.click()}
-                className={
-                  (!resumeFile || !resumeFile.name
-                    ? "border-gray-300"
-                    : validFieldClassName) +
-                  " w-full h-11 sm:h-12 px-3 sm:px-4 input-box flex items-center justify-between"
-                }
-              >
-                <span
-                  className={
-                    resumeFile
-                      ? " line-clamp-1 text-gray-900 text-ellipsis"
-                      : "line-clamp-1 text-gray-500 text-ellipsis"
-                  }
-                >
-                  {resumeFile ? resumeFile.name : "Upload File Here"}
-                </span>
-                <Upload className="h-4 w-4 text-gray-400" />
-              </div>
-            </div>
 
             {/* Taking for Credit */}
             <div className="md:col-span-2">

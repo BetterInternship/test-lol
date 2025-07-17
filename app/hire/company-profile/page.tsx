@@ -41,8 +41,9 @@ export default function CompanyProfile() {
   const { check } = useMoa();
   const { get_university_by_name } = useRefs();
   const { to_industry_name } = useRefs();
-  const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
+  const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleProfilePictureUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -151,9 +152,14 @@ export default function CompanyProfile() {
                     <Button
                       onClick={async () => {
                         setSaving(true);
-                        await profileEditorRef.current?.save();
+                        setSaveError(null);
+                        const success = await profileEditorRef.current?.save();
                         setSaving(false);
-                        setIsEditing(false);
+                        if (success) {
+                          setIsEditing(false);
+                        } else {
+                          setSaveError("Please fix the errors in the form before saving.");
+                        }
                       }}
                       disabled={saving}
                     >
@@ -178,6 +184,11 @@ export default function CompanyProfile() {
                   updateProfile={updateProfile}
                   ref={profileEditorRef}
                 />
+                {saveError && (
+                  <p className="text-red-600 text-sm mt-4 mb-2 text-center">
+                    {saveError}
+                  </p>
+                )}
               </ProfileEditForm>
             )}
           </div>
@@ -258,7 +269,7 @@ const ProfileLinkBadge = ({
 };
 
 const ProfileEditor = forwardRef<
-  { save: () => Promise<void> },
+  { save: () => Promise<boolean> },
   {
     updateProfile: (
       updatedProfile: Partial<Employer>
@@ -276,9 +287,13 @@ const ProfileEditor = forwardRef<
   } = useProfileEditForm();
   const { industries } = useRefs();
 
-  // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
+      validateFormData();
+      const hasErrors = Object.values(formErrors).some((err) => !!err);
+      if (hasErrors) {
+        return false;
+      }
       try {
         const updatedProfile = {
           ...cleanFormData(),
@@ -288,11 +303,11 @@ const ProfileEditor = forwardRef<
             : undefined,
         };
         await updateProfile(updatedProfile);
-        return;
+        return true;
       } catch (error) {
         console.error("Failed to update profile:", error);
         alert("Failed to update profile. Please try again.");
-        return;
+        return false;
       }
     },
   }));

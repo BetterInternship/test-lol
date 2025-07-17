@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useAppContext } from "@/lib/ctx-app";
 
 export function HeroSection() {
   const videos = [
@@ -15,24 +16,36 @@ export function HeroSection() {
     "/landingPage/nod.mov",
   ];
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const { isMobile } = useAppContext();
+
   useEffect(() => {
+    if (isMobile) return;
     const interval = setInterval(() => {
       setCurrentVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []); // Only run once on mount
+  }, [isMobile, videos.length]);
+
   return (
     <section className="relative min-h-screen flex items-center bg-black overflow-hidden">
-      {/* Background video switches to next every 3 seconds, no crossfade */}
-      <div className="absolute inset-0 w-full h-full">
-        <video
-          key={currentVideoIndex}
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          src={videos[currentVideoIndex]}
-        />
+      {/* Show image on mobile, video on tablet/desktop */}
+      <div className="absolute inset-0 w-full h-full overflow-y-hidden">
+        {isMobile ? (
+          <img
+            src="/landingPage/mobileBG.jpg"
+            alt="Landing"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <video
+            key={currentVideoIndex}
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            src={videos[currentVideoIndex]}
+          />
+        )}
       </div>
 
       <div className="absolute inset-0 bg-black/60" />
