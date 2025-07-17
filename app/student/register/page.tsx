@@ -118,19 +118,6 @@ export default function RegisterPage() {
         : "Phone number must be 11 digits in Philippine format (09XXXXXXXXX)";
     }
 
-    // Linkage officer validation (only if taking for credit)
-    if (
-      takingForCredit &&
-      (!form_data.linkage_officer ||
-        !isValidLinkageOfficer(form_data.linkage_officer))
-    ) {
-      errors.linkage_officer = !form_data.linkage_officer?.trim()
-        ? "Linkage officer is required when taking for credit"
-        : form_data.linkage_officer.trim().length > 40
-        ? "Linkage officer name must be 40 characters or less"
-        : "Linkage officer name must contain only letters, spaces, dots, and hyphens";
-    }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -188,8 +175,6 @@ export default function RegisterPage() {
       missingFields.push("Year Level");
     if (!form_data.university?.trim()) missingFields.push("University");
     if (!form_data.college?.trim()) missingFields.push("College");
-    if (takingForCredit && !form_data.linkage_officer?.trim())
-      missingFields.push("Linkage Officer");
 
     // Show specific missing fields error
     if (missingFields.length > 0) {
