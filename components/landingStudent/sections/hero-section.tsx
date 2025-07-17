@@ -5,19 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-
-
-//from stack overflo
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-  return isMobile;
-}
+import { useAppContext } from "@/lib/ctx-app";
 
 export function HeroSection() {
   const videos = [
@@ -28,7 +16,7 @@ export function HeroSection() {
     "/landingPage/nod.mov",
   ];
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const isMobile = useIsMobile();
+  const { isMobile } = useAppContext();
 
   useEffect(() => {
     if (isMobile) return;
@@ -44,7 +32,7 @@ export function HeroSection() {
       <div className="absolute inset-0 w-full h-full overflow-y-hidden">
         {isMobile ? (
           <img
-            src="/landingPage/mobileBG.jpg" // Use a static image for mobile
+            src="/landingPage/mobileBG.jpg"
             alt="Landing"
             className="absolute inset-0 w-full h-full object-cover"
           />
