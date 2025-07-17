@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   HeroSection,
@@ -6,12 +6,15 @@ import {
   CustomersSection,
   Testimonials,
   LogoCarouselBasic,
-  Feature
-} from "@/components/landingStudent/sections"
-import { Navigation } from "@/components/landingStudent/navigation"
-import { Footer } from "@/components/shared/footer"
+  Feature,
+} from "@/components/landingStudent/sections";
+import { Navigation } from "@/components/landingStudent/navigation";
+import { Footer } from "@/components/shared/footer";
+import { useAuthContext } from "@/lib/ctx-auth";
 
 export default function HomePage() {
+  const { redirectIfLoggedIn } = useAuthContext();
+  redirectIfLoggedIn();
   return (
     <div className="min-h-screen bg-black text-white dark dark:bg-black dark:text-white">
       {/* Navbar */}
@@ -23,18 +26,16 @@ export default function HomePage() {
 
       {/* Benefits clickable */}
       <PlatformSection />
-      
-      
+
       {/* Numbers section */}
       <CustomersSection />
 
       {/* Companies showcase */}
       <LogoCarouselBasic />
-     
-     <div className="dark">
+
+      <div className="dark">
         <Footer />
-     </div>
-      
+      </div>
     </div>
-  )
+  );
 }

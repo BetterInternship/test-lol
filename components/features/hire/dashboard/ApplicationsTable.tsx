@@ -36,7 +36,34 @@ export function ApplicationsTable({
   return (
     <Card className="overflow-auto h-full max-h-full border-none p-0">
       <TabGroup>
-        <Tab name="Pending Applications">
+        <Tab name="All Applications">
+          <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
+            <tbody className="w-full h-full max-h-full ">
+              {sortedApplications.length ? (
+                sortedApplications.map((application) => (
+                  <ApplicationRow
+                    key={application.id}
+                    application={application}
+                    onView={() => onApplicationClick(application)}
+                    onNotes={() => onNotesClick(application)}
+                    onSchedule={() => onScheduleClick(application)}
+                    onStatusChange={(status) =>
+                      onStatusChange(application, status)
+                    }
+                    openChatModal={openChatModal}
+                    setSelectedApplication={setSelectedApplication}
+                    updateConversationId={updateConversationId}
+                  />
+                ))
+              ) : (
+                <div className="p-2">
+                  <Badge>No applications yet.</Badge>
+                </div>
+              )}
+            </tbody>
+          </table>
+        </Tab>
+        <Tab name="New Applications">
           <table className="relative table-auto border-separate border-spacing-0 w-full h-full max-h-full">
             <tbody className="w-full h-full max-h-full ">
               {sortedApplications.some(
@@ -67,7 +94,7 @@ export function ApplicationsTable({
             </tbody>
           </table>
         </Tab>
-        <Tab name="Interviewing Applications">
+        <Tab name="Ongoing Applications">
           <table className="relative table-auto border-separate border-spacing-0 w-full max-h-full">
             <tbody className="w-full h-full max-h-full">
               {sortedApplications.some(
@@ -98,7 +125,7 @@ export function ApplicationsTable({
             </tbody>
           </table>
         </Tab>
-        <Tab name="Decided Applications">
+        <Tab name="Finalized Applications">
           <table className="relative table-auto border-separate border-spacing-0 w-full max-h-full">
             <tbody className="w-full h-full max-h-full">
               {sortedApplications.some(

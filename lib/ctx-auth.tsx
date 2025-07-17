@@ -130,7 +130,7 @@ export const AuthContextProvider = ({
 
   const redirectIfLoggedIn = () =>
     useEffect(() => {
-      if (!isLoading && isAuthenticated) router.push("/");
+      if (!isLoading && isAuthenticated) router.push("/search");
     }, [isAuthenticated, isLoading]);
 
   return (

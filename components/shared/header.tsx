@@ -6,7 +6,7 @@ export const HeaderTitle = () => {
   const { isMobile: is_mobile } = useAppContext();
   return (
     <Link
-      href="/"
+      href="/search"
       className="block outline-none focus:outline-none border-none"
     >
       <h1

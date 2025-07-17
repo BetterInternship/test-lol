@@ -17,7 +17,7 @@ interface LogoColumnProps {
 }
 
 function LogoColumn({ logos, columnIndex, currentTime }: LogoColumnProps) {
-  const CYCLE_DURATION = 2000;
+  const CYCLE_DURATION = 5000;
   const columnDelay = columnIndex * 200;
   const adjustedTime = (currentTime + columnDelay) % (CYCLE_DURATION * logos.length);
   const currentIndex = Math.floor(adjustedTime / CYCLE_DURATION);
@@ -72,7 +72,7 @@ interface LogoCarouselProps {
   logos: Logo[];
 }
 
-export function LogoCarousel({ columns = 5, logos }: LogoCarouselProps) {
+export function LogoCarousel({ columns = 4, logos }: LogoCarouselProps) {
   const [logoColumns, setLogoColumns] = useState<Logo[][]>([]);
   const [time, setTime] = useState(0);
 

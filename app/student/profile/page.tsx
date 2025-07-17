@@ -63,6 +63,7 @@ export default function ProfilePage() {
   const profile = useProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
@@ -74,7 +75,7 @@ export default function ProfilePage() {
   } = useModal("employer-modal");
   const { open: openResumeModal, Modal: ResumeModal } =
     useModal("resume-modal");
-  const profileEditorRef = useRef<{ save: () => Promise<void> }>(null);
+  const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
 
   redirectIfNotLoggedIn();
@@ -156,7 +157,10 @@ export default function ProfilePage() {
                   <div className="flex gap-2 w-full sm:w-auto">
                     <Button
                       variant="outline"
-                      onClick={() => setIsEditing(false)}
+                      onClick={() => {
+                        setIsEditing(false);
+                        setSaveError(null);
+                      }}
                       disabled={saving}
                     >
                       Cancel
@@ -164,9 +168,14 @@ export default function ProfilePage() {
                     <Button
                       onClick={async () => {
                         setSaving(true);
-                        await profileEditorRef.current?.save();
+                        setSaveError(null);
+                        const success = await profileEditorRef.current?.save();
                         setSaving(false);
-                        setIsEditing(false);
+                        if (success) {
+                          setIsEditing(false);
+                        } else {
+                          setSaveError("Please fix the errors in the form before saving.");
+                        }
                       }}
                       disabled={saving}
                     >
@@ -180,6 +189,11 @@ export default function ProfilePage() {
                   </Button>
                 )}
               </div>
+              {isEditing && saveError && (
+                <p className="text-red-600 text-sm mt-4 mb-2 text-left">
+                  {saveError}
+                </p>
+              )}
             </div>
           </div>
 
@@ -313,10 +327,8 @@ const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
 };
 
 const ProfileEditor = forwardRef<
-  { save: () => Promise<void> },
-  {
-    updateProfile: (updatedProfile: Partial<PublicUser>) => void;
-  }
+  { save: () => Promise<boolean> },
+  { updateProfile: (updatedProfile: Partial<PublicUser>) => void }
 >(({ updateProfile }, ref) => {
   const {
     formData,
@@ -343,6 +355,11 @@ const ProfileEditor = forwardRef<
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
+      validateFormData();
+      const hasErrors = Object.values(formErrors).some((err) => !!err);
+      if (hasErrors) {
+        return false;
+      }
       const updatedProfile = {
         ...cleanFormData(),
         portfolio_link: toURL(formData.portfolio_link)?.toString(),
@@ -351,7 +368,7 @@ const ProfileEditor = forwardRef<
         calendar_link: toURL(formData.calendar_link)?.toString(),
       };
       await updateProfile(updatedProfile);
-      return;
+      return true;
     },
   }));
 
@@ -398,11 +415,6 @@ const ProfileEditor = forwardRef<
       "first_name",
       (name: string) =>
         !isValidRequiredUserName(name) && `First name is not valid.`
-    );
-    addValidator(
-      "middle_name",
-      (name: string) =>
-        !isValidOptionalUserName(name) && `Middle name is not valid.`
     );
     addValidator(
       "last_name",

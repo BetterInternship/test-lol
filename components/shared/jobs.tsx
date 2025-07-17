@@ -385,8 +385,8 @@ export const EmployerJobDetails = ({
       update_job(edited_job.id ?? "", edited_job).then(
         // @ts-ignore
         ({ job: updated_job }) => {
-          console.log("bruh");
-          if (updated_job) set_is_editing(false);
+          if (!updated_job) alert("Invalid input provided for job update.");
+          set_is_editing(false);
         }
       );
     }
@@ -427,7 +427,7 @@ export const EmployerJobDetails = ({
               setter={fieldSetter("location")}
               maxLength={100}
             >
-              <Property className="line-clamp-2 text-ellipsis" />
+              <Property className="line-clamp-2 break-words max-w-[100%]" />
             </EditableInput>
           </div>
 
@@ -532,7 +532,7 @@ export const EmployerJobDetails = ({
                     ? `${formData.salary}/${to_job_pay_freq_name(
                         formData.salary_freq
                       )}`
-                    : "None"
+                    : "Paid (Amount not specified)"
                 }
               />
             </div>
@@ -722,9 +722,9 @@ export const EmployerJobDetails = ({
         {/* Requirements Content */}
         {!is_editing ? (
           <div className="markdown">
-            <ReactMarkdown>
-              {job.requirements?.replace("/", ";") || "None"}
-            </ReactMarkdown>
+            {job.requirements && (
+              <ReactMarkdown>{job.requirements}</ReactMarkdown>
+            )}
           </div>
         ) : (
           <MDXEditor
