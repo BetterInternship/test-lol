@@ -186,6 +186,11 @@ export default function ProfilePage() {
                   </Button>
                 )}
               </div>
+              {saveError && (
+                <p className="text-red-600 text-sm mt-4 mb-2 text-left">
+                  {saveError}
+                </p>
+              )}
             </div>
           </div>
 
@@ -197,11 +202,6 @@ export default function ProfilePage() {
                   updateProfile={profile.update}
                   ref={profileEditorRef}
                 />
-                {saveError && (
-                  <p className="text-red-600 text-sm mt-4 mb-2 text-center">
-                    {saveError}
-                  </p>
-                )}
               </ProfileEditForm>
             )}
             <ResumeBox
