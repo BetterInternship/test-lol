@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,7 @@ import {
   FormCheckbox,
   FormDatePicker,
 } from "@/components/EditForm";
+import { Card } from "@/components/ui/our-card";
 
 interface CreateJobModalFormProps {
   createJob: (job: Partial<Job>) => Promise<any>;
@@ -31,6 +32,10 @@ const CreateModalForm = ({
   const [creating, set_creating] = useState(false);
   const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
   const { job_types, job_modes, job_pay_freq, job_allowances } = useDbRefs();
+
+  useEffect(() => {
+    setField("is_year_round", true);
+  }, []);
 
   const handleSaveEdit = async () => {
     const job: Partial<Job> = {
@@ -192,9 +197,17 @@ const CreateModalForm = ({
               </DropdownGroup>
             </div>
             <div>
-              <div className="space-y-3 w-full mt-4">
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
+              <div className="space-y-3 w-full mt-5">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 border border-gray-200 rounded-[0.33em] hover:border-gray-300 transition-colors">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-900">
+                        Is Year Round?
+                      </Label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        This listing accepts applicants year round.
+                      </p>
+                    </div>
                     <FormCheckbox
                       checked={formData.is_year_round ?? false}
                       setter={(value) =>
@@ -203,7 +216,6 @@ const CreateModalForm = ({
                         })
                       }
                     />
-                    <span className="text-sm font-medium">Year Round</span>
                   </div>
                   {!formData.is_year_round && (
                     <div className="flex flex-row gap-4">
