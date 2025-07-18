@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   User,
   Settings,
@@ -34,14 +34,14 @@ export const Header = () => {
   const { route_excluded } = useRoute();
   const router = useRouter();
   const profile = useProfile();
+  const pathname = usePathname();
 
-  // Track if profile is missing required fields (check only on mount)
-  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+  const [hasMissing, setHasMissing] = useState(false);
 
   useEffect(() => {
     if (profile.data) {
       const { missing } = getMissingProfileFields(profile.data);
-      setShowCompleteProfile(missing.length > 0);
+      setHasMissing(Array.isArray(missing) && missing.length > 0);
     }
     // Only run on mount/profile fetch
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,16 +60,26 @@ export const Header = () => {
           zIndex: 100,
         }}
       >
-        <HeaderTitle />
+        <div className="flex items-center gap-4">
+          <HeaderTitle />
+        </div>
         {route_excluded(header_routes) ? (
           <div className="flex items-center gap-6">
+            {!is_mobile && pathname === "/search" && hasMissing && (
+              <button
+                className="text-base ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
+                onClick={() => router.push("/profile?edit=1")}
+              >
+                Finish your profile to start applying!
+              </button>
+            )}
             <ProfileButton />
           </div>
         ) : (
           <div className="w-1 h-10 bg-transparent"></div>
         )}
       </div>
-      <CompleteAccBanner />
+      {is_mobile && pathname === "/search" && <CompleteAccBanner />}
     </>
   );
 };
