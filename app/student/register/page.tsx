@@ -48,7 +48,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-2xl">
         <div className="text-center mb-10">
           <h2 className="text-4xl tracking-tighter font-bold text-gray-700 mb-4">
-            Student Registration
+            Welcome to BetterInternship!
           </h2>
         </div>
 
@@ -183,7 +183,7 @@ const UserEditor = ({
       <StoryBook>
         <Card>
           <div className="text-2xl tracking-tight font-bold text-gray-700 mb-4">
-            Profile Setup
+            Student Registration Form
           </div>
           <div className="mb-4 flex flex-col space-y-3">
             <div>
