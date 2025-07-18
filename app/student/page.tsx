@@ -3,7 +3,6 @@
 import {
   HeroSection,
   PlatformSection,
-  CustomersSection,
   Testimonials,
   LogoCarouselBasic,
   Feature,
@@ -26,9 +25,6 @@ export default function HomePage() {
 
       {/* Benefits clickable */}
       <PlatformSection />
-
-      {/* Numbers section */}
-      <CustomersSection />
 
       {/* Companies showcase */}
       <LogoCarouselBasic />
