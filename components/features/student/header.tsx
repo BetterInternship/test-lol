@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { useRouter } from "next/navigation";
 import {
@@ -19,8 +19,9 @@ import { Button } from "@/components/ui/button";
 import { HeaderTitle } from "@/components/shared/header";
 import { useRoute } from "@/hooks/use-route";
 import { MyUserPfp } from "@/components/shared/pfp";
-import { getFullName } from "@/lib/utils/user-utils";
+import { getFullName, getMissingProfileFields } from "@/lib/utils/user-utils";
 import { useProfile } from "@/lib/api/student.api";
+import CompleteAccBanner from "@/components/features/student/CompleteAccBanner";
 
 /**
  * The header present on every page
@@ -31,27 +32,45 @@ export const Header = () => {
   const { isMobile: is_mobile } = useAppContext();
   const header_routes = ["/login", "/register", "/otp"];
   const { route_excluded } = useRoute();
+  const router = useRouter();
+  const profile = useProfile();
+
+  // Track if profile is missing required fields (check only on mount)
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+
+  useEffect(() => {
+    if (profile.data) {
+      const { missing } = getMissingProfileFields(profile.data);
+      setShowCompleteProfile(missing.length > 0);
+    }
+    // Only run on mount/profile fetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.data]);
 
   return (
-    <div
-      className={cn(
-        "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
-        is_mobile ? "px-6 py-4" : "py-4 px-8"
-      )}
-      style={{
-        // Ensure dropdown can escape overflow constraints
-        overflow: "visible",
-        position: "relative",
-        zIndex: 100,
-      }}
-    >
-      <HeaderTitle />
-      {route_excluded(header_routes) ? (
-        <ProfileButton />
-      ) : (
-        <div className="w-1 h-10 bg-transparent"></div>
-      )}
-    </div>
+    <>
+      <div
+        className={cn(
+          "flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-100 z-[90]",
+          is_mobile ? "px-6 py-4" : "py-4 px-8"
+        )}
+        style={{
+          overflow: "visible",
+          position: "relative",
+          zIndex: 100,
+        }}
+      >
+        <HeaderTitle />
+        {route_excluded(header_routes) ? (
+          <div className="flex items-center gap-6">
+            <ProfileButton />
+          </div>
+        ) : (
+          <div className="w-1 h-10 bg-transparent"></div>
+        )}
+      </div>
+      <CompleteAccBanner />
+    </>
   );
 };
 

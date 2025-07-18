@@ -55,6 +55,7 @@ import {
   isValidRequiredUserName,
 } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -77,6 +78,7 @@ export default function ProfilePage() {
     useModal("resume-modal");
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   redirectIfNotLoggedIn();
 
@@ -88,6 +90,12 @@ export default function ProfilePage() {
     uploader: UserService.updateMyPfp,
     filename: "pfp",
   });
+
+  useEffect(() => {
+    if (searchParams.get("edit") === "1") {
+      setIsEditing(true);
+    }
+  }, [searchParams]);
 
   if (profile.isPending) return <Loader>Loading profile...</Loader>;
 

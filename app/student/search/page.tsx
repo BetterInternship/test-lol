@@ -194,28 +194,15 @@ export default function SearchPage() {
       return;
     }
 
-    // Check if profile is complete
-    const profileComplete = isCompleteProfile(profile.data);
-
-    // Check if requirements are met
+    // Check for any missing required profile fields
+    const { missing } = getMissingProfileFields(profile.data);
     if (
-      selectedJob?.require_github &&
-      (!profile.data?.github_link || profile.data.github_link === "")
+      !isCompleteProfile(profile.data) ||
+      (selectedJob?.require_github &&
+        (!profile.data?.github_link || profile.data.github_link === "")) ||
+      (selectedJob?.require_portfolio &&
+        (!profile.data?.portfolio_link || profile.data.portfolio_link === ""))
     ) {
-      alert("This job requires a github link, but you don't have one yet!");
-      return;
-    }
-
-    if (
-      selectedJob?.require_portfolio &&
-      (!profile.data?.portfolio_link || profile.data.portfolio_link === "")
-    ) {
-      alert("This job requires a portfolio link, but you don't have one yet!");
-      return;
-    }
-
-    if (!profileComplete) {
-      console.log("Profile not complete, opening incomplete profile modal");
       openIncompleteProfileModal();
       return;
     }
