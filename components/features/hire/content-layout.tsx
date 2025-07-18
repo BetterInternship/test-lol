@@ -7,6 +7,8 @@ import { BarChart3, FileText, FileUser } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useProfile } from "@/hooks/use-employer-api";
+import { useAuthContext } from "@/app/hire/authctx";
 
 type NavItem = {
   href: string;
@@ -34,16 +36,20 @@ const navItems: NavItem[] = [
 
 function SideNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
+  const { god } = useAuthContext();
 
   return (
     <nav className="flex flex-col">
       {items.map(({ href, label, icon }) => (
-        <Link key={label} href={label !== "Forms Automation" ? href : "#"}>
+        <Link
+          key={label}
+          href={label !== "Forms Automation" || god ? href : "#"}
+        >
           <Button
             variant="ghost"
             scheme="default"
             onClick={() =>
-              label === "Forms Automation" && alert("Coming Soon!")
+              god && label === "Forms Automation" && alert("Coming Soon!")
             }
             className={cn(
               "w-full h-10 px-8 flex flex-row justify-start border-0 rounded-none",

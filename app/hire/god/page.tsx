@@ -5,14 +5,20 @@ import { Button } from "@/components/ui/button";
 import { TabGroup, Tab } from "@/components/ui/tabs";
 import { useEmployers, useUsers } from "@/lib/api/god.api";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAuthContext } from "../authctx";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { getFullName } from "@/lib/utils/user-utils";
 import { BooleanCheckIcon } from "@/components/ui/icons";
-import { EmployerApplication } from "@/lib/db/db.types";
+import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
 import { useRefs } from "@/lib/db/use-refs";
+import { useModal } from "@/hooks/use-modal";
+import { ApplicantModalContent } from "@/components/shared/applicant-modal";
+import { UserService } from "@/lib/api/services";
+import { useFile } from "@/hooks/use-file";
+import { FileText } from "lucide-react";
+import { PDFPreview } from "@/components/shared/pdf-preview";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -22,12 +28,36 @@ export default function GodLandingPage() {
   const [selected, set_selected] = useState("");
   const { to_app_status_name } = useRefs();
   const router = useRouter();
+  const [selectedUser, setSelectedUser] = useState<PublicUser | null>(null);
   const applications = useMemo(() => {
     const apps: EmployerApplication[] = [];
     // @ts-ignore
     employers.data.forEach((e) => e?.applications?.map((a) => apps.push(a)));
     return apps;
   }, [employers.data]);
+
+  const refs = useRefs();
+
+  const { url: resumeURL, sync: syncResumeURL } = useFile({
+    fetcher: useCallback(
+      async () => await UserService.getUserResumeURL(selectedUser?.id ?? ""),
+      [selectedUser]
+    ),
+    route: selectedUser ? `/users/${selectedUser?.id}/resume` : "",
+  });
+
+  // Use modal
+  const {
+    open: openApplicantModal,
+    close: closeApplicantModal,
+    Modal: ApplicantModal,
+  } = useModal("applicant-modal");
+
+  const {
+    open: openResumeModal,
+    close: closeResumeModal,
+    Modal: ResumeModal,
+  } = useModal("resume-modal");
 
   /**
    * Handle auth by proxy
@@ -176,7 +206,9 @@ export default function GodLandingPage() {
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {users
               .filter((u) =>
-                `${getFullName(u)} ${u.email}`
+                `${getFullName(u)} ${u.email} ${refs.to_college_name(
+                  u.college
+                )} ${refs.to_degree_full_name(u.degree)}}`
                   ?.toLowerCase()
                   .includes(search_name?.toLowerCase() ?? "")
               )
@@ -193,10 +225,17 @@ export default function GodLandingPage() {
                   <div
                     key={u.id}
                     className="flex flex-row items-center p-2 space-x-2 hover:bg-gray-200 hover:cursor-pointer transition-all"
+                    onClick={() => (setSelectedUser(u), openApplicantModal())}
                   >
-                    <div className="text-gray-700 w-full">
+                    <div className="flex flex-row text-gray-700 w-full gap-1">
                       {getFullName(u)}{" "}
                       <Badge strength="medium">{u.email}</Badge>
+                      <Badge strength="medium">
+                        {refs.to_college_name(u.college)}
+                      </Badge>
+                      <Badge strength="medium">
+                        {refs.to_degree_full_name(u.degree)}
+                      </Badge>
                     </div>
                     <BoolBadge
                       state={u.is_verified}
@@ -274,6 +313,51 @@ export default function GodLandingPage() {
           </div>
         </Tab>
       </TabGroup>
+
+      <ApplicantModal>
+        <ApplicantModalContent
+          is_employer={true}
+          clickable={true}
+          pfp_fetcher={async () =>
+            UserService.getUserPfpURL(selectedUser?.id ?? "")
+          }
+          pfp_route={`/users/${selectedUser?.id}/pic`}
+          applicant={selectedUser ?? undefined}
+          open_calendar={async () => {
+            closeApplicantModal();
+            window?.open(selectedUser?.calendar_link ?? "", "_blank")?.focus();
+          }}
+          open_resume={async () => {
+            closeApplicantModal();
+            await syncResumeURL();
+            openResumeModal();
+          }}
+          job={{}}
+        />
+      </ApplicantModal>
+
+      <ResumeModal>
+        {selectedUser?.resume ? (
+          <div className="h-full flex flex-col">
+            <h1 className="font-bold font-heading text-2xl px-6 py-4 text-gray-900">
+              {getFullName(selectedUser)} - Resume
+            </h1>
+            <PDFPreview url={resumeURL} />
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-96 px-8">
+            <div className="text-center">
+              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h1 className="font-heading font-bold text-2xl mb-4 text-gray-700">
+                No Resume Available
+              </h1>
+              <div className="max-w-md text-center border border-red-200 text-red-600 bg-red-50 rounded-lg p-4">
+                This applicant has not uploaded a resume yet.
+              </div>
+            </div>
+          </div>
+        )}
+      </ResumeModal>
     </div>
   );
 }
