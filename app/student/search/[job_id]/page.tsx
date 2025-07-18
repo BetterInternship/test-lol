@@ -271,7 +271,7 @@ export default function JobPage() {
                     {/* Job Details Grid */}
                     <div className="flex flex-wrap gap-2">
                       <EmployerMOA
-                        employer_id={job.data.employer?.id}
+                        employer_id={job.data.employer_id}
                         university_id={universities[0]?.id}
                       />
                       <JobType type={job.data.type} />
