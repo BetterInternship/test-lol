@@ -153,7 +153,7 @@ export const JobBadges = ({
     <div className="flex flex-wrap gap-2 mb-4">
       {!excludes.includes("moa") && (
         <EmployerMOA
-          employer_id={job.employer?.id}
+          employer_id={job.employer_id}
           university_id={universities[0]?.id}
         />
       )}
