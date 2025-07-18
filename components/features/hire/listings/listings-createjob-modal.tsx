@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FileText, FileEdit } from "lucide-react";
 import { Job } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { MDXEditor } from "@/components/MDXEditor";
 import { useFormData } from "@/lib/form-data";
 import {
@@ -30,7 +30,7 @@ const CreateModalForm = ({
 }: CreateJobModalFormProps) => {
   const [creating, set_creating] = useState(false);
   const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
-  const { job_types, job_modes, job_pay_freq, job_allowances } = useRefs();
+  const { job_types, job_modes, job_pay_freq, job_allowances } = useDbRefs();
 
   const handleSaveEdit = async () => {
     const job: Partial<Job> = {

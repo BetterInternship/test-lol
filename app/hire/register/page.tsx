@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { useAuthContext } from "../authctx";
 import { useRouter } from "next/navigation";
 import { isValidRequiredURL, toURL } from "@/lib/utils/url-utils";
@@ -73,7 +73,7 @@ const EmployerEditor = ({
     terms_accepted: boolean;
   }
   const router = useRouter();
-  const { industries, universities, get_university_by_name } = useRefs();
+  const { industries, universities, get_university_by_name } = useDbRefs();
   const [isRegistering, setIsRegistering] = useState(false);
   const [additionalFields, setAdditionalFields] = useState<AdditionalFields>(
     {} as AdditionalFields
@@ -181,7 +181,6 @@ const EmployerEditor = ({
           }
         : {}),
     };
-    console.log(newProfile);
     multipartForm.from(newProfile);
     setIsRegistering(true);
     // @ts-ignore

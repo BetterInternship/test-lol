@@ -6,7 +6,7 @@ import {
   UserConversationService,
 } from "@/lib/api/services";
 import { Job } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // Jobs Hook with Client-Side Filtering
@@ -28,7 +28,7 @@ export function useJobs(
       }),
     staleTime: 60 * 60 * 1000,
   });
-  const { get_job_category_by_name } = useRefs();
+  const { get_job_category_by_name } = useDbRefs();
 
   // Client-side filtering logic
   const filteredJobs = useMemo(() => {

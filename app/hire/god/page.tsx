@@ -12,13 +12,15 @@ import { formatDate } from "@/lib/utils";
 import { getFullName } from "@/lib/utils/user-utils";
 import { BooleanCheckIcon } from "@/components/ui/icons";
 import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { UserService } from "@/lib/api/services";
 import { useFile } from "@/hooks/use-file";
 import { FileText } from "lucide-react";
 import { PDFPreview } from "@/components/shared/pdf-preview";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormCheckbox } from "@/components/EditForm";
 
 export default function GodLandingPage() {
   const { login_as } = useAuthContext();
@@ -26,8 +28,9 @@ export default function GodLandingPage() {
   const { users } = useUsers();
   const [search_name, set_search_name] = useState<string | null>();
   const [selected, set_selected] = useState("");
-  const { to_app_status_name } = useRefs();
+  const { to_app_status_name } = useDbRefs();
   const router = useRouter();
+  const [hideNoApps, setHideNoApps] = useState(false);
   const [selectedUser, setSelectedUser] = useState<PublicUser | null>(null);
   const applications = useMemo(() => {
     const apps: EmployerApplication[] = [];
@@ -36,7 +39,7 @@ export default function GodLandingPage() {
     return apps;
   }, [employers.data]);
 
-  const refs = useRefs();
+  const refs = useDbRefs();
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: useCallback(
@@ -73,15 +76,21 @@ export default function GodLandingPage() {
     <div className="w-full h-[90vh] overflow-hidden">
       <TabGroup>
         <Tab name="verified employers">
-          <div className="absolute w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={employers.data.map((e) => e.name ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
+            <div className="flex flex-row items-center gap-1">
+              <FormCheckbox checked={hideNoApps} setter={setHideNoApps} />
+              <div className="text-white">Hide rows without applications</div>
+            </div>
           </div>
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {employers.data
+              // @ts-ignore
+              .filter((e) => !hideNoApps || e?.applications?.length)
               .filter((e) =>
                 e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
               )
@@ -134,15 +143,21 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="unverified employers">
-          <div className="absolute w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row iterms-center gap-4 w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={employers.data.map((e) => e.name ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
+            <div className="flex flex-row items-center gap-1">
+              <FormCheckbox checked={hideNoApps} setter={setHideNoApps} />
+              <div className="text-white">Hide rows without applications</div>
+            </div>
           </div>
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {employers.data
+              // @ts-ignore
+              .filter((e) => !hideNoApps || e?.applications?.length)
               .filter((e) =>
                 e.name?.toLowerCase().includes(search_name?.toLowerCase() ?? "")
               )
@@ -196,15 +211,24 @@ export default function GodLandingPage() {
         </Tab>
 
         <Tab name="students">
-          <div className="absolute w-full px-4 py-4 bg-gray-900">
+          <div className="absolute flex flex-row items-center gap-4 w-full px-4 py-4 bg-gray-900">
             <Autocomplete
               setter={set_search_name}
               options={users.map((u) => getFullName(u) ?? "")}
               placeholder="Search name..."
             ></Autocomplete>
+            <div className="flex flex-row items-center gap-1">
+              <FormCheckbox checked={hideNoApps} setter={setHideNoApps} />
+              <div className="text-white">Hide rows without applications</div>
+            </div>
           </div>
           <div className="absolute top-16 w-[100%] h-[85%] flex flex-col overflow-scroll p-4">
             {users
+              .filter(
+                (u) =>
+                  !hideNoApps ||
+                  applications.filter((a) => a.user_id === u.id).length
+              )
               .filter((u) =>
                 `${getFullName(u)} ${u.email} ${refs.to_college_name(
                   u.college

@@ -26,7 +26,7 @@ import {
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job, PublicUser } from "@/lib/db/db.types";
 import { Paginator } from "@/components/ui/paginator";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import {
   DropdownGroup,
   GroupableRadioDropdown,
@@ -120,7 +120,7 @@ export default function SearchPage() {
     fetcher: UserService.getMyResumeURL,
     route: "/users/me/resume",
   });
-  const { industries, job_modes, job_categories } = useRefs();
+  const { industries, job_modes, job_categories } = useDbRefs();
 
   // API hooks with dynamic filtering based on current filter state
   const jobs_page_size = 10;

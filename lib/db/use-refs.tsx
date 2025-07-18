@@ -36,6 +36,6 @@ export const RefsContextProvider = ({
  *
  * @hook
  */
-export const useRefs = (): IRefsContext => {
+export const useDbRefs = (): IRefsContext => {
   return useContext(RefsContext);
 };
