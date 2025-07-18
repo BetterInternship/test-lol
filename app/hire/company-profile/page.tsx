@@ -182,15 +182,15 @@ export default function CompanyProfile() {
             {!isEditing && <ProfileDetails profile={profile} />}
             {isEditing && (
               <ProfileEditForm data={profile}>
-                <ProfileEditor
-                  updateProfile={updateProfile}
-                  ref={profileEditorRef}
-                />
                 {saveError && (
                   <p className="text-red-600 text-sm mt-4 mb-2 text-center">
                     {saveError}
                   </p>
                 )}
+                <ProfileEditor
+                  updateProfile={updateProfile}
+                  ref={profileEditorRef}
+                />
               </ProfileEditForm>
             )}
           </div>
