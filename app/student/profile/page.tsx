@@ -572,6 +572,7 @@ const ProfileEditor = forwardRef<
                 label={"Linkage Officer"}
                 value={formData.linkage_officer ?? ""}
                 setter={fieldSetter("linkage_officer")}
+                required={false}
               />
             )}
           </div>

@@ -23,10 +23,10 @@ export default function CompleteAccBanner() {
       role="alert"
     >
       <button
-        className="text-base text-blue-700 font-medium hover:underline focus:outline-none"
+        className="text-base text-priamry text-blue-700 font-medium hover:underline focus:outline-none"
         onClick={() => router.push("/profile?edit=1")}
       >
-        Finish your profile to unlock awesome opportunities!
+        Finish your profile to start applying!
       </button>
     </div>
   );
