@@ -177,6 +177,7 @@ const CreateModalForm = ({
                         onChange={(e) => setField("salary", e.target.value)}
                         placeholder="Enter salary amount"
                         className="text-sm"
+                        required={formData.allowance === 0}
                       />
                     </div>
 
