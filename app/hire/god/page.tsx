@@ -12,7 +12,7 @@ import { formatDate } from "@/lib/utils";
 import { getFullName } from "@/lib/utils/user-utils";
 import { BooleanCheckIcon } from "@/components/ui/icons";
 import { EmployerApplication, PublicUser } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { ApplicantModalContent } from "@/components/shared/applicant-modal";
 import { UserService } from "@/lib/api/services";
@@ -26,7 +26,7 @@ export default function GodLandingPage() {
   const { users } = useUsers();
   const [search_name, set_search_name] = useState<string | null>();
   const [selected, set_selected] = useState("");
-  const { to_app_status_name } = useRefs();
+  const { to_app_status_name } = useDbRefs();
   const router = useRouter();
   const [selectedUser, setSelectedUser] = useState<PublicUser | null>(null);
   const applications = useMemo(() => {
@@ -36,7 +36,7 @@ export default function GodLandingPage() {
     return apps;
   }, [employers.data]);
 
-  const refs = useRefs();
+  const refs = useDbRefs();
 
   const { url: resumeURL, sync: syncResumeURL } = useFile({
     fetcher: useCallback(

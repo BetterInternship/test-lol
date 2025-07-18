@@ -10,7 +10,6 @@ import { MultipartFormBuilder } from "@/lib/multipart-form";
 export default function LoginPage() {
   const { emailStatus, register, redirectIfLoggedIn } = useAuthContext();
   const [email, setEmail] = useState("");
-  const [newAccount, setNewAccount] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showVerificationMessage, setShowVerificationMessage] = useState(false);
@@ -59,7 +58,7 @@ export default function LoginPage() {
       // Production flow with OTP
       await emailStatus(email).then((response) => {
         if (!response?.existing_user) {
-          setNewAccount(true);
+          router.push(`/register?email=${encodeURIComponent(email)}`);
           setLoading(false);
         } else if (!response.verified_user) {
           router.push(`/login?verified=pending`);
@@ -75,15 +74,6 @@ export default function LoginPage() {
     }
   };
 
-  const handle_skip = async () => {
-    const multipart_form = MultipartFormBuilder.new();
-    multipart_form.add_field("email", email);
-    // @ts-ignore
-    const response = await register(multipart_form.build());
-    if (response?.success) router.push(`/verify`);
-    else setError(response?.message ?? "Could not create account.");
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSubmit(e as any);
@@ -97,18 +87,9 @@ export default function LoginPage() {
         <div className="w-full">
           {/* Welcome Message */}
           <div className="text-center mb-10">
-            {!newAccount ? (
-              <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                Recruiters are waiting!
-              </h2>
-            ) : (
-              <>
-                <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
-                  First time?
-                </h2>
-                <div>We're glad to see you join us!</div>
-              </>
-            )}
+            <h2 className="text-5xl font-heading font-bold text-gray-900 mb-2">
+              Recruiters are waiting!
+            </h2>
           </div>
 
           <div className="max-w-md m-auto">
@@ -146,38 +127,13 @@ export default function LoginPage() {
                   disabled={loading}
                 />
               </div>
-
-              {!newAccount ? (
-                <Button
-                  type="submit"
-                  className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer"
-                >
-                  {loading ? "Checking..." : "Continue"}
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    type="button"
-                    className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer"
-                    onClick={() =>
-                      router.push(
-                        `/register?email=${encodeURIComponent(email)}`
-                      )
-                    }
-                  >
-                    Finish setting up profile
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-12 border-gray-300 transition-colors cursor-pointer"
-                    onClick={handle_skip}
-                  >
-                    Skip for now
-                  </Button>
-                </>
-              )}
             </form>
+            <Button
+              type="submit"
+              className="w-full h-12 bg-black hover:bg-gray-800 text-white transition-colors cursor-pointer mt-4"
+            >
+              {loading ? "Checking..." : "Continue"}
+            </Button>
           </div>
         </div>
       </div>

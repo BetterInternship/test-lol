@@ -86,6 +86,8 @@ export const createEditForm = <T extends IFormData>(): [
       const result: { [k in keyof T]: any } = {} as T;
       for (const field in formData) {
         result[field] = formData[field] ?? undefined;
+        if (typeof result[field] === "string")
+          result[field] = result[field].trim();
       }
       return result;
     };

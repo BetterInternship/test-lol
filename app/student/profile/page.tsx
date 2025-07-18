@@ -17,7 +17,7 @@ import {
 import { useProfile } from "@/lib/api/student.api";
 import { useAuthContext } from "../../../lib/ctx-auth";
 import { useModal } from "@/hooks/use-modal";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { PublicUser } from "@/lib/db/db.types";
 import { ErrorLabel, LabeledProperty } from "@/components/ui/labels";
 import { UserService } from "@/lib/api/services";
@@ -174,7 +174,9 @@ export default function ProfilePage() {
                         if (success) {
                           setIsEditing(false);
                         } else {
-                          setSaveError("Please fix the errors in the form before saving.");
+                          setSaveError(
+                            "Please fix the errors in the form before saving."
+                          );
                         }
                       }}
                       disabled={saving}
@@ -253,7 +255,7 @@ const ProfileDetails = ({ profile }: { profile: PublicUser }) => {
     to_department_name,
     to_degree_full_name,
     to_university_name,
-  } = useRefs();
+  } = useDbRefs();
 
   return (
     <>
@@ -346,11 +348,11 @@ const ProfileEditor = forwardRef<
     colleges,
     departments,
     degrees,
-    get_universities_from_domain,
+    getUniversityFromDomain: get_universities_from_domain,
     get_colleges_by_university,
     get_departments_by_college,
     get_degrees_by_university,
-  } = useRefs();
+  } = useDbRefs();
 
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({

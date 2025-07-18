@@ -12,7 +12,7 @@
 
 import { useCallback } from "react";
 import { Job, PublicUser } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { Button } from "../ui/button";
 import {
   Award,
@@ -48,7 +48,7 @@ export const ApplicantModalContent = ({
     to_college_name,
     to_job_type_name,
     to_university_name,
-  } = useRefs();
+  } = useDbRefs();
 
   // Handle resume button click - memoize to prevent re-renders
   const handleResumeClick = useCallback(async () => {

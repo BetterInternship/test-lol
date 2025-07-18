@@ -21,7 +21,7 @@ import {
 } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
 import { Job, PublicUser } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { useModal } from "@/hooks/use-modal";
 import { cn } from "@/lib/utils";
 import {
@@ -67,7 +67,7 @@ export default function JobPage() {
     Modal: IncompleteProfileModal,
   } = useModal("incomplete-profile-modal");
   const profile = useProfile();
-  const { universities } = useRefs();
+  const { universities } = useDbRefs();
   const savedJobs = useSavedJobs();
   const applications = useApplications();
 

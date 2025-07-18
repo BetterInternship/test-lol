@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { getFullName } from "@/lib/utils/user-utils";
 import { UserPfp } from "@/components/shared/pfp";
 import { StatusDropdown } from "@/components/common/StatusDropdown";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 
 interface ApplicationRowProps {
   application: EmployerApplication;
@@ -30,7 +30,7 @@ export function ApplicationRow({
   updateConversationId,
   setSelectedApplication,
 }: ApplicationRowProps) {
-  const { to_university_name, to_level_name, to_app_status_name } = useRefs();
+  const { to_university_name, to_level_name, to_app_status_name } = useDbRefs();
 
   return (
     <tr
