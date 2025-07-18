@@ -1,5 +1,5 @@
 import { Job } from "@/lib/db/db.types";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { cn } from "@/lib/utils";
 import {
   Building,
@@ -71,7 +71,7 @@ export const JobLocation = ({
 };
 
 export const JobType = ({ type }: { type: number | null | undefined }) => {
-  const { ref_is_not_null, to_job_type_name } = useRefs();
+  const { isNotNull: ref_is_not_null, to_job_type_name } = useDbRefs();
   return ref_is_not_null(type) ? (
     <Badge>{to_job_type_name(type)}</Badge>
   ) : (
@@ -80,7 +80,7 @@ export const JobType = ({ type }: { type: number | null | undefined }) => {
 };
 
 export const JobMode = ({ mode }: { mode: number | null | undefined }) => {
-  const { ref_is_not_null, to_job_mode_name } = useRefs();
+  const { isNotNull: ref_is_not_null, to_job_mode_name } = useDbRefs();
   return ref_is_not_null(mode) ? (
     <Badge>{to_job_mode_name(mode)}</Badge>
   ) : (
@@ -95,7 +95,7 @@ export const JobSalary = ({
   salary: number | null | undefined;
   salary_freq: number | null | undefined;
 }) => {
-  const { to_job_pay_freq_name } = useRefs();
+  const { to_job_pay_freq_name } = useDbRefs();
   return salary ? (
     <Badge>
       ₱{salary}/{to_job_pay_freq_name(salary_freq)}
@@ -148,7 +148,7 @@ export const JobBadges = ({
   job: Job;
   excludes?: string[];
 }) => {
-  const { universities } = useRefs();
+  const { universities } = useDbRefs();
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       {!excludes.includes("moa") && (
@@ -180,7 +180,7 @@ export const EmployerMOA = ({
   employer_id: string | null | undefined;
 }) => {
   const { check } = useMoa();
-  const { get_university } = useRefs();
+  const { get_university } = useDbRefs();
 
   return check(employer_id ?? "", university_id ?? "") ? (
     <Badge type="supportive">
@@ -207,7 +207,7 @@ export const JobCard = ({
   selected?: boolean;
   on_click?: (job: Job) => void;
 }) => {
-  const { universities } = useRefs();
+  const { universities } = useDbRefs();
 
   return (
     <Card
@@ -351,7 +351,7 @@ export const EmployerJobDetails = ({
     job_pay_freq,
     to_job_pay_freq_name,
     to_job_allowance_name,
-  } = useRefs();
+  } = useDbRefs();
   const { formData, setField, setFields, fieldSetter } = useFormData<Job>();
 
   useEffect(() => {
@@ -751,7 +751,7 @@ export const JobDetails = ({
   actions?: React.ReactNode[];
 }) => {
   const { to_job_mode_name, to_job_type_name, to_job_pay_freq_name } =
-    useRefs();
+    useDbRefs();
 
   // Returns a non-editable version of it
   return (

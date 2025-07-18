@@ -12,7 +12,7 @@ import ContentLayout from "@/components/features/hire/content-layout";
 import { useProfile } from "@/hooks/use-employer-api";
 import { Button } from "@/components/ui/button";
 import { useMoa } from "@/lib/db/use-moa";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { Badge, BoolBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/our-card";
 import { Employer } from "@/lib/db/db.types";
@@ -39,8 +39,8 @@ export default function CompanyProfile() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { check } = useMoa();
-  const { get_university_by_name } = useRefs();
-  const { to_industry_name } = useRefs();
+  const { get_university_by_name } = useDbRefs();
+  const { to_industry_name } = useDbRefs();
   const profileEditorRef = useRef<{ save: () => Promise<boolean> }>(null);
   const profilePictureInputRef = useRef<HTMLInputElement>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -158,7 +158,9 @@ export default function CompanyProfile() {
                         if (success) {
                           setIsEditing(false);
                         } else {
-                          setSaveError("Please fix the errors in the form before saving.");
+                          setSaveError(
+                            "Please fix the errors in the form before saving."
+                          );
                         }
                       }}
                       disabled={saving}
@@ -285,7 +287,7 @@ const ProfileEditor = forwardRef<
     validateFormData,
     cleanFormData,
   } = useProfileEditForm();
-  const { industries } = useRefs();
+  const { industries } = useDbRefs();
 
   useImperativeHandle(ref, () => ({
     save: async () => {

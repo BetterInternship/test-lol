@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 // Hooks (preserving existing implementations)
 import { useApplications } from "@/lib/api/student.api";
 import { useAuthContext } from "@/lib/ctx-auth";
-import { useRefs } from "@/lib/db/use-refs";
+import { useDbRefs } from "@/lib/db/use-refs";
 import { formatTimeAgo } from "@/lib/utils";
 import { Loader } from "@/components/ui/loader";
 import { Card } from "@/components/ui/our-card";
@@ -88,7 +88,7 @@ export default function ApplicationsPage() {
 }
 
 const ApplicationCard = ({ application }: { application: UserApplication }) => {
-  const { to_app_status_name } = useRefs();
+  const { to_app_status_name } = useDbRefs();
   return (
     <Card key={application.id} className="hover:shadow-lg transition-all">
       <div className="flex flex-col gap-1">
