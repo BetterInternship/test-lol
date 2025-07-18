@@ -94,17 +94,13 @@ export default function JobPage() {
 
     // Check if profile is complete
     if (!isCompleteProfile(profile.data)) {
-      // open_incomplete_profile_modal();
-      alert("Your profile is not complete!");
-      router.push("/profile");
+      open_incomplete_profile_modal();
       return;
     }
 
     // Check if job requirements are met
     if (!profileQualifiesFor(profile.data, job.data)) {
-      // open_application_modal();
-      alert("This job has additional requirements you have not filled out.");
-      router.push("/profile");
+      open_incomplete_profile_modal();
       return;
     }
 
@@ -442,9 +438,21 @@ export default function JobPage() {
       <IncompleteProfileModal>
         <div className="p-6">
           {(() => {
-            const { missing, labels } = getMissingProfileFields(
+            // Get missing fields from profile
+            let { missing, labels } = getMissingProfileFields(
               profile.data as PublicUser
             );
+
+            // Add job-specific requirements if needed
+            if (job.data?.require_github && !profile.data?.github_link?.trim()) {
+              if (!missing.includes("github_link")) missing.push("github_link");
+              labels.github_link = "GitHub Profile";
+            }
+            if (job.data?.require_portfolio && !profile.data?.portfolio_link?.trim()) {
+              if (!missing.includes("portfolio_link")) missing.push("portfolio_link");
+              labels.portfolio_link = "Portfolio Link";
+            }
+
             const missingCount = missing.length;
 
             return (
