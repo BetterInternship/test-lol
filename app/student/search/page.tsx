@@ -868,12 +868,19 @@ Best regards,
             let { missing, labels } = getMissingProfileFields(profile.data);
 
             // Add job-specific requirements if needed
-            if (selectedJob?.require_github && !profile.data?.github_link?.trim()) {
+            if (
+              selectedJob?.require_github &&
+              !profile.data?.github_link?.trim()
+            ) {
               if (!missing.includes("github_link")) missing.push("github_link");
               labels.github_link = "GitHub Profile";
             }
-            if (selectedJob?.require_portfolio && !profile.data?.portfolio_link?.trim()) {
-              if (!missing.includes("portfolio_link")) missing.push("portfolio_link");
+            if (
+              selectedJob?.require_portfolio &&
+              !profile.data?.portfolio_link?.trim()
+            ) {
+              if (!missing.includes("portfolio_link"))
+                missing.push("portfolio_link");
               labels.portfolio_link = "Portfolio Link";
             }
 
@@ -929,7 +936,7 @@ Best regards,
                   <Button
                     onClick={() => {
                       closeIncompleteProfileModal();
-                      router.push("/profile?edit=1");
+                      router.push("/profile?edit=true");
                     }}
                     size="md"
                     scheme="supportive"

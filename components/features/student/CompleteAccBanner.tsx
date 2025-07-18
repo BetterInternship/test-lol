@@ -24,7 +24,7 @@ export default function CompleteAccBanner() {
     >
       <button
         className="text-base text-primary ml-4 text-blue-700 font-medium hover:underline focus:outline-none"
-        onClick={() => router.push("/profile?edit=1")}
+        onClick={() => router.push("/profile?edit=true")}
       >
         Finish your profile to start applying!
       </button>

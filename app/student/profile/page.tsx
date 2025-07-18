@@ -92,7 +92,7 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (searchParams.get("edit") === "1") {
+    if (searchParams.get("edit") === "true") {
       setIsEditing(true);
     }
   }, [searchParams]);
