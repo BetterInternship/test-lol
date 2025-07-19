@@ -460,6 +460,23 @@ const ProfileEditor = forwardRef<
   }, []);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
+  const helpBtnRef = useRef<HTMLButtonElement>(null);
+  const helpPopupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showCalendarHelp) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        helpBtnRef.current?.contains(e.target as Node) ||
+        helpPopupRef.current?.contains(e.target as Node)
+      ) {
+        return;
+      }
+      setShowCalendarHelp(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showCalendarHelp]);
 
   return (
     <>
@@ -643,6 +660,7 @@ const ProfileEditor = forwardRef<
               </span>
               <button
                 type="button"
+                ref={helpBtnRef}
                 className="ml-2 opacity-70 hover:opacity-90"
                 onClick={() => setShowCalendarHelp((v) => !v)}
                 tabIndex={-1}
@@ -651,12 +669,15 @@ const ProfileEditor = forwardRef<
               </button>
             </div>
             <FormInput
-              label={undefined} // or just omit the label prop
+              label={undefined}
               value={formData.calendar_link ?? ""}
               setter={fieldSetter("calendar_link")}
             />
             {showCalendarHelp && (
-              <div className="absolute left-full top-0 ml-4 w-80 bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10">
+              <div
+                ref={helpPopupRef}
+                className="absolute left-0 top-full mt-2 w-full bg-gray-100 border border-gray-300 rounded p-3 text-xs text-gray-700 shadow z-10"
+              >
                 Go to <b>calendar.google.com</b>, press the <b>+</b> icon, and set
                 up an appointment schedule to get this link.
                 <br />
