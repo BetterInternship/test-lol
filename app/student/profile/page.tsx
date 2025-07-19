@@ -1,5 +1,6 @@
 "use client";
 
+import Select from "react-select"
 import {
   useState,
   useEffect,
@@ -56,6 +57,7 @@ import {
 } from "@/lib/utils/name-utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
+import { Autocomplete } from "@/components/ui/autocomplete";
 
 const [ProfileEditForm, useProfileEditForm] = createEditForm<PublicUser>();
 
@@ -521,39 +523,66 @@ const ProfileEditor = forwardRef<
         <div className="text-2xl tracking-tight font-medium text-gray-700 my-6">
           Educational Background
         </div>
-        <div className="flex flex-col space-y-3">
-          <FormDropdown
-            label={"University"}
-            value={formData.university ?? ""}
-            options={universityOptions}
-            setter={fieldSetter("university")}
+        <div className="flex flex-col space-y-3 w-full ">
+          <Autocomplete
+            options={universityOptions.map((u) => u.name)}
+            value={
+              universityOptions.find((u) => u.id === formData.university)?.name ||
+              ""
+            }
+            setter={(val) => {
+              const uni = universityOptions.find((u) => u.name === val);
+              fieldSetter("university")(uni ? uni.id : "");
+            }}
+            placeholder="Select University"
           />
-          <FormDropdown
-            label={"College"}
-            value={formData.college ?? ""}
-            options={collegeOptions}
-            setter={fieldSetter("college")}
+          <Autocomplete
+            options={collegeOptions.map((c) => c.name)}
+            value={
+              collegeOptions.find((c) => c.id === formData.college)?.name || ""
+            }
+            setter={(val) => {
+              const col = collegeOptions.find((c) => c.name === val);
+              fieldSetter("college")(col ? col.id : "");
+            }}
+            placeholder="Select College"
           />
-          <FormDropdown
-            label={"Department"}
-            value={formData.department ?? ""}
-            options={departmentOptions}
-            setter={fieldSetter("department")}
+          <Autocomplete
+            options={departmentOptions.map((d) => d.name)}
+            value={
+              departmentOptions.find((d) => d.id === formData.department)?.name ||
+              ""
+            }
+            setter={(val) => {
+              const dep = departmentOptions.find((d) => d.name === val);
+              fieldSetter("department")(dep ? dep.id : "");
+            }}
+            placeholder="Select Department"
           />
-          <FormDropdown
-            label={"Degree"}
-            value={formData.degree ?? ""}
-            options={degreeOptions}
-            setter={fieldSetter("degree")}
+          <Autocomplete
+            options={degreeOptions.map((d) => d.name)}
+            value={
+              degreeOptions.find((d) => d.id === formData.degree)?.name || ""
+            }
+            setter={(val) => {
+              const deg = degreeOptions.find((d) => d.name === val);
+              fieldSetter("degree")(deg ? deg.id : "");
+            }}
+            placeholder="Select Degree"
           />
-          <FormDropdown
-            label="Year Level"
-            value={formData.year_level ?? ""}
-            options={levels}
-            setter={fieldSetter("year_level")}
+          <Autocomplete
+            options={levels.map((l) => l.name)}
+            value={
+              levels.find((l) => l.id === formData.year_level)?.name || ""
+            }
+            setter={(val) => {
+              const lvl = levels.find((l) => l.name === val);
+              fieldSetter("year_level")(lvl ? lvl.id : "");
+            }}
+            placeholder="Select Year Level"
           />
           <FormInput
-            label={"Degree Notes"}
+            label={"Major/Minor degree"}
             value={formData.degree_notes ?? ""}
             setter={fieldSetter("degree_notes")}
             maxLength={100}
