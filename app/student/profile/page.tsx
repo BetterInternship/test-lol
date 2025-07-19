@@ -367,7 +367,7 @@ const ProfileEditor = forwardRef<
   // Provide an external link to save profile
   useImperativeHandle(ref, () => ({
     save: async () => {
-      validateFormData();
+      await validateFormData();
       const hasErrors = Object.values(formErrors).some((err) => !!err);
       if (hasErrors) {
         return false;
@@ -457,7 +457,33 @@ const ProfileEditor = forwardRef<
       (link: string) =>
         !isValidOptionalCalendarURL(link) && "Invalid calendar link."
     );
-  }, []);
+
+    addValidator(
+      "university",
+      (id: string) =>
+        !universityOptions.some((u) => u.id === id) && "Select a valid university."
+    );
+    addValidator(
+      "college",
+      (id: string) =>
+        !collegeOptions.some((c) => c.id === id) && "Select a valid college."
+    );
+    addValidator(
+      "department",
+      (id: string) =>
+        !departmentOptions.some((d) => d.id === id) && "Select a valid department."
+    );
+    addValidator(
+      "degree",
+      (id: string) =>
+        !degreeOptions.some((d) => d.id === id) && "Select a valid degree."
+    );
+    addValidator(
+      "year_level",
+      (id: string) =>
+        !id || !levels.some((l) => l.id === Number(id)) ? "Select a valid year level." : ""
+    );
+  }, [universityOptions, collegeOptions, departmentOptions, degreeOptions, levels]);
 
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const helpBtnRef = useRef<HTMLButtonElement>(null);
@@ -541,63 +567,81 @@ const ProfileEditor = forwardRef<
           Educational Background
         </div>
         <div className="flex flex-col space-y-3 w-full ">
-          <Autocomplete
-            options={universityOptions.map((u) => u.name)}
-            value={
-              universityOptions.find((u) => u.id === formData.university)?.name ||
-              ""
-            }
-            setter={(val) => {
-              const uni = universityOptions.find((u) => u.name === val);
-              fieldSetter("university")(uni ? uni.id : "");
-            }}
-            placeholder="Select University"
-          />
-          <Autocomplete
-            options={collegeOptions.map((c) => c.name)}
-            value={
-              collegeOptions.find((c) => c.id === formData.college)?.name || ""
-            }
-            setter={(val) => {
-              const col = collegeOptions.find((c) => c.name === val);
-              fieldSetter("college")(col ? col.id : "");
-            }}
-            placeholder="Select College"
-          />
-          <Autocomplete
-            options={departmentOptions.map((d) => d.name)}
-            value={
-              departmentOptions.find((d) => d.id === formData.department)?.name ||
-              ""
-            }
-            setter={(val) => {
-              const dep = departmentOptions.find((d) => d.name === val);
-              fieldSetter("department")(dep ? dep.id : "");
-            }}
-            placeholder="Select Department"
-          />
-          <Autocomplete
-            options={degreeOptions.map((d) => d.name)}
-            value={
-              degreeOptions.find((d) => d.id === formData.degree)?.name || ""
-            }
-            setter={(val) => {
-              const deg = degreeOptions.find((d) => d.name === val);
-              fieldSetter("degree")(deg ? deg.id : "");
-            }}
-            placeholder="Select Degree"
-          />
-          <Autocomplete
-            options={levels.map((l) => l.name)}
-            value={
-              levels.find((l) => l.id === formData.year_level)?.name || ""
-            }
-            setter={(val) => {
-              const lvl = levels.find((l) => l.name === val);
-              fieldSetter("year_level")(lvl ? lvl.id : "");
-            }}
-            placeholder="Select Year Level"
-          />
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">University</div>
+            <ErrorLabel value={formErrors.university} />
+            <Autocomplete
+              options={universityOptions.map((u) => u.name)}
+              value={
+                universityOptions.find((u) => u.id === formData.university)?.name || ""
+              }
+              setter={(val) => {
+                const uni = universityOptions.find((u) => u.name === val);
+                fieldSetter("university")(uni ? uni.id : "");
+              }}
+              placeholder="Select University"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">College</div>
+            <ErrorLabel value={formErrors.college} />
+            <Autocomplete
+              options={collegeOptions.map((c) => c.name)}
+              value={
+                collegeOptions.find((c) => c.id === formData.college)?.name || ""
+              }
+              setter={(val) => {
+                const col = collegeOptions.find((c) => c.name === val);
+                fieldSetter("college")(col ? col.id : "");
+              }}
+              placeholder="Select College"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Department</div>
+            <ErrorLabel value={formErrors.department} />
+            <Autocomplete
+              options={departmentOptions.map((d) => d.name)}
+              value={
+                departmentOptions.find((d) => d.id === formData.department)?.name || ""
+              }
+              setter={(val) => {
+                const dep = departmentOptions.find((d) => d.name === val);
+                fieldSetter("department")(dep ? dep.id : "");
+              }}
+              placeholder="Select Department"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Degree</div>
+            <ErrorLabel value={formErrors.degree} />
+            <Autocomplete
+              options={degreeOptions.map((d) => d.name)}
+              value={
+                degreeOptions.find((d) => d.id === formData.degree)?.name || ""
+              }
+              setter={(val) => {
+                const deg = degreeOptions.find((d) => d.name === val);
+                fieldSetter("degree")(deg ? deg.id : "");
+              }}
+              placeholder="Select Degree"
+            />
+          </div>
+          <div>
+            <div className="text-sm font-medium text-gray-700 mb-1">Year Level</div>
+            <ErrorLabel value={formErrors.year_level} />
+            <Autocomplete
+              options={levels.map((l) => l.name)}
+              value={
+                levels.find((l) => l.id === formData.year_level)?.name || ""
+              }
+              setter={(val) => {
+                const lvl = levels.find((l) => l.name === val);
+                fieldSetter("year_level")(lvl ? lvl.id : "");
+              }}
+              placeholder="Select Year Level"
+            />
+          </div>
           <FormInput
             label={"Major/Minor degree"}
             value={formData.degree_notes ?? ""}
